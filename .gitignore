@@ -1,0 +1,36 @@
+# Flutter/Dart - 빌드 결과물
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# IDE - 에디터 설정 파일
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# 환경 변수 - 비밀 정보
+.env
+*.env
+# 예외: .env.example은 추적 (템플릿용)
+!.env.example
+
+# OS - 운영체제 자동 생성 파일
+.DS_Store          # macOS
+Thumbs.db          # Windows
+
+# 기타 - 로그/임시 파일
+*.log
+*.lock
+# 주의: pubspec.lock은 추적 필요!
+!pubspec.lock
+
+# Firebase - 설정 파일 (민감 정보 있으면)
+# google-services.json
+# GoogleService-Info.plist
+
+# Supabase - 로컬 설정
+# .supabase/
