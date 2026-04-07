@@ -8,6 +8,7 @@ import 'core/theme/tokens/spacing_tokens.dart';
 import 'core/theme/tokens/typography_tokens.dart';
 import 'shared/widgets/checkbox/custom_checkbox.dart';
 import 'shared/widgets/radio/custom_radio.dart';
+import 'shared/widgets/toggle/custom_toggle.dart';
 
 void main() {
   runApp(
@@ -46,6 +47,10 @@ class _ComponentTestScreenState extends State<_ComponentTestScreen> {
 
   // Radio state
   int? _selectedOption;
+
+  // Toggle states
+  ToggleState _toggle1 = ToggleState.off;
+  ToggleState _toggle2 = ToggleState.on;
 
   @override
   Widget build(BuildContext context) {
@@ -96,6 +101,28 @@ class _ComponentTestScreenState extends State<_ComponentTestScreen> {
             _buildRadioRow('Option 2', 1),
             const SizedBox(height: AppSpacing.lg),
             _buildRadioRow('Option 3', 2),
+
+            const SizedBox(height: AppSpacing.xxxl),
+            const Divider(color: AppColors.textSecondary),
+            const SizedBox(height: AppSpacing.xxxl),
+
+            // ── Toggle Section ─────────────────────
+            Text(
+              'Toggle Switch Test',
+              style: AppTypography.titleLarge.copyWith(
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            _buildToggleRow('Off (default)', _toggle1, (s) {
+              setState(() => _toggle1 = s);
+              debugPrint('Toggle 1 → $s');
+            }),
+            const SizedBox(height: AppSpacing.lg),
+            _buildToggleRow('On (default)', _toggle2, (s) {
+              setState(() => _toggle2 = s);
+              debugPrint('Toggle 2 → $s');
+            }),
           ],
         ),
       ),
@@ -111,6 +138,26 @@ class _ComponentTestScreenState extends State<_ComponentTestScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         CustomCheckbox(state: state, onChanged: onChanged),
+        const SizedBox(width: AppSpacing.md),
+        Text(
+          label,
+          style: AppTypography.bodyMedium.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToggleRow(
+    String label,
+    ToggleState state,
+    ValueChanged<ToggleState> onChanged,
+  ) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CustomToggle(state: state, onChanged: onChanged),
         const SizedBox(width: AppSpacing.md),
         Text(
           label,
