@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'core/theme/tokens/component_tokens.dart';
+import 'core/providers/navigation_provider.dart';
 import 'shared/widgets/navigation/bottom_navigation.dart';
 
-class MainScreen extends StatelessWidget {
+class MainScreen extends ConsumerWidget {
   const MainScreen({
     super.key,
     required this.child,
@@ -12,43 +13,28 @@ class MainScreen extends StatelessWidget {
 
   final Widget child;
 
-  NavigationTab _getCurrentTab(BuildContext context) {
-    final location = GoRouterState.of(context).uri.toString();
-    switch (location) {
-      case '/trend':
-        return NavigationTab.trend;
-      case '/analysis':
-        return NavigationTab.analysis;
-      case '/fixture':
-        return NavigationTab.fixture;
-      case '/report':
-        return NavigationTab.report;
-      case '/menu':
-        return NavigationTab.menu;
-      default:
-        return NavigationTab.trend;
-    }
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 현재 라우트로부터 탭 상태 동기화
+    final location = GoRouterState.of(context).uri.toString();
+    final currentTab = getTabFromRoute(location);
+
+    // Provider 업데이트 (라우트 변경 감지)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (ref.read(currentTabProvider) != currentTab) {
+        ref.read(currentTabProvider.notifier).setTab(currentTab);
+      }
+    });
+
+    final selectedTab = ref.watch(currentTabProvider);
+
     return Scaffold(
       body: child,
       bottomNavigationBar: CustomBottomNavigation(
-        currentTab: _getCurrentTab(context),
+        currentTab: selectedTab,
         onTabChanged: (tab) {
-          switch (tab) {
-            case NavigationTab.trend:
-              context.go('/trend');
-            case NavigationTab.analysis:
-              context.go('/analysis');
-            case NavigationTab.fixture:
-              context.go('/fixture');
-            case NavigationTab.report:
-              context.go('/report');
-            case NavigationTab.menu:
-              context.go('/menu');
-          }
+          ref.read(currentTabProvider.notifier).setTab(tab);
+          context.go(getRouteFromTab(tab));
         },
       ),
     );
