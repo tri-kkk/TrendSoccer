@@ -1,42 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'core/theme/tokens/component_tokens.dart';
-import 'features/analysis/analysis_page.dart';
-import 'features/fixture/fixture_page.dart';
-import 'features/menu/menu_page.dart';
-import 'features/report/report_page.dart';
-import 'features/trend/trend_page.dart';
 import 'shared/widgets/navigation/bottom_navigation.dart';
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+class MainScreen extends StatelessWidget {
+  const MainScreen({
+    super.key,
+    required this.child,
+  });
 
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
+  final Widget child;
 
-class _MainScreenState extends State<MainScreen> {
-  NavigationTab _currentTab = NavigationTab.trend;
-
-  static const _pages = [
-    TrendPage(),
-    AnalysisPage(),
-    FixturePage(),
-    ReportPage(),
-    MenuPage(),
-  ];
+  NavigationTab _getCurrentTab(BuildContext context) {
+    final location = GoRouterState.of(context).uri.toString();
+    switch (location) {
+      case '/trend':
+        return NavigationTab.trend;
+      case '/analysis':
+        return NavigationTab.analysis;
+      case '/fixture':
+        return NavigationTab.fixture;
+      case '/report':
+        return NavigationTab.report;
+      case '/menu':
+        return NavigationTab.menu;
+      default:
+        return NavigationTab.trend;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentTab.index,
-        children: _pages,
-      ),
+      body: child,
       bottomNavigationBar: CustomBottomNavigation(
-        currentTab: _currentTab,
+        currentTab: _getCurrentTab(context),
         onTabChanged: (tab) {
-          setState(() => _currentTab = tab);
+          switch (tab) {
+            case NavigationTab.trend:
+              context.go('/trend');
+            case NavigationTab.analysis:
+              context.go('/analysis');
+            case NavigationTab.fixture:
+              context.go('/fixture');
+            case NavigationTab.report:
+              context.go('/report');
+            case NavigationTab.menu:
+              context.go('/menu');
+          }
         },
       ),
     );

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
-import 'main_screen.dart';
 
 void main() {
   runApp(const ProviderScope(child: TrendSoccerApp()));
@@ -13,11 +13,11 @@ class TrendSoccerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'TrendSoccer',
       theme: appTheme(),
       debugShowCheckedModeBanner: false,
-      home: const MainScreen(),
+      routerConfig: appRouter,
     );
   }
 }
