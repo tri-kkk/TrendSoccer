@@ -9,15 +9,12 @@ class AnalysisPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surfaceBase,
-      appBar: AppBar(
-        title: const Text('Analysis'),
-        backgroundColor: AppColors.surfaceBase,
-        foregroundColor: AppColors.textPrimary,
-      ),
-      body: const Center(
-        child: Text(
-          'Analysis Page - Coming Soon',
-          style: TextStyle(color: AppColors.textPrimary),
+      body: const SafeArea(
+        child: Center(
+          child: Text(
+            'Analysis Page - Coming Soon',
+            style: TextStyle(color: AppColors.textPrimary),
+          ),
         ),
       ),
     );

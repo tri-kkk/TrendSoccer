@@ -9,15 +9,12 @@ class TrendPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surfaceBase,
-      appBar: AppBar(
-        title: const Text('Trend'),
-        backgroundColor: AppColors.surfaceBase,
-        foregroundColor: AppColors.textPrimary,
-      ),
-      body: const Center(
-        child: Text(
-          'Trend Page - Coming Soon',
-          style: TextStyle(color: AppColors.textPrimary),
+      body: const SafeArea(
+        child: Center(
+          child: Text(
+            'Trend Page - Coming Soon',
+            style: TextStyle(color: AppColors.textPrimary),
+          ),
         ),
       ),
     );

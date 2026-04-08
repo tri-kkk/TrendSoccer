@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/providers/navigation_provider.dart';
 import '../../core/theme/tokens/color_tokens.dart';
 import '../../core/theme/tokens/typography_tokens.dart';
+import '../../shared/widgets/appbar/custom_appbar.dart';
 
 class MenuPage extends ConsumerWidget {
   const MenuPage({super.key});
@@ -13,10 +14,12 @@ class MenuPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: AppColors.surfaceBase,
-      appBar: AppBar(
-        title: const Text('Menu'),
-        backgroundColor: AppColors.surfaceBase,
-        foregroundColor: AppColors.textPrimary,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56),
+        child: CustomAppBar(
+          title: 'Menu',
+          onBackPressed: () => context.pop(),
+        ),
       ),
       body: Center(
         child: Column(
