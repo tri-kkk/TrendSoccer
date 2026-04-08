@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/models/subscription_state.dart';
 import '../../core/models/user_state.dart';
+import '../../core/providers/subscription_provider.dart';
 import '../../core/providers/user_provider.dart';
 import '../../core/theme/tokens/color_tokens.dart';
 import '../../core/theme/tokens/typography_tokens.dart';
 import '../../shared/widgets/appbar/custom_appbar.dart';
 import '../../shared/widgets/cards/profile_card.dart';
+import '../../shared/widgets/plan/plan_ticket.dart';
 
 class MenuPage extends ConsumerWidget {
   const MenuPage({super.key});
@@ -15,6 +18,7 @@ class MenuPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(userProvider);
+    final subscription = ref.watch(subscriptionProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surfaceBase,
@@ -32,6 +36,8 @@ class MenuPage extends ConsumerWidget {
           children: [
             const SizedBox(height: 16),
             _buildProfileSection(user),
+            const SizedBox(height: 32),
+            _buildPlanSection(subscription),
             const SizedBox(height: 24),
             _buildTestControls(ref),
           ],
@@ -95,6 +101,29 @@ class MenuPage extends ConsumerWidget {
     );
   }
 
+  Widget _buildPlanSection(SubscriptionState subscription) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Plan',
+          style: AppTypography.titleLarge.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 16),
+        PlanTicket(
+          type: subscription.type,
+          expiryDate: subscription.expiryDate,
+          remainingTime: subscription.remainingTime,
+          onSubscribePressed: () {
+            // TODO: Navigate to Subscribe page
+          },
+        ),
+      ],
+    );
+  }
+
   Widget _buildTestControls(WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,6 +155,42 @@ class MenuPage extends ConsumerWidget {
                   );
             },
             child: const Text('Switch to Logged In'),
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              ref.read(subscriptionProvider.notifier).reset();
+            },
+            child: const Text('Set Free Plan'),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              ref.read(subscriptionProvider.notifier).activate(
+                    SubscriptionType.trial,
+                    remainingTime: const Duration(hours: 36),
+                  );
+            },
+            child: const Text('Set Trial (36h)'),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              ref.read(subscriptionProvider.notifier).activate(
+                    SubscriptionType.premium,
+                    expiryDate: DateTime.now().add(const Duration(days: 30)),
+                  );
+            },
+            child: const Text('Set Premium (30 days)'),
           ),
         ),
       ],
