@@ -50,8 +50,8 @@ class MenuPage extends ConsumerWidget {
             _buildSettingsSection(context, ref),
             const SizedBox(height: 32),
             _buildOthersSection(),
-            const SizedBox(height: 24),
-            _buildTestControls(ref),
+            const SizedBox(height: 32),
+            _buildAccountSection(context, ref),
           ],
         ),
       ),
@@ -540,76 +540,186 @@ class MenuPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildTestControls(WidgetRef ref) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildAccountSection(BuildContext context, WidgetRef ref) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          'TEST Controls',
-          style: AppTypography.labelMedium.copyWith(
-            color: AppColors.textSecondary,
+        TextButton(
+          onPressed: () => _showSignOutDialog(context, ref),
+          child: Text(
+            'Sign Out',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
         ),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () {
-              ref.read(userProvider.notifier).logout();
-            },
-            child: const Text('Switch to Guest'),
-          ),
+        Container(
+          height: 16,
+          width: 1,
+          color: AppColors.textTertiary,
+          margin: const EdgeInsets.symmetric(horizontal: 16),
         ),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () {
-              ref.read(userProvider.notifier).login(
-                    name: 'Son Heung-min',
-                    email: 'son@spurs.com',
-                  );
-            },
-            child: const Text('Switch to Logged In'),
-          ),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () {
-              ref.read(subscriptionProvider.notifier).reset();
-            },
-            child: const Text('Set Free Plan'),
-          ),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () {
-              ref.read(subscriptionProvider.notifier).activate(
-                    SubscriptionType.trial,
-                    remainingTime: const Duration(hours: 36),
-                  );
-            },
-            child: const Text('Set Trial (36h)'),
-          ),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () {
-              ref.read(subscriptionProvider.notifier).activate(
-                    SubscriptionType.premium,
-                    expiryDate: DateTime.now().add(const Duration(days: 30)),
-                  );
-            },
-            child: const Text('Set Premium (30 days)'),
+        TextButton(
+          onPressed: () => _showDeleteAccountDialog(context, ref),
+          child: Text(
+            'Delete Account',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
         ),
       ],
     );
   }
+
+  void _showSignOutDialog(BuildContext context, WidgetRef ref) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.surfaceOverlay,
+          title: Text(
+            'Sign Out',
+            style: AppTypography.titleMedium.copyWith(
+              color: AppColors.textPrimary,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to sign out?',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
+                style: AppTypography.labelLarge.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                ref.read(userProvider.notifier).logout();
+                Navigator.pop(context);
+              },
+              child: Text(
+                'Sign Out',
+                style: AppTypography.labelLarge.copyWith(
+                  color: AppColors.primary500,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
+    var confirmText = '';
+
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setState) {
+            final canDelete = confirmText == 'DELETE';
+
+            return AlertDialog(
+              backgroundColor: AppColors.surfaceOverlay,
+              title: Text(
+                'Delete Account',
+                style: AppTypography.titleMedium.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Are you certain you wish to delete your account? This cannot be undone.',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Type 'DELETE' to confirm:",
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    onChanged: (value) {
+                      setState(() => confirmText = value);
+                    },
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'DELETE',
+                      hintStyle: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: AppColors.textTertiary,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: AppColors.primary500,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(
+                    'Cancel',
+                    style: AppTypography.labelLarge.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: canDelete
+                      ? () {
+                          ref.read(userProvider.notifier).logout();
+                          Navigator.pop(dialogContext);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Account deleted'),
+                            ),
+                          );
+                        }
+                      : null,
+                  child: Text(
+                    'Delete Account',
+                    style: AppTypography.labelLarge.copyWith(
+                      color: canDelete
+                          ? AppColors.errorRed500
+                          : AppColors.textDisabled,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
 }
