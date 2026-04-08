@@ -48,6 +48,8 @@ class MenuPage extends ConsumerWidget {
             _buildExploreSection(),
             const SizedBox(height: 32),
             _buildSettingsSection(context, ref),
+            const SizedBox(height: 32),
+            _buildOthersSection(),
             const SizedBox(height: 24),
             _buildTestControls(ref),
           ],
@@ -456,6 +458,83 @@ class MenuPage extends ConsumerWidget {
           state: value ? ToggleState.on : ToggleState.off,
           onChanged: (toggleState) =>
               onChanged(toggleState == ToggleState.on),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOthersSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Others',
+          style: AppTypography.titleLarge.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 16),
+        MenuListItem(
+          icon: Icons.info_outline,
+          title: 'About',
+          onTap: () {
+            // TODO: Navigate to About page
+          },
+        ),
+        const SizedBox(height: 12),
+        MenuListItem(
+          icon: Icons.privacy_tip_outlined,
+          title: 'Privacy Policy',
+          onTap: () {
+            // TODO: Navigate to Privacy Policy page
+          },
+        ),
+        const SizedBox(height: 12),
+        MenuListItem(
+          icon: Icons.description_outlined,
+          title: 'Terms of Service',
+          onTap: () {
+            // TODO: Navigate to Terms page
+          },
+        ),
+        const SizedBox(height: 12),
+        MenuListItem(
+          icon: Icons.help_outline,
+          title: 'Help Center',
+          onTap: () {
+            // TODO: Navigate to Help page
+          },
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceRaised,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.smartphone,
+                size: 24,
+                color: AppColors.textSecondary,
+              ),
+              const SizedBox(width: 16),
+              Text(
+                'App Version',
+                style: AppTypography.bodyLarge.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '1.0.0',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textTertiary,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
