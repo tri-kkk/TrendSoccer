@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/analysis/analysis_page.dart';
@@ -17,23 +18,33 @@ final appRouter = GoRouter(
       routes: [
         GoRoute(
           path: '/trend',
-          builder: (context, state) => const TrendPage(),
+          pageBuilder: (context, state) => const CupertinoPage(
+            child: TrendPage(),
+          ),
         ),
         GoRoute(
           path: '/analysis',
-          builder: (context, state) => const AnalysisPage(),
+          pageBuilder: (context, state) => const CupertinoPage(
+            child: AnalysisPage(),
+          ),
         ),
         GoRoute(
           path: '/fixture',
-          builder: (context, state) => const FixturePage(),
+          pageBuilder: (context, state) => const CupertinoPage(
+            child: FixturePage(),
+          ),
         ),
         GoRoute(
           path: '/report',
-          builder: (context, state) => const ReportPage(),
+          pageBuilder: (context, state) => const CupertinoPage(
+            child: ReportPage(),
+          ),
         ),
         GoRoute(
           path: '/menu',
-          builder: (context, state) => const MenuPage(),
+          pageBuilder: (context, state) => const CupertinoPage(
+            child: MenuPage(),
+          ),
         ),
       ],
     ),
