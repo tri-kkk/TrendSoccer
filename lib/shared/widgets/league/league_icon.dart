@@ -6,7 +6,7 @@ import '../../../core/theme/tokens/color_tokens.dart';
 /// Maps a league code to its corresponding SVG asset path and renders it.
 ///
 /// Supports 15 leagues across two sports:
-/// - **Soccer** (11): EPL, Laliga, Bundesliga, SerieA, Ligue1, UCL, UEL,
+/// - **Soccer** (11): EPL, Laliga, Bundesliga, SerieA, Ligue 1, UCL, UEL,
 ///   Eredivisie, KLeague, J1League, MLS
 /// - **Baseball** (4): KBO, MLB, NPB, CPBL
 ///
@@ -35,6 +35,8 @@ class LeagueIcon extends StatelessWidget {
   /// original colours are preserved.
   final Color? color;
 
+  static String _normalizeCode(String code) => code.trim().toUpperCase();
+
   static const Map<String, String> _assetMap = {
     // Soccer
     'EPL': 'assets/images/leagues/premier_league.svg',
@@ -57,6 +59,7 @@ class LeagueIcon extends StatelessWidget {
 
   /// Converts a league code to its display name.
   static String getLeagueName(String code) {
+    final key = _normalizeCode(code);
     const Map<String, String> names = {
       'EPL': 'Premier League',
       'LALIGA': 'La Liga',
@@ -74,12 +77,12 @@ class LeagueIcon extends StatelessWidget {
       'NPB': 'NPB',
       'CPBL': 'CPBL',
     };
-    return names[code] ?? code;
+    return names[key] ?? code;
   }
 
   @override
   Widget build(BuildContext context) {
-    final path = _assetMap[league];
+    final path = _assetMap[_normalizeCode(league)];
 
     if (path == null) {
       return Icon(
