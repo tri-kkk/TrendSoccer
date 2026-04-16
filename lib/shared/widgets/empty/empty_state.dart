@@ -71,7 +71,7 @@ class EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 380,
+      width: double.infinity,
       child: Padding(
         padding: const EdgeInsets.all(40),
         child: Column(

@@ -72,6 +72,14 @@ class AppTypography {
         height: 1.3,
       ).copyWith(fontFamilyFallback: _fallback);
 
+  /// Badge / chip label — 12 px SemiBold, line-height 16.
+  static TextStyle get labelSmallSemiBold => GoogleFonts.poppins(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.1,
+        height: 16 / 12,
+      ).copyWith(fontFamilyFallback: _fallback);
+
   // Body
   static TextStyle get bodyLarge => GoogleFonts.poppins(
         fontSize: 16,

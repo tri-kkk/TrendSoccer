@@ -16,8 +16,9 @@ enum ButtonSize {
 /// The main CTA button used throughout TrendSoccer.
 ///
 /// Two size variants:
-/// - [ButtonSize.large]: 380 wide, 48 tall — used for form submissions and
-///   primary page actions.
+/// - [ButtonSize.large]: fills parent width, 48 tall — used for form
+///   submissions and primary page actions. Constrain the parent to limit
+///   width (e.g. `SizedBox(width: 380, child: PrimaryButton(...))`).
 /// - [ButtonSize.small]: width hugs label, 40 tall — used inline (e.g. app
 ///   bar "Join Now").
 ///
@@ -74,7 +75,7 @@ class PrimaryButton extends StatelessWidget {
                 horizontal: AppSpacing.xl,
                 vertical: 10,
               ),
-        minimumSize: _isLarge ? const Size(380, AppSpacing.buttonHeight) : const Size(0, 40),
+        minimumSize: _isLarge ? const Size(0, AppSpacing.buttonHeight) : const Size(0, 40),
         textStyle: AppTypography.labelLarge,
       ),
       child: Text(label),
@@ -82,7 +83,7 @@ class PrimaryButton extends StatelessWidget {
 
     if (_isLarge) {
       return SizedBox(
-        width: 380,
+        width: double.infinity,
         height: AppSpacing.buttonHeight,
         child: button,
       );

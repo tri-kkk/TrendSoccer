@@ -56,7 +56,7 @@ class AnalysisCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 380,
+      width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.xl),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(

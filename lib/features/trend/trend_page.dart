@@ -214,24 +214,27 @@ class _TrendPageState extends ConsumerState<TrendPage> {
           physics: const PageScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
           child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: List.generate(items.length, (index) {
-                final d = items[index];
-                return Padding(
-                  padding: EdgeInsets.only(
-                    left: index == 0 ? 0 : AppSpacing.lg,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: List.generate(items.length, (index) {
+                      final d = items[index];
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          left: index == 0 ? 0 : AppSpacing.lg,
+                        ),
+                        child: SizedBox(
+                          width: 380,
+                          child: AnalysisCard(
+                            leagueCode: d.leagueCode,
+                            date: d.date,
+                            homeTeam: d.homeTeam,
+                            awayTeam: d.awayTeam,
+                            time: d.time,
+                          ),
+                        ),
+                      );
+                    }),
                   ),
-                  child: AnalysisCard(
-                    leagueCode: d.leagueCode,
-                    date: d.date,
-                    homeTeam: d.homeTeam,
-                    awayTeam: d.awayTeam,
-                    time: d.time,
-                  ),
-                );
-              }),
-            ),
           ),
         ),
       ],
