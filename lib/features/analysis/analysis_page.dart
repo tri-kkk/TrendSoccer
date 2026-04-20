@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme/tokens/color_tokens.dart';
 import '../../core/theme/tokens/spacing_tokens.dart';
@@ -15,6 +16,7 @@ import '../../shared/widgets/toggle/sport_toggle.dart';
 
 const _soccerMatches = <Map<String, String>>[
   {
+    'id': 'chelsea-vs-arsenal-epl-001',
     'leagueCode': 'EPL',
     'homeTeam': 'Chelsea',
     'awayTeam': 'Arsenal',
@@ -22,6 +24,7 @@ const _soccerMatches = <Map<String, String>>[
     'time': '21:00',
   },
   {
+    'id': 'barcelona-vs-realmadrid-laliga-001',
     'leagueCode': 'LALIGA',
     'homeTeam': 'Barcelona',
     'awayTeam': 'Real Madrid',
@@ -29,6 +32,7 @@ const _soccerMatches = <Map<String, String>>[
     'time': '22:00',
   },
   {
+    'id': 'bayern-vs-dortmund-bundesliga-001',
     'leagueCode': 'BUNDESLIGA',
     'homeTeam': 'Bayern',
     'awayTeam': 'Dortmund',
@@ -39,6 +43,7 @@ const _soccerMatches = <Map<String, String>>[
 
 const _baseballMatches = <Map<String, String>>[
   {
+    'id': 'doosan-vs-samsung-kbo-001',
     'leagueCode': 'KBO',
     'homeTeam': 'Doosan Bears',
     'awayTeam': 'Samsung Lions',
@@ -46,6 +51,7 @@ const _baseballMatches = <Map<String, String>>[
     'time': '18:30',
   },
   {
+    'id': 'yankees-vs-redsox-mlb-001',
     'leagueCode': 'MLB',
     'homeTeam': 'Yankees',
     'awayTeam': 'Red Sox',
@@ -53,6 +59,7 @@ const _baseballMatches = <Map<String, String>>[
     'time': '20:00',
   },
   {
+    'id': 'giants-vs-tigers-npb-001',
     'leagueCode': 'NPB',
     'homeTeam': 'Giants',
     'awayTeam': 'Tigers',
@@ -231,6 +238,9 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
             homeTeam: match['homeTeam']!,
             awayTeam: match['awayTeam']!,
             time: match['time']!,
+            onAnalyze: () => context.push(
+              '/analysis/soccer/match-report/${match['id']!}',
+            ),
           ),
         );
       }),
