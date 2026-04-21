@@ -36,7 +36,7 @@ class MatchReportHeader extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          LeagueIcon(league: leagueId, size: 24),
+          LeagueIcon(league: leagueId, size: 48),
           const SizedBox(height: 16),
           Text(
             DateFormat('EEE, MMM d HH:mm').format(matchDateTime),

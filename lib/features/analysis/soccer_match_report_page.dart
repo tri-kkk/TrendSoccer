@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/models/premium_models.dart';
 import '../../core/models/soccer_match_report.dart';
 import '../../core/models/subscription_state.dart';
 import '../../core/providers/navigation_provider.dart';
@@ -13,9 +14,11 @@ import '../../shared/widgets/navigation/bottom_navigation.dart';
 import '../../shared/widgets/report/match_report_header.dart';
 import 'widgets/analysis_result_section.dart';
 import 'widgets/final_probability_section.dart';
+import 'widgets/h2h_section.dart';
 import 'widgets/odds_section.dart';
 import 'widgets/power_index_section.dart';
 import 'widgets/reasoning_section.dart';
+import 'widgets/team_analysis_section.dart';
 import 'widgets/team_statistics_section.dart';
 import 'widgets/three_method_section.dart';
 
@@ -33,6 +36,19 @@ class _SoccerMatchReportPageState
     extends ConsumerState<SoccerMatchReportPage> {
   bool _isStandardSelected = true;
   final SoccerMatchReport _report = SoccerMatchReport.dummy();
+  late final PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   bool _isBlurred() {
     final now = DateTime.now();
@@ -61,6 +77,21 @@ class _SoccerMatchReportPageState
   }
 
   void _onPremiumTap() {
+    final status = ref.read(subscriptionProvider);
+    if (status.type == SubscriptionType.premium) {
+      setState(() => _isStandardSelected = false);
+      _pageController.animateToPage(
+        1,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      return;
+    }
+    _showSubscriptionBottomSheet();
+  }
+
+  // ignore: unused_element
+  void _showSubscriptionBottomSheet() {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1C2120),
@@ -175,59 +206,166 @@ class _SoccerMatchReportPageState
               leagueId: _report.leagueId,
               matchDateTime: _report.matchDateTime,
               isStandardSelected: _isStandardSelected,
-              onStandardTap: () =>
-                  setState(() => _isStandardSelected = true),
-              onPremiumTap: _onPremiumTap,
+              onStandardTap: () {
+                setState(() => _isStandardSelected = true);
+                _pageController.animateToPage(
+                  0,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              },
+              onPremiumTap: () {
+                if (_isStandardSelected) _onPremiumTap();
+              },
             ),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 16),
-                child: Column(
-                  spacing: 16,
-                  children: [
-                    if (_isStandardSelected) ...[
-                      AnalysisResultSection(
-                        report: _report,
-                        isBlurred: blurred,
-                        blurText: blurText,
-                      ),
-                      ReasoningSection(
-                        items: _report.reasoningItems,
-                        isBlurred: blurred,
-                        blurText: blurText,
-                      ),
-                      OddsSection(
-                        home: _report.homeOdds,
-                        draw: _report.drawOdds,
-                        away: _report.awayOdds,
-                      ),
-                      PowerIndexSection(
-                        homePower: _report.homePower,
-                        awayPower: _report.awayPower,
-                        isBlurred: blurred,
-                        blurText: blurText,
-                      ),
-                      FinalProbabilitySection(
-                        home: _report.homeProbability,
-                        draw: _report.drawProbability,
-                        away: _report.awayProbability,
-                        isBlurred: blurred,
-                        blurText: blurText,
-                      ),
-                      TeamStatisticsSection(
-                        stats: _report.teamStats,
-                        isBlurred: blurred,
-                        blurText: blurText,
-                      ),
-                      ThreeMethodSection(
-                        methods: _report.methodAnalysis,
-                        isBlurred: blurred,
-                        blurText: blurText,
-                      ),
-                    ],
-                  ],
-                ),
+              child: PageView(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  // ── Page 0: Standard ──────────────────────────────────
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
+                    child: Column(
+                      spacing: 16,
+                      children: [
+                        AnalysisResultSection(
+                          report: _report,
+                          isBlurred: blurred,
+                          blurText: blurText,
+                        ),
+                        ReasoningSection(
+                          items: _report.reasoningItems,
+                          isBlurred: blurred,
+                          blurText: blurText,
+                        ),
+                        OddsSection(
+                          home: _report.homeOdds,
+                          draw: _report.drawOdds,
+                          away: _report.awayOdds,
+                        ),
+                        PowerIndexSection(
+                          homePower: _report.homePower,
+                          awayPower: _report.awayPower,
+                          isBlurred: blurred,
+                          blurText: blurText,
+                        ),
+                        FinalProbabilitySection(
+                          home: _report.homeProbability,
+                          draw: _report.drawProbability,
+                          away: _report.awayProbability,
+                          isBlurred: blurred,
+                          blurText: blurText,
+                        ),
+                        TeamStatisticsSection(
+                          stats: _report.teamStats,
+                          isBlurred: blurred,
+                          blurText: blurText,
+                        ),
+                        ThreeMethodSection(
+                          methods: _report.methodAnalysis,
+                          isBlurred: blurred,
+                          blurText: blurText,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // ── Page 1: Premium ───────────────────────────────────
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
+                    child: Column(
+                      spacing: 16,
+                      children: [
+                        H2HSection(
+                          homeWins: 8,
+                          draws: 7,
+                          awayWins: 5,
+                          totalMatches: 20,
+                          recentScores: const [
+                            ScoreData(result: MatchResult.win, homeScore: 1, awayScore: 0),
+                            ScoreData(result: MatchResult.draw, homeScore: 1, awayScore: 1),
+                            ScoreData(result: MatchResult.lose, homeScore: 0, awayScore: 1),
+                            ScoreData(result: MatchResult.draw, homeScore: 1, awayScore: 1),
+                            ScoreData(result: MatchResult.lose, homeScore: 0, awayScore: 1),
+                          ],
+                          avgGoals: 2.7,
+                          over25Percent: 60,
+                          bttsPercent: 30,
+                          mostCommon: const [
+                            CommonScore(count: 7, score: '1-0'),
+                            CommonScore(count: 2, score: '0-2'),
+                            CommonScore(count: 2, score: '4-0'),
+                          ],
+                          insights: const [
+                            'Home team has dominated recent meetings',
+                            'Both teams score frequently in this fixture',
+                            'Expect goals in this matchup',
+                          ],
+                        ),
+                        TeamAnalysisSection(
+                          title: 'Home',
+                          wins: 6,
+                          draws: 2,
+                          loses: 2,
+                          recentForm: const [
+                            ScoreData(result: MatchResult.win, homeScore: 1, awayScore: 0),
+                            ScoreData(result: MatchResult.draw, homeScore: 1, awayScore: 1),
+                            ScoreData(result: MatchResult.lose, homeScore: 0, awayScore: 1),
+                            ScoreData(result: MatchResult.draw, homeScore: 1, awayScore: 1),
+                            ScoreData(result: MatchResult.lose, homeScore: 0, awayScore: 1),
+                          ],
+                          recordW: 2,
+                          recordD: 3,
+                          recordL: 5,
+                          winPercent: 30,
+                          over15: 90,
+                          over25: 50,
+                          over35: 40,
+                          marketO25: 70,
+                          marketBTTS: 80,
+                          marketCS: 10,
+                          marketFTS: 20,
+                          insights: const [
+                            'Strong home record this season',
+                            'Concedes few goals at home',
+                            'Key players fit and available',
+                          ],
+                        ),
+                        TeamAnalysisSection(
+                          title: 'Away',
+                          wins: 2,
+                          draws: 3,
+                          loses: 5,
+                          recentForm: const [
+                            ScoreData(result: MatchResult.win, homeScore: 1, awayScore: 0),
+                            ScoreData(result: MatchResult.draw, homeScore: 1, awayScore: 1),
+                            ScoreData(result: MatchResult.lose, homeScore: 0, awayScore: 1),
+                            ScoreData(result: MatchResult.draw, homeScore: 1, awayScore: 1),
+                            ScoreData(result: MatchResult.lose, homeScore: 0, awayScore: 1),
+                          ],
+                          recordW: 2,
+                          recordD: 3,
+                          recordL: 5,
+                          winPercent: 30,
+                          over15: 90,
+                          over25: 50,
+                          over35: 40,
+                          marketO25: 70,
+                          marketBTTS: 80,
+                          marketCS: 10,
+                          marketFTS: 20,
+                          insights: const [
+                            'Struggles on the road',
+                            'Weak defensive record away',
+                            'Missing key defensive players',
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

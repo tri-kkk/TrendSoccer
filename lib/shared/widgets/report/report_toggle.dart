@@ -17,35 +17,66 @@ class ReportToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 48,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainer,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      padding: const EdgeInsets.all(4),
-      child: Row(
-        children: [
-          _ToggleButton(
-            label: 'Standard',
-            isSelected: isStandardSelected,
-            onTap: onStandardTap,
+    // Use LayoutBuilder to compute pill position from actual rendered width.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Container has 4px padding on each side → inner area width.
+        final innerWidth = constraints.maxWidth - 8;
+        // Two equal buttons separated by a 4px gap.
+        final pillWidth = (innerWidth - 4) / 2;
+        final pillLeft = isStandardSelected ? 0.0 : pillWidth + 4;
+
+        return Container(
+          width: double.infinity,
+          height: 48,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainer,
+            borderRadius: BorderRadius.circular(8),
           ),
-          const SizedBox(width: 4),
-          _ToggleButton(
-            label: 'Premium',
-            isSelected: !isStandardSelected,
-            onTap: onPremiumTap,
+          padding: const EdgeInsets.all(4),
+          child: Stack(
+            children: [
+              // Sliding pill
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+                left: pillLeft,
+                top: 0,
+                bottom: 0,
+                width: pillWidth,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.primary500,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+              ),
+              // Labels — rendered above the pill
+              Row(
+                children: [
+                  _TabLabel(
+                    label: 'Standard',
+                    isSelected: isStandardSelected,
+                    onTap: onStandardTap,
+                  ),
+                  const SizedBox(width: 4),
+                  _TabLabel(
+                    label: 'Premium',
+                    isSelected: !isStandardSelected,
+                    onTap: onPremiumTap,
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
 
-class _ToggleButton extends StatelessWidget {
-  const _ToggleButton({
+class _TabLabel extends StatelessWidget {
+  const _TabLabel({
     required this.label,
     required this.isSelected,
     required this.onTap,
@@ -60,18 +91,19 @@ class _ToggleButton extends StatelessWidget {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
-        child: Container(
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
           height: 40,
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary500 : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: AppTypography.labelLarge.copyWith(
-              color: isSelected ? AppColors.surfaceBase : AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
+          child: Center(
+            child: AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              style: AppTypography.labelLarge.copyWith(
+                color: isSelected
+                    ? AppColors.surfaceBase
+                    : AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+              child: Text(label),
             ),
           ),
         ),
