@@ -9,7 +9,7 @@ import '../../core/providers/navigation_provider.dart';
 import '../../core/providers/subscription_provider.dart';
 import '../../core/theme/tokens/color_tokens.dart';
 import '../../core/theme/tokens/component_tokens.dart';
-import '../../core/theme/tokens/typography_tokens.dart';
+import '../../shared/widgets/appbar/match_report_appbar.dart';
 import '../../shared/widgets/navigation/bottom_navigation.dart';
 import '../../shared/widgets/report/match_report_header.dart';
 import 'widgets/analysis_result_section.dart';
@@ -199,7 +199,7 @@ class _SoccerMatchReportPageState
       body: SafeArea(
         child: Column(
           children: [
-            _buildAppBar(),
+            MatchReportAppBar(onBackPressed: () => context.pop()),
             MatchReportHeader(
               homeTeam: _report.homeTeam,
               awayTeam: _report.awayTeam,
@@ -378,42 +378,4 @@ class _SoccerMatchReportPageState
     );
   }
 
-  Widget _buildAppBar() {
-    return Container(
-      height: 52,
-      decoration: const BoxDecoration(
-        color: AppColors.surfaceBase,
-        border: Border(
-          bottom: BorderSide(color: Color(0xFF6B7280)),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: GestureDetector(
-              onTap: () => context.pop(),
-              child: const SizedBox(
-                width: 40,
-                height: 40,
-                child: Icon(
-                  Icons.arrow_back,
-                  color: Color(0xFFF1F7F6),
-                  size: 24,
-                ),
-              ),
-            ),
-          ),
-          Text(
-            'Match Report',
-            style: AppTypography.titleSmall.copyWith(
-              color: AppColors.textPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

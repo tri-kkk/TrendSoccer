@@ -238,9 +238,14 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
             homeTeam: match['homeTeam']!,
             awayTeam: match['awayTeam']!,
             time: match['time']!,
-            onAnalyze: () => context.push(
-              '/analysis/soccer/match-report/${match['id']!}',
-            ),
+            onAnalyze: () {
+              final matchId = match['id']!;
+              if (_selectedSport == SportType.baseball) {
+                context.push('/analysis/baseball/match-report/$matchId');
+              } else {
+                context.push('/analysis/soccer/match-report/$matchId');
+              }
+            },
           ),
         );
       }),

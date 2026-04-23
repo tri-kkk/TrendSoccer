@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/analysis/analysis_page.dart';
+import '../../features/analysis/baseball_match_report_page.dart';
 import '../../features/analysis/soccer_match_report_page.dart';
 import '../../features/fixture/fixture_page.dart';
 import '../../features/menu/menu_page.dart';
@@ -54,6 +55,16 @@ final appRouter = GoRouter(
       builder: (context, state) => SoccerMatchReportPage(
         matchId: state.pathParameters['matchId']!,
       ),
+    ),
+    GoRoute(
+      path: '/analysis/baseball/match-report/:matchId',
+      name: 'baseballMatchReport',
+      pageBuilder: (context, state) {
+        final matchId = state.pathParameters['matchId'] ?? '';
+        return CupertinoPage(
+          child: BaseballMatchReportPage(matchId: matchId),
+        );
+      },
     ),
   ],
 );
