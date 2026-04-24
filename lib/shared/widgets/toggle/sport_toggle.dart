@@ -63,6 +63,9 @@ class SportToggle extends StatelessWidget {
   }
 }
 
+const double _sportToggleIconBox = 24;
+const double _sportToggleIconTextGap = 10;
+
 /// Internal pill button used inside [SportToggle].
 class _SportButton extends StatelessWidget {
   const _SportButton({
@@ -97,25 +100,37 @@ class _SportButton extends StatelessWidget {
             color: isSelected ? AppColors.primary500 : Colors.transparent,
             borderRadius: BorderRadius.circular(6),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                emoji,
-                style: TextStyle(
-                  fontSize: 20,
-                  color: foreground,
-                  height: 1.0,
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: _sportToggleIconBox,
+                  height: _sportToggleIconBox,
+                  child: Center(
+                    child: Text(
+                      emoji,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: foreground,
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: AppTypography.labelLarge.copyWith(color: foreground),
-              ),
-            ],
+                const SizedBox(width: _sportToggleIconTextGap),
+                Text(
+                  label,
+                  style: AppTypography.labelLarge.copyWith(
+                    color: foreground,
+                    height: 1.0,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

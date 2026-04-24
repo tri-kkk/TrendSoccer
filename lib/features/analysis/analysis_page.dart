@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide FilterChip;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -186,12 +186,10 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
     );
   }
 
-  /// Horizontally scrollable row of [SportFilterChip] widgets.
+  /// Horizontally scrollable row of [FilterChip] widgets.
   ///
-  /// "All" chip has no leading icon. All other chips resolve their display
-  /// label via [LeagueIcon.getLeagueName] and pass the league code for the
-  /// leading icon. The [SportFilterChip] already suppresses the icon when
-  /// `leagueCode` is `null`.
+  /// "All" chip is [FilterChipType.textOnly]. Other chips use
+  /// [FilterChipType.withIcon] with the league code for [LeagueIcon].
   Widget _buildFilterChips() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -203,9 +201,12 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
           final label = isAll ? 'All' : LeagueIcon.getLeagueName(code!);
           return Padding(
             padding: EdgeInsets.only(left: index == 0 ? 0 : 12),
-            child: SportFilterChip(
-              label: label,
-              leagueCode: code,
+            child: FilterChip(
+              text: label,
+              type: isAll
+                  ? FilterChipType.textOnly
+                  : FilterChipType.withIcon,
+              iconPath: code,
               isSelected: _selectedLeague == league,
               onTap: () => setState(() => _selectedLeague = league),
             ),
