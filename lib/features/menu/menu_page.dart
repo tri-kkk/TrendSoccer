@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../core/models/subscription_state.dart';
 import '../../core/models/user_state.dart';
@@ -10,7 +9,7 @@ import '../../core/providers/user_provider.dart';
 import '../../core/theme/tokens/color_tokens.dart';
 import '../../core/theme/tokens/component_tokens.dart';
 import '../../core/theme/tokens/typography_tokens.dart';
-import '../../shared/widgets/appbar/custom_appbar.dart';
+import '../../shared/widgets/appbar/app_bar_home.dart';
 import '../../shared/widgets/cards/profile_card.dart';
 import '../../shared/widgets/menu/menu_list_item.dart';
 import '../../shared/widgets/bottom_sheet/custom_bottom_sheet.dart';
@@ -28,12 +27,15 @@ class MenuPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.surfaceBase,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56),
-        child: CustomAppBar(
-          title: 'Menu',
-          onBackPressed: () => context.pop(),
-        ),
+      appBar: AppBarHome(
+        state: user.authStatus == AuthStatus.loggedIn
+            ? AppBarState.loggedIn
+            : AppBarState.guest,
+        onSignIn: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Login feature coming soon')),
+          );
+        },
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -84,9 +86,16 @@ class MenuPage extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '48시간 무료 체험',
+            '48-Hour Free Trial',
             style: AppTypography.bodyMedium.copyWith(
               color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Start your 48-hour free trial with premium features',
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textTertiary,
             ),
           ),
           const SizedBox(height: 16),

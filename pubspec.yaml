@@ -20,6 +20,7 @@ dependencies:
   flutter_svg: ^2.0.10  # SVG 지원 추가
   intl: ^0.20.2
   cached_network_image: ^3.4.1
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:
@@ -33,27 +34,12 @@ flutter:
   uses-material-design: true
 
   assets:
-    # League Icons
-    - assets/images/leagues/premier_league.svg
-    - assets/images/leagues/laliga.svg
-    - assets/images/leagues/bundesliga.svg
-    - assets/images/leagues/serie_a.svg
-    - assets/images/leagues/ligue_1.svg
-    - assets/images/leagues/champions_league.svg
-    - assets/images/leagues/europa_league.svg
-    - assets/images/leagues/eredivisie.svg
-    - assets/images/leagues/k_league.svg
-    - assets/images/leagues/j1_league.svg
-    - assets/images/leagues/mls.svg
-    - assets/images/leagues/kbo.svg
-    - assets/images/leagues/mlb.svg
-    - assets/images/leagues/npb.svg
-    - assets/images/leagues/cpbl.svg
-    
-    # App Logos
-    - assets/images/logos/logo_horizon_black.svg
-    - assets/images/logos/logo_horizon_gradient.svg
-    - assets/images/logos/logo_horizon_white.svg
-    - assets/images/logos/logo_vertical_black.svg
-    - assets/images/logos/logo_vertical_gradient.svg
-    - assets/images/logos/logo_vertical_white.svg
+    # Logos
+    - assets/images/logos/
+
+    # League Icons (Analysis용)
+    - assets/images/leagues/icon/dark/
+
+    # League Logos (Report용)
+    - assets/images/leagues/logo/dark/
+    - assets/images/leagues/logo/light/

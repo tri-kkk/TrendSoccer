@@ -37,24 +37,26 @@ class LeagueIcon extends StatelessWidget {
 
   static String _normalizeCode(String code) => code.trim().toUpperCase();
 
+  static const String _kIconDark = 'assets/images/leagues/icon/dark/';
+
   static const Map<String, String> _assetMap = {
     // Soccer
-    'EPL': 'assets/images/leagues/premier_league.svg',
-    'LALIGA': 'assets/images/leagues/laliga.svg',
-    'BUNDESLIGA': 'assets/images/leagues/bundesliga.svg',
-    'SERIEA': 'assets/images/leagues/serie_a.svg',
-    'LIGUE1': 'assets/images/leagues/ligue_1.svg',
-    'UCL': 'assets/images/leagues/champions_league.svg',
-    'UEL': 'assets/images/leagues/europa_league.svg',
-    'EREDIVISIE': 'assets/images/leagues/eredivisie.svg',
-    'KLEAGUE': 'assets/images/leagues/k_league.svg',
-    'J1LEAGUE': 'assets/images/leagues/j1_league.svg',
-    'MLS': 'assets/images/leagues/mls.svg',
+    'EPL': '${_kIconDark}premier_league.svg',
+    'LALIGA': '${_kIconDark}laliga.svg',
+    'BUNDESLIGA': '${_kIconDark}bundesliga.svg',
+    'SERIEA': '${_kIconDark}serie_a.svg',
+    'LIGUE1': '${_kIconDark}ligue_1.svg',
+    'UCL': '${_kIconDark}champions_league.svg',
+    'UEL': '${_kIconDark}europa_league.svg',
+    'EREDIVISIE': '${_kIconDark}eredivisie.svg',
+    'KLEAGUE': '${_kIconDark}k_league.svg',
+    'J1LEAGUE': '${_kIconDark}j1_league.svg',
+    'MLS': '${_kIconDark}mls.svg',
     // Baseball
-    'KBO': 'assets/images/leagues/kbo.svg',
-    'MLB': 'assets/images/leagues/mlb.svg',
-    'NPB': 'assets/images/leagues/npb.svg',
-    'CPBL': 'assets/images/leagues/cpbl.svg',
+    'KBO': '${_kIconDark}kbo.svg',
+    'MLB': '${_kIconDark}mlb.svg',
+    'NPB': '${_kIconDark}npb.svg',
+    'CPBL': '${_kIconDark}cpbl.svg',
   };
 
   /// Converts a league code to its display name.

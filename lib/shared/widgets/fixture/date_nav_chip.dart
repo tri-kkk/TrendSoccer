@@ -41,18 +41,15 @@ class DateNavChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        constraints: const BoxConstraints(minWidth: 52),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Center(
-          child: Text(
-            'LIVE',
-            textAlign: TextAlign.center,
-            style: AppTypography.labelLarge.copyWith(color: fg, height: 1.2),
-          ),
+        child: Text(
+          'LIVE',
+          textAlign: TextAlign.center,
+          style: AppTypography.labelLarge.copyWith(color: fg),
         ),
       ),
     );
@@ -65,60 +62,64 @@ class DateNavChip extends StatelessWidget {
     }
     final bg = isSelected ? AppColors.primary500 : AppColors.surfaceContainer;
     final fg = isSelected ? AppColors.surfaceBase : AppColors.textSecondary;
-    final lineStyle = AppTypography.labelSmall.copyWith(
-      color: fg,
-      height: 1.2,
-    );
+    final dayStyle = AppTypography.labelSmall.copyWith(color: fg);
+    final dateStyle = AppTypography.labelLarge.copyWith(color: fg);
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        constraints: const BoxConstraints(minWidth: 52),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(12),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 80),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: isToday
+                ? _todayBody(d, dayStyle, dateStyle)
+                : _standardBody(d, dayStyle, dateStyle),
+          ),
         ),
-        child: isToday
-            ? _todayBody(d, lineStyle, fg)
-            : _standardBody(d, lineStyle),
       ),
     );
   }
 
-  Widget _todayBody(DateTime d, TextStyle lineStyle, Color fg) {
+  Widget _todayBody(DateTime d, TextStyle dayStyle, TextStyle dateStyle) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 6,
-              height: 6,
-              decoration: const BoxDecoration(
-                color: AppColors.accent,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Text('Today', style: lineStyle.copyWith(color: fg)),
-          ],
-        ),
+        Text('Today', textAlign: TextAlign.center, style: dayStyle),
         const SizedBox(height: 2),
         Text(
           DateFormat('M.d', 'en_US').format(d),
-          style: lineStyle,
+          textAlign: TextAlign.center,
+          style: dateStyle,
         ),
       ],
     );
   }
 
-  Widget _standardBody(DateTime d, TextStyle lineStyle) {
-    return Text(
-      '${DateFormat('EEE', 'en_US').format(d)}\n${DateFormat('M.d', 'en_US').format(d)}',
-      textAlign: TextAlign.center,
-      style: lineStyle,
+  Widget _standardBody(
+    DateTime d,
+    TextStyle dayStyle,
+    TextStyle dateStyle,
+  ) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          DateFormat('EEE', 'en_US').format(d),
+          textAlign: TextAlign.center,
+          style: dayStyle,
+        ),
+        const SizedBox(height: 2),
+        Text(
+          DateFormat('M.d', 'en_US').format(d),
+          textAlign: TextAlign.center,
+          style: dateStyle,
+        ),
+      ],
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/tokens/color_tokens.dart';
@@ -38,6 +39,8 @@ class ReportCard extends StatelessWidget {
     required this.title,
     this.date,
     this.description,
+    this.thumbnailUrl,
+    this.width,
     this.onTap,
   });
 
@@ -53,6 +56,12 @@ class ReportCard extends StatelessWidget {
   /// Optional short description or excerpt.
   final String? description;
 
+  /// Optional remote thumbnail; when null or empty, shows a placeholder.
+  final String? thumbnailUrl;
+
+  /// Optional card width (e.g. screen minus padding). Defaults to 380 (large) / 160 (small).
+  final double? width;
+
   /// Called when the card is tapped.
   final VoidCallback? onTap;
 
@@ -63,7 +72,7 @@ class ReportCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: _isLarge ? 380 : 160,
+        width: width ?? (_isLarge ? 380 : 160),
         padding: const EdgeInsets.all(AppSpacing.xl),
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
@@ -79,7 +88,12 @@ class ReportCard extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        _buildThumbnail(width: 96, height: 96, iconSize: 32),
+        _buildThumbnail(
+          width: 96,
+          height: 96,
+          iconSize: 32,
+          imageUrl: thumbnailUrl,
+        ),
         const SizedBox(width: AppSpacing.xl),
         Expanded(child: _buildLargeTextColumn()),
       ],
@@ -95,6 +109,7 @@ class ReportCard extends StatelessWidget {
           width: double.infinity,
           height: 80,
           iconSize: AppSpacing.iconSize,
+          imageUrl: thumbnailUrl,
         ),
         const SizedBox(height: AppSpacing.md),
         _buildSmallTextColumn(),
@@ -106,18 +121,36 @@ class ReportCard extends StatelessWidget {
     required double width,
     required double height,
     required double iconSize,
+    String? imageUrl,
   }) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainer,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-      ),
+    final hasImage = imageUrl != null && imageUrl.trim().isNotEmpty;
+    final borderRadius = BorderRadius.circular(AppSpacing.radiusMd);
+
+    final placeholder = ColoredBox(
+      color: AppColors.surfaceContainer,
       child: Icon(
         Icons.article_outlined,
         size: iconSize,
         color: AppColors.textTertiary,
+      ),
+    );
+
+    return ClipRRect(
+      borderRadius: borderRadius,
+      child: Container(
+        width: width,
+        height: height,
+        color: AppColors.surfaceContainer,
+        child: hasImage
+            ? CachedNetworkImage(
+                imageUrl: imageUrl.trim(),
+                width: width,
+                height: height,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => placeholder,
+                errorWidget: (context, url, error) => placeholder,
+              )
+            : placeholder,
       ),
     );
   }

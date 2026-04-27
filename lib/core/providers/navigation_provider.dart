@@ -38,15 +38,17 @@ String getRouteFromTab(NavigationTab tab) {
 ///
 /// Converts route path string to [NavigationTab] enum.
 NavigationTab getTabFromRoute(String route) {
-  switch (route) {
+  final path = route.split('?').first;
+  if (path == '/report' || path.startsWith('/report/')) {
+    return NavigationTab.report;
+  }
+  switch (path) {
     case '/trend':
       return NavigationTab.trend;
     case '/analysis':
       return NavigationTab.analysis;
     case '/fixture':
       return NavigationTab.fixture;
-    case '/report':
-      return NavigationTab.report;
     case '/menu':
       return NavigationTab.menu;
     default:

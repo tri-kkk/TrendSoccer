@@ -66,6 +66,13 @@ class SportToggle extends StatelessWidget {
 const double _sportToggleIconBox = 24;
 const double _sportToggleIconTextGap = 10;
 
+/// Tightens label line box next to the icon (see [TextHeightBehavior]).
+const TextHeightBehavior _sportToggleLabelHeight = TextHeightBehavior(
+  applyHeightToFirstAscent: false,
+  applyHeightToLastDescent: false,
+  leadingDistribution: TextLeadingDistribution.even,
+);
+
 /// Internal pill button used inside [SportToggle].
 class _SportButton extends StatelessWidget {
   const _SportButton({
@@ -94,43 +101,43 @@ class _SportButton extends StatelessWidget {
           height: 40,
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.xl,
-            vertical: AppSpacing.md,
+            vertical: 4,
           ),
           decoration: BoxDecoration(
             color: isSelected ? AppColors.primary500 : Colors.transparent,
             borderRadius: BorderRadius.circular(6),
           ),
-          child: Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: _sportToggleIconBox,
-                  height: _sportToggleIconBox,
-                  child: Center(
-                    child: Text(
-                      emoji,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: foreground,
-                        height: 1.0,
-                      ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Figma 24×24: emoji often paints past its line box — fit inside
+              // so glyphs are never clipped; inner row area is 40 − 4 − 4 = 32.
+              SizedBox.square(
+                dimension: _sportToggleIconBox,
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: Text(
+                    emoji,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: foreground,
+                      height: 1.0,
                     ),
                   ),
                 ),
-                const SizedBox(width: _sportToggleIconTextGap),
-                Text(
-                  label,
-                  style: AppTypography.labelLarge.copyWith(
-                    color: foreground,
-                    height: 1.0,
-                  ),
+              ),
+              const SizedBox(width: _sportToggleIconTextGap),
+              Text(
+                label,
+                textHeightBehavior: _sportToggleLabelHeight,
+                style: AppTypography.labelLarge.copyWith(
+                  color: foreground,
+                  height: 1.0,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

@@ -50,32 +50,29 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 380,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Flexible(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: Text(
+            title,
+            style: AppTypography.titleLarge.copyWith(
+              color: AppColors.textPrimary,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        if (type == SectionHeaderType.withAction)
+          GestureDetector(
+            onTap: onSeeAllTap,
             child: Text(
-              title,
-              style: AppTypography.titleLarge.copyWith(
-                color: AppColors.textPrimary,
+              'See All →',
+              style: AppTypography.labelLarge.copyWith(
+                color: AppColors.textSecondary,
               ),
-              overflow: TextOverflow.ellipsis,
             ),
           ),
-          if (type == SectionHeaderType.withAction)
-            GestureDetector(
-              onTap: onSeeAllTap,
-              child: Text(
-                'See All →',
-                style: AppTypography.labelLarge.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ),
-        ],
-      ),
+      ],
     );
   }
 }

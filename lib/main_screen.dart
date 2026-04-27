@@ -16,7 +16,7 @@ class MainScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 현재 라우트로부터 탭 상태 동기화
-    final location = GoRouterState.of(context).uri.toString();
+    final location = GoRouterState.of(context).matchedLocation;
     final currentTab = getTabFromRoute(location);
 
     // Provider 업데이트 (라우트 변경 감지)

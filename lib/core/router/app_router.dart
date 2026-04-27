@@ -7,6 +7,8 @@ import '../../features/analysis/soccer_match_report_page.dart';
 import '../../features/fixture/fixture_page.dart';
 import '../../features/menu/menu_page.dart';
 import '../../features/report/report_page.dart';
+import '../../features/report/soccer_report_detail_page.dart';
+import '../../features/report/soccer_report_list_page.dart';
 import '../../features/trend/trend_page.dart';
 import '../../main_screen.dart';
 
@@ -34,6 +36,21 @@ final appRouter = GoRouter(
           path: '/fixture',
           pageBuilder: (context, state) => const CupertinoPage(
             child: FixturePage(),
+          ),
+        ),
+        GoRoute(
+          path: '/report/soccer/:id',
+          pageBuilder: (context, state) {
+            final id = state.pathParameters['id'] ?? '';
+            return CupertinoPage(
+              child: SoccerReportDetailPage(id: id),
+            );
+          },
+        ),
+        GoRoute(
+          path: '/report/soccer',
+          pageBuilder: (context, state) => const CupertinoPage(
+            child: SoccerReportListPage(),
           ),
         ),
         GoRoute(
