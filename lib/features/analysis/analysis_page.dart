@@ -2,6 +2,8 @@ import 'package:flutter/material.dart' hide FilterChip;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/models/user_state.dart';
+import '../../core/providers/user_provider.dart';
 import '../../core/theme/tokens/color_tokens.dart';
 import '../../core/theme/tokens/spacing_tokens.dart';
 import '../../shared/widgets/appbar/app_bar_home.dart';
@@ -138,13 +140,20 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(userProvider);
+
     return Scaffold(
       backgroundColor: AppColors.surfaceBase,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const AppBarHome(state: AppBarState.guest),
+            AppBarHome(
+              state: user.authStatus == AuthStatus.loggedIn
+                  ? AppBarState.loggedIn
+                  : AppBarState.guest,
+              onSignIn: () => context.push('/login'),
+            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(AppSpacing.xl),

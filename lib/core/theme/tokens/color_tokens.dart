@@ -14,6 +14,7 @@ class AppColors {
   static const Color primary300 = Color(0xFF57BFA0);
   static const Color primary400 = Color(0xFF3BAA88);
   static const Color primary500 = Color(0xFF1F9A7A); // main brand color
+  static const Color brandPrimary500 = primary500;
   static const Color primary600 = Color(0xFF1A7A61);
   static const Color primary700 = Color(0xFF145948);
   static const Color primary800 = Color(0xFF0F4336);

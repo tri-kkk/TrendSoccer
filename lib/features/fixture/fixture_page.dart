@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart' hide FilterChip;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/models/fixture_models.dart';
+import '../../core/models/user_state.dart';
+import '../../core/providers/user_provider.dart';
 import '../../core/theme/tokens/color_tokens.dart';
 import '../../core/theme/tokens/spacing_tokens.dart';
-import '../../shared/widgets/appbar/app_bar_home.dart'
-    show AppBarHome, AppBarState;
+import '../../shared/widgets/appbar/app_bar_home.dart';
 import '../../shared/widgets/filter/filter_chip.dart';
 import '../../shared/widgets/fixture/date_nav_chip.dart';
 import '../../shared/widgets/fixture/fixture_league_header.dart';
@@ -112,14 +115,14 @@ List<_LeagueFilterDef> get _baseballLeagueFilters => const [
 DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
 /// Fixtures: date rail (LIVE + 7 days), sport & league filters, league-grouped matches.
-class FixturePage extends StatefulWidget {
+class FixturePage extends ConsumerStatefulWidget {
   const FixturePage({super.key});
 
   @override
-  State<FixturePage> createState() => _FixturePageState();
+  ConsumerState<FixturePage> createState() => _FixturePageState();
 }
 
-class _FixturePageState extends State<FixturePage> {
+class _FixturePageState extends ConsumerState<FixturePage> {
   SportType _selectedSport = SportType.soccer;
   late DateTime _selectedDate;
   String _selectedLeagueId = _kAll;
@@ -203,6 +206,7 @@ class _FixturePageState extends State<FixturePage> {
     final rangeStart = calendarToday.subtract(const Duration(days: 1));
     final days =
         List.generate(7, (i) => _dateOnly(rangeStart.add(Duration(days: i))));
+    final user = ref.watch(userProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surfaceBase,
@@ -210,7 +214,12 @@ class _FixturePageState extends State<FixturePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const AppBarHome(state: AppBarState.guest),
+            AppBarHome(
+              state: user.authStatus == AuthStatus.loggedIn
+                  ? AppBarState.loggedIn
+                  : AppBarState.guest,
+              onSignIn: () => context.push('/login'),
+            ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,

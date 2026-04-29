@@ -6,6 +6,14 @@ class AppTypography {
 
   static const List<String> _fallback = ['Pretendard'];
 
+  // Display
+  static TextStyle get displayMedium => GoogleFonts.poppins(
+        fontSize: 45,
+        fontWeight: FontWeight.w400,
+        letterSpacing: 0,
+        height: 1.15,
+      ).copyWith(fontFamilyFallback: _fallback);
+
   // Headline
   static TextStyle get headlineLarge => GoogleFonts.poppins(
         fontSize: 32,
@@ -57,6 +65,12 @@ class AppTypography {
         letterSpacing: 0.1,
         height: 1.4,
       ).copyWith(fontFamilyFallback: _fallback);
+
+  /// English UI label large; same tokens as [labelLarge].
+  static TextStyle get enLabelLarge => labelLarge;
+
+  /// English UI label small; same tokens as [labelSmall].
+  static TextStyle get enLabelSmall => labelSmall;
 
   static TextStyle get labelMedium => GoogleFonts.poppins(
         fontSize: 12,

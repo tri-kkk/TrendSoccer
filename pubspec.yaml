@@ -43,3 +43,9 @@ flutter:
     # League Logos (Report용)
     - assets/images/leagues/logo/dark/
     - assets/images/leagues/logo/light/
+
+    # Login Symbols (Auth용)
+    - assets/images/login_symbols/
+
+    # UI icons (checks, etc.)
+    - assets/images/icons/

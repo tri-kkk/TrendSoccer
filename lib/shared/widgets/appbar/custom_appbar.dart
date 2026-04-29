@@ -27,6 +27,7 @@ class CustomAppBar extends StatelessWidget {
     required this.title,
     this.onBackPressed,
     this.centerTitle = false,
+    this.showBackButton = true,
   });
 
   /// Text displayed next to the back button.
@@ -40,6 +41,9 @@ class CustomAppBar extends StatelessWidget {
   /// back control). When `false`, the title follows the back button (default).
   final bool centerTitle;
 
+  /// When `false`, the leading back control is omitted (e.g. root screens).
+  final bool showBackButton;
+
   static const double _leadingSlotWidth = 40 + 12;
 
   @override
@@ -47,6 +51,16 @@ class CustomAppBar extends StatelessWidget {
     final titleStyle = AppTypography.titleMedium.copyWith(
       color: AppColors.textPrimary,
     );
+
+    final leading = showBackButton
+        ? Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CustomBackButton(onPressed: onBackPressed),
+              const SizedBox(width: 12),
+            ],
+          )
+        : const SizedBox(width: _leadingSlotWidth);
 
     return Container(
       height: 56,
@@ -56,8 +70,7 @@ class CustomAppBar extends StatelessWidget {
       child: centerTitle
           ? Row(
               children: [
-                CustomBackButton(onPressed: onBackPressed),
-                const SizedBox(width: 12),
+                leading,
                 Expanded(
                   child: Text(
                     title,
@@ -72,8 +85,7 @@ class CustomAppBar extends StatelessWidget {
             )
           : Row(
               children: [
-                CustomBackButton(onPressed: onBackPressed),
-                const SizedBox(width: 12),
+                leading,
                 Expanded(
                   child: Text(
                     title,

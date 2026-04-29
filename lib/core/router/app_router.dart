@@ -5,16 +5,40 @@ import '../../features/analysis/analysis_page.dart';
 import '../../features/analysis/baseball_match_report_page.dart';
 import '../../features/analysis/soccer_match_report_page.dart';
 import '../../features/fixture/fixture_page.dart';
+import '../../features/auth/login_page.dart';
+import '../../features/auth/signup_complete_page.dart';
+import '../../features/auth/signup_terms_page.dart';
 import '../../features/menu/menu_page.dart';
 import '../../features/report/report_page.dart';
 import '../../features/report/soccer_report_detail_page.dart';
 import '../../features/report/soccer_report_list_page.dart';
+import '../../features/splash/splash_page.dart';
 import '../../features/trend/trend_page.dart';
 import '../../main_screen.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/trend',
+  initialLocation: '/splash',
   routes: [
+    GoRoute(
+      path: '/splash',
+      name: 'splash',
+      builder: (context, state) => const SplashPage(),
+    ),
+    GoRoute(
+      path: '/login',
+      name: 'login',
+      builder: (context, state) => const LoginPage(),
+    ),
+    GoRoute(
+      path: '/signup/terms',
+      name: 'signupTerms',
+      builder: (context, state) => const SignupTermsPage(),
+    ),
+    GoRoute(
+      path: '/signup/complete',
+      name: 'signupComplete',
+      builder: (context, state) => const SignupCompletePage(),
+    ),
     ShellRoute(
       builder: (context, state, child) {
         return MainScreen(child: child);

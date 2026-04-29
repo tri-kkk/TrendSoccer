@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/models/report_models.dart';
+import '../../core/models/user_state.dart';
+import '../../core/providers/user_provider.dart';
 import '../../core/theme/tokens/color_tokens.dart';
 import '../../shared/widgets/appbar/app_bar_home.dart';
 import '../../shared/widgets/cards/report_card.dart';
 import '../../shared/widgets/section/section_header.dart';
 import 'report_dummy_data.dart';
 
-class ReportPage extends StatelessWidget {
+class ReportPage extends ConsumerWidget {
   const ReportPage({super.key});
 
   static final _dateFmt = DateFormat('MM.dd', 'en_US');
@@ -23,17 +26,23 @@ class ReportPage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final cardWidth = MediaQuery.sizeOf(context).width - 32;
     final soccer = ReportDummyData.soccerReports.take(4).toList();
     final baseball = ReportDummyData.baseballNews.take(3).toList();
+    final user = ref.watch(userProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surfaceBase,
       body: SafeArea(
         child: Column(
           children: [
-            const AppBarHome(state: AppBarState.guest),
+            AppBarHome(
+              state: user.authStatus == AuthStatus.loggedIn
+                  ? AppBarState.loggedIn
+                  : AppBarState.guest,
+              onSignIn: () => context.push('/login'),
+            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),

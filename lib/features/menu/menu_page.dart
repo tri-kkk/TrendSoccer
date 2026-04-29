@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/models/subscription_state.dart';
 import '../../core/models/user_state.dart';
@@ -32,9 +33,7 @@ class MenuPage extends ConsumerWidget {
             ? AppBarState.loggedIn
             : AppBarState.guest,
         onSignIn: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login feature coming soon')),
-          );
+          context.push('/login');
         },
       ),
       body: SingleChildScrollView(

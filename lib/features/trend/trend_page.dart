@@ -2,9 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/models/subscription_state.dart';
+import '../../core/models/user_state.dart';
 import '../../core/providers/subscription_provider.dart';
+import '../../core/providers/user_provider.dart';
 import '../../core/theme/tokens/color_tokens.dart';
 import '../../core/theme/tokens/spacing_tokens.dart';
 import '../../core/theme/tokens/typography_tokens.dart';
@@ -82,13 +85,19 @@ class _TrendPageState extends ConsumerState<TrendPage> {
   Widget build(BuildContext context) {
     final subscription = ref.watch(subscriptionProvider);
     final isPremium = subscription.type == SubscriptionType.premium;
+    final user = ref.watch(userProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surfaceBase,
       body: SafeArea(
         child: Column(
           children: [
-            const AppBarHome(state: AppBarState.guest),
+            AppBarHome(
+              state: user.authStatus == AuthStatus.loggedIn
+                  ? AppBarState.loggedIn
+                  : AppBarState.guest,
+              onSignIn: () => context.push('/login'),
+            ),
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
