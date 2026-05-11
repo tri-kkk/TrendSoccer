@@ -35,3 +35,5 @@ export 'premium/card_section_title.dart';
 export 'baseball/position_chip.dart';
 export 'baseball/season_chip.dart';
 export 'baseball/pitcher_comment_chip.dart';
+export 'baseball/premium/baseball_info_box.dart';
+export 'baseball/premium/confidence_chip.dart';
