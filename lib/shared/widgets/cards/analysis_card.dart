@@ -1,0 +1,215 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
+import 'package:trendsoccer/shared/widgets/cards/pick_direction_badge.dart';
+import 'package:trendsoccer/shared/widgets/league/ts_league_icon.dart';
+
+class AnalysisCard extends StatelessWidget {
+  const AnalysisCard({
+    required this.leagueId,
+    required this.leagueName,
+    required this.date,
+    required this.homeTeam,
+    required this.awayTeam,
+    required this.matchTime,
+    this.homeLogoUrl,
+    this.awayLogoUrl,
+    this.onAnalyze,
+    this.isPremiumPick = false,
+    this.pickDirection,
+    this.winRate,
+    super.key,
+  });
+
+  final String leagueId;
+  final String leagueName;
+  final String date;
+  final String homeTeam;
+  final String awayTeam;
+  final String matchTime;
+  final String? homeLogoUrl;
+  final String? awayLogoUrl;
+  final VoidCallback? onAnalyze;
+  final bool isPremiumPick;
+  final PickDirection? pickDirection;
+  final String? winRate;
+
+  Widget _teamLogo(BuildContext context, String? url) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    const logoSize = 48.0;
+    Widget image(String u) {
+      return CachedNetworkImage(
+        imageUrl: u,
+        width: logoSize,
+        height: logoSize,
+        fit: BoxFit.cover,
+        placeholder: (context, _) => Container(
+          width: logoSize,
+          height: logoSize,
+          color: semantic.surfaceContainer,
+        ),
+        errorWidget: (context, _, _) => Container(
+          width: logoSize,
+          height: logoSize,
+          color: semantic.surfaceContainer,
+        ),
+      );
+    }
+
+    return ClipOval(
+      child: url != null && url.isNotEmpty
+          ? image(url)
+          : Container(
+              width: logoSize,
+              height: logoSize,
+              color: semantic.surfaceContainer,
+            ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+
+    return SizedBox(
+      width: 380,
+      child: Container(
+        padding: const EdgeInsets.all(TsSpacing.lg),
+        decoration: BoxDecoration(
+          color: semantic.surfaceRaised,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TsLeagueIcon(leagueId: leagueId, size: 24),
+                    const SizedBox(width: TsSpacing.sm),
+                    Text(
+                      leagueName,
+                      style: TsType.labelSRegular.copyWith(
+                        color: semantic.textTertiary,
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  date,
+                  style: TsType.labelSRegular.copyWith(
+                    color: semantic.textTertiary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: TsSpacing.lg),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _teamLogo(context, homeLogoUrl),
+                      const SizedBox(height: 6),
+                      Text(
+                        homeTeam,
+                        style: TsType.bodyMBold.copyWith(
+                          color: semantic.textPrimary,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: TsSpacing.lg),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'VS',
+                      style: TsType.bodyMBold.copyWith(
+                        color: semantic.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: TsSpacing.xs),
+                    Text(
+                      matchTime,
+                      style: TsType.labelSRegular.copyWith(
+                        color: semantic.textTertiary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: TsSpacing.lg),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _teamLogo(context, awayLogoUrl),
+                      const SizedBox(height: 6),
+                      Text(
+                        awayTeam,
+                        style: TsType.bodyMBold.copyWith(
+                          color: semantic.textPrimary,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: TsSpacing.lg),
+            if (isPremiumPick &&
+                pickDirection != null &&
+                winRate != null) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: TsSpacing.md,
+                  vertical: TsSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: semantic.surfaceContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    PickDirectionBadge(pick: pickDirection!),
+                    const SizedBox(width: 10),
+                    Text(
+                      winRate!,
+                      style: TsType.bodyMBold.copyWith(
+                        color: semantic.interactivePrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: TsSpacing.lg),
+            ],
+            TsButton(
+              label: '분석하기',
+              variant: TsButtonVariant.primary,
+              onPressed: onAnalyze,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
