@@ -29,3 +29,6 @@ export 'report/match_header.dart';
 export 'report/blurable_section.dart';
 export 'report/info_cell.dart';
 export 'report/ratio_bar.dart';
+export 'premium/circle_badge.dart';
+export 'premium/score_box.dart';
+export 'premium/card_section_title.dart';
