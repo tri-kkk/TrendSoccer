@@ -120,7 +120,9 @@ class _AnalysisPageState extends State<AnalysisPage> {
                             ? () => context.push(
                                   '/analysis/soccer/match-report/${data.matchId}',
                                 )
-                            : null,
+                            : () => context.push(
+                                  '/analysis/baseball/match-report/${data.matchId}',
+                                ),
                       ),
                     );
                   }).toList(),

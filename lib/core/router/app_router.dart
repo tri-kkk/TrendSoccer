@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:trendsoccer/features/analysis/baseball_match_report_page.dart';
 import 'package:trendsoccer/features/analysis/analysis_page.dart';
 import 'package:trendsoccer/features/analysis/soccer_match_report_page.dart';
 import 'package:trendsoccer/features/auth/login_page.dart';
@@ -37,6 +38,13 @@ abstract final class AppRouter {
         builder: (context, state) {
           final matchId = state.pathParameters['matchId'] ?? '';
           return SoccerMatchReportPage(matchId: matchId);
+        },
+      ),
+      GoRoute(
+        path: '/analysis/baseball/match-report/:matchId',
+        builder: (context, state) {
+          final matchId = state.pathParameters['matchId'] ?? '';
+          return BaseballMatchReportPage(matchId: matchId);
         },
       ),
       ShellRoute(
