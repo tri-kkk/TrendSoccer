@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
-import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/analysis/baseball_match_report_page.dart';
 import 'package:trendsoccer/features/analysis/analysis_page.dart';
 import 'package:trendsoccer/features/analysis/soccer_match_report_page.dart';
@@ -9,27 +6,18 @@ import 'package:trendsoccer/features/auth/login_page.dart';
 import 'package:trendsoccer/features/auth/signup_complete_page.dart';
 import 'package:trendsoccer/features/auth/signup_terms_page.dart';
 import 'package:trendsoccer/features/fixture/fixture_page.dart';
+import 'package:trendsoccer/features/menu/about_page.dart';
+import 'package:trendsoccer/features/menu/help_page.dart';
 import 'package:trendsoccer/features/menu/menu_page.dart';
+import 'package:trendsoccer/features/menu/privacy_page.dart';
 import 'package:trendsoccer/features/menu/subscribe_page.dart';
+import 'package:trendsoccer/features/menu/terms_page.dart';
 import 'package:trendsoccer/features/premium/premium_page.dart';
+import 'package:trendsoccer/features/report/soccer_report_detail_page.dart';
+import 'package:trendsoccer/features/report/soccer_report_list_page.dart';
 import 'package:trendsoccer/features/splash/splash_page.dart';
 import 'package:trendsoccer/features/trend/trend_page.dart';
 import 'package:trendsoccer/main_screen.dart';
-import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
-
-Widget _menuStubRoutePage(BuildContext context, String title) {
-  final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-  return Scaffold(
-    backgroundColor: semantic.surfaceBase,
-    appBar: TsAppBar(location: TsAppBarLocation.backTitle, title: title),
-    body: Center(
-      child: Text(
-        title,
-        style: TsType.bodyLRegular.copyWith(color: semantic.textPrimary),
-      ),
-    ),
-  );
-}
 
 /// v2 app routing: tab shell + auth/splash stubs.
 abstract final class AppRouter {
@@ -58,23 +46,28 @@ abstract final class AppRouter {
       ),
       GoRoute(
         path: '/menu/about',
-        builder: (context, state) => _menuStubRoutePage(context, 'About'),
+        builder: (context, state) => const AboutPage(),
       ),
       GoRoute(
         path: '/menu/privacy',
-        builder: (context, state) => _menuStubRoutePage(context, '개인정보처리방침'),
+        builder: (context, state) => const PrivacyPage(),
       ),
       GoRoute(
         path: '/menu/terms',
-        builder: (context, state) => _menuStubRoutePage(context, '이용약관'),
+        builder: (context, state) => const TermsPage(),
       ),
       GoRoute(
         path: '/menu/help',
-        builder: (context, state) => _menuStubRoutePage(context, '도움말'),
+        builder: (context, state) => const HelpPage(),
       ),
       GoRoute(
         path: '/menu/reports/soccer',
-        builder: (context, state) => _menuStubRoutePage(context, 'Soccer Reports'),
+        builder: (context, state) => const SoccerReportListPage(),
+      ),
+      GoRoute(
+        path: '/menu/reports/soccer/:id',
+        builder: (context, state) =>
+            SoccerReportDetailPage(reportId: state.pathParameters['id'] ?? ''),
       ),
       GoRoute(
         path: '/analysis/soccer/match-report/:matchId',
