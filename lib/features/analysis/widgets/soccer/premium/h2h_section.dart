@@ -1,148 +1,238 @@
 import 'package:flutter/material.dart';
 
-import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/premium/card_section_title.dart';
 import 'package:trendsoccer/shared/widgets/premium/circle_badge.dart';
+import 'package:trendsoccer/shared/widgets/premium/insights_card.dart';
 import 'package:trendsoccer/shared/widgets/premium/score_box.dart';
-import 'package:trendsoccer/shared/widgets/report/ratio_bar.dart';
+import 'package:trendsoccer/shared/widgets/premium/section_title.dart';
+import 'package:trendsoccer/shared/widgets/premium/stats_card.dart';
 
-class H2HMatchData {
-  const H2HMatchData({
-    required this.result,
+class H2HMeeting {
+  const H2HMeeting({
     required this.score,
-    this.homeLogoUrl,
-    this.awayLogoUrl,
+    required this.result,
   });
 
-  final MatchResult result;
   final String score;
-  final String? homeLogoUrl;
-  final String? awayLogoUrl;
+  final ScoreBoxResult result;
 }
 
-MatchResult _oppositeResult(MatchResult r) {
-  switch (r) {
-    case MatchResult.win:
-      return MatchResult.lose;
-    case MatchResult.lose:
-      return MatchResult.win;
-    case MatchResult.draw:
-      return MatchResult.draw;
-  }
-}
+class MostCommonScore {
+  const MostCommonScore({
+    required this.count,
+    required this.score,
+  });
 
-String _flippedScore(String score) {
-  final idx = score.indexOf('-');
-  if (idx == -1) return score;
-  final left = score.substring(0, idx).trim();
-  final right = score.substring(idx + 1).trim();
-  return '$right-$left';
+  final int count;
+  final String score;
 }
 
 class H2HSection extends StatefulWidget {
   const H2HSection({
+    required this.totalMatches,
     required this.homeWins,
     required this.draws,
     required this.awayWins,
-    required this.recentMatches,
+    required this.recentMeetings,
+    required this.avgGoals,
+    required this.over25,
+    required this.over25Highlight,
+    required this.btts,
+    required this.mostCommonScores,
+    required this.insights,
     super.key,
   });
 
+  final int totalMatches;
   final int homeWins;
   final int draws;
   final int awayWins;
-  final List<H2HMatchData> recentMatches;
+  final List<H2HMeeting> recentMeetings;
+  final String avgGoals;
+  final String over25;
+  final bool over25Highlight;
+  final String btts;
+  final List<MostCommonScore> mostCommonScores;
+  final List<String> insights;
 
   @override
   State<H2HSection> createState() => _H2HSectionState();
 }
 
 class _H2HSectionState extends State<H2HSection> {
-  bool _expanded = true;
+  bool _isExpanded = true;
+
+  Widget _buildScoreBoxRow(TsSemanticColors semantic) {
+    final meetings = widget.recentMeetings;
+    return Row(
+      children: [
+        for (var i = 0; i < meetings.length; i++) ...[
+          Expanded(
+            child: ScoreBox(
+              score: meetings[i].score,
+              result: meetings[i].result,
+            ),
+          ),
+          if (i < meetings.length - 1)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: Icon(
+                Icons.arrow_forward_ios,
+                size: 12,
+                color: semantic.textTertiary,
+              ),
+            ),
+        ],
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        CardSectionTitle(
-          title: '상대 전적',
-          isExpanded: _expanded,
-          onToggle: () => setState(() => _expanded = !_expanded),
-        ),
-        if (_expanded) ...[
-          const SizedBox(height: TsSpacing.lg),
-          Container(
-            padding: const EdgeInsets.all(TsSpacing.lg),
-            decoration: BoxDecoration(
-              color: semantic.surfaceRaised,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    CircleBadge(result: MatchResult.win, count: widget.homeWins),
-                    CircleBadge(result: MatchResult.draw, count: widget.draws),
-                    CircleBadge(result: MatchResult.lose, count: widget.awayWins),
-                  ],
-                ),
-                const SizedBox(height: TsSpacing.lg),
-                RatioBar(
-                  segments: [
-                    RatioSegment(
-                      flex: widget.homeWins.toDouble(),
-                      color: semantic.interactivePrimary,
-                      bottomLabel: '홈',
-                    ),
-                    RatioSegment(
-                      flex: widget.draws.toDouble(),
-                      color: semantic.textTertiary,
-                      bottomLabel: '무승부',
-                    ),
-                    RatioSegment(
-                      flex: widget.awayWins.toDouble(),
-                      color: TsColors.systemError500,
-                      bottomLabel: '원정',
-                    ),
-                  ],
-                  height: 8,
-                ),
-                const SizedBox(height: TsSpacing.lg),
-                Column(
-                  children: [
-                    for (var i = 0; i < widget.recentMatches.length; i++) ...[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          ScoreBox(
-                            result: widget.recentMatches[i].result,
-                            score: widget.recentMatches[i].score,
-                            teamLogoUrl: widget.recentMatches[i].homeLogoUrl,
-                          ),
-                          ScoreBox(
-                            result: _oppositeResult(widget.recentMatches[i].result),
-                            score: _flippedScore(widget.recentMatches[i].score),
-                            teamLogoUrl: widget.recentMatches[i].awayLogoUrl,
-                          ),
-                        ],
-                      ),
-                      if (i < widget.recentMatches.length - 1)
-                        const SizedBox(height: TsSpacing.sm),
-                    ],
-                  ],
-                ),
-              ],
-            ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: semantic.surfaceRaised,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          CardSectionTitle(
+            title: 'H2H',
+            isExpanded: _isExpanded,
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
           ),
+          if (_isExpanded) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: semantic.surfaceOverlay,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    '역대 전적',
+                    style: TsType.bodyLRegular.copyWith(
+                      color: semantic.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: TsSpacing.sm),
+                  Text(
+                    '(${widget.totalMatches} Matches)',
+                    style: TsType.labelSRegular.copyWith(
+                      color: semantic.textTertiary,
+                    ),
+                  ),
+                  const SizedBox(height: TsSpacing.lg),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircleBadge(
+                        label: '승',
+                        value: '${widget.homeWins}',
+                        type: CircleBadgeType.win,
+                      ),
+                      const SizedBox(width: 48),
+                      CircleBadge(
+                        label: '무',
+                        value: '${widget.draws}',
+                        type: CircleBadgeType.draw,
+                      ),
+                      const SizedBox(width: 48),
+                      CircleBadge(
+                        label: '패',
+                        value: '${widget.awayWins}',
+                        type: CircleBadgeType.lose,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: TsSpacing.lg),
+                  Text(
+                    'Recently Meetings',
+                    style: TsType.bodyLRegular.copyWith(
+                      color: semantic.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: TsSpacing.lg),
+                  _buildScoreBoxRow(semantic),
+                  const SizedBox(height: TsSpacing.lg),
+                  Text(
+                    '통계',
+                    style: TsType.bodyLRegular.copyWith(
+                      color: semantic.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: TsSpacing.lg),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: StatsCard(
+                          value: widget.avgGoals,
+                          label: '평균 득점',
+                        ),
+                      ),
+                      const SizedBox(width: TsSpacing.lg),
+                      Expanded(
+                        child: StatsCard(
+                          value: widget.over25,
+                          label: 'O 2.5',
+                          isHighlight: widget.over25Highlight,
+                        ),
+                      ),
+                      const SizedBox(width: TsSpacing.lg),
+                      Expanded(
+                        child: StatsCard(
+                          value: widget.btts,
+                          label: 'BTTS',
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: TsSpacing.lg),
+                  Text(
+                    '최대 스코어',
+                    style: TsType.bodyLRegular.copyWith(
+                      color: semantic.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: TsSpacing.lg),
+                  Row(
+                    children: [
+                      for (var i = 0; i < widget.mostCommonScores.length; i++) ...[
+                        if (i > 0) const SizedBox(width: TsSpacing.lg),
+                        Expanded(
+                          child: StatsCard(
+                            value: '${widget.mostCommonScores[i].count}',
+                            label: widget.mostCommonScores[i].score,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: TsSpacing.lg),
+                  Text(
+                    '매치 인사이트',
+                    style: TsType.bodyLRegular.copyWith(
+                      color: semantic.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: TsSpacing.lg),
+                  InsightsCard(comments: widget.insights),
+                ],
+              ),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/premium/card_section_title.dart';
+import 'package:trendsoccer/shared/widgets/premium/section_title.dart';
 
 class TeamAnalysisSection extends StatefulWidget {
   const TeamAnalysisSection({
@@ -42,7 +42,7 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
         CardSectionTitle(
           title: widget.teamName,
           isExpanded: _expanded,
-          onToggle: () => setState(() => _expanded = !_expanded),
+          onTap: () => setState(() => _expanded = !_expanded),
         ),
         if (_expanded) ...[
           const SizedBox(height: TsSpacing.lg),

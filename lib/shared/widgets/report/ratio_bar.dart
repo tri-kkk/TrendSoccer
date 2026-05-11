@@ -41,11 +41,16 @@ class RatioBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
+    if (segments.isEmpty) {
+      return SizedBox(height: showLabels ? height + TsSpacing.sm : height);
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
+          width: double.infinity,
           height: height,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(borderRadius),
@@ -68,7 +73,7 @@ class RatioBar extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             )
-                          : const SizedBox.shrink(),
+                          : const SizedBox.expand(),
                     ),
                   ),
               ],

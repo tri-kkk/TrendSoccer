@@ -32,20 +32,23 @@ class PowerIndexSection extends StatelessWidget {
             color: semantic.surfaceRaised,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: RatioBar(
-            segments: [
-              RatioSegment(
-                flex: hr,
-                color: semantic.interactivePrimary,
-                bottomLabel: '홈 파워',
-              ),
-              RatioSegment(
-                flex: awayRatio,
-                color: TsColors.systemError500,
-                bottomLabel: '원정 파워',
-              ),
-            ],
-            height: 8,
+          child: SizedBox(
+            width: double.infinity,
+            child: RatioBar(
+              segments: [
+                RatioSegment(
+                  flex: hr,
+                  color: semantic.interactivePrimary,
+                  bottomLabel: '홈 파워',
+                ),
+                RatioSegment(
+                  flex: awayRatio,
+                  color: TsColors.systemError500,
+                  bottomLabel: '원정 파워',
+                ),
+              ],
+              height: 8,
+            ),
           ),
         ),
       ],

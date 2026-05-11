@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
@@ -9,19 +7,19 @@ class CardSectionTitle extends StatelessWidget {
   const CardSectionTitle({
     required this.title,
     this.isExpanded = false,
-    this.onToggle,
+    this.onTap,
     super.key,
   });
 
   final String title;
   final bool isExpanded;
-  final VoidCallback? onToggle;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     return GestureDetector(
-      onTap: onToggle,
+      onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -30,13 +28,10 @@ class CardSectionTitle extends StatelessWidget {
             title,
             style: TsType.headingH2.copyWith(color: semantic.textPrimary),
           ),
-          Transform.rotate(
-            angle: isExpanded ? math.pi : 0,
-            child: Icon(
-              Icons.expand_circle_down,
-              size: 24,
-              color: semantic.textTertiary,
-            ),
+          Icon(
+            isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+            size: 24,
+            color: semantic.textTertiary,
           ),
         ],
       ),

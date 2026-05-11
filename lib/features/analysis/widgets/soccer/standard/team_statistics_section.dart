@@ -4,7 +4,6 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/report/ratio_bar.dart';
 
 class TeamStatItem {
   const TeamStatItem({
@@ -71,6 +70,10 @@ class _TeamStatRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final total = stat.homeValue + stat.awayValue;
+    final homeRatio = total > 0 ? (stat.homeValue / total).clamp(0.0, 1.0) : 0.5;
+    final awayRatio = total > 0 ? (stat.awayValue / total).clamp(0.0, 1.0) : 0.5;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -94,19 +97,58 @@ class _TeamStatRow extends StatelessWidget {
           ],
         ),
         const SizedBox(height: TsSpacing.xs),
-        RatioBar(
-          segments: [
-            RatioSegment(
-              flex: stat.homeValue,
-              color: semantic.interactivePrimary,
-            ),
-            RatioSegment(
-              flex: stat.awayValue,
-              color: TsColors.systemError500,
-            ),
-          ],
+        SizedBox(
+          width: double.infinity,
           height: 8,
-          showLabels: false,
+          child: Row(
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.horizontal(
+                    left: Radius.circular(8),
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ColoredBox(color: semantic.textDisabled),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: FractionallySizedBox(
+                          widthFactor: homeRatio,
+                          heightFactor: 1,
+                          alignment: Alignment.centerRight,
+                          child: ColoredBox(color: semantic.interactivePrimary),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: TsSpacing.sm),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.horizontal(
+                    right: Radius.circular(8),
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ColoredBox(color: semantic.textDisabled),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: FractionallySizedBox(
+                          widthFactor: awayRatio,
+                          heightFactor: 1,
+                          alignment: Alignment.centerLeft,
+                          child: ColoredBox(color: TsColors.systemError500),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

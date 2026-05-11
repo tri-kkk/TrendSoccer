@@ -4,29 +4,37 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/report/ratio_bar.dart';
 
 class FinalProbabilitySection extends StatelessWidget {
   const FinalProbabilitySection({
     required this.homeProb,
     required this.drawProb,
     required this.awayProb,
-    required this.homeProbLabel,
-    required this.drawProbLabel,
-    required this.awayProbLabel,
     super.key,
   });
 
   final double homeProb;
   final double drawProb;
   final double awayProb;
-  final String homeProbLabel;
-  final String drawProbLabel;
-  final String awayProbLabel;
+
+  static int _flexFromPercent(int percent) => percent < 1 ? 1 : percent;
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final homePercent = (homeProb * 100).round();
+    final drawPercent = (drawProb * 100).round();
+    final awayPercent = (awayProb * 100).round();
+    final homeFlex = _flexFromPercent(homePercent);
+    final drawFlex = _flexFromPercent(drawPercent);
+    final awayFlex = _flexFromPercent(awayPercent);
+
+    final barTextStyle = TsType.headingH3.copyWith(
+      color: semantic.interactiveOnPrimary,
+    );
+    final drawBarTextStyle = TsType.headingH3.copyWith(
+      color: semantic.textPrimary,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,28 +51,81 @@ class FinalProbabilitySection extends StatelessWidget {
             color: semantic.surfaceRaised,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: RatioBar(
-            segments: [
-              RatioSegment(
-                flex: homeProb,
-                color: semantic.interactivePrimary,
-                label: '홈 승률 $homeProbLabel',
-                bottomLabel: '홈',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                height: 32,
+                clipBehavior: Clip.hardEdge,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: homeFlex,
+                      child: Container(
+                        color: semantic.interactivePrimary,
+                        alignment: Alignment.center,
+                        child: Text(
+                          '$homePercent%',
+                          style: barTextStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: drawFlex,
+                      child: Container(
+                        color: semantic.surfaceContainer,
+                        alignment: Alignment.center,
+                        child: Text(
+                          '$drawPercent%',
+                          style: drawBarTextStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: awayFlex,
+                      child: Container(
+                        color: TsColors.systemError500,
+                        alignment: Alignment.center,
+                        child: Text(
+                          '$awayPercent%',
+                          style: barTextStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              RatioSegment(
-                flex: drawProb,
-                color: semantic.surfaceContainer,
-                label: '무승부 $drawProbLabel',
-                bottomLabel: '무승부',
-              ),
-              RatioSegment(
-                flex: awayProb,
-                color: TsColors.systemError500,
-                label: '원정 승률 $awayProbLabel',
-                bottomLabel: '원정',
+              const SizedBox(height: TsSpacing.sm),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '홈',
+                    style: TsType.labelSRegular.copyWith(
+                      color: semantic.textTertiary,
+                    ),
+                  ),
+                  Text(
+                    '무승부',
+                    style: TsType.labelSRegular.copyWith(
+                      color: semantic.textTertiary,
+                    ),
+                  ),
+                  Text(
+                    '원정',
+                    style: TsType.labelSRegular.copyWith(
+                      color: semantic.textTertiary,
+                    ),
+                  ),
+                ],
               ),
             ],
-            height: 32,
           ),
         ),
       ],

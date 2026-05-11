@@ -7,7 +7,7 @@ import 'package:trendsoccer/features/analysis/models/soccer_match_report_data.da
 import 'package:trendsoccer/features/analysis/widgets/soccer/premium/premium_sections.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer/standard/standard_sections.dart';
 import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
-import 'package:trendsoccer/shared/widgets/premium/circle_badge.dart';
+import 'package:trendsoccer/shared/widgets/premium/score_box.dart';
 import 'package:trendsoccer/shared/widgets/report/match_header.dart';
 import 'package:trendsoccer/shared/widgets/report/report_toggle.dart';
 
@@ -28,20 +28,18 @@ class _SoccerMatchReportPageState extends State<SoccerMatchReportPage> {
 
   SoccerMatchReportData get _data => soccerMatchReportDummy;
 
-  MatchResult _toMatchResult(String result) {
+  ScoreBoxResult _toScoreBoxResult(String result) {
     switch (result) {
       case 'win':
-        return MatchResult.win;
+        return ScoreBoxResult.win;
       case 'draw':
-        return MatchResult.draw;
+        return ScoreBoxResult.draw;
       case 'lose':
-        return MatchResult.lose;
+        return ScoreBoxResult.lose;
       default:
-        return MatchResult.draw;
+        return ScoreBoxResult.draw;
     }
   }
-
-  String _probLabel(double p) => '${(p * 100).round()}%';
 
   @override
   Widget build(BuildContext context) {
@@ -103,9 +101,6 @@ class _SoccerMatchReportPageState extends State<SoccerMatchReportPage> {
                               homeProb: data.homeProb,
                               drawProb: data.drawProb,
                               awayProb: data.awayProb,
-                              homeProbLabel: _probLabel(data.homeProb),
-                              drawProbLabel: _probLabel(data.drawProb),
-                              awayProbLabel: _probLabel(data.awayProb),
                             ),
                             const SizedBox(height: TsSpacing.xl),
                             TeamStatisticsSection(
@@ -122,10 +117,16 @@ class _SoccerMatchReportPageState extends State<SoccerMatchReportPage> {
                                   .toList(),
                             ),
                             const SizedBox(height: TsSpacing.xl),
-                            ThreeMethodSection(
-                              paResult: data.paResult,
-                              minMaxResult: data.minMaxResult,
-                              firstGoalResult: data.firstGoalResult,
+                            ThreeMethodAnalysisSection(
+                              paPercent:
+                                  '${(data.paHomeRatio * 100).round()}%',
+                              paHomeRatio: data.paHomeRatio,
+                              minMaxPercent:
+                                  '${(data.minMaxHomeRatio * 100).round()}%',
+                              minMaxHomeRatio: data.minMaxHomeRatio,
+                              firstGoalPercent:
+                                  '${(data.firstGoalHomeRatio * 100).round()}%',
+                              firstGoalHomeRatio: data.firstGoalHomeRatio,
                             ),
                             const SizedBox(height: TsSpacing.xl),
                           ],
@@ -140,17 +141,31 @@ class _SoccerMatchReportPageState extends State<SoccerMatchReportPage> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             H2HSection(
+                              totalMatches: data.h2hTotalMatches,
                               homeWins: data.h2hHomeWins,
                               draws: data.h2hDraws,
                               awayWins: data.h2hAwayWins,
-                              recentMatches: data.h2hMatches
+                              recentMeetings: data.h2hMatches
                                   .map(
-                                    (m) => H2HMatchData(
-                                      result: _toMatchResult(m.result),
+                                    (m) => H2HMeeting(
                                       score: m.score,
+                                      result: _toScoreBoxResult(m.result),
                                     ),
                                   )
                                   .toList(),
+                              avgGoals: data.h2hAvgGoals,
+                              over25: data.h2hOver25,
+                              over25Highlight: data.h2hOver25Highlight,
+                              btts: data.h2hBtts,
+                              mostCommonScores: data.h2hMostCommonScores
+                                  .map(
+                                    (e) => MostCommonScore(
+                                      count: e.count,
+                                      score: e.score,
+                                    ),
+                                  )
+                                  .toList(),
+                              insights: data.h2hInsights,
                             ),
                             const SizedBox(height: TsSpacing.xl),
                             TeamAnalysisSection(
