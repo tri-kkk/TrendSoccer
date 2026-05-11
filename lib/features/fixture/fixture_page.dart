@@ -163,7 +163,9 @@ class _FixturePageState extends State<FixturePage> {
           return TsFilterChip(
             label: name,
             isSelected: _selectedLeagueId == id,
-            type: id == 'all' ? FilterChipType.textOnly : FilterChipType.withIcon,
+            type: id == 'all'
+                ? TsFilterChipType.textOnly
+                : TsFilterChipType.withIcon,
             iconWidget: id != 'all' ? TsLeagueIcon(leagueId: id, size: 16) : null,
             onTap: () => setState(() => _selectedLeagueId = id),
           );

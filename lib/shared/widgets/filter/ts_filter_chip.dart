@@ -5,14 +5,14 @@ import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
-enum FilterChipType { textOnly, withIcon, withAPI }
+enum TsFilterChipType { textOnly, withIcon, withAPI }
 
 class TsFilterChip extends StatelessWidget {
   const TsFilterChip({
     required this.label,
     this.isSelected = false,
     this.onTap,
-    this.type = FilterChipType.textOnly,
+    this.type = TsFilterChipType.textOnly,
     this.iconWidget,
     this.logoUrl,
     super.key,
@@ -21,7 +21,7 @@ class TsFilterChip extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback? onTap;
-  final FilterChipType type;
+  final TsFilterChipType type;
   final Widget? iconWidget;
   final String? logoUrl;
 
@@ -79,8 +79,10 @@ class TsFilterChip extends StatelessWidget {
   }
 
   bool get _showIcon =>
-      type == FilterChipType.withIcon && iconWidget != null;
+      type == TsFilterChipType.withIcon && iconWidget != null;
 
   bool get _showApiLogo =>
-      type == FilterChipType.withAPI && logoUrl != null && logoUrl!.isNotEmpty;
+      type == TsFilterChipType.withAPI &&
+      logoUrl != null &&
+      logoUrl!.isNotEmpty;
 }

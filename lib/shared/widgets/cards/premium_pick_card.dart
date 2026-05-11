@@ -8,7 +8,6 @@ import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
-import 'package:trendsoccer/shared/widgets/cards/pick_direction_badge.dart';
 import 'package:trendsoccer/shared/widgets/icons/sports_icon.dart';
 
 class RecentWinData {
@@ -47,12 +46,6 @@ class PremiumPickCard extends StatefulWidget {
 
   @override
   State<PremiumPickCard> createState() => _PremiumPickCardState();
-}
-
-PickDirection pickDirectionFromWinLabel(String label) {
-  if (label == '홈') return PickDirection.home;
-  if (label == '무' || label == '무승부') return PickDirection.draw;
-  return PickDirection.away;
 }
 
 class _PremiumPickCardState extends State<PremiumPickCard>
@@ -120,20 +113,23 @@ class _PremiumPickCardState extends State<PremiumPickCard>
     super.dispose();
   }
 
-  Widget _logoDot(TsSemanticColors semantic) {
+  Widget _teamLogoPlaceholder(TsSemanticColors semantic) {
     return Container(
       width: 16,
       height: 16,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: semantic.surfaceContainer,
+        color: semantic.surfaceOverlay,
+        border: Border.all(
+          color: semantic.borderSubtle,
+          width: 1,
+        ),
       ),
     );
   }
 
   Widget _buildWinRow(RecentWinData data, {required Key key}) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final pick = pickDirectionFromWinLabel(data.pickDirection);
     return SizedBox(
       key: key,
       height: 32,
@@ -141,54 +137,90 @@ class _PremiumPickCardState extends State<PremiumPickCard>
       child: Row(
         children: [
           Expanded(
-            child: Text(
-              data.homeTeam,
-              style: TsType.labelSRegular.copyWith(
-                color: semantic.textSecondary,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Flexible(
+                  flex: 1,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      data.homeTeam,
+                      style: TsType.labelSRegular.copyWith(
+                        color: semantic.textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: TsSpacing.xs),
+                _teamLogoPlaceholder(semantic),
+                const SizedBox(width: TsSpacing.xs),
+                Text(
+                  'VS',
+                  style: TsType.labelSRegular.copyWith(
+                    color: semantic.textTertiary,
+                  ),
+                ),
+                const SizedBox(width: TsSpacing.xs),
+                _teamLogoPlaceholder(semantic),
+                const SizedBox(width: TsSpacing.xs),
+                Flexible(
+                  flex: 1,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      data.awayTeam,
+                      style: TsType.labelSRegular.copyWith(
+                        color: semantic.textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: TsSpacing.xs),
-          _logoDot(semantic),
-          const SizedBox(width: TsSpacing.xs),
-          Text(
-            'VS',
-            style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
-          ),
-          const SizedBox(width: TsSpacing.xs),
-          _logoDot(semantic),
-          const SizedBox(width: TsSpacing.xs),
-          Expanded(
-            child: Text(
-              data.awayTeam,
-              style: TsType.labelSRegular.copyWith(
-                color: semantic.textSecondary,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: TsSpacing.sm,
+                  vertical: TsSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: semantic.surfaceOverlay,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  data.pickDirection,
+                  style: TsType.labelSBold.copyWith(
+                    color: semantic.interactivePrimary,
+                  ),
+                ),
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.end,
-            ),
-          ),
-          const SizedBox(width: TsSpacing.sm),
-          PickDirectionBadge(pick: pick),
-          const SizedBox(width: TsSpacing.xs),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: TsSpacing.sm,
-              vertical: TsSpacing.xs,
-            ),
-            decoration: BoxDecoration(
-              color: PremiumPickCard.winBadgeBackground,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              'WIN',
-              style: TsType.labelSBold.copyWith(
-                color: TsColors.systemSuccess500,
+              const SizedBox(width: TsSpacing.xs),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: TsSpacing.sm,
+                  vertical: TsSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: PremiumPickCard.winBadgeBackground,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'WIN',
+                  style: TsType.labelSBold.copyWith(
+                    color: TsColors.systemSuccess500,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),
