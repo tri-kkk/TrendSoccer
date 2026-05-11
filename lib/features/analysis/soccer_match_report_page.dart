@@ -41,6 +41,17 @@ class _SoccerMatchReportPageState extends State<SoccerMatchReportPage> {
     }
   }
 
+  List<H2HMeeting> _h2hMeetings(List<H2HMatchItemData> raw) {
+    return raw
+        .map(
+          (m) => H2HMeeting(
+            score: m.score,
+            result: _toScoreBoxResult(m.result),
+          ),
+        )
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
@@ -167,25 +178,69 @@ class _SoccerMatchReportPageState extends State<SoccerMatchReportPage> {
                                   .toList(),
                               insights: data.h2hInsights,
                             ),
-                            const SizedBox(height: TsSpacing.xl),
+                            const SizedBox(height: 16),
                             TeamAnalysisSection(
-                              teamName: data.homeAnalysis.teamName,
-                              overallForm: data.homeAnalysis.overallForm,
-                              homeAwayForm: data.homeAnalysis.homeAwayForm,
-                              goalStats: data.homeAnalysis.goalStats,
-                              recentResults: data.homeAnalysis.recentResults,
-                              strengthText: data.homeAnalysis.strengthText,
-                              weaknessText: data.homeAnalysis.weaknessText,
+                              title: '홈',
+                              last10Label: '홈 성적 (최근 10경기)',
+                              wins: data.homeTeamAnalysis.wins10,
+                              draws: data.homeTeamAnalysis.draws10,
+                              losses: data.homeTeamAnalysis.losses10,
+                              recentForm:
+                                  _h2hMeetings(data.homeTeamAnalysis.recentForm),
+                              recordWins: data.homeTeamAnalysis.recordWins,
+                              recordDraws: data.homeTeamAnalysis.recordDraws,
+                              recordLosses: data.homeTeamAnalysis.recordLosses,
+                              winRate: data.homeTeamAnalysis.winRate,
+                              goalLineO15: data.homeTeamAnalysis.goalLineO15,
+                              goalLineO15Highlight:
+                                  data.homeTeamAnalysis.goalLineO15Highlight,
+                              goalLineO25: data.homeTeamAnalysis.goalLineO25,
+                              goalLineO25Highlight:
+                                  data.homeTeamAnalysis.goalLineO25Highlight,
+                              goalLineO35: data.homeTeamAnalysis.goalLineO35,
+                              goalLineO35Highlight:
+                                  data.homeTeamAnalysis.goalLineO35Highlight,
+                              marketO25: data.homeTeamAnalysis.marketO25,
+                              marketO25Highlight:
+                                  data.homeTeamAnalysis.marketO25Highlight,
+                              marketBtts: data.homeTeamAnalysis.marketBtts,
+                              marketBttsHighlight:
+                                  data.homeTeamAnalysis.marketBttsHighlight,
+                              marketCs: data.homeTeamAnalysis.marketCs,
+                              marketFts: data.homeTeamAnalysis.marketFts,
+                              teamInsights: data.homeTeamAnalysis.insights,
                             ),
-                            const SizedBox(height: TsSpacing.xl),
+                            const SizedBox(height: 16),
                             TeamAnalysisSection(
-                              teamName: data.awayAnalysis.teamName,
-                              overallForm: data.awayAnalysis.overallForm,
-                              homeAwayForm: data.awayAnalysis.homeAwayForm,
-                              goalStats: data.awayAnalysis.goalStats,
-                              recentResults: data.awayAnalysis.recentResults,
-                              strengthText: data.awayAnalysis.strengthText,
-                              weaknessText: data.awayAnalysis.weaknessText,
+                              title: '원정',
+                              last10Label: '원정 성적 (최근 10경기)',
+                              wins: data.awayTeamAnalysis.wins10,
+                              draws: data.awayTeamAnalysis.draws10,
+                              losses: data.awayTeamAnalysis.losses10,
+                              recentForm:
+                                  _h2hMeetings(data.awayTeamAnalysis.recentForm),
+                              recordWins: data.awayTeamAnalysis.recordWins,
+                              recordDraws: data.awayTeamAnalysis.recordDraws,
+                              recordLosses: data.awayTeamAnalysis.recordLosses,
+                              winRate: data.awayTeamAnalysis.winRate,
+                              goalLineO15: data.awayTeamAnalysis.goalLineO15,
+                              goalLineO15Highlight:
+                                  data.awayTeamAnalysis.goalLineO15Highlight,
+                              goalLineO25: data.awayTeamAnalysis.goalLineO25,
+                              goalLineO25Highlight:
+                                  data.awayTeamAnalysis.goalLineO25Highlight,
+                              goalLineO35: data.awayTeamAnalysis.goalLineO35,
+                              goalLineO35Highlight:
+                                  data.awayTeamAnalysis.goalLineO35Highlight,
+                              marketO25: data.awayTeamAnalysis.marketO25,
+                              marketO25Highlight:
+                                  data.awayTeamAnalysis.marketO25Highlight,
+                              marketBtts: data.awayTeamAnalysis.marketBtts,
+                              marketBttsHighlight:
+                                  data.awayTeamAnalysis.marketBttsHighlight,
+                              marketCs: data.awayTeamAnalysis.marketCs,
+                              marketFts: data.awayTeamAnalysis.marketFts,
+                              teamInsights: data.awayTeamAnalysis.insights,
                             ),
                             const SizedBox(height: TsSpacing.xl),
                           ],

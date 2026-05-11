@@ -42,8 +42,8 @@ class SoccerMatchReportData {
     required this.h2hBtts,
     required this.h2hMostCommonScores,
     required this.h2hInsights,
-    required this.homeAnalysis,
-    required this.awayAnalysis,
+    required this.homeTeamAnalysis,
+    required this.awayTeamAnalysis,
   });
 
   final String matchId;
@@ -104,8 +104,8 @@ class SoccerMatchReportData {
   final List<MostCommonScoreData> h2hMostCommonScores;
   final List<String> h2hInsights;
 
-  final TeamAnalysisData homeAnalysis;
-  final TeamAnalysisData awayAnalysis;
+  final TeamAnalysisPremiumData homeTeamAnalysis;
+  final TeamAnalysisPremiumData awayTeamAnalysis;
 }
 
 class TeamStatItemData {
@@ -144,24 +144,52 @@ class MostCommonScoreData {
   final String score;
 }
 
-class TeamAnalysisData {
-  const TeamAnalysisData({
-    required this.teamName,
-    required this.overallForm,
-    required this.homeAwayForm,
-    required this.goalStats,
-    required this.recentResults,
-    required this.strengthText,
-    required this.weaknessText,
+class TeamAnalysisPremiumData {
+  const TeamAnalysisPremiumData({
+    required this.wins10,
+    required this.draws10,
+    required this.losses10,
+    required this.recentForm,
+    required this.recordWins,
+    required this.recordDraws,
+    required this.recordLosses,
+    required this.winRate,
+    required this.goalLineO15,
+    required this.goalLineO15Highlight,
+    required this.goalLineO25,
+    required this.goalLineO25Highlight,
+    required this.goalLineO35,
+    this.goalLineO35Highlight = false,
+    required this.marketO25,
+    required this.marketO25Highlight,
+    required this.marketBtts,
+    required this.marketBttsHighlight,
+    required this.marketCs,
+    required this.marketFts,
+    required this.insights,
   });
 
-  final String teamName;
-  final String overallForm;
-  final String homeAwayForm;
-  final String goalStats;
-  final String recentResults;
-  final String strengthText;
-  final String weaknessText;
+  final int wins10;
+  final int draws10;
+  final int losses10;
+  final List<H2HMatchItemData> recentForm;
+  final String recordWins;
+  final String recordDraws;
+  final String recordLosses;
+  final String winRate;
+  final String goalLineO15;
+  final bool goalLineO15Highlight;
+  final String goalLineO25;
+  final bool goalLineO25Highlight;
+  final String goalLineO35;
+  final bool goalLineO35Highlight;
+  final String marketO25;
+  final bool marketO25Highlight;
+  final String marketBtts;
+  final bool marketBttsHighlight;
+  final String marketCs;
+  final String marketFts;
+  final List<String> insights;
 }
 
 /// 샘플 리포트 — API 연동 전까지 모든 [matchId]에 표시.
@@ -255,26 +283,68 @@ final SoccerMatchReportData soccerMatchReportDummy = SoccerMatchReportData(
     '평균 득점 2.7골로 높은 편',
     '오버 2.5 확률 60%로 공격적 경기 예상',
   ],
-  homeAnalysis: TeamAnalysisData(
-    teamName: '바르셀로나 분석',
-    overallForm: '승 승 무 패 승 — 최근 5경기 3승 1무 1패',
-    homeAwayForm: '홈 4승 1무 — 홈 경기에서 강세',
-    goalStats: '평균 2.4골 득점 / 0.8골 실점',
-    recentResults: 'UCL 조별 4승 2무, 라리가 10연승',
-    strengthText:
-        '안정적인 볼 점유와 빠른 역습 전환. 중앙 미드필드 장악력이 좋고 세트피스 득점력이 우수합니다.',
-    weaknessText:
-        '후반 체력이 떨어질 때 수비 라인 간격이 벌어지는 경향이 있습니다. 원정보다 홈에서 더 안정적입니다.',
+  homeTeamAnalysis: TeamAnalysisPremiumData(
+    wins10: 6,
+    draws10: 2,
+    losses10: 2,
+    recentForm: [
+      H2HMatchItemData(result: 'win', score: '1-0'),
+      H2HMatchItemData(result: 'win', score: '2-1'),
+      H2HMatchItemData(result: 'draw', score: '0-0'),
+      H2HMatchItemData(result: 'lose', score: '0-1'),
+      H2HMatchItemData(result: 'win', score: '3-0'),
+    ],
+    recordWins: '2',
+    recordDraws: '3',
+    recordLosses: '5',
+    winRate: '30%',
+    goalLineO15: '90%',
+    goalLineO15Highlight: true,
+    goalLineO25: '50%',
+    goalLineO25Highlight: true,
+    goalLineO35: '40%',
+    marketO25: '70%',
+    marketO25Highlight: true,
+    marketBtts: '80%',
+    marketBttsHighlight: true,
+    marketCs: '10%',
+    marketFts: '20%',
+    insights: [
+      '홈에서 최근 10경기 중 6승 기록',
+      '홈 평균 득점 2.1골',
+      '세트피스 득점력 리그 상위',
+    ],
   ),
-  awayAnalysis: TeamAnalysisData(
-    teamName: '바이에른 분석',
-    overallForm: '패 승 승 무 패 — 최근 5경기 2승 1무 2패',
-    homeAwayForm: '원정 2승 2패 1무 — 원정 경기가 들쑥날쑥',
-    goalStats: '평균 1.8골 득점 / 1.2골 실점',
-    recentResults: 'UCL 조별 3승 1무 2패, 분데스리가 최근 3경기 1승 2패',
-    strengthText:
-        '강한 프레싱과 측면 공격 위력. 개인 돌파력이 좋은 공격 라인을 갖추고 있습니다.',
-    weaknessText:
-        '수비 전환 속도가 느리고 세트피스 실점이 잦습니다. 최근 원정 성적이 부진합니다.',
+  awayTeamAnalysis: TeamAnalysisPremiumData(
+    wins10: 4,
+    draws10: 3,
+    losses10: 3,
+    recentForm: [
+      H2HMatchItemData(result: 'win', score: '2-0'),
+      H2HMatchItemData(result: 'lose', score: '1-2'),
+      H2HMatchItemData(result: 'draw', score: '1-1'),
+      H2HMatchItemData(result: 'win', score: '3-1'),
+      H2HMatchItemData(result: 'lose', score: '0-2'),
+    ],
+    recordWins: '3',
+    recordDraws: '2',
+    recordLosses: '5',
+    winRate: '35%',
+    goalLineO15: '78%',
+    goalLineO15Highlight: true,
+    goalLineO25: '45%',
+    goalLineO25Highlight: true,
+    goalLineO35: '28%',
+    marketO25: '55%',
+    marketO25Highlight: true,
+    marketBtts: '62%',
+    marketBttsHighlight: false,
+    marketCs: '22%',
+    marketFts: '28%',
+    insights: [
+      '원정 최근 10경기 4승 기록',
+      '원정 실점 평균 1.3골',
+      '역습 전환 속도 빠름',
+    ],
   ),
 );
