@@ -27,3 +27,5 @@ export 'cards/premium_pick_card.dart';
 export 'report/report_toggle.dart';
 export 'report/match_header.dart';
 export 'report/blurable_section.dart';
+export 'report/info_cell.dart';
+export 'report/ratio_bar.dart';
