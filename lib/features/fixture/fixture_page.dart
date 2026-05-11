@@ -37,12 +37,12 @@ class _FixturePageState extends State<FixturePage> {
 
   static final List<Map<String, String>> _soccerLeagueFilters = [
     {'id': 'all', 'name': 'All'},
-    {'id': 'epl', 'name': 'EPL'},
-    {'id': 'ucl', 'name': 'UCL'},
+    {'id': 'premier_league', 'name': 'EPL'},
+    {'id': 'champions_league', 'name': 'UCL'},
     {'id': 'laliga', 'name': 'La Liga'},
     {'id': 'bundesliga', 'name': 'Bundesliga'},
-    {'id': 'seriea', 'name': 'Serie A'},
-    {'id': 'ligue1', 'name': 'Ligue 1'},
+    {'id': 'serie_a', 'name': 'Serie A'},
+    {'id': 'ligue_1', 'name': 'Ligue 1'},
   ];
 
   static final List<Map<String, String>> _baseballLeagueFilters = [

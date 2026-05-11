@@ -22,7 +22,7 @@ final List<SoccerReportData> soccerReportsDummy = [
   SoccerReportData(
     id: 'sr-01',
     title: 'UCL 준결승 프리뷰: 바르셀로나 vs 바이에른 뮌헨',
-    leagueId: 'ucl',
+    leagueId: 'champions_league',
     date: '2026.05.11',
     author: 'TrendSoccer',
     content:
@@ -31,7 +31,7 @@ final List<SoccerReportData> soccerReportsDummy = [
   SoccerReportData(
     id: 'sr-02',
     title: 'EPL 34라운드 주요 경기 분석',
-    leagueId: 'epl',
+    leagueId: 'premier_league',
     date: '2026.05.10',
     author: 'TrendSoccer',
     content:
@@ -57,7 +57,7 @@ final List<SoccerReportData> soccerReportsDummy = [
   SoccerReportData(
     id: 'sr-05',
     title: 'Serie A 주간 리뷰: 유벤투스의 반등',
-    leagueId: 'seriea',
+    leagueId: 'serie_a',
     date: '2026.05.07',
     author: 'TrendSoccer',
     content: '유벤투스가 최근 3연승을 기록하며 UCL 진출권 경쟁에 다시 뛰어들었습니다.',
@@ -65,7 +65,7 @@ final List<SoccerReportData> soccerReportsDummy = [
   SoccerReportData(
     id: 'sr-06',
     title: 'UCL 8강 결과 종합 분석',
-    leagueId: 'ucl',
+    leagueId: 'champions_league',
     date: '2026.05.06',
     author: 'TrendSoccer',
     content: 'UCL 8강전이 모두 마무리되었습니다. 예상대로 강호들이 4강에 이름을 올렸습니다.',
@@ -73,7 +73,7 @@ final List<SoccerReportData> soccerReportsDummy = [
   SoccerReportData(
     id: 'sr-07',
     title: 'EPL 하위권 잔류 전쟁: 남은 일정 분석',
-    leagueId: 'epl',
+    leagueId: 'premier_league',
     date: '2026.05.05',
     author: 'TrendSoccer',
     content:
@@ -82,7 +82,7 @@ final List<SoccerReportData> soccerReportsDummy = [
   SoccerReportData(
     id: 'sr-08',
     title: 'K리그 전반기 중간 점검',
-    leagueId: 'kleague',
+    leagueId: 'k_league',
     date: '2026.05.04',
     author: 'TrendSoccer',
     content: 'K리그 전반기가 중반을 넘기면서 각 팀의 전력을 점검합니다.',

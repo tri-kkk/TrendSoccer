@@ -124,7 +124,7 @@ class TeamAnalysisData {
 /// Sample report — shown for every [matchId] until API integration.
 final SoccerMatchReportData soccerMatchReportDummy = SoccerMatchReportData(
   matchId: 'sa3',
-  leagueId: 'ucl',
+  leagueId: 'champions_league',
   matchDate: 'Mon, May 12 21:00',
   homeTeam: 'Barcelona',
   awayTeam: 'Bayern Munich',

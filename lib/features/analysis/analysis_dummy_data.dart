@@ -1,15 +1,15 @@
 import 'package:trendsoccer/features/trend/trend_dummy_data.dart';
 
 final List<AnalysisCardData> soccerAnalysisFullDummy = [
-  AnalysisCardData(matchId: 'sa1', leagueId: 'epl', leagueName: 'EPL', date: '05.11', homeTeam: 'Arsenal', awayTeam: 'Chelsea', matchTime: '18:30', sport: 'soccer'),
-  AnalysisCardData(matchId: 'sa2', leagueId: 'epl', leagueName: 'EPL', date: '05.11', homeTeam: 'Liverpool', awayTeam: 'Man City', matchTime: '21:00', sport: 'soccer'),
-  AnalysisCardData(matchId: 'sa3', leagueId: 'ucl', leagueName: 'UCL', date: '05.11', homeTeam: 'Barcelona', awayTeam: 'Bayern', matchTime: '21:00', isPremiumPick: true, pickDirection: 'home', winRate: '72%', sport: 'soccer'),
+  AnalysisCardData(matchId: 'sa1', leagueId: 'premier_league', leagueName: 'EPL', date: '05.11', homeTeam: 'Arsenal', awayTeam: 'Chelsea', matchTime: '18:30', sport: 'soccer'),
+  AnalysisCardData(matchId: 'sa2', leagueId: 'premier_league', leagueName: 'EPL', date: '05.11', homeTeam: 'Liverpool', awayTeam: 'Man City', matchTime: '21:00', sport: 'soccer'),
+  AnalysisCardData(matchId: 'sa3', leagueId: 'champions_league', leagueName: 'UCL', date: '05.11', homeTeam: 'Barcelona', awayTeam: 'Bayern', matchTime: '21:00', isPremiumPick: true, pickDirection: 'home', winRate: '72%', sport: 'soccer'),
   AnalysisCardData(matchId: 'sa4', leagueId: 'laliga', leagueName: 'La Liga', date: '05.11', homeTeam: 'Real Madrid', awayTeam: 'Atletico', matchTime: '22:00', sport: 'soccer'),
   AnalysisCardData(matchId: 'sa5', leagueId: 'bundesliga', leagueName: 'Bundesliga', date: '05.11', homeTeam: 'Bayern', awayTeam: 'Dortmund', matchTime: '20:30', sport: 'soccer'),
-  AnalysisCardData(matchId: 'sa6', leagueId: 'seriea', leagueName: 'Serie A', date: '05.11', homeTeam: 'Juventus', awayTeam: 'AC Milan', matchTime: '19:00', isPremiumPick: true, pickDirection: 'away', winRate: '65%', sport: 'soccer'),
-  AnalysisCardData(matchId: 'sa7', leagueId: 'ligue1', leagueName: 'Ligue 1', date: '05.11', homeTeam: 'PSG', awayTeam: 'Marseille', matchTime: '21:00', sport: 'soccer'),
-  AnalysisCardData(matchId: 'sa8', leagueId: 'epl', leagueName: 'EPL', date: '05.11', homeTeam: 'Tottenham', awayTeam: 'Newcastle', matchTime: '16:00', sport: 'soccer'),
-  AnalysisCardData(matchId: 'sa9', leagueId: 'ucl', leagueName: 'UCL', date: '05.11', homeTeam: 'Inter', awayTeam: 'PSG', matchTime: '21:00', sport: 'soccer'),
+  AnalysisCardData(matchId: 'sa6', leagueId: 'serie_a', leagueName: 'Serie A', date: '05.11', homeTeam: 'Juventus', awayTeam: 'AC Milan', matchTime: '19:00', isPremiumPick: true, pickDirection: 'away', winRate: '65%', sport: 'soccer'),
+  AnalysisCardData(matchId: 'sa7', leagueId: 'ligue_1', leagueName: 'Ligue 1', date: '05.11', homeTeam: 'PSG', awayTeam: 'Marseille', matchTime: '21:00', sport: 'soccer'),
+  AnalysisCardData(matchId: 'sa8', leagueId: 'premier_league', leagueName: 'EPL', date: '05.11', homeTeam: 'Tottenham', awayTeam: 'Newcastle', matchTime: '16:00', sport: 'soccer'),
+  AnalysisCardData(matchId: 'sa9', leagueId: 'champions_league', leagueName: 'UCL', date: '05.11', homeTeam: 'Inter', awayTeam: 'PSG', matchTime: '21:00', sport: 'soccer'),
   AnalysisCardData(matchId: 'sa10', leagueId: 'laliga', leagueName: 'La Liga', date: '05.11', homeTeam: 'Sevilla', awayTeam: 'Valencia', matchTime: '20:00', sport: 'soccer'),
 ];
 
@@ -26,12 +26,12 @@ final List<AnalysisCardData> baseballAnalysisFullDummy = [
 
 final List<Map<String, String>> soccerLeagueFilters = [
   {'id': 'all', 'name': '전체'},
-  {'id': 'epl', 'name': 'EPL'},
-  {'id': 'ucl', 'name': 'UCL'},
+  {'id': 'premier_league', 'name': 'EPL'},
+  {'id': 'champions_league', 'name': 'UCL'},
   {'id': 'laliga', 'name': 'La Liga'},
   {'id': 'bundesliga', 'name': 'Bundesliga'},
-  {'id': 'seriea', 'name': 'Serie A'},
-  {'id': 'ligue1', 'name': 'Ligue 1'},
+  {'id': 'serie_a', 'name': 'Serie A'},
+  {'id': 'ligue_1', 'name': 'Ligue 1'},
 ];
 
 final List<Map<String, String>> baseballLeagueFilters = [

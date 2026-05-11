@@ -49,7 +49,7 @@ class FixtureLeagueGroup {
 final List<FixtureMatchData> soccerFixtureDummy = [
   FixtureMatchData(
     matchId: 'sf1',
-    leagueId: 'epl',
+    leagueId: 'premier_league',
     leagueName: 'EPL',
     homeTeam: 'Arsenal',
     awayTeam: 'Chelsea',
@@ -60,7 +60,7 @@ final List<FixtureMatchData> soccerFixtureDummy = [
   ),
   FixtureMatchData(
     matchId: 'sf2',
-    leagueId: 'epl',
+    leagueId: 'premier_league',
     leagueName: 'EPL',
     homeTeam: 'Liverpool',
     awayTeam: 'Man City',
@@ -73,7 +73,7 @@ final List<FixtureMatchData> soccerFixtureDummy = [
   ),
   FixtureMatchData(
     matchId: 'sf3',
-    leagueId: 'epl',
+    leagueId: 'premier_league',
     leagueName: 'EPL',
     homeTeam: 'Tottenham',
     awayTeam: 'Newcastle',
@@ -86,7 +86,7 @@ final List<FixtureMatchData> soccerFixtureDummy = [
   ),
   FixtureMatchData(
     matchId: 'sf4',
-    leagueId: 'ucl',
+    leagueId: 'champions_league',
     leagueName: 'UCL',
     homeTeam: 'Barcelona',
     awayTeam: 'Bayern',
@@ -97,7 +97,7 @@ final List<FixtureMatchData> soccerFixtureDummy = [
   ),
   FixtureMatchData(
     matchId: 'sf5',
-    leagueId: 'ucl',
+    leagueId: 'champions_league',
     leagueName: 'UCL',
     homeTeam: 'Inter',
     awayTeam: 'PSG',
@@ -119,7 +119,7 @@ final List<FixtureMatchData> soccerFixtureDummy = [
   ),
   FixtureMatchData(
     matchId: 'sf7',
-    leagueId: 'epl',
+    leagueId: 'premier_league',
     leagueName: 'EPL',
     homeTeam: 'Man United',
     awayTeam: 'Everton',

@@ -26,6 +26,19 @@ class _AnalysisPageState extends State<AnalysisPage> {
   int _selectedSubTab = 0;
   String _selectedLeagueId = 'all';
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final sportParam = GoRouterState.of(context).uri.queryParameters['sport'];
+    if (sportParam == 'baseball' && _selectedSport != SportType.baseball) {
+      setState(() {
+        _selectedSport = SportType.baseball;
+        _selectedLeagueId = 'all';
+        _selectedSubTab = 0;
+      });
+    }
+  }
+
   PickDirection? _pickDirectionFromData(String? raw) {
     return switch (raw) {
       'home' => PickDirection.home,
@@ -60,9 +73,13 @@ class _AnalysisPageState extends State<AnalysisPage> {
                   winRate: '78%',
                   countdown: '3h 42m',
                   streak: '5 WIN',
-                  recentHomeTeam: 'Barcelona',
-                  recentAwayTeam: 'Bayern',
-                  recentPick: PickDirection.home,
+                  recentWins: const [
+                    RecentWinData(
+                      homeTeam: '바르셀로나',
+                      awayTeam: '바이에른',
+                      pickDirection: '홈',
+                    ),
+                  ],
                   onCTATap: null,
                 ),
               ),

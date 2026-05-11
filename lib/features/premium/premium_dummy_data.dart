@@ -6,7 +6,7 @@ import 'package:trendsoccer/shared/widgets/combo/combo_type_badge.dart';
 final List<AnalysisCardData> premiumPickDummy = [
   AnalysisCardData(
     matchId: 'pp1',
-    leagueId: 'ucl',
+    leagueId: 'champions_league',
     leagueName: 'UCL',
     date: '05.11',
     homeTeam: 'Barcelona',
@@ -19,7 +19,7 @@ final List<AnalysisCardData> premiumPickDummy = [
   ),
   AnalysisCardData(
     matchId: 'pp2',
-    leagueId: 'epl',
+    leagueId: 'premier_league',
     leagueName: 'EPL',
     date: '05.11',
     homeTeam: 'Arsenal',
@@ -32,7 +32,7 @@ final List<AnalysisCardData> premiumPickDummy = [
   ),
   AnalysisCardData(
     matchId: 'pp3',
-    leagueId: 'seriea',
+    leagueId: 'serie_a',
     leagueName: 'Serie A',
     date: '05.11',
     homeTeam: 'Juventus',

@@ -55,9 +55,15 @@ class TsLeagueIcon extends StatelessWidget {
     );
   }
 
+  String _assetPath(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final folder = brightness == Brightness.dark ? 'dark' : 'light';
+    return 'assets/images/leagues/icon/$folder/$leagueId.svg';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final path = 'assets/images/leagues/icon/dark/$leagueId.svg';
+    final path = _assetPath(context);
 
     return FutureBuilder<String?>(
       future: _loadLeagueIconSvg(path),

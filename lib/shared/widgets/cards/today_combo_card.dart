@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
+import 'package:trendsoccer/shared/widgets/icons/sports_icon.dart';
 import 'package:trendsoccer/shared/widgets/league/ts_league_icon.dart';
 
 /// 오늘의 추천 조합 — Trend / Combo entry (Figma 963:12446).
@@ -40,9 +42,20 @@ class TodayComboCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            '오늘의 추천 조합',
-            style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TsSportsIcon(
+                sport: SportType.baseball,
+                size: 24,
+                fill: SportsIconFill.primary,
+              ),
+              const SizedBox(width: TsSpacing.sm),
+              Text(
+                '오늘의 추천 조합',
+                style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+              ),
+            ],
           ),
           const SizedBox(height: TsSpacing.lg),
           Row(

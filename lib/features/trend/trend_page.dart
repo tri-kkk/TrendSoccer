@@ -9,7 +9,6 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/trend/trend_dummy_data.dart';
 import 'package:trendsoccer/shared/widgets/banner/ts_banner.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
-import 'package:trendsoccer/shared/widgets/cards/pick_direction_badge.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/today_combo_card.dart';
 import 'package:trendsoccer/shared/widgets/icons/sports_icon.dart';
@@ -31,7 +30,7 @@ class _TrendPageState extends State<TrendPage> {
   @override
   void initState() {
     super.initState();
-    _bannerController = PageController(viewportFraction: 0.95);
+    _bannerController = PageController(viewportFraction: 1.0);
     _bannerTimer = Timer.periodic(const Duration(seconds: 4), (_) {
       if (!mounted || !_bannerController.hasClients) {
         return;
@@ -53,8 +52,9 @@ class _TrendPageState extends State<TrendPage> {
   }
 
   Widget _buildEventBanner() {
+    final bannerSize = MediaQuery.sizeOf(context).width - 32;
     return SizedBox(
-      height: 380,
+      height: bannerSize,
       child: PageView.builder(
         controller: _bannerController,
         onPageChanged: (index) {
@@ -62,10 +62,7 @@ class _TrendPageState extends State<TrendPage> {
         },
         itemCount: _bannerCount,
         itemBuilder: (context, index) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4),
-            child: TsBanner(type: TsBannerType.event),
-          );
+          return const TsBanner(type: TsBannerType.event);
         },
       ),
     );
@@ -207,13 +204,12 @@ class _TrendPageState extends State<TrendPage> {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
                 _buildEventBanner(),
                 const SizedBox(height: 8),
                 _buildBannerIndicator(),
@@ -225,7 +221,7 @@ class _TrendPageState extends State<TrendPage> {
                 _buildSectionHeader(
                   sportType: SportType.soccer,
                   title: '축구 분석',
-                  onMoreTap: null,
+                  onMoreTap: () => context.go('/analysis'),
                 ),
                 const SizedBox(height: 16),
                 _buildSoccerCards(),
@@ -234,21 +230,35 @@ class _TrendPageState extends State<TrendPage> {
                 _buildSectionHeader(
                   sportType: SportType.baseball,
                   title: '야구 분석',
-                  onMoreTap: null,
+                  onMoreTap: () => context.go('/analysis?sport=baseball'),
                 ),
                 const SizedBox(height: 16),
                 _buildBaseballCards(),
                 const SizedBox(height: 16),
 
-                const PremiumPickCard(
+                PremiumPickCard(
                   showCTA: true,
                   winRate: '78%',
                   countdown: '3h 42m',
                   streak: '5 WIN',
-                  recentHomeTeam: '바르셀로나',
-                  recentAwayTeam: '바이에른',
-                  recentPick: PickDirection.home,
-                  onCTATap: null,
+                  recentWins: const [
+                    RecentWinData(
+                      homeTeam: '바르셀로나',
+                      awayTeam: '바이에른',
+                      pickDirection: '홈',
+                    ),
+                    RecentWinData(
+                      homeTeam: '아스날',
+                      awayTeam: '첼시',
+                      pickDirection: '원정',
+                    ),
+                    RecentWinData(
+                      homeTeam: '레알 마드리드',
+                      awayTeam: '아틀레티코',
+                      pickDirection: '홈',
+                    ),
+                  ],
+                  onCTATap: () => context.go('/premium'),
                 ),
                 const SizedBox(height: 16),
 
@@ -256,15 +266,14 @@ class _TrendPageState extends State<TrendPage> {
                   comboCount: '20',
                   accuracy: '50%',
                   avgOdds: '4.29',
-                  onCTATap: null,
+                  onCTATap: () => context.go('/premium'),
                 ),
 
-                const SizedBox(height: 80),
+                const SizedBox(height: 24),
               ],
             ),
           ),
         ),
-      ),
     );
   }
 }

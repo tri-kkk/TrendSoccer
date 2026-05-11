@@ -15,11 +15,11 @@ class TsBottomNavigation extends StatelessWidget {
   final ValueChanged<int> onTap;
 
   static const List<String> _labels = [
-    'Trend',
-    'Analysis',
-    'Fixture',
-    'Premium',
-    'Menu',
+    '트렌드',
+    '분석',
+    '일정',
+    '프리미엄',
+    '메뉴',
   ];
 
   static const List<IconData> _icons = [

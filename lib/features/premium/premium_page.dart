@@ -45,9 +45,13 @@ class _PremiumPageState extends State<PremiumPage> {
               winRate: '78%',
               countdown: '3h 42m',
               streak: '5 WIN',
-              recentHomeTeam: 'Barcelona',
-              recentAwayTeam: 'Bayern',
-              recentPick: PickDirection.home,
+              recentWins: const [
+                RecentWinData(
+                  homeTeam: 'Barcelona',
+                  awayTeam: 'Bayern',
+                  pickDirection: '홈',
+                ),
+              ],
             ),
             const SizedBox(height: TsSpacing.lg),
             Container(height: 1, color: Theme.of(context).extension<TsSemanticColors>()!.borderSubtle),
