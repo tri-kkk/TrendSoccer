@@ -75,18 +75,20 @@ class AnalysisCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
-    return SizedBox(
-      width: 380,
-      child: Container(
-        padding: const EdgeInsets.all(TsSpacing.lg),
-        decoration: BoxDecoration(
-          color: semantic.surfaceRaised,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 380),
+      child: SizedBox(
+        width: double.infinity,
+        child: Container(
+          padding: const EdgeInsets.all(TsSpacing.lg),
+          decoration: BoxDecoration(
+            color: semantic.surfaceRaised,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -208,6 +210,7 @@ class AnalysisCard extends StatelessWidget {
               onPressed: onAnalyze,
             ),
           ],
+        ),
         ),
       ),
     );

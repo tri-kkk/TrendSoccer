@@ -89,7 +89,10 @@ class _TrendPageState extends State<TrendPage> {
           final isLast = index == items.length - 1;
           return Padding(
             padding: EdgeInsets.only(right: isLast ? 0 : 12),
-            child: _analysisCardFromData(items[index]),
+            child: SizedBox(
+              width: 380,
+              child: _analysisCardFromData(items[index]),
+            ),
           );
         },
       ),
