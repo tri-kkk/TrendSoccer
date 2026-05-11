@@ -22,8 +22,11 @@ class TrendPage extends StatefulWidget {
 
 class _TrendPageState extends State<TrendPage> {
   static const int _bannerCount = 3;
+  static const double _analysisCardViewportFraction = 0.96;
 
   late final PageController _bannerController;
+  late final PageController _soccerCardsPageController;
+  late final PageController _baseballCardsPageController;
   Timer? _bannerTimer;
   int _currentBannerPage = 0;
 
@@ -31,6 +34,10 @@ class _TrendPageState extends State<TrendPage> {
   void initState() {
     super.initState();
     _bannerController = PageController(viewportFraction: 1.0);
+    _soccerCardsPageController =
+        PageController(viewportFraction: _analysisCardViewportFraction);
+    _baseballCardsPageController =
+        PageController(viewportFraction: _analysisCardViewportFraction);
     _bannerTimer = Timer.periodic(const Duration(seconds: 4), (_) {
       if (!mounted || !_bannerController.hasClients) {
         return;
@@ -48,6 +55,8 @@ class _TrendPageState extends State<TrendPage> {
   void dispose() {
     _bannerTimer?.cancel();
     _bannerController.dispose();
+    _soccerCardsPageController.dispose();
+    _baseballCardsPageController.dispose();
     super.dispose();
   }
 
@@ -136,16 +145,17 @@ class _TrendPageState extends State<TrendPage> {
   }
 
   Widget _buildSoccerCards() {
+    final soccerDummy = soccerAnalysisDummy;
     return SizedBox(
       height: 220,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: soccerAnalysisDummy.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 10),
+      child: PageView.builder(
+        controller: _soccerCardsPageController,
+        padEnds: false,
+        itemCount: soccerDummy.length,
         itemBuilder: (context, index) {
-          final data = soccerAnalysisDummy[index];
-          return SizedBox(
-            width: 380,
+          final data = soccerDummy[index];
+          return Padding(
+            padding: const EdgeInsets.only(right: 10),
             child: AnalysisCard(
               leagueId: data.leagueId,
               leagueName: data.leagueName,
@@ -168,16 +178,17 @@ class _TrendPageState extends State<TrendPage> {
   }
 
   Widget _buildBaseballCards() {
+    final baseballDummy = baseballAnalysisDummy;
     return SizedBox(
       height: 220,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: baseballAnalysisDummy.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 10),
+      child: PageView.builder(
+        controller: _baseballCardsPageController,
+        padEnds: false,
+        itemCount: baseballDummy.length,
         itemBuilder: (context, index) {
-          final data = baseballAnalysisDummy[index];
-          return SizedBox(
-            width: 380,
+          final data = baseballDummy[index];
+          return Padding(
+            padding: const EdgeInsets.only(right: 10),
             child: AnalysisCard(
               leagueId: data.leagueId,
               leagueName: data.leagueName,
