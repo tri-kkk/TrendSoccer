@@ -4,7 +4,8 @@ import '../models/user_state.dart';
 
 /// Global provider that holds the current user's authentication state.
 ///
-/// Defaults to [AuthStatus.guest]. Update via:
+/// Defaults to [AuthStatus.loggedIn] (dev placeholder). For guest UI, call
+/// [UserNotifier.logout]. Update via:
 /// ```dart
 /// ref.read(userProvider.notifier).login(
 ///   name: 'Son Heung-min',
@@ -16,7 +17,11 @@ final userProvider =
 
 class UserNotifier extends Notifier<UserState> {
   @override
-  UserState build() => const UserState(authStatus: AuthStatus.guest);
+  UserState build() => const UserState(
+        authStatus: AuthStatus.loggedIn,
+        name: 'Son Heung-min',
+        email: 'son@spurs.com',
+      );
 
   void login({required String name, required String email}) {
     state = UserState(
