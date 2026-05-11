@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/shared/widgets/navigation/ts_bottom_navigation.dart';
 
-/// Tab shell with bottom [NavigationBar] (v2 tabs).
+/// Tab shell with bottom [TsBottomNavigation] (v2 tabs).
 class MainScreen extends StatelessWidget {
   const MainScreen({required this.child, super.key});
 
@@ -25,43 +25,14 @@ class MainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final path = GoRouterState.of(context).uri.path;
     final selectedIndex = _selectedIndexForLocation(path);
 
     return Scaffold(
       body: child,
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: semantic.surfaceRaised,
-        selectedIndex: selectedIndex,
-        onDestinationSelected: (index) => context.go(_tabPaths[index]),
-        destinations: [
-          NavigationDestination(
-            icon: Icon(Icons.trending_up, color: semantic.textTertiary),
-            selectedIcon: Icon(Icons.trending_up, color: semantic.interactivePrimary),
-            label: 'Trend',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.analytics, color: semantic.textTertiary),
-            selectedIcon: Icon(Icons.analytics, color: semantic.interactivePrimary),
-            label: 'Analysis',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.calendar_today, color: semantic.textTertiary),
-            selectedIcon: Icon(Icons.calendar_today, color: semantic.interactivePrimary),
-            label: 'Fixture',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.star, color: semantic.textTertiary),
-            selectedIcon: Icon(Icons.star, color: semantic.interactivePrimary),
-            label: 'Premium',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.menu, color: semantic.textTertiary),
-            selectedIcon: Icon(Icons.menu, color: semantic.interactivePrimary),
-            label: 'Menu',
-          ),
-        ],
+      bottomNavigationBar: TsBottomNavigation(
+        currentIndex: selectedIndex,
+        onTap: (index) => context.go(_tabPaths[index]),
       ),
     );
   }
