@@ -175,7 +175,7 @@ class AnalysisCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: TsSpacing.lg),
+            const SizedBox(height: TsSpacing.md),
             if (isPremiumPick &&
                 pickDirection != null &&
                 winRate != null) ...[

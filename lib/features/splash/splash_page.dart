@@ -43,7 +43,13 @@ class _SplashPageState extends State<SplashPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TsLogo(type: TsLogoType.vertical, color: logoColor),
+            SizedBox(
+              height: 120,
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: TsLogo(type: TsLogoType.vertical, color: logoColor),
+              ),
+            ),
             const SizedBox(height: TsSpacing.xl),
             CircularProgressIndicator(
               color: semantic.interactivePrimary,

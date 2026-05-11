@@ -7,78 +7,26 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/league/ts_league_icon.dart';
 
+/// 오늘의 추천 조합 — Trend / Combo entry (Figma 963:12446).
 class TodayComboCard extends StatelessWidget {
   const TodayComboCard({
-    required this.comboCount,
-    required this.accuracy,
-    required this.avgOdds,
-    this.onTap,
+    this.comboCount = '20',
+    this.accuracy = '50%',
+    this.avgOdds = '4.29',
+    this.onCTATap,
     super.key,
   });
 
-  final int comboCount;
+  final String comboCount;
   final String accuracy;
   final String avgOdds;
-  final VoidCallback? onTap;
-
-  static const List<({String leagueId, String label, Color borderColor, Color backgroundColor})>
-      _leagues = [
-    (
-      leagueId: 'kbo',
-      label: 'KBO',
-      borderColor: Color.fromRGBO(239, 68, 68, 0.1),
-      backgroundColor: Color.fromRGBO(239, 68, 68, 0.06),
-    ),
-    (
-      leagueId: 'mlb',
-      label: 'MLB',
-      borderColor: Color.fromRGBO(0, 194, 255, 0.1),
-      backgroundColor: Color.fromRGBO(0, 194, 255, 0.06),
-    ),
-    (
-      leagueId: 'npb',
-      label: 'NPB',
-      borderColor: Color.fromRGBO(245, 158, 11, 0.1),
-      backgroundColor: Color.fromRGBO(245, 158, 11, 0.06),
-    ),
-  ];
-
-  Widget _leagueBadge({
-    required BuildContext context,
-    required String leagueId,
-    required String label,
-    required Color borderColor,
-    required Color backgroundColor,
-  }) {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor, width: 1),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          TsLeagueIcon(leagueId: leagueId, size: 32),
-          const SizedBox(height: TsSpacing.xs),
-          Text(
-            label,
-            style: TsType.labelSBold.copyWith(color: semantic.textPrimary),
-          ),
-        ],
-      ),
-    );
-  }
+  final VoidCallback? onCTATap;
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(TsSpacing.lg),
       decoration: BoxDecoration(
         color: semantic.surfaceRaised,
@@ -89,28 +37,37 @@ class TodayComboCard extends StatelessWidget {
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             '오늘의 추천 조합',
             style: TsType.headingH3.copyWith(color: semantic.textPrimary),
-            textAlign: TextAlign.center,
           ),
           const SizedBox(height: TsSpacing.lg),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (var i = 0; i < _leagues.length; i++) ...[
-                if (i > 0) const SizedBox(width: TsSpacing.md),
-                _leagueBadge(
-                  context: context,
-                  leagueId: _leagues[i].leagueId,
-                  label: _leagues[i].label,
-                  borderColor: _leagues[i].borderColor,
-                  backgroundColor: _leagues[i].backgroundColor,
-                ),
-              ],
+            children: const [
+              _LeagueIconBox(
+                bgColor: Color(0x0FEF4444),
+                borderColor: Color(0x1AEF4444),
+                leagueId: 'kbo',
+                leagueName: 'KBO',
+              ),
+              SizedBox(width: TsSpacing.md),
+              _LeagueIconBox(
+                bgColor: Color(0x0F00C2FF),
+                borderColor: Color(0x1A00C2FF),
+                leagueId: 'mlb',
+                leagueName: 'MLB',
+              ),
+              SizedBox(width: TsSpacing.md),
+              _LeagueIconBox(
+                bgColor: Color(0x0FF59E0B),
+                borderColor: Color(0x1AF59E0B),
+                leagueId: 'npb',
+                leagueName: 'NPB',
+              ),
             ],
           ),
           const SizedBox(height: TsSpacing.lg),
@@ -134,16 +91,13 @@ class TodayComboCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: TsSpacing.lg),
-          Container(
-            height: 1,
-            color: semantic.borderSubtle,
-          ),
+          Container(height: 1, width: double.infinity, color: semantic.borderSubtle),
           const SizedBox(height: TsSpacing.lg),
           Row(
             children: [
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.all(TsSpacing.md),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: semantic.surfaceContainer,
                     borderRadius: BorderRadius.circular(8),
@@ -160,7 +114,7 @@ class TodayComboCard extends StatelessWidget {
                       ),
                       const SizedBox(height: TsSpacing.xs),
                       Text(
-                        '$comboCount',
+                        comboCount,
                         style: TsType.headingH2.copyWith(
                           color: semantic.textPrimary,
                         ),
@@ -172,7 +126,7 @@ class TodayComboCard extends StatelessWidget {
               const SizedBox(width: TsSpacing.sm),
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.all(TsSpacing.md),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: semantic.surfaceContainer,
                     borderRadius: BorderRadius.circular(8),
@@ -201,7 +155,7 @@ class TodayComboCard extends StatelessWidget {
               const SizedBox(width: TsSpacing.sm),
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.all(TsSpacing.md),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: semantic.surfaceContainer,
                     borderRadius: BorderRadius.circular(8),
@@ -230,15 +184,52 @@ class TodayComboCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: TsSpacing.lg),
-          Container(
-            height: 1,
-            color: semantic.borderSubtle,
-          ),
+          Container(height: 1, width: double.infinity, color: semantic.borderSubtle),
           const SizedBox(height: TsSpacing.lg),
           TsButton(
             label: '오늘의 조합 확인하기 →',
             variant: TsButtonVariant.primary,
-            onPressed: onTap,
+            onPressed: onCTATap,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LeagueIconBox extends StatelessWidget {
+  const _LeagueIconBox({
+    required this.bgColor,
+    required this.borderColor,
+    required this.leagueId,
+    required this.leagueName,
+  });
+
+  final Color bgColor;
+  final Color borderColor;
+  final String leagueId;
+  final String leagueName;
+
+  @override
+  Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor, width: 1),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          TsLeagueIcon(leagueId: leagueId, size: 32),
+          const SizedBox(height: TsSpacing.xs),
+          Text(
+            leagueName,
+            style: TsType.labelSBold.copyWith(color: semantic.textPrimary),
           ),
         ],
       ),
