@@ -24,3 +24,6 @@ export 'cards/analysis_card.dart';
 export 'cards/today_pick_card.dart';
 export 'cards/today_combo_card.dart';
 export 'cards/premium_pick_card.dart';
+export 'report/report_toggle.dart';
+export 'report/match_header.dart';
+export 'report/blurable_section.dart';

@@ -1,0 +1,136 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/shared/widgets/league/ts_league_icon.dart';
+import 'package:trendsoccer/shared/widgets/report/report_toggle.dart';
+
+class MatchHeader extends StatelessWidget {
+  const MatchHeader({
+    required this.leagueId,
+    required this.matchDate,
+    required this.homeTeam,
+    required this.awayTeam,
+    required this.selectedTab,
+    required this.onTabChanged,
+    this.homeLogoUrl,
+    this.awayLogoUrl,
+    super.key,
+  });
+
+  final String leagueId;
+  final String matchDate;
+  final String homeTeam;
+  final String awayTeam;
+  final String? homeLogoUrl;
+  final String? awayLogoUrl;
+  final ReportTab selectedTab;
+  final ValueChanged<ReportTab> onTabChanged;
+
+  static const TextStyle _vsTextStyle = TextStyle(
+    fontFamily: 'Poppins',
+    fontSize: 22,
+    fontWeight: FontWeight.w600,
+    height: 28 / 22,
+  );
+
+  static const double _teamLogoSize = 80;
+  static const double _teamColumnWidth = 80;
+
+  Widget _teamLogo(BuildContext context, String? url) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    Widget placeholder() {
+      return Container(
+        width: _teamLogoSize,
+        height: _teamLogoSize,
+        decoration: BoxDecoration(
+          color: semantic.surfaceContainer,
+          shape: BoxShape.circle,
+        ),
+      );
+    }
+
+    if (url == null || url.isEmpty) {
+      return placeholder();
+    }
+    return ClipOval(
+      child: CachedNetworkImage(
+        imageUrl: url,
+        width: _teamLogoSize,
+        height: _teamLogoSize,
+        fit: BoxFit.cover,
+        placeholder: (context, _) => placeholder(),
+        errorWidget: (context, _, _) => placeholder(),
+      ),
+    );
+  }
+
+  Widget _teamColumn(BuildContext context, String team, String? logoUrl) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    return SizedBox(
+      width: _teamColumnWidth,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _teamLogo(context, logoUrl),
+          const SizedBox(height: TsSpacing.sm),
+          Text(
+            team,
+            style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+
+    return Container(
+      width: double.infinity,
+      color: semantic.surfaceBase,
+      padding: const EdgeInsets.symmetric(
+        horizontal: TsSpacing.lg,
+        vertical: TsSpacing.xl,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          TsLeagueIcon(leagueId: leagueId, size: 24),
+          const SizedBox(height: TsSpacing.lg),
+          Text(
+            matchDate,
+            style: TsType.labelSRegular.copyWith(
+              color: semantic.textTertiary,
+            ),
+          ),
+          const SizedBox(height: TsSpacing.lg),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _teamColumn(context, homeTeam, homeLogoUrl),
+              const SizedBox(width: TsSpacing.xxxl),
+              Text(
+                'VS',
+                style: _vsTextStyle.copyWith(color: semantic.textTertiary),
+              ),
+              const SizedBox(width: TsSpacing.xxxl),
+              _teamColumn(context, awayTeam, awayLogoUrl),
+            ],
+          ),
+          const SizedBox(height: TsSpacing.lg),
+          ReportToggle(selectedTab: selectedTab, onChanged: onTabChanged),
+        ],
+      ),
+    );
+  }
+}
