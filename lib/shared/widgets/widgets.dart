@@ -37,3 +37,4 @@ export 'baseball/season_chip.dart';
 export 'baseball/pitcher_comment_chip.dart';
 export 'baseball/premium/baseball_info_box.dart';
 export 'baseball/premium/confidence_chip.dart';
+export 'baseball/premium/gauge_card.dart';
