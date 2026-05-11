@@ -16,8 +16,7 @@ dependencies:
   go_router: ^17.2.0
   dio: ^5.9.2
   supabase_flutter: ^2.12.2
-  google_fonts: ^8.0.2
-  flutter_svg: ^2.0.10  # SVG 지원 추가
+  flutter_svg: ^2.0.10  # SVG support
   intl: ^0.20.2
   cached_network_image: ^3.4.1
   url_launcher: ^6.3.1
@@ -27,8 +26,6 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^6.0.0
-  riverpod_generator: ^4.0.3
-  build_runner: ^2.13.1
 
 flutter:
   uses-material-design: true
@@ -37,15 +34,57 @@ flutter:
     # Logos
     - assets/images/logos/
 
-    # League Icons (Analysis용)
+    # League Icons (Analysis)
     - assets/images/leagues/icon/dark/
 
-    # League Logos (Report용)
+    # League Logos (Report)
     - assets/images/leagues/logo/dark/
     - assets/images/leagues/logo/light/
 
-    # Login Symbols (Auth용)
+    # Login Symbols (Auth)
     - assets/images/login_symbols/
 
     # UI icons (checks, etc.)
     - assets/images/icons/
+
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins/Poppins-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/Poppins/Poppins-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/Poppins/Poppins-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Poppins/Poppins-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Poppins/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins/Poppins-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Poppins/Poppins-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Poppins/Poppins-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Poppins/Poppins-Black.ttf
+          weight: 900
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard/Pretendard-Thin.otf
+          weight: 100
+        - asset: assets/fonts/Pretendard/Pretendard-ExtraLight.otf
+          weight: 200
+        - asset: assets/fonts/Pretendard/Pretendard-Light.otf
+          weight: 300
+        - asset: assets/fonts/Pretendard/Pretendard-Regular.otf
+          weight: 400
+        - asset: assets/fonts/Pretendard/Pretendard-Medium.otf
+          weight: 500
+        - asset: assets/fonts/Pretendard/Pretendard-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/Pretendard/Pretendard-Bold.otf
+          weight: 700
+        - asset: assets/fonts/Pretendard/Pretendard-ExtraBold.otf
+          weight: 800
+        - asset: assets/fonts/Pretendard/Pretendard-Black.otf
+          weight: 900

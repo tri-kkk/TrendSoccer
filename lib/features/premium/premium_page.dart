@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
-class TrendPage extends StatelessWidget {
-  const TrendPage({super.key});
+class PremiumPage extends StatelessWidget {
+  const PremiumPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +12,7 @@ class TrendPage extends StatelessWidget {
       backgroundColor: semantic.surfaceBase,
       body: Center(
         child: Text(
-          'Trend',
+          'Premium',
           style: TsType.headingH1.copyWith(color: semantic.textPrimary),
         ),
       ),

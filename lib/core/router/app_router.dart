@@ -1,111 +1,61 @@
-import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
+import 'package:trendsoccer/features/analysis/analysis_page.dart';
+import 'package:trendsoccer/features/auth/login_page.dart';
+import 'package:trendsoccer/features/auth/signup_complete_page.dart';
+import 'package:trendsoccer/features/auth/signup_terms_page.dart';
+import 'package:trendsoccer/features/fixture/fixture_page.dart';
+import 'package:trendsoccer/features/menu/menu_page.dart';
+import 'package:trendsoccer/features/premium/premium_page.dart';
+import 'package:trendsoccer/features/splash/splash_page.dart';
+import 'package:trendsoccer/features/trend/trend_page.dart';
+import 'package:trendsoccer/main_screen.dart';
 
-import '../../features/analysis/analysis_page.dart';
-import '../../features/analysis/baseball_match_report_page.dart';
-import '../../features/analysis/soccer_match_report_page.dart';
-import '../../features/fixture/fixture_page.dart';
-import '../../features/auth/login_page.dart';
-import '../../features/auth/signup_complete_page.dart';
-import '../../features/auth/signup_terms_page.dart';
-import '../../features/menu/menu_page.dart';
-import '../../features/report/report_page.dart';
-import '../../features/report/soccer_report_detail_page.dart';
-import '../../features/report/soccer_report_list_page.dart';
-import '../../features/splash/splash_page.dart';
-import '../../features/trend/trend_page.dart';
-import '../../main_screen.dart';
-
-final appRouter = GoRouter(
-  initialLocation: '/splash',
-  routes: [
-    GoRoute(
-      path: '/splash',
-      name: 'splash',
-      builder: (context, state) => const SplashPage(),
-    ),
-    GoRoute(
-      path: '/login',
-      name: 'login',
-      builder: (context, state) => const LoginPage(),
-    ),
-    GoRoute(
-      path: '/signup/terms',
-      name: 'signupTerms',
-      builder: (context, state) => const SignupTermsPage(),
-    ),
-    GoRoute(
-      path: '/signup/complete',
-      name: 'signupComplete',
-      builder: (context, state) => const SignupCompletePage(),
-    ),
-    ShellRoute(
-      builder: (context, state, child) {
-        return MainScreen(child: child);
-      },
-      routes: [
-        GoRoute(
-          path: '/trend',
-          pageBuilder: (context, state) => const CupertinoPage(
-            child: TrendPage(),
-          ),
-        ),
-        GoRoute(
-          path: '/analysis',
-          pageBuilder: (context, state) => const CupertinoPage(
-            child: AnalysisPage(),
-          ),
-        ),
-        GoRoute(
-          path: '/fixture',
-          pageBuilder: (context, state) => const CupertinoPage(
-            child: FixturePage(),
-          ),
-        ),
-        GoRoute(
-          path: '/report/soccer/:id',
-          pageBuilder: (context, state) {
-            final id = state.pathParameters['id'] ?? '';
-            return CupertinoPage(
-              child: SoccerReportDetailPage(id: id),
-            );
-          },
-        ),
-        GoRoute(
-          path: '/report/soccer',
-          pageBuilder: (context, state) => const CupertinoPage(
-            child: SoccerReportListPage(),
-          ),
-        ),
-        GoRoute(
-          path: '/report',
-          pageBuilder: (context, state) => const CupertinoPage(
-            child: ReportPage(),
-          ),
-        ),
-        GoRoute(
-          path: '/menu',
-          pageBuilder: (context, state) => const CupertinoPage(
-            child: MenuPage(),
-          ),
-        ),
-      ],
-    ),
-    GoRoute(
-      path: '/analysis/soccer/match-report/:matchId',
-      builder: (context, state) => SoccerMatchReportPage(
-        matchId: state.pathParameters['matchId']!,
+/// v2 app routing: tab shell + auth/splash stubs.
+abstract final class AppRouter {
+  static final GoRouter router = GoRouter(
+    initialLocation: '/splash',
+    routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashPage(),
       ),
-    ),
-    GoRoute(
-      path: '/analysis/baseball/match-report/:matchId',
-      name: 'baseballMatchReport',
-      pageBuilder: (context, state) {
-        final matchId = state.pathParameters['matchId'] ?? '';
-        return CupertinoPage(
-          child: BaseballMatchReportPage(matchId: matchId),
-        );
-      },
-    ),
-  ],
-);
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: '/signup/terms',
+        builder: (context, state) => const SignupTermsPage(),
+      ),
+      GoRoute(
+        path: '/signup/complete',
+        builder: (context, state) => const SignupCompletePage(),
+      ),
+      ShellRoute(
+        builder: (context, state, child) => MainScreen(child: child),
+        routes: [
+          GoRoute(
+            path: '/trend',
+            builder: (context, state) => const TrendPage(),
+          ),
+          GoRoute(
+            path: '/analysis',
+            builder: (context, state) => const AnalysisPage(),
+          ),
+          GoRoute(
+            path: '/fixture',
+            builder: (context, state) => const FixturePage(),
+          ),
+          GoRoute(
+            path: '/premium',
+            builder: (context, state) => const PremiumPage(),
+          ),
+          GoRoute(
+            path: '/menu',
+            builder: (context, state) => const MenuPage(),
+          ),
+        ],
+      ),
+    ],
+  );
+}

@@ -1,41 +1,67 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
-import 'core/providers/navigation_provider.dart';
-import 'shared/widgets/navigation/bottom_navigation.dart';
-
-class MainScreen extends ConsumerWidget {
-  const MainScreen({
-    super.key,
-    required this.child,
-  });
+/// Tab shell with bottom [NavigationBar] (v2 tabs).
+class MainScreen extends StatelessWidget {
+  const MainScreen({required this.child, super.key});
 
   final Widget child;
 
+  static const List<String> _tabPaths = [
+    '/trend',
+    '/analysis',
+    '/fixture',
+    '/premium',
+    '/menu',
+  ];
+
+  int _selectedIndexForLocation(String path) {
+    for (var i = 0; i < _tabPaths.length; i++) {
+      if (path.startsWith(_tabPaths[i])) return i;
+    }
+    return 0;
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // 현재 라우트로부터 탭 상태 동기화
-    final location = GoRouterState.of(context).matchedLocation;
-    final currentTab = getTabFromRoute(location);
-
-    // Provider 업데이트 (라우트 변경 감지)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (ref.read(currentTabProvider) != currentTab) {
-        ref.read(currentTabProvider.notifier).setTab(currentTab);
-      }
-    });
-
-    final selectedTab = ref.watch(currentTabProvider);
+  Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final path = GoRouterState.of(context).uri.path;
+    final selectedIndex = _selectedIndexForLocation(path);
 
     return Scaffold(
       body: child,
-      bottomNavigationBar: CustomBottomNavigation(
-        currentTab: selectedTab,
-        onTabChanged: (tab) {
-          ref.read(currentTabProvider.notifier).setTab(tab);
-          context.go(getRouteFromTab(tab));
-        },
+      bottomNavigationBar: NavigationBar(
+        backgroundColor: semantic.surfaceRaised,
+        selectedIndex: selectedIndex,
+        onDestinationSelected: (index) => context.go(_tabPaths[index]),
+        destinations: [
+          NavigationDestination(
+            icon: Icon(Icons.trending_up, color: semantic.textTertiary),
+            selectedIcon: Icon(Icons.trending_up, color: semantic.interactivePrimary),
+            label: 'Trend',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.analytics, color: semantic.textTertiary),
+            selectedIcon: Icon(Icons.analytics, color: semantic.interactivePrimary),
+            label: 'Analysis',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.calendar_today, color: semantic.textTertiary),
+            selectedIcon: Icon(Icons.calendar_today, color: semantic.interactivePrimary),
+            label: 'Fixture',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.star, color: semantic.textTertiary),
+            selectedIcon: Icon(Icons.star, color: semantic.interactivePrimary),
+            label: 'Premium',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.menu, color: semantic.textTertiary),
+            selectedIcon: Icon(Icons.menu, color: semantic.interactivePrimary),
+            label: 'Menu',
+          ),
+        ],
       ),
     );
   }
