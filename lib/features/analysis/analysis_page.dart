@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
@@ -115,7 +116,11 @@ class _AnalysisPageState extends State<AnalysisPage> {
                         isPremiumPick: data.isPremiumPick,
                         pickDirection: _pickDirectionFromData(data.pickDirection),
                         winRate: data.winRate,
-                        onAnalyze: null,
+                        onAnalyze: _selectedSport == SportType.soccer
+                            ? () => context.push(
+                                  '/analysis/soccer/match-report/${data.matchId}',
+                                )
+                            : null,
                       ),
                     );
                   }).toList(),

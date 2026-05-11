@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/features/analysis/analysis_page.dart';
+import 'package:trendsoccer/features/analysis/soccer_match_report_page.dart';
 import 'package:trendsoccer/features/auth/login_page.dart';
 import 'package:trendsoccer/features/auth/signup_complete_page.dart';
 import 'package:trendsoccer/features/auth/signup_terms_page.dart';
@@ -30,6 +31,13 @@ abstract final class AppRouter {
       GoRoute(
         path: '/signup/complete',
         builder: (context, state) => const SignupCompletePage(),
+      ),
+      GoRoute(
+        path: '/analysis/soccer/match-report/:matchId',
+        builder: (context, state) {
+          final matchId = state.pathParameters['matchId'] ?? '';
+          return SoccerMatchReportPage(matchId: matchId);
+        },
       ),
       ShellRoute(
         builder: (context, state, child) => MainScreen(child: child),
