@@ -1,0 +1,106 @@
+import 'package:flutter/material.dart';
+
+import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
+
+enum PlanType { free, trial, premium }
+
+class PlanTicket extends StatelessWidget {
+  const PlanTicket({
+    required this.type,
+    required this.subtitle,
+    this.onButtonTap,
+    super.key,
+  });
+
+  final PlanType type;
+  final String subtitle;
+  final VoidCallback? onButtonTap;
+
+  String get _title {
+    return switch (type) {
+      PlanType.free => '무료 플랜',
+      PlanType.trial => '무료 체험 플랜',
+      PlanType.premium => '프리미엄 플랜',
+    };
+  }
+
+  String get _buttonLabel {
+    return switch (type) {
+      PlanType.free => '구독 시작하기',
+      PlanType.trial => '구독 업그레이드',
+      PlanType.premium => '구독 연장하기',
+    };
+  }
+
+  Widget _ticketIcon(TsSemanticColors semantic) {
+    return switch (type) {
+      PlanType.free => Icon(
+          Icons.confirmation_number_outlined,
+          size: 48,
+          color: semantic.textDisabled,
+        ),
+      PlanType.trial => const Icon(
+          Icons.confirmation_number,
+          size: 48,
+          color: TsColors.membershipTrial500,
+        ),
+      PlanType.premium => const Icon(
+          Icons.confirmation_number,
+          size: 48,
+          color: TsColors.membershipPremium500,
+        ),
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(TsSpacing.lg),
+      decoration: BoxDecoration(
+        color: semantic.surfaceRaised,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 100,
+            height: 100,
+            child: Center(child: _ticketIcon(semantic)),
+          ),
+          const SizedBox(width: TsSpacing.lg),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _title,
+                  style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+                ),
+                const SizedBox(height: TsSpacing.sm),
+                Text(
+                  subtitle,
+                  style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+                ),
+                const SizedBox(height: TsSpacing.sm),
+                TsButton(
+                  label: _buttonLabel,
+                  variant: TsButtonVariant.primary,
+                  size: TsButtonSize.small,
+                  onPressed: onButtonTap,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
