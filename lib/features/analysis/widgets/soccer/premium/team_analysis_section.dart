@@ -123,12 +123,16 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    '최근 10경기',
-                    style: TsType.bodyLRegular.copyWith(
-                      color: semantic.textSecondary,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      '최근 10경기',
+                      style: TsType.bodyLRegular.copyWith(
+                        color: semantic.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                   const SizedBox(height: TsSpacing.lg),
@@ -155,19 +159,27 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                     ],
                   ),
                   const SizedBox(height: TsSpacing.lg),
-                  Text(
-                    '최근 폼',
-                    style: TsType.bodyLRegular.copyWith(
-                      color: semantic.textSecondary,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      '최근 폼',
+                      style: TsType.bodyLRegular.copyWith(
+                        color: semantic.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                   const SizedBox(height: TsSpacing.lg),
                   _buildScoreBoxRow(semantic),
                   const SizedBox(height: TsSpacing.lg),
-                  Text(
-                    w.last10Label,
-                    style: TsType.bodyLRegular.copyWith(
-                      color: semantic.textSecondary,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      w.last10Label,
+                      style: TsType.bodyLRegular.copyWith(
+                        color: semantic.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                   const SizedBox(height: TsSpacing.lg),
@@ -191,10 +203,14 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                     ],
                   ),
                   const SizedBox(height: TsSpacing.lg),
-                  Text(
-                    '골 라인',
-                    style: TsType.bodyLRegular.copyWith(
-                      color: semantic.textSecondary,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      '골 라인',
+                      style: TsType.bodyLRegular.copyWith(
+                        color: semantic.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                   const SizedBox(height: TsSpacing.lg),
@@ -226,10 +242,14 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                     ],
                   ),
                   const SizedBox(height: TsSpacing.lg),
-                  Text(
-                    '마켓 지표 (최근 10경기)',
-                    style: TsType.bodyLRegular.copyWith(
-                      color: semantic.textSecondary,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      '마켓 지표 (최근 10경기)',
+                      style: TsType.bodyLRegular.copyWith(
+                        color: semantic.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                   const SizedBox(height: TsSpacing.lg),
@@ -261,10 +281,14 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                     ],
                   ),
                   const SizedBox(height: TsSpacing.lg),
-                  Text(
-                    '팀 인사이트',
-                    style: TsType.bodyLRegular.copyWith(
-                      color: semantic.textSecondary,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      '팀 인사이트',
+                      style: TsType.bodyLRegular.copyWith(
+                        color: semantic.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                   const SizedBox(height: TsSpacing.lg),

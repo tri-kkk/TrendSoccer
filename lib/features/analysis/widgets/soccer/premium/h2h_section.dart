@@ -119,17 +119,25 @@ class _H2HSectionState extends State<H2HSection> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    '역대 전적',
-                    style: TsType.bodyLRegular.copyWith(
-                      color: semantic.textSecondary,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      '역대 전적',
+                      style: TsType.bodyLRegular.copyWith(
+                        color: semantic.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                   const SizedBox(height: TsSpacing.sm),
-                  Text(
-                    '(${widget.totalMatches} Matches)',
-                    style: TsType.labelSRegular.copyWith(
-                      color: semantic.textTertiary,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      '(${widget.totalMatches} Matches)',
+                      style: TsType.labelSRegular.copyWith(
+                        color: semantic.textTertiary,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                   const SizedBox(height: TsSpacing.lg),
@@ -156,19 +164,27 @@ class _H2HSectionState extends State<H2HSection> {
                     ],
                   ),
                   const SizedBox(height: TsSpacing.lg),
-                  Text(
-                    'Recently Meetings',
-                    style: TsType.bodyLRegular.copyWith(
-                      color: semantic.textSecondary,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      'Recently Meetings',
+                      style: TsType.bodyLRegular.copyWith(
+                        color: semantic.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                   const SizedBox(height: TsSpacing.lg),
                   _buildScoreBoxRow(semantic),
                   const SizedBox(height: TsSpacing.lg),
-                  Text(
-                    '통계',
-                    style: TsType.bodyLRegular.copyWith(
-                      color: semantic.textSecondary,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      '통계',
+                      style: TsType.bodyLRegular.copyWith(
+                        color: semantic.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                   const SizedBox(height: TsSpacing.lg),
@@ -198,10 +214,14 @@ class _H2HSectionState extends State<H2HSection> {
                     ],
                   ),
                   const SizedBox(height: TsSpacing.lg),
-                  Text(
-                    '최대 스코어',
-                    style: TsType.bodyLRegular.copyWith(
-                      color: semantic.textSecondary,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      '최대 스코어',
+                      style: TsType.bodyLRegular.copyWith(
+                        color: semantic.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                   const SizedBox(height: TsSpacing.lg),
@@ -219,10 +239,14 @@ class _H2HSectionState extends State<H2HSection> {
                     ],
                   ),
                   const SizedBox(height: TsSpacing.lg),
-                  Text(
-                    '매치 인사이트',
-                    style: TsType.bodyLRegular.copyWith(
-                      color: semantic.textSecondary,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                      '매치 인사이트',
+                      style: TsType.bodyLRegular.copyWith(
+                        color: semantic.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                   const SizedBox(height: TsSpacing.lg),

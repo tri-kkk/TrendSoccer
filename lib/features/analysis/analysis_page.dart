@@ -6,6 +6,7 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/analysis/analysis_dummy_data.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_card.dart';
+import 'package:trendsoccer/shared/widgets/cards/today_combo_card.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/filter/ts_filter_chip.dart';
 import 'package:trendsoccer/shared/widgets/league/ts_league_icon.dart';
@@ -145,6 +146,15 @@ class _AnalysisPageState extends State<AnalysisPage> {
                     pickDirection: '홈',
                   ),
                 ],
+                onCTATap: () => context.go('/premium'),
+              ),
+              const SizedBox(height: 16),
+            ],
+            if (_selectedSport == SportType.baseball) ...[
+              TodayComboCard(
+                comboCount: '20',
+                accuracy: '50%',
+                avgOdds: '4.29',
                 onCTATap: () => context.go('/premium'),
               ),
               const SizedBox(height: 16),

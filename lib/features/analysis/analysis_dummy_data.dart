@@ -161,29 +161,10 @@ const soccerAnalysisDummy = [
   ),
 ];
 
-const baseballAnalysisDummy = [
+final baseballAnalysisDummy = [
+  // KBO
   AnalysisCardData(
     matchId: 'ba1',
-    leagueId: 'mlb',
-    leagueName: 'MLB',
-    date: '05.11',
-    homeTeam: '양키스',
-    awayTeam: '레드삭스',
-    matchTime: '08:00',
-    sport: 'baseball',
-  ),
-  AnalysisCardData(
-    matchId: 'ba2',
-    leagueId: 'npb',
-    leagueName: 'NPB',
-    date: '05.11',
-    homeTeam: '요미우리',
-    awayTeam: '한신',
-    matchTime: '18:00',
-    sport: 'baseball',
-  ),
-  AnalysisCardData(
-    matchId: 'ba3',
     leagueId: 'kbo',
     leagueName: 'KBO',
     date: '05.11',
@@ -193,12 +174,76 @@ const baseballAnalysisDummy = [
     sport: 'baseball',
   ),
   AnalysisCardData(
+    matchId: 'ba2',
+    leagueId: 'kbo',
+    leagueName: 'KBO',
+    date: '05.11',
+    homeTeam: '삼성',
+    awayTeam: '두산',
+    matchTime: '18:30',
+    sport: 'baseball',
+  ),
+  // NPB
+  AnalysisCardData(
+    matchId: 'ba3',
+    leagueId: 'npb',
+    leagueName: 'NPB',
+    date: '05.11',
+    homeTeam: '요미우리',
+    awayTeam: '한신',
+    matchTime: '18:00',
+    sport: 'baseball',
+  ),
+  // MLB
+  AnalysisCardData(
     matchId: 'ba4',
+    leagueId: 'mlb',
+    leagueName: 'MLB',
+    date: '05.11',
+    homeTeam: '양키스',
+    awayTeam: '레드삭스',
+    matchTime: '08:00',
+    sport: 'baseball',
+  ),
+  AnalysisCardData(
+    matchId: 'ba5',
+    leagueId: 'mlb',
+    leagueName: 'MLB',
+    date: '05.11',
+    homeTeam: '다저스',
+    awayTeam: '자이언츠',
+    matchTime: '10:00',
+    sport: 'baseball',
+  ),
+  AnalysisCardData(
+    matchId: 'ba6',
+    leagueId: 'mlb',
+    leagueName: 'MLB',
+    date: '05.11',
+    homeTeam: '메츠',
+    awayTeam: '필리스',
+    matchTime: '09:00',
+    sport: 'baseball',
+  ),
+  // CPBL
+  AnalysisCardData(
+    matchId: 'ba7',
     leagueId: 'cpbl',
     leagueName: 'CPBL',
     date: '05.11',
     homeTeam: '라쿠텐',
     awayTeam: '웨이촨',
+    matchTime: '18:30',
+    sport: 'baseball',
+  ),
+  // KBO extra
+  AnalysisCardData(
+    matchId: 'ba8',
+    leagueId: 'kbo',
+    leagueName: 'KBO',
+    date: '05.11',
+    homeTeam: '키움',
+    awayTeam: '롯데',
     matchTime: '18:30',
     sport: 'baseball',
   ),
