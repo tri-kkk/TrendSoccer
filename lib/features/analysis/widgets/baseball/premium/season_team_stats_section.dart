@@ -3,22 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/features/analysis/widgets/baseball/premium/team_production_section.dart';
-import 'package:trendsoccer/shared/widgets/baseball/premium/gauge_card.dart';
+import 'package:trendsoccer/features/analysis/widgets/baseball/premium/team_stat_gauge_card.dart';
 
 class SeasonTeamStatsSection extends StatelessWidget {
   const SeasonTeamStatsSection({
-    required this.avg,
-    required this.ops,
-    required this.era,
-    required this.whip,
+    required this.items,
     super.key,
   });
 
-  final GaugeData avg;
-  final GaugeData ops;
-  final GaugeData era;
-  final GaugeData whip;
+  final List<GaugeData> items;
 
   @override
   Widget build(BuildContext context) {
@@ -40,40 +33,21 @@ class SeasonTeamStatsSection extends StatelessWidget {
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
                 children: [
-                  Expanded(
-                    child: GaugeCard(
-                      label: 'AVG',
-                      homeRatio: avg.homeRatio,
-                    ),
-                  ),
-                  const SizedBox(width: TsSpacing.sm),
-                  Expanded(
-                    child: GaugeCard(
-                      label: 'OPS',
-                      homeRatio: ops.homeRatio,
-                    ),
-                  ),
+                  Expanded(child: TeamStatGaugeCard(data: items[0])),
+                  const SizedBox(width: 8),
+                  Expanded(child: TeamStatGaugeCard(data: items[1])),
                 ],
               ),
-              const SizedBox(height: TsSpacing.sm),
+              const SizedBox(height: 8),
               Row(
                 children: [
-                  Expanded(
-                    child: GaugeCard(
-                      label: 'ERA',
-                      homeRatio: era.homeRatio,
-                    ),
-                  ),
-                  const SizedBox(width: TsSpacing.sm),
-                  Expanded(
-                    child: GaugeCard(
-                      label: 'WHIP',
-                      homeRatio: whip.homeRatio,
-                    ),
-                  ),
+                  Expanded(child: TeamStatGaugeCard(data: items[2])),
+                  const SizedBox(width: 8),
+                  Expanded(child: TeamStatGaugeCard(data: items[3])),
                 ],
               ),
             ],

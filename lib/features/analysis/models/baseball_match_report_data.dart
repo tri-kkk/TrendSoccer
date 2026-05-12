@@ -1,3 +1,4 @@
+import 'package:trendsoccer/features/analysis/widgets/baseball/premium/team_stat_gauge_card.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/standard/baseball_h2h_section.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/standard/baseball_odds_section.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/standard/starting_pitchers_section.dart';
@@ -30,13 +31,9 @@ class BaseballMatchReportData {
     required this.awayWinRate,
     required this.homeWinRate,
     required this.confidenceLevel,
-    required this.runsRatio,
-    required this.runsAllowedRatio,
-    required this.hitsRatio,
-    required this.avgRatio,
-    required this.opsRatio,
-    required this.eraRatio,
-    required this.whipRatio,
+    required this.teamProduction,
+    required this.teamProductionComment,
+    required this.seasonTeamStats,
   });
 
   final String matchId;
@@ -74,14 +71,9 @@ class BaseballMatchReportData {
   final String homeWinRate;
   final String confidenceLevel;
 
-  final double runsRatio;
-  final double runsAllowedRatio;
-  final double hitsRatio;
-
-  final double avgRatio;
-  final double opsRatio;
-  final double eraRatio;
-  final double whipRatio;
+  final List<GaugeData> teamProduction;
+  final String teamProductionComment;
+  final List<GaugeData> seasonTeamStats;
 }
 
 /// Sample report — same content for every [matchId] until API integration.
@@ -187,11 +179,31 @@ final BaseballMatchReportData baseballMatchReportDummy = BaseballMatchReportData
   awayWinRate: '40%',
   homeWinRate: '70%',
   confidenceLevel: 'high',
-  runsRatio: 0.58,
-  runsAllowedRatio: 0.42,
-  hitsRatio: 0.55,
-  avgRatio: 0.52,
-  opsRatio: 0.60,
-  eraRatio: 0.62,
-  whipRatio: 0.58,
+  teamProduction: [
+    const GaugeData(label: '득점', homeValue: '4.9', awayValue: '4.0', homeRatio: 0.55),
+    const GaugeData(
+      label: '실점',
+      homeValue: '4.2',
+      awayValue: '7.2',
+      homeRatio: 0.37,
+    ),
+    const GaugeData(label: '안타', homeValue: '9.2', awayValue: '8.4', homeRatio: 0.52),
+  ],
+  teamProductionComment: '최근 10경기 팀 공격 생산성 지표입니다.',
+  seasonTeamStats: [
+    const GaugeData(label: '팀 타율', homeValue: '0.250', awayValue: '0.249', homeRatio: 0.50),
+    const GaugeData(label: '팀 OPS', homeValue: '0.719', awayValue: '0.727', homeRatio: 0.50),
+    const GaugeData(
+      label: '팀 방어율',
+      homeValue: '4.84',
+      awayValue: '3.73',
+      homeRatio: 0.44,
+    ),
+    const GaugeData(
+      label: '팀 WHIP',
+      homeValue: '1.42',
+      awayValue: '1.23',
+      homeRatio: 0.46,
+    ),
+  ],
 );

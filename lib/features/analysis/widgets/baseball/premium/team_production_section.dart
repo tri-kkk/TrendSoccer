@@ -3,31 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/baseball/premium/gauge_card.dart';
-
-class GaugeData {
-  const GaugeData({
-    required this.label,
-    required this.homeRatio,
-  });
-
-  final String label;
-  final double homeRatio;
-}
+import 'package:trendsoccer/features/analysis/widgets/baseball/premium/team_stat_gauge_card.dart';
 
 class TeamProductionSection extends StatelessWidget {
   const TeamProductionSection({
-    required this.runs,
-    required this.runsAllowed,
-    required this.hits,
-    this.footerText = '최근 10경기 팀 공격 생산성 지표입니다.',
+    required this.items,
+    this.comment = '최근 10경기 팀 공격 생산성 지표입니다.',
     super.key,
   });
 
-  final GaugeData runs;
-  final GaugeData runsAllowed;
-  final GaugeData hits;
-  final String footerText;
+  final List<GaugeData> items;
+  final String comment;
 
   @override
   Widget build(BuildContext context) {
@@ -60,29 +46,20 @@ class TeamProductionSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  GaugeCard(label: runs.label, homeRatio: runs.homeRatio),
-                  const SizedBox(height: TsSpacing.sm),
-                  GaugeCard(label: runsAllowed.label, homeRatio: runsAllowed.homeRatio),
-                  const SizedBox(height: TsSpacing.sm),
-                  GaugeCard(label: hits.label, homeRatio: hits.homeRatio),
-                ],
-              ),
-              const SizedBox(height: TsSpacing.lg),
+              for (var i = 0; i < items.length; i++) ...[
+                if (i > 0) const SizedBox(height: 8),
+                TeamStatGaugeCard(data: items[i]),
+              ],
+              const SizedBox(height: 16),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: TsSpacing.lg,
-                  vertical: TsSpacing.md,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: semantic.surfaceContainer,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  footerText,
+                  comment,
                   style: TsType.bodyMRegular.copyWith(
                     color: semantic.interactivePrimary,
                   ),

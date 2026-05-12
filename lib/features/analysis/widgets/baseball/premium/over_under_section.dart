@@ -41,17 +41,17 @@ class OverUnderSection extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg, vertical: TsSpacing.sm),
-                decoration: BoxDecoration(
-                  color: const Color(0x33F59E0B),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  '기준선 $baseLine',
-                  style: TsType.bodyLRegular.copyWith(color: TsColors.systemWarning500),
-                  textAlign: TextAlign.center,
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0x33F59E0B),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '기준선 $baseLine',
+                    style: TsType.bodyLRegular.copyWith(color: TsColors.systemWarning500),
+                  ),
                 ),
               ),
               const SizedBox(height: TsSpacing.lg),
