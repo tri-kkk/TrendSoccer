@@ -75,11 +75,26 @@ class BaseballOddsSection extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: TsSpacing.lg),
-              Divider(height: 1, thickness: 1, color: semantic.borderSubtle),
-              const SizedBox(height: TsSpacing.lg),
-              const _LineHeaderRow(),
-              for (final line in overUnderLines) _LineRow(line: line),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: Text(
+                  'Over / Under',
+                  style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const _OuTableHeaderRow(),
+              const SizedBox(height: 16),
+              for (var i = 0; i < overUnderLines.length; i++) ...[
+                _OuLineRow(line: overUnderLines[i]),
+                if (i < overUnderLines.length - 1) ...[
+                  const SizedBox(height: 8),
+                  Container(height: 1, color: semantic.borderSubtle),
+                  const SizedBox(height: 8),
+                ],
+              ],
             ],
           ),
         ),
@@ -130,74 +145,78 @@ class _OddsBox extends StatelessWidget {
   }
 }
 
-class _LineHeaderRow extends StatelessWidget {
-  const _LineHeaderRow();
+class _OuTableHeaderRow extends StatelessWidget {
+  const _OuTableHeaderRow();
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final style = TsType.labelSRegular.copyWith(color: semantic.textTertiary);
-    return SizedBox(
-      height: 40,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.md),
-        child: Row(
-          children: [
-            Expanded(child: Text('Line', style: style)),
-            Expanded(
-              child: Text('Over', style: style, textAlign: TextAlign.center),
-            ),
-            Expanded(
-              child: Text('Under', style: style, textAlign: TextAlign.center),
-            ),
-          ],
+    final primaryStyle = TsType.bodyLRegular.copyWith(color: semantic.textPrimary);
+    final overStyle = TsType.headingH3.copyWith(color: TsColors.systemError500);
+    final underStyle = TsType.headingH3.copyWith(color: semantic.interactivePrimary);
+    return Row(
+      children: [
+        SizedBox(
+          width: 100,
+          child: Text('기준', style: primaryStyle),
         ),
-      ),
+        Expanded(
+          child: Text('오버', style: overStyle, textAlign: TextAlign.center),
+        ),
+        Expanded(
+          child: Text('언더', style: underStyle, textAlign: TextAlign.center),
+        ),
+      ],
     );
   }
 }
 
-class _LineRow extends StatelessWidget {
-  const _LineRow({required this.line});
+class _OuLineRow extends StatelessWidget {
+  const _OuLineRow({required this.line});
 
   final BaseballOULine line;
 
-  static const Color _baselineBg = Color(0x1A00DF81);
+  static const Color _baselineChipBg = Color(0x33F59E0B);
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    return Container(
-      height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: TsSpacing.md),
-      decoration: BoxDecoration(
-        color: line.isBaseLine ? _baselineBg : null,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              line.line,
-              style: TsType.bodyMBold.copyWith(color: semantic.textPrimary),
-            ),
+    final lineLabelStyle = TsType.bodyLRegular.copyWith(color: semantic.textPrimary);
+    final overStyle = TsType.headingH3.copyWith(color: TsColors.systemError500);
+    final underStyle = TsType.headingH3.copyWith(color: semantic.interactivePrimary);
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 100,
+          child: Row(
+            children: [
+              Text(line.line, style: lineLabelStyle),
+              if (line.isBaseLine) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: _baselineChipBg,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    '기준선',
+                    style: TsType.bodyLRegular.copyWith(color: TsColors.systemWarning500),
+                  ),
+                ),
+              ],
+            ],
           ),
-          Expanded(
-            child: Text(
-              line.over,
-              style: TsType.bodyMRegular.copyWith(color: semantic.textPrimary),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              line.under,
-              style: TsType.bodyMRegular.copyWith(color: semantic.textPrimary),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
-      ),
+        ),
+        Expanded(
+          child: Text(line.over, style: overStyle, textAlign: TextAlign.center),
+        ),
+        Expanded(
+          child: Text(line.under, style: underStyle, textAlign: TextAlign.center),
+        ),
+      ],
     );
   }
 }

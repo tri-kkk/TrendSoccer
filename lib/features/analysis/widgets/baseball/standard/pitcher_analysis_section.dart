@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 
-import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
 class PitcherAnalysisSection extends StatelessWidget {
   const PitcherAnalysisSection({
-    required this.analysisText,
+    required this.paragraphs,
     super.key,
   });
 
-  final String analysisText;
+  final List<String> paragraphs;
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final bodyStyle = TsType.bodyMRegular.copyWith(color: semantic.textSecondary);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -22,17 +23,22 @@ class PitcherAnalysisSection extends StatelessWidget {
           '투수 분석',
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
-        const SizedBox(height: TsSpacing.sm),
+        const SizedBox(height: 8),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(TsSpacing.lg),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: semantic.surfaceRaised,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Text(
-            analysisText,
-            style: TsType.bodyLRegular.copyWith(color: semantic.textPrimary),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var i = 0; i < paragraphs.length; i++) ...[
+                if (i > 0) const SizedBox(height: 8),
+                Text(paragraphs[i], style: bodyStyle),
+              ],
+            ],
           ),
         ),
       ],

@@ -71,16 +71,18 @@ class StartingPitchersSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           clipBehavior: Clip.antiAlias,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: _PitcherColumn(pitcher: awayPitcher, isHome: false),
-              ),
-              Expanded(
-                child: _PitcherColumn(pitcher: homePitcher, isHome: true),
-              ),
-            ],
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _PitcherColumn(pitcher: awayPitcher, isHome: false),
+                ),
+                Expanded(
+                  child: _PitcherColumn(pitcher: homePitcher, isHome: true),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -96,6 +98,31 @@ class _PitcherColumn extends StatelessWidget {
 
   final PitcherData pitcher;
   final bool isHome;
+
+  static Widget _statsRowTriple({
+    required String v1,
+    required String l1,
+    required String v2,
+    required String l2,
+    required String v3,
+    required String l3,
+  }) {
+    return Row(
+      children: [
+        Expanded(
+          child: InfoCell(value: v1, label: l1, valueStyle: TsType.bodyLBold),
+        ),
+        const SizedBox(width: TsSpacing.sm),
+        Expanded(
+          child: InfoCell(value: v2, label: l2, valueStyle: TsType.bodyLBold),
+        ),
+        const SizedBox(width: TsSpacing.sm),
+        Expanded(
+          child: InfoCell(value: v3, label: l3, valueStyle: TsType.bodyLBold),
+        ),
+      ],
+    );
+  }
 
   Widget _photo(BuildContext context, TsSemanticColors semantic) {
     Widget placeholder() {
@@ -117,7 +144,7 @@ class _PitcherColumn extends StatelessWidget {
       child: SizedBox(
         width: 80,
         height: 80,
-          child: CachedNetworkImage(
+        child: CachedNetworkImage(
           imageUrl: url,
           fit: BoxFit.cover,
           placeholder: (context, _) => placeholder(),
@@ -127,6 +154,25 @@ class _PitcherColumn extends StatelessWidget {
     );
   }
 
+  List<Widget> _commentChipChildren() {
+    final out = <Widget>[];
+    for (var i = 0; i < pitcher.strengths.length; i++) {
+      out.add(PitcherCommentChip(text: pitcher.strengths[i], isStrength: true));
+      final hasMoreStrengths = i < pitcher.strengths.length - 1;
+      final hasWeaknesses = pitcher.weaknesses.isNotEmpty;
+      if (hasMoreStrengths || hasWeaknesses) {
+        out.add(const SizedBox(height: TsSpacing.sm));
+      }
+    }
+    for (var j = 0; j < pitcher.weaknesses.length; j++) {
+      out.add(PitcherCommentChip(text: pitcher.weaknesses[j], isStrength: false));
+      if (j < pitcher.weaknesses.length - 1) {
+        out.add(const SizedBox(height: TsSpacing.sm));
+      }
+    }
+    return out;
+  }
+
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
@@ -134,102 +180,67 @@ class _PitcherColumn extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           PositionChip(isHome: isHome),
-          const SizedBox(height: TsSpacing.md),
+          const SizedBox(height: 12),
           _photo(context, semantic),
-          const SizedBox(height: TsSpacing.md),
+          const SizedBox(height: 12),
           Text(
             pitcher.name,
             style: TsType.headingH3.copyWith(color: semantic.textPrimary),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: TsSpacing.md),
+          const SizedBox(height: 12),
           Text(
             pitcher.pitcherType,
             style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: TsSpacing.md),
+          const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SeasonChip(isCurrent: true),
-              const SizedBox(width: TsSpacing.xs),
+              const SizedBox(width: 4),
               const SeasonChip(isCurrent: false),
             ],
           ),
-          const SizedBox(height: TsSpacing.md),
-          Divider(height: 1, thickness: 1, color: semantic.borderSubtle),
-          const SizedBox(height: TsSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: InfoCell(value: pitcher.era, label: 'ERA'),
-              ),
-              const SizedBox(width: TsSpacing.sm),
-              Expanded(
-                child: InfoCell(value: pitcher.whip, label: 'WHIP'),
-              ),
-              const SizedBox(width: TsSpacing.sm),
-              Expanded(
-                child: InfoCell(value: pitcher.k9, label: 'K/9'),
-              ),
-            ],
+          const SizedBox(height: 12),
+          Container(height: 1, color: semantic.borderSubtle),
+          const SizedBox(height: 12),
+          _statsRowTriple(
+            v1: pitcher.era,
+            l1: 'ERA',
+            v2: pitcher.whip,
+            l2: 'WHIP',
+            v3: pitcher.k9,
+            l3: 'K/9',
           ),
-          const SizedBox(height: TsSpacing.sm),
-          Row(
-            children: [
-              Expanded(
-                child: InfoCell(value: pitcher.wl, label: 'W-L'),
-              ),
-              const SizedBox(width: TsSpacing.sm),
-              Expanded(
-                child: InfoCell(value: pitcher.ip, label: 'IP'),
-              ),
-              const SizedBox(width: TsSpacing.sm),
-              Expanded(
-                child: InfoCell(value: pitcher.k, label: 'K'),
-              ),
-            ],
+          const SizedBox(height: 8),
+          _statsRowTriple(
+            v1: pitcher.wl,
+            l1: 'W-L',
+            v2: pitcher.ip,
+            l2: 'IP',
+            v3: pitcher.k,
+            l3: 'K',
           ),
-          const SizedBox(height: TsSpacing.md),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (var i = 0; i < pitcher.strengths.length; i++) ...[
-                PitcherCommentChip(text: pitcher.strengths[i], isStrength: true),
-                if (i < pitcher.strengths.length - 1 || pitcher.weaknesses.isNotEmpty)
-                  const SizedBox(height: TsSpacing.sm),
-              ],
-              for (var j = 0; j < pitcher.weaknesses.length; j++) ...[
-                PitcherCommentChip(text: pitcher.weaknesses[j], isStrength: false),
-                if (j < pitcher.weaknesses.length - 1)
-                  const SizedBox(height: TsSpacing.sm),
-              ],
-            ],
-          ),
-          const SizedBox(height: TsSpacing.md),
-          Divider(height: 1, thickness: 1, color: semantic.borderSubtle),
-          const SizedBox(height: TsSpacing.md),
+          const SizedBox(height: 12),
+          ..._commentChipChildren(),
+          const SizedBox(height: 12),
+          const Spacer(),
+          Container(height: 1, color: semantic.borderSubtle),
+          const SizedBox(height: 12),
           const SeasonChip(isCurrent: false),
-          const SizedBox(height: TsSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: InfoCell(value: pitcher.prevWl, label: 'W-L'),
-              ),
-              const SizedBox(width: TsSpacing.sm),
-              Expanded(
-                child: InfoCell(value: pitcher.prevIp, label: 'IP'),
-              ),
-              const SizedBox(width: TsSpacing.sm),
-              Expanded(
-                child: InfoCell(value: pitcher.prevK, label: 'K'),
-              ),
-            ],
+          const SizedBox(height: 12),
+          _statsRowTriple(
+            v1: pitcher.prevWl,
+            l1: 'W-L',
+            v2: pitcher.prevIp,
+            l2: 'IP',
+            v3: pitcher.prevK,
+            l3: 'K',
           ),
         ],
       ),

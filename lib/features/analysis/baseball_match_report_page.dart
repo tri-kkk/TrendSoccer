@@ -83,7 +83,7 @@ class _BaseballMatchReportPageState extends State<BaseballMatchReportPage> {
                               homePitcher: data.homePitcher,
                             ),
                             const SizedBox(height: TsSpacing.xl),
-                            PitcherAnalysisSection(analysisText: data.pitcherAnalysisText),
+                            PitcherAnalysisSection(paragraphs: data.pitcherAnalysis),
                             const SizedBox(height: TsSpacing.xl),
                             BaseballH2HSection(matches: data.h2hMatches),
                             const SizedBox(height: TsSpacing.xl),
