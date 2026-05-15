@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
-import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
@@ -65,11 +64,8 @@ class _TodayChip extends StatelessWidget {
   final String dayLabel;
   final String dateLabel;
 
-  static const Color _accentDot = TsColors.brandAccent500;
-
   @override
   Widget build(BuildContext context) {
-    final bg = isActive ? semantic.interactivePrimary : semantic.surfaceContainer;
     final dayStyle = TsType.labelSRegular.copyWith(
       color: isActive ? semantic.surfaceBase : semantic.textTertiary,
     );
@@ -78,9 +74,10 @@ class _TodayChip extends StatelessWidget {
     );
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: TsSpacing.md, vertical: TsSpacing.sm),
+      constraints: const BoxConstraints(minWidth: 80),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: bg,
+        color: isActive ? semantic.interactivePrimary : semantic.surfaceContainer,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -88,17 +85,8 @@ class _TodayChip extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(dayLabel, style: dayStyle),
-          const SizedBox(height: TsSpacing.xs),
+          const SizedBox(height: 2),
           Text(dateLabel, style: dateStyle),
-          const SizedBox(height: TsSpacing.xs),
-          Container(
-            width: 4,
-            height: 4,
-            decoration: const BoxDecoration(
-              color: _accentDot,
-              shape: BoxShape.circle,
-            ),
-          ),
         ],
       ),
     );
@@ -116,19 +104,19 @@ class _LiveChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = isActive ? TsColors.systemError500 : semantic.surfaceContainer;
     final textStyle = TsType.bodyLRegular.copyWith(
-      color: isActive ? Colors.white : semantic.textTertiary,
+      color: isActive ? semantic.textPrimary : semantic.textTertiary,
     );
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: TsSpacing.md, vertical: TsSpacing.sm),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: bg,
+        color: isActive ? TsColors.systemError500 : semantic.surfaceContainer,
         borderRadius: BorderRadius.circular(8),
       ),
-      alignment: Alignment.center,
-      child: Text('LIVE', style: textStyle),
+      child: Center(
+        child: Text('LIVE', style: textStyle),
+      ),
     );
   }
 }
@@ -148,7 +136,6 @@ class _DateChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = isActive ? semantic.interactivePrimary : semantic.surfaceContainer;
     final dayStyle = TsType.labelSRegular.copyWith(
       color: isActive ? semantic.surfaceBase : semantic.textTertiary,
     );
@@ -158,9 +145,9 @@ class _DateChip extends StatelessWidget {
 
     return Container(
       constraints: const BoxConstraints(minWidth: 80),
-      padding: const EdgeInsets.symmetric(horizontal: TsSpacing.md, vertical: TsSpacing.sm),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: bg,
+        color: isActive ? semantic.interactivePrimary : semantic.surfaceContainer,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(

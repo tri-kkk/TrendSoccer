@@ -23,8 +23,12 @@ class FixtureTeamRow extends StatelessWidget {
         width: 24,
         height: 24,
         decoration: BoxDecoration(
-          color: semantic.surfaceContainer,
           shape: BoxShape.circle,
+          color: semantic.surfaceOverlay,
+          border: Border.all(
+            color: semantic.borderSubtle,
+            width: 1,
+          ),
         ),
       );
     }

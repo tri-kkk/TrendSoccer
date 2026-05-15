@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
-import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
 enum FixtureMatchStatus { scheduled, live, finished }
 
-class FixtureStatus extends StatelessWidget {
+class FixtureStatus extends StatefulWidget {
   const FixtureStatus({
     required this.status,
     this.timeText,
@@ -18,14 +17,59 @@ class FixtureStatus extends StatelessWidget {
   final String? timeText;
 
   @override
+  State<FixtureStatus> createState() => _FixtureStatusState();
+}
+
+class _FixtureStatusState extends State<FixtureStatus> with TickerProviderStateMixin {
+  AnimationController? _pulseController;
+  Animation<double>? _pulseOpacity;
+
+  void _ensurePulseController() {
+    if (widget.status == FixtureMatchStatus.live && _pulseController == null) {
+      final controller = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 1000),
+      );
+      _pulseOpacity = Tween<double>(begin: 0.3, end: 1.0).animate(
+        CurvedAnimation(parent: controller, curve: Curves.easeInOut),
+      );
+      _pulseController = controller..repeat(reverse: true);
+    } else if (widget.status != FixtureMatchStatus.live && _pulseController != null) {
+      _pulseController!.dispose();
+      _pulseController = null;
+      _pulseOpacity = null;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _ensurePulseController();
+  }
+
+  @override
+  void didUpdateWidget(covariant FixtureStatus oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.status != widget.status) {
+      _ensurePulseController();
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulseController?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     return SizedBox(
       width: 56,
-      child: switch (status) {
+      child: switch (widget.status) {
         FixtureMatchStatus.scheduled => Center(
             child: Text(
-              timeText ?? 'HH:MM',
+              widget.timeText ?? 'HH:MM',
               style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
               textAlign: TextAlign.center,
             ),
@@ -35,17 +79,20 @@ class FixtureStatus extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: TsColors.systemError500,
-                    shape: BoxShape.circle,
+                FadeTransition(
+                  opacity: _pulseOpacity!,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: TsColors.systemError500,
+                    ),
                   ),
                 ),
-                const SizedBox(width: TsSpacing.sm),
+                const SizedBox(width: 8),
                 Text(
-                  'LIVE',
+                  widget.timeText ?? 'LIVE',
                   style: TsType.labelSRegular.copyWith(color: TsColors.systemError500),
                 ),
               ],
@@ -53,7 +100,7 @@ class FixtureStatus extends StatelessWidget {
           ),
         FixtureMatchStatus.finished => Center(
             child: Text(
-              timeText ?? 'FT',
+              widget.timeText ?? 'FT',
               style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
               textAlign: TextAlign.center,
             ),

@@ -38,7 +38,7 @@ class FixtureMatchRow extends StatelessWidget {
       isOn: isNotificationOn,
       onTap: onNotificationTap,
     );
-    if (status == FixtureMatchStatus.finished) {
+    if (onNotificationTap == null) {
       return Opacity(opacity: 0, child: icon);
     }
     if (!showNotification) {
