@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/logo/ts_logo.dart';
@@ -66,6 +68,61 @@ class MainScreen extends StatelessWidget {
                       variant: TsButtonVariant.primary,
                       size: TsButtonSize.small,
                       onPressed: () => context.push('/login'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          if (selectedIndex == 3)
+            SafeArea(
+              bottom: false,
+              child: Container(
+                height: 56,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: semantic.surfaceBase,
+                  border: Border(
+                    bottom: BorderSide(
+                      color: semantic.textDisabled,
+                      width: 2,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TsLogo(
+                      type: TsLogoType.horizon,
+                      color: brightness == Brightness.dark
+                          ? TsLogoColor.white
+                          : TsLogoColor.black,
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: TsColors.membershipPremium500,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            'Premium',
+                            style: TsType.bodyMBold.copyWith(color: semantic.textPrimary),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: semantic.surfaceContainer,
+                            border: Border.all(color: semantic.borderSubtle, width: 1),
+                          ),
+                          child: Icon(Icons.person, size: 20, color: semantic.textTertiary),
+                        ),
+                      ],
                     ),
                   ],
                 ),

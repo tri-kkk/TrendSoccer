@@ -173,10 +173,10 @@ class ComboMatchRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: TsSpacing.lg),
-              ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 120),
+              SizedBox(
+                width: 120,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
