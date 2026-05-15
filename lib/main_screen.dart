@@ -39,7 +39,10 @@ class MainScreen extends StatelessWidget {
       backgroundColor: semantic.surfaceBase,
       body: Column(
         children: [
-          if (selectedIndex == 0 || selectedIndex == 1 || selectedIndex == 2)
+            if (selectedIndex == 0 ||
+                selectedIndex == 1 ||
+                selectedIndex == 2 ||
+                selectedIndex == 4)
             SafeArea(
               bottom: false,
               child: Container(

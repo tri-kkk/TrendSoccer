@@ -17,10 +17,38 @@ import 'package:trendsoccer/shared/widgets/radio/ts_radio_button.dart';
 import 'package:trendsoccer/shared/widgets/section/ts_section_header.dart';
 import 'package:trendsoccer/shared/widgets/toggle/ts_toggle.dart';
 
-class MenuPage extends ConsumerWidget {
+enum _DemoUserState { notLoggedIn, free, trial, premium }
+
+class MenuPage extends ConsumerStatefulWidget {
   const MenuPage({super.key});
 
-  void _showThemeSheet(BuildContext context, WidgetRef ref) {
+  @override
+  ConsumerState<MenuPage> createState() => _MenuPageState();
+}
+
+class _MenuPageState extends ConsumerState<MenuPage> {
+  /// Change initializer to test different states in dev mode.
+  final _DemoUserState _userState = _DemoUserState.trial;
+
+  PlanType _planTypeForState() {
+    return switch (_userState) {
+      _DemoUserState.notLoggedIn => PlanType.free,
+      _DemoUserState.free => PlanType.free,
+      _DemoUserState.trial => PlanType.trial,
+      _DemoUserState.premium => PlanType.premium,
+    };
+  }
+
+  String _planSubtitleForState() {
+    return switch (_userState) {
+      _DemoUserState.notLoggedIn => '',
+      _DemoUserState.free => '지금 구독 시작하고 프리미엄 데이터를 확인하세요.',
+      _DemoUserState.trial => '36시간 12분 남음',
+      _DemoUserState.premium => '만료일 2026.05.08',
+    };
+  }
+
+  void _showThemeSheet(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -45,37 +73,85 @@ class MenuPage extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final isLoggedIn = _userState != _DemoUserState.notLoggedIn;
+
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg, vertical: TsSpacing.lg),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              GuestBanner(onJoinTap: () => context.push('/login')),
-              // ProfileCard(name: 'User', email: 'user@example.com'), // when logged in
-              const SizedBox(height: TsSpacing.xl),
-              TsSectionHeader(title: '플랜'),
-              const SizedBox(height: TsSpacing.md),
-              PlanTicket(
-                type: PlanType.free,
-                subtitle: '지금 구독 시작하고 프리미엄 데이터를 확인하세요.',
-                onButtonTap: () => context.push('/menu/subscribe'),
-              ),
-              const SizedBox(height: TsSpacing.xl),
-              TsSectionHeader(title: '탐색'),
-              const SizedBox(height: TsSpacing.md),
+              if (!isLoggedIn)
+                GuestBanner(onJoinTap: () => context.push('/login'))
+              else ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: semantic.surfaceRaised,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: semantic.surfaceContainer,
+                          border: Border.all(color: semantic.borderSubtle, width: 1),
+                        ),
+                        child: Icon(Icons.person, size: 24, color: semantic.textTertiary),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '트렌드사커',
+                              style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'trendsoccer@gmail.com',
+                              style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+
+              if (isLoggedIn) ...[
+                TsSectionHeader(title: '구독 정보'),
+                const SizedBox(height: 16),
+                PlanTicket(
+                  type: _planTypeForState(),
+                  subtitle: _planSubtitleForState(),
+                  buttonLabel: '구독 시작하기',
+                  onButtonTap: () => context.push('/menu/subscribe'),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              TsSectionHeader(title: '추가 기능'),
+              const SizedBox(height: 16),
               MenuListItem(
                 icon: Icons.article,
-                label: 'Soccer Reports',
+                label: '축구 분석 블로그',
                 onTap: () => context.push('/menu/reports/soccer'),
               ),
-              const SizedBox(height: TsSpacing.xl),
-              TsSectionHeader(title: '설정'),
-              const SizedBox(height: TsSpacing.md),
+              const SizedBox(height: 16),
+
+              TsSectionHeader(title: '앱 설정'),
+              const SizedBox(height: 16),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -84,13 +160,13 @@ class MenuPage extends ConsumerWidget {
                     label: '언어',
                     onTap: () => _showLanguageSheet(context),
                   ),
-                  const SizedBox(height: TsSpacing.sm),
+                  const SizedBox(height: 8),
                   MenuListItem(
                     icon: Icons.palette,
                     label: '테마',
-                    onTap: () => _showThemeSheet(context, ref),
+                    onTap: () => _showThemeSheet(context),
                   ),
-                  const SizedBox(height: TsSpacing.sm),
+                  const SizedBox(height: 8),
                   MenuListItem(
                     icon: Icons.notifications,
                     label: '알림',
@@ -98,9 +174,10 @@ class MenuPage extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: TsSpacing.xl),
+              const SizedBox(height: 16),
+
               TsSectionHeader(title: '기타'),
-              const SizedBox(height: TsSpacing.md),
+              const SizedBox(height: 16),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -109,25 +186,25 @@ class MenuPage extends ConsumerWidget {
                     label: 'About',
                     onTap: () => context.push('/menu/about'),
                   ),
-                  const SizedBox(height: TsSpacing.sm),
+                  const SizedBox(height: 8),
                   MenuListItem(
                     icon: Icons.privacy_tip_outlined,
                     label: '개인정보처리방침',
                     onTap: () => context.push('/menu/privacy'),
                   ),
-                  const SizedBox(height: TsSpacing.sm),
+                  const SizedBox(height: 8),
                   MenuListItem(
                     icon: Icons.description_outlined,
                     label: '이용약관',
                     onTap: () => context.push('/menu/terms'),
                   ),
-                  const SizedBox(height: TsSpacing.sm),
+                  const SizedBox(height: 8),
                   MenuListItem(
                     icon: Icons.help_outline,
                     label: '도움말',
                     onTap: () => context.push('/menu/help'),
                   ),
-                  const SizedBox(height: TsSpacing.sm),
+                  const SizedBox(height: 8),
                   const MenuListItem(
                     icon: Icons.info,
                     label: '앱 버전',
@@ -136,30 +213,51 @@ class MenuPage extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: TsSpacing.xl),
-              TsSectionHeader(title: '계정'),
-              const SizedBox(height: TsSpacing.md),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  MenuListItem(
-                    icon: Icons.logout,
-                    label: '로그아웃',
-                    onTap: () async {
-                      await SignOutDialog.show(context);
-                    },
-                  ),
-                  const SizedBox(height: TsSpacing.sm),
-                  MenuListItem(
-                    icon: Icons.delete_forever,
-                    label: '계정 삭제',
-                    onTap: () async {
-                      await DeleteAccountDialog.show(context);
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: TsSpacing.xxxl),
+
+              if (isLoggedIn) ...[
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onTap: () async {
+                        await SignOutDialog.show(context);
+                      },
+                      child: Opacity(
+                        opacity: 0.5,
+                        child: Text(
+                          '로그아웃',
+                          style: TsType.labelSRegular.copyWith(color: semantic.textPrimary),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Opacity(
+                      opacity: 0.5,
+                      child: Container(
+                        width: 2,
+                        height: 17,
+                        color: semantic.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    GestureDetector(
+                      onTap: () async {
+                        await DeleteAccountDialog.show(context);
+                      },
+                      child: Opacity(
+                        opacity: 0.5,
+                        child: Text(
+                          '회원탈퇴',
+                          style: TsType.labelSRegular.copyWith(color: semantic.textPrimary),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+
+              const SizedBox(height: 24),
             ],
           ),
         ),

@@ -13,12 +13,14 @@ class PlanTicket extends StatelessWidget {
     required this.type,
     required this.subtitle,
     this.onButtonTap,
+    this.buttonLabel,
     super.key,
   });
 
   final PlanType type;
   final String subtitle;
   final VoidCallback? onButtonTap;
+  final String? buttonLabel;
 
   String get _title {
     return switch (type) {
@@ -28,7 +30,7 @@ class PlanTicket extends StatelessWidget {
     };
   }
 
-  String get _buttonLabel {
+  static String _defaultLabel(PlanType type) {
     return switch (type) {
       PlanType.free => '구독 시작하기',
       PlanType.trial => '구독 업그레이드',
@@ -91,7 +93,7 @@ class PlanTicket extends StatelessWidget {
                 ),
                 const SizedBox(height: TsSpacing.sm),
                 TsButton(
-                  label: _buttonLabel,
+                  label: buttonLabel ?? _defaultLabel(type),
                   variant: TsButtonVariant.primary,
                   size: TsButtonSize.small,
                   onPressed: onButtonTap,
