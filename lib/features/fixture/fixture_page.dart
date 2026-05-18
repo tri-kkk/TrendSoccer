@@ -9,6 +9,7 @@ import 'package:trendsoccer/features/fixture/fixture_dummy_data.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/filter/ts_filter_chip.dart';
+import 'package:trendsoccer/shared/widgets/fixture/alarm_sheet.dart';
 import 'package:trendsoccer/shared/widgets/fixture/date_nav_chip.dart';
 import 'package:trendsoccer/shared/widgets/fixture/fixture_league_header.dart';
 import 'package:trendsoccer/shared/widgets/fixture/fixture_match_row.dart';
@@ -213,10 +214,12 @@ class _FixturePageState extends State<FixturePage> {
                 isNotificationOn: _notificationMatchIds.contains(match.matchId),
                 onNotificationTap: (match.status == 'scheduled' || match.status == 'live')
                     ? () => setState(() {
-                          if (_notificationMatchIds.contains(match.matchId)) {
-                            _notificationMatchIds.remove(match.matchId);
+                          final id = match.matchId;
+                          if (_notificationMatchIds.contains(id)) {
+                            _notificationMatchIds.remove(id);
                           } else {
-                            _notificationMatchIds.add(match.matchId);
+                            _notificationMatchIds.add(id);
+                            showAlarmSheet(context, _selectedSport);
                           }
                         })
                     : null,
