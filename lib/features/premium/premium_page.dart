@@ -25,7 +25,7 @@ class PremiumPage extends StatefulWidget {
 
 class _PremiumPageState extends State<PremiumPage> {
   /// Change to [nonSubscriber] to test promo layout.
-  final _PremiumUserState _userState = _PremiumUserState.nonSubscriber;
+  final _PremiumUserState _userState = _PremiumUserState.subscriber;
 
   SportType _selectedSport = SportType.soccer;
   int _selectedComboDateIndex = 0;
@@ -189,8 +189,9 @@ class _PremiumPageState extends State<PremiumPage> {
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
-    if (_userState == _PremiumUserState.nonSubscriber) {
-      return Scaffold(
+    switch (_userState) {
+      case _PremiumUserState.nonSubscriber:
+        return Scaffold(
         backgroundColor: semantic.surfaceBase,
         body: SafeArea(
           child: Center(
@@ -279,30 +280,30 @@ class _PremiumPageState extends State<PremiumPage> {
           ),
         ),
       );
-    }
-
-    return Scaffold(
-      backgroundColor: semantic.surfaceBase,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: SportsToggle(
-                selectedSport: _selectedSport,
-                onChanged: (sport) => setState(() {
-                  _selectedSport = sport;
-                  _selectedComboDateIndex = 0;
-                }),
-              ),
+      case _PremiumUserState.subscriber:
+        return Scaffold(
+          backgroundColor: semantic.surfaceBase,
+          body: SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: SportsToggle(
+                    selectedSport: _selectedSport,
+                    onChanged: (sport) => setState(() {
+                      _selectedSport = sport;
+                      _selectedComboDateIndex = 0;
+                    }),
+                  ),
+                ),
+                if (_selectedSport == SportType.soccer)
+                  Expanded(child: _buildSoccerSection(context))
+                else
+                  Expanded(child: _buildBaseballSection()),
+              ],
             ),
-            if (_selectedSport == SportType.soccer)
-              Expanded(child: _buildSoccerSection(context))
-            else
-              Expanded(child: _buildBaseballSection()),
-          ],
-        ),
-      ),
-    );
+          ),
+        );
+    }
   }
 }

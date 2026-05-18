@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
-import 'package:trendsoccer/shared/widgets/menu/plan_card.dart';
-import 'package:trendsoccer/shared/widgets/menu/plan_option.dart';
 
 class SubscribePage extends StatefulWidget {
   const SubscribePage({super.key});
@@ -16,76 +13,291 @@ class SubscribePage extends StatefulWidget {
 }
 
 class _SubscribePageState extends State<SubscribePage> {
-  PlanOptionType _selectedPlan = PlanOptionType.threeMonth;
+  /// 0 = 3개월 (default selected), 1 = 1개월
+  int _selectedPlanIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
-      appBar: const TsAppBar(
-        location: TsAppBarLocation.backTitle,
-        title: '구독',
+      appBar: AppBar(
+        backgroundColor: semantic.surfaceBase,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
+          onPressed: () => context.pop(),
+        ),
+        title: Text(
+          '구독',
+          style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+        ),
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(2),
+          child: Container(height: 2, color: semantic.textDisabled),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(TsSpacing.lg),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Get Full Access\nTo The AI Assistant',
-              style: TsType.headingH1.copyWith(color: semantic.textPrimary),
+              'Get Full Access To',
+              style: TsType.headingH2.copyWith(color: semantic.textPrimary),
             ),
-            const SizedBox(height: TsSpacing.sm),
+            const SizedBox(height: 8),
             Text(
-              '프리미엄 구독으로 모든 기능을 이용하세요',
-              style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+              'The AI Assistant !',
+              style: TsType.headingH2.copyWith(color: semantic.textPrimary),
             ),
-            const SizedBox(height: TsSpacing.xl),
-            PlanCard(
-              type: PlanCardType.free,
-              benefits: const [
-                PlanBenefitItem(text: '경기 시작 2시간 전 분석 오픈'),
-                PlanBenefitItem(text: '기본 분석 데이터'),
-                PlanBenefitItem(text: '실시간 스코어'),
-                PlanBenefitItem(text: '광고 포함', isIncluded: false),
+            const SizedBox(height: 16),
+            _buildPlanCard(
+              semantic: semantic,
+              title: '무료',
+              titleColor: semantic.textPrimary,
+              bgColor: semantic.surfaceRaised,
+              borderColor: null,
+              dividerColor: semantic.borderSubtle,
+              benefits: [
+                '분석 카드 킥오프 2시간 전 공개',
+                '기본 경기 분석 및 통계',
+                '실시간 스코어 및 경기 일정',
+                '광고 포함',
               ],
             ),
-            const SizedBox(height: TsSpacing.xl),
-            PlanCard(
-              type: PlanCardType.premium,
-              benefits: const [
-                PlanBenefitItem(text: '경기 시작 24시간 전 우선 접근'),
-                PlanBenefitItem(text: 'PREMIUM PICK 무제한'),
-                PlanBenefitItem(text: '야구 AI Analysis'),
-                PlanBenefitItem(text: '야구 조합'),
-                PlanBenefitItem(text: '광고 없음'),
+            const SizedBox(height: 12),
+            _buildPlanCard(
+              semantic: semantic,
+              title: '프리미엄',
+              titleColor: semantic.interactivePrimary,
+              bgColor: semantic.interactivePrimary.withValues(alpha: 0.1),
+              borderColor: semantic.interactivePrimary,
+              dividerColor: semantic.interactivePrimary.withValues(alpha: 0.2),
+              benefits: [
+                '모든 분석 24시간 우선 접근',
+                '축구 프리미엄픽 무제한',
+                'AI 야구 분석 전체 공개',
+                '야구 조합 픽',
+                '광고 없는 경험',
               ],
             ),
-            const SizedBox(height: TsSpacing.sm),
+            const SizedBox(height: 16),
             Text(
               '구독 상품 선택',
-              style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+              style: TsType.headingH2.copyWith(color: semantic.textPrimary),
             ),
-            const SizedBox(height: TsSpacing.md),
-            PlanOption(
-              type: PlanOptionType.threeMonth,
-              isSelected: _selectedPlan == PlanOptionType.threeMonth,
-              onTap: () => setState(() => _selectedPlan = PlanOptionType.threeMonth),
+            const SizedBox(height: 12),
+            _buildPlanOption(
+              semantic: semantic,
+              price: '₩ 9,900',
+              period: '3개월',
+              isSelected: _selectedPlanIndex == 0,
+              discountLabel: '33% OFF',
+              onTap: () => setState(() => _selectedPlanIndex = 0),
             ),
-            const SizedBox(height: TsSpacing.sm),
-            PlanOption(
-              type: PlanOptionType.oneMonth,
-              isSelected: _selectedPlan == PlanOptionType.oneMonth,
-              onTap: () => setState(() => _selectedPlan = PlanOptionType.oneMonth),
+            const SizedBox(height: 12),
+            _buildPlanOption(
+              semantic: semantic,
+              price: '₩ 4,900',
+              period: '1개월',
+              isSelected: _selectedPlanIndex == 1,
+              discountLabel: null,
+              onTap: () => setState(() => _selectedPlanIndex = 1),
             ),
-            const SizedBox(height: TsSpacing.xl),
-            TsButton(
-              label: 'Start Premium →',
-              variant: TsButtonVariant.primary,
-              onPressed: null,
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: TsButton(
+                label: '프리미엄 구독 시작하기 →',
+                variant: TsButtonVariant.primary,
+                onPressed: () {
+                  // 테스트: 9,900원(3개월) → 성공, 4,900원(1개월) → 실패
+                  // TODO: 외부 웹뷰 결제 연동
+                  if (_selectedPlanIndex == 0) {
+                    context.push('/menu/subscribe/success');
+                  } else {
+                    context.push('/menu/subscribe/fail');
+                  }
+                },
+              ),
             ),
-            const SizedBox(height: TsSpacing.xl),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        height: 80,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: semantic.surfaceRaised,
+          border: Border(
+            top: BorderSide(color: semantic.textDisabled, width: 1),
+          ),
+        ),
+        child: Row(
+          children: [
+            _buildNavItem(semantic, Icons.trending_up, '트렌드', false, () => context.go('/trend')),
+            _buildNavItem(
+              semantic,
+              Icons.insert_chart_outlined,
+              '분석',
+              false,
+              () => context.go('/analysis'),
+            ),
+            _buildNavItem(semantic, Icons.calendar_today, '일정', false, () => context.go('/fixture')),
+            _buildNavItem(
+              semantic,
+              Icons.workspace_premium,
+              '프리미엄',
+              false,
+              () => context.go('/premium'),
+            ),
+            _buildNavItem(semantic, Icons.menu, '메뉴', true, () => context.go('/menu')),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(
+    TsSemanticColors semantic,
+    IconData icon,
+    String label,
+    bool isActive,
+    VoidCallback onTap,
+  ) {
+    final color = isActive ? semantic.interactivePrimary : semantic.textTertiary;
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          height: 56,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 24, color: color),
+              const SizedBox(height: 4),
+              Text(label, style: TsType.labelXsBold.copyWith(color: color)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlanCard({
+    required TsSemanticColors semantic,
+    required String title,
+    required Color titleColor,
+    required Color bgColor,
+    required Color? borderColor,
+    required Color dividerColor,
+    required List<String> benefits,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
+        border: borderColor != null ? Border.all(color: borderColor, width: 1) : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: TsType.headingH3.copyWith(color: titleColor)),
+          const SizedBox(height: 16),
+          Container(height: 1, color: dividerColor),
+          const SizedBox(height: 16),
+          ...benefits.map(
+            (b) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.check, size: 16, color: semantic.interactivePrimary),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      b,
+                      style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlanOption({
+    required TsSemanticColors semantic,
+    required String price,
+    required String period,
+    required bool isSelected,
+    required String? discountLabel,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? semantic.interactivePrimary.withValues(alpha: 0.2)
+              : semantic.surfaceContainer,
+          borderRadius: BorderRadius.circular(4),
+          border: isSelected ? Border.all(color: semantic.interactivePrimary, width: 1) : null,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? semantic.interactivePrimary : semantic.borderDefault,
+                  width: 2,
+                ),
+              ),
+              child: isSelected
+                  ? Center(
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: semantic.interactivePrimary,
+                        ),
+                      ),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 16),
+            Text(price, style: TsType.bodyLRegular.copyWith(color: semantic.textPrimary)),
+            const SizedBox(width: 8),
+            Text(period, style: TsType.labelSRegular.copyWith(color: semantic.textTertiary)),
+            const Spacer(),
+            if (discountLabel != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: semantic.interactivePrimary.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  discountLabel,
+                  style: TsType.bodyMBold.copyWith(color: semantic.interactivePrimary),
+                ),
+              ),
           ],
         ),
       ),

@@ -10,7 +10,9 @@ import 'package:trendsoccer/features/menu/about_page.dart';
 import 'package:trendsoccer/features/menu/help_page.dart';
 import 'package:trendsoccer/features/menu/menu_page.dart';
 import 'package:trendsoccer/features/menu/privacy_page.dart';
+import 'package:trendsoccer/features/menu/subscribe_fail_page.dart';
 import 'package:trendsoccer/features/menu/subscribe_page.dart';
+import 'package:trendsoccer/features/menu/subscribe_success_page.dart';
 import 'package:trendsoccer/features/menu/terms_page.dart';
 import 'package:trendsoccer/features/premium/premium_page.dart';
 import 'package:trendsoccer/features/report/soccer_report_detail_page.dart';
@@ -43,6 +45,14 @@ abstract final class AppRouter {
       GoRoute(
         path: '/menu/subscribe',
         builder: (context, state) => const SubscribePage(),
+      ),
+      GoRoute(
+        path: '/menu/subscribe/success',
+        builder: (context, state) => const SubscribeSuccessPage(),
+      ),
+      GoRoute(
+        path: '/menu/subscribe/fail',
+        builder: (context, state) => const SubscribeFailPage(),
       ),
       GoRoute(
         path: '/menu/about',
