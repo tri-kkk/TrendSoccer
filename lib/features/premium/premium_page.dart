@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/models/sport_type.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/premium/premium_dummy_data.dart';
+import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/pick_direction_badge.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_card.dart';
@@ -11,6 +13,8 @@ import 'package:trendsoccer/shared/widgets/combo/combo_card.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_dashboard.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/toggle/sports_toggle.dart';
+
+enum _PremiumUserState { subscriber, nonSubscriber }
 
 class PremiumPage extends StatefulWidget {
   const PremiumPage({super.key});
@@ -20,6 +24,9 @@ class PremiumPage extends StatefulWidget {
 }
 
 class _PremiumPageState extends State<PremiumPage> {
+  /// Change to [nonSubscriber] to test promo layout.
+  final _PremiumUserState _userState = _PremiumUserState.nonSubscriber;
+
   SportType _selectedSport = SportType.soccer;
   int _selectedComboDateIndex = 0;
 
@@ -50,16 +57,30 @@ class _PremiumPageState extends State<PremiumPage> {
             countdown: '3h 42m',
             streak: '5 WIN',
             recentWins: const [
-              RecentWinData(homeTeam: '바르셀로나', awayTeam: '바이에른', pickDirection: '홈'),
-              RecentWinData(homeTeam: '아스날', awayTeam: '첼시', pickDirection: '원정'),
-              RecentWinData(homeTeam: '레알 마드리드', awayTeam: '아틀레티코', pickDirection: '홈'),
+              RecentWinData(
+                homeTeam: '바르셀로나',
+                awayTeam: '바이에른',
+                pickDirection: '홈',
+              ),
+              RecentWinData(
+                homeTeam: '아스날',
+                awayTeam: '첼시',
+                pickDirection: '원정',
+              ),
+              RecentWinData(
+                homeTeam: '레알 마드리드',
+                awayTeam: '아틀레티코',
+                pickDirection: '홈',
+              ),
             ],
           ),
           const SizedBox(height: 16),
           ...premiumPickDummy.asMap().entries.map((entry) {
             final data = entry.value;
             return Padding(
-              padding: EdgeInsets.only(bottom: entry.key < premiumPickDummy.length - 1 ? 16 : 0),
+              padding: EdgeInsets.only(
+                bottom: entry.key < premiumPickDummy.length - 1 ? 16 : 0,
+              ),
               child: AnalysisCard(
                 leagueId: data.leagueId,
                 leagueName: data.leagueName,
@@ -70,7 +91,9 @@ class _PremiumPageState extends State<PremiumPage> {
                 isPremiumPick: true,
                 pickDirection: _pickDirectionFromData(data.pickDirection),
                 winRate: data.winRate,
-                onAnalyze: () => context.push('/analysis/soccer/match-report/${data.matchId}'),
+                onAnalyze: () => context.push(
+                  '/analysis/soccer/match-report/${data.matchId}',
+                ),
               ),
             );
           }),
@@ -116,7 +139,9 @@ class _PremiumPageState extends State<PremiumPage> {
                   ...dayData.combos.asMap().entries.map((entry) {
                     final combo = entry.value;
                     return Padding(
-                      padding: EdgeInsets.only(bottom: entry.key < dayData.combos.length - 1 ? 12 : 0),
+                      padding: EdgeInsets.only(
+                        bottom: entry.key < dayData.combos.length - 1 ? 12 : 0,
+                      ),
                       child: ComboCard(
                         leagueId: combo.leagueId,
                         comboCount: combo.comboCount,
@@ -144,9 +169,118 @@ class _PremiumPageState extends State<PremiumPage> {
     );
   }
 
+  Widget _buildBenefitRow(TsSemanticColors semantic, String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(Icons.check, size: 24, color: semantic.interactivePrimary),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: TsType.bodyLRegular.copyWith(color: semantic.textPrimary),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+
+    if (_userState == _PremiumUserState.nonSubscriber) {
+      return Scaffold(
+        backgroundColor: semantic.surfaceBase,
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 32),
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: semantic.interactivePrimary,
+                    ),
+                    child: Icon(
+                      Icons.star,
+                      size: 40,
+                      color: semantic.surfaceBase,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Text(
+                    '프리미엄 전용 콘텐츠',
+                    style: TsType.displayHero.copyWith(
+                      color: semantic.textPrimary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'PREMIUM PICK과 야구 AI 조합 분석을',
+                    style: TsType.bodyLBold.copyWith(
+                      color: semantic.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '구독 후 이용하실 수 있습니다.',
+                    style: TsType.bodyLBold.copyWith(
+                      color: semantic.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: semantic.surfaceRaised,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '프리미엄 혜택',
+                          style: TsType.bodyLRegular.copyWith(
+                            color: semantic.interactivePrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildBenefitRow(semantic, '경기 시작 24시간 전 분석 우선 접근'),
+                        const SizedBox(height: 16),
+                        _buildBenefitRow(semantic, 'PREMIUM PICK 무제한 확인'),
+                        const SizedBox(height: 16),
+                        _buildBenefitRow(semantic, '야구 AI 조합 분석 + 광고 제거'),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: TsButton(
+                            label: '지금 구독하기 →',
+                            variant: TsButtonVariant.primary,
+                            onPressed: () => context.push('/menu/subscribe'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
       body: SafeArea(
@@ -162,11 +296,10 @@ class _PremiumPageState extends State<PremiumPage> {
                 }),
               ),
             ),
-            Expanded(
-              child: _selectedSport == SportType.soccer
-                  ? _buildSoccerSection(context)
-                  : _buildBaseballSection(),
-            ),
+            if (_selectedSport == SportType.soccer)
+              Expanded(child: _buildSoccerSection(context))
+            else
+              Expanded(child: _buildBaseballSection()),
           ],
         ),
       ),
