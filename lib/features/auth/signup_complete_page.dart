@@ -151,7 +151,12 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
       ),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 32,
+            bottom: 32 + MediaQuery.of(context).padding.bottom,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

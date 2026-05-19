@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -106,24 +105,13 @@ class _TrendPageState extends State<TrendPage> {
   }
 
   Widget _buildSectionHeader({
-    required SportType sportType,
     required String title,
     VoidCallback? onMoreTap,
   }) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final icon = sportType == SportType.soccer
-        ? Icons.sports_soccer
-        : Icons.sports_baseball;
 
     return Row(
       children: [
-        Container(
-          width: 32,
-          height: 32,
-          alignment: Alignment.center,
-          child: Icon(icon, size: 24, color: semantic.interactivePrimary),
-        ),
-        const SizedBox(width: 8),
         Expanded(
           child: Text(
             title,
@@ -235,7 +223,6 @@ class _TrendPageState extends State<TrendPage> {
                 const SizedBox(height: 16),
 
                 _buildSectionHeader(
-                  sportType: SportType.soccer,
                   title: '축구 분석',
                   onMoreTap: () => context.go('/analysis'),
                 ),
@@ -244,7 +231,6 @@ class _TrendPageState extends State<TrendPage> {
                 const SizedBox(height: 16),
 
                 _buildSectionHeader(
-                  sportType: SportType.baseball,
                   title: '야구 분석',
                   onMoreTap: () => context.go('/analysis?sport=baseball'),
                 ),
@@ -253,7 +239,6 @@ class _TrendPageState extends State<TrendPage> {
                 const SizedBox(height: 16),
 
                 _buildSectionHeader(
-                  sportType: SportType.soccer,
                   title: '프리미엄 분석',
                 ),
                 const SizedBox(height: 16),

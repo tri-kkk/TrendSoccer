@@ -134,7 +134,12 @@ class _SignupTermsPageState extends State<SignupTermsPage> {
       ),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 48),
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 48,
+            bottom: 48 + MediaQuery.of(context).padding.bottom,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

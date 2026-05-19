@@ -25,7 +25,12 @@ class SubscribeSheet extends ConsumerWidget {
         color: semantic.surfaceOverlay,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      padding: const EdgeInsets.only(top: 12, bottom: 24, left: 24, right: 24),
+      padding: EdgeInsets.only(
+        top: 12,
+        bottom: 24 + MediaQuery.of(context).padding.bottom,
+        left: 24,
+        right: 24,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

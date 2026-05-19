@@ -475,7 +475,12 @@ class _ThemeBottomSheetState extends ConsumerState<_ThemeBottomSheet> {
       child: ColoredBox(
         color: semantic.surfaceOverlay,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+          padding: EdgeInsets.fromLTRB(
+            24,
+            12,
+            24,
+            24 + MediaQuery.of(context).padding.bottom,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -585,7 +590,12 @@ class _LanguageBottomSheetState extends State<_LanguageBottomSheet> {
       child: ColoredBox(
         color: semantic.surfaceOverlay,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+          padding: EdgeInsets.fromLTRB(
+            24,
+            12,
+            24,
+            24 + MediaQuery.of(context).padding.bottom,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -682,7 +692,12 @@ class _NotificationBottomSheetState extends State<_NotificationBottomSheet> {
       child: ColoredBox(
         color: semantic.surfaceOverlay,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+          padding: EdgeInsets.fromLTRB(
+            24,
+            12,
+            24,
+            24 + MediaQuery.of(context).padding.bottom,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,

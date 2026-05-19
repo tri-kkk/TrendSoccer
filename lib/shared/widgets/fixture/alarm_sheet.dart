@@ -70,7 +70,12 @@ class _AlarmSheetState extends State<AlarmSheet> {
         color: semantic.surfaceRaised,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      padding: const EdgeInsets.only(top: 16, bottom: 24, left: 16, right: 16),
+      padding: EdgeInsets.only(
+        top: 16,
+        bottom: 24 + MediaQuery.of(context).padding.bottom,
+        left: 16,
+        right: 16,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
