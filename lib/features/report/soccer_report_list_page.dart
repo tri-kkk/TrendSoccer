@@ -6,7 +6,8 @@ import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/report/report_dummy_data.dart';
-import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
+import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
+import 'package:trendsoccer/shared/widgets/navigation/ts_bottom_navigation.dart';
 
 class SoccerReportListPage extends StatelessWidget {
   const SoccerReportListPage({super.key});
@@ -14,29 +15,23 @@ class SoccerReportListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final bottomPadding =
+        16 + MediaQuery.paddingOf(context).bottom + TsBottomNavigation.barHeight;
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
-      appBar: AppBar(
-        backgroundColor: semantic.surfaceBase,
-        elevation: 0,
-        leading: TsBackButton(onPressed: () => context.pop()),
-        title: Text(
-          '매치 프리뷰',
-          style: TsType.headingH3.copyWith(color: semantic.textPrimary),
-        ),
-        centerTitle: true,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(2),
-          child: Container(height: 2, color: semantic.textDisabled),
-        ),
+      appBar: TsAppBar.preferred(
+        context,
+        location: TsAppBarLocation.backTitle,
+        title: '매치 프리뷰',
+        onBack: () => context.pop(),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.only(
           left: 16,
           right: 16,
           top: 16,
-          bottom: 16 + MediaQuery.paddingOf(context).bottom,
+          bottom: bottomPadding,
         ),
         child: Column(
           children: [
