@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
-import 'package:trendsoccer/shared/widgets/logo/ts_logo.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -12,101 +10,142 @@ class AboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final logoColor = isDark ? TsLogoColor.white : TsLogoColor.black;
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
-      appBar: const TsAppBar(
-        location: TsAppBarLocation.backTitle,
-        title: 'About',
+      appBar: AppBar(
+        backgroundColor: semantic.surfaceBase,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
+          onPressed: () => context.pop(),
+        ),
+        title: Text(
+          'About',
+          style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+        ),
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(2),
+          child: Container(height: 2, color: semantic.textDisabled),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(TsSpacing.lg),
+        padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: TsLogo(type: TsLogoType.vertical, color: logoColor),
+            Container(
+              width: 68,
+              height: 120,
+              decoration: BoxDecoration(
+                color: semantic.surfaceContainer,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(Icons.sports_soccer, size: 48, color: semantic.interactivePrimary),
             ),
-            const SizedBox(height: TsSpacing.sm),
+            const SizedBox(height: 8),
             Text(
-              '서비스 소개',
-              style: TsType.headingH3.copyWith(color: semantic.textPrimary),
-            ),
-            const SizedBox(height: TsSpacing.sm),
-            Text(
-              'TrendSoccer는 통계 데이터와 AI 알고리즘 기반의 경기 분석 인사이트를 제공하는 스마트 스포츠 컴패니언입니다.',
+              'About',
               style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             ),
-            const SizedBox(height: TsSpacing.xl),
+            const SizedBox(height: 8),
             Text(
-              'Key Features',
+              'TrendSoccer',
+              style: TsType.displayHero.copyWith(color: semantic.interactivePrimary),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Reading the Flow of Football Through Data',
               style: TsType.headingH3.copyWith(color: semantic.textPrimary),
             ),
-            const SizedBox(height: TsSpacing.sm),
-            _FeatureBullets(
-              items: const [
-                '데이터 기반 경기 분석',
-                'AI 알고리즘 PREMIUM PICK',
-                '축구 + 야구 멀티 스포츠',
-                '실시간 스코어 및 경기 일정',
+            const SizedBox(height: 8),
+            Text(
+              'TrendSoccer는 AI 기반 실시간 분석으로 경기 흐름을 예측합니다. 프리미어리그부터 챔피언스리그까지, 모든 빅매치를 전문가 수준의 인사이트로 경험하세요.',
+              style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+            ),
+            const SizedBox(height: 24),
+            Container(height: 1, color: semantic.borderSubtle),
+            const SizedBox(height: 24),
+            Text(
+              '주요 기능',
+              style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+            ),
+            const SizedBox(height: 16),
+            _buildFeatureItem(semantic, 'AI 기반 분석', '4시즌 방대한 경기 데이터를 기반으로 구축'),
+            const SizedBox(height: 8),
+            _buildFeatureItem(semantic, '실시간 배당 분석', '배당 무브먼트에 따른 마켓 모니터링'),
+            const SizedBox(height: 8),
+            _buildFeatureItem(semantic, '글로벌 리그 지원', '주요 6대 리그 종합 데이터 지원'),
+            const SizedBox(height: 24),
+            Container(height: 1, color: semantic.borderSubtle),
+            const SizedBox(height: 24),
+            Text(
+              '비전',
+              style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '축구 팬들이 경기를 더 깊이 이해하고 즐길 수 있도록 돕습니다.',
+              style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+            ),
+            const SizedBox(height: 24),
+            Container(height: 1, color: semantic.borderSubtle),
+            const SizedBox(height: 24),
+            Text(
+              '컨택 & 서포트',
+              style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Icon(Icons.mail_outline, size: 24, color: semantic.textSecondary),
+                const SizedBox(width: 16),
+                Text(
+                  'tikilab2025@gmail.com',
+                  style: TsType.bodyLRegular.copyWith(color: semantic.interactivePrimary),
+                ),
               ],
             ),
-            const SizedBox(height: TsSpacing.xl),
-            Text(
-              'Contact',
-              style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Icon(Icons.language, size: 24, color: semantic.textSecondary),
+                const SizedBox(width: 16),
+                Text(
+                  'trendsoccer.com',
+                  style: TsType.bodyLRegular.copyWith(color: semantic.interactivePrimary),
+                ),
+              ],
             ),
-            const SizedBox(height: TsSpacing.sm),
-            Text(
-              'support@trendsoccer.com',
-              style: TsType.bodyLRegular.copyWith(color: semantic.interactivePrimary),
-            ),
+            const SizedBox(height: 24),
           ],
         ),
       ),
     );
   }
-}
 
-class _FeatureBullets extends StatelessWidget {
-  const _FeatureBullets({required this.items});
-
-  final List<String> items;
-
-  @override
-  Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+  Widget _buildFeatureItem(TsSemanticColors semantic, String title, String description) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (var i = 0; i < items.length; i++) ...[
-          if (i > 0) const SizedBox(height: TsSpacing.sm),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 7),
-                child: Container(
-                  width: 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: semantic.interactivePrimary,
-                    shape: BoxShape.circle,
-                  ),
-                ),
+        Row(
+          children: [
+            Icon(Icons.check, size: 24, color: semantic.interactivePrimary),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                title,
+                style: TsType.headingH3.copyWith(color: semantic.textPrimary),
               ),
-              const SizedBox(width: TsSpacing.sm),
-              Expanded(
-                child: Text(
-                  items[i],
-                  style: TsType.bodyLRegular.copyWith(color: semantic.textPrimary),
-                ),
-              ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          description,
+          style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+        ),
       ],
     );
   }

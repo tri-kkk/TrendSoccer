@@ -8,11 +8,9 @@ import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/bottom_sheet/ts_bottom_sheet_handle.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
-import 'package:trendsoccer/shared/widgets/menu/delete_account_dialog.dart';
 import 'package:trendsoccer/shared/widgets/menu/guest_banner.dart';
 import 'package:trendsoccer/shared/widgets/menu/menu_list_item.dart';
 import 'package:trendsoccer/shared/widgets/menu/plan_ticket.dart';
-import 'package:trendsoccer/shared/widgets/menu/sign_out_dialog.dart';
 import 'package:trendsoccer/shared/widgets/radio/ts_radio_button.dart';
 import 'package:trendsoccer/shared/widgets/section/ts_section_header.dart';
 import 'package:trendsoccer/shared/widgets/toggle/ts_toggle.dart';
@@ -69,6 +67,220 @@ class _MenuPageState extends ConsumerState<MenuPage> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => const _NotificationBottomSheet(),
+    );
+  }
+
+  void _showSignOutDialog(BuildContext context) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.4),
+      builder: (dialogContext) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: 348,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: semantic.surfaceOverlay,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '로그아웃',
+                    style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    '정말 로그아웃 하시겠습니까 ?',
+                    style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => Navigator.of(dialogContext).pop(),
+                          child: Container(
+                            height: 32,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: semantic.textDisabled, width: 2),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '취소',
+                              style: TsType.bodyMBold.copyWith(color: semantic.textDisabled),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(dialogContext).pop();
+                            // TODO: Actual sign out logic
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('로그아웃 되었습니다.')),
+                            );
+                          },
+                          child: Container(
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: semantic.interactivePrimary,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '로그아웃',
+                              style: TsType.bodyMBold.copyWith(color: semantic.surfaceBase),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final deleteController = TextEditingController();
+
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.4),
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            final isDeleteTyped = deleteController.text.toUpperCase() == 'DELETE';
+            return Center(
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  width: 380,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: semantic.surfaceOverlay,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '계정 삭제',
+                        style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        '계정을 삭제하면 모든 데이터가 삭제되며 복구할 수 없습니다.',
+                        style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        '\'DELETE\'를 입력하여 확인하세요.',
+                        style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: semantic.surfaceContainer,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: semantic.borderDefault, width: 1),
+                        ),
+                        child: TextField(
+                          controller: deleteController,
+                          onChanged: (_) => setDialogState(() {}),
+                          textAlign: TextAlign.center,
+                          style: TsType.labelSRegular.copyWith(color: semantic.textPrimary),
+                          decoration: InputDecoration(
+                            hintText: 'DELETE',
+                            hintStyle: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                deleteController.dispose();
+                                Navigator.of(dialogContext).pop();
+                              },
+                              child: Container(
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: semantic.textDisabled, width: 2),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '취소',
+                                  style: TsType.bodyMBold.copyWith(color: semantic.textDisabled),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: isDeleteTyped
+                                  ? () {
+                                      deleteController.dispose();
+                                      Navigator.of(dialogContext).pop();
+                                      // TODO: Actual delete account logic
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('계정이 삭제되었습니다.')),
+                                      );
+                                    }
+                                  : null,
+                              child: Container(
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: isDeleteTyped
+                                      ? semantic.interactivePrimary
+                                      : semantic.interactivePrimary.withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '계정삭제',
+                                  style: TsType.bodyMBold.copyWith(
+                                    color: isDeleteTyped
+                                        ? semantic.surfaceBase
+                                        : semantic.surfaceBase.withValues(alpha: 0.5),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -220,9 +432,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     GestureDetector(
-                      onTap: () async {
-                        await SignOutDialog.show(context);
-                      },
+                      onTap: () => _showSignOutDialog(context),
                       child: Opacity(
                         opacity: 0.5,
                         child: Text(
@@ -242,9 +452,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                     ),
                     const SizedBox(width: 16),
                     GestureDetector(
-                      onTap: () async {
-                        await DeleteAccountDialog.show(context);
-                      },
+                      onTap: () => _showDeleteAccountDialog(context),
                       child: Opacity(
                         opacity: 0.5,
                         child: Text(

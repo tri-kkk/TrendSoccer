@@ -7,13 +7,13 @@ import 'package:trendsoccer/features/auth/signup_complete_page.dart';
 import 'package:trendsoccer/features/auth/signup_terms_page.dart';
 import 'package:trendsoccer/features/fixture/fixture_page.dart';
 import 'package:trendsoccer/features/menu/about_page.dart';
-import 'package:trendsoccer/features/menu/help_page.dart';
+import 'package:trendsoccer/features/menu/help_center_page.dart';
 import 'package:trendsoccer/features/menu/menu_page.dart';
-import 'package:trendsoccer/features/menu/privacy_page.dart';
+import 'package:trendsoccer/features/menu/privacy_policy_page.dart';
 import 'package:trendsoccer/features/menu/subscribe_fail_page.dart';
 import 'package:trendsoccer/features/menu/subscribe_page.dart';
 import 'package:trendsoccer/features/menu/subscribe_success_page.dart';
-import 'package:trendsoccer/features/menu/terms_page.dart';
+import 'package:trendsoccer/features/menu/terms_of_service_page.dart';
 import 'package:trendsoccer/features/premium/premium_page.dart';
 import 'package:trendsoccer/features/report/soccer_report_detail_page.dart';
 import 'package:trendsoccer/features/report/soccer_report_list_page.dart';
@@ -60,15 +60,15 @@ abstract final class AppRouter {
       ),
       GoRoute(
         path: '/menu/privacy',
-        builder: (context, state) => const PrivacyPage(),
+        builder: (context, state) => const PrivacyPolicyPage(),
       ),
       GoRoute(
         path: '/menu/terms',
-        builder: (context, state) => const TermsPage(),
+        builder: (context, state) => const TermsOfServicePage(),
       ),
       GoRoute(
         path: '/menu/help',
-        builder: (context, state) => const HelpPage(),
+        builder: (context, state) => const HelpCenterPage(),
       ),
       GoRoute(
         path: '/menu/reports/soccer',
