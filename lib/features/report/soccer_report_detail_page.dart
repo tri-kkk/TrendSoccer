@@ -53,19 +53,27 @@ class SoccerReportDetailPage extends StatelessWidget {
     if (report == null) {
       return Scaffold(
         backgroundColor: semantic.surfaceBase,
-        appBar: _appBar(context, '매치 리포트'),
-        body: const TsEmptyState(
-          title: '리포트를 찾을 수 없습니다.',
-          subtitle: '목록에서 다시 선택해 주세요.',
+        appBar: _appBar(context, '매치 프리뷰'),
+        body: Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
+          child: const TsEmptyState(
+            title: '리포트를 찾을 수 없습니다.',
+            subtitle: '목록에서 다시 선택해 주세요.',
+          ),
         ),
       );
     }
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
-      appBar: _appBar(context, '매치 리포트'),
+      appBar: _appBar(context, '매치 프리뷰'),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: 16 + MediaQuery.paddingOf(context).bottom,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

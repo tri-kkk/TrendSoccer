@@ -6,14 +6,53 @@ import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 
 enum TsAppBarLocation { home, backTitle }
 
-class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const TsAppBar({
+/// Custom app bar for pushed routes. Use [TsAppBar.preferred] with
+/// [Scaffold.appBar] so status-bar inset is included in [PreferredSize]
+/// (a fixed-height bar without this sits under the notch/status bar).
+class TsAppBar {
+  TsAppBar._();
+
+  static double _toolbarHeight(TsAppBarLocation location) =>
+      location == TsAppBarLocation.home ? 56 : 52;
+
+  static PreferredSizeWidget preferred(
+    BuildContext context, {
+    required TsAppBarLocation location,
+    String? title,
+    VoidCallback? onBack,
+    Widget? trailing,
+    Widget? leading,
+  }) {
+    final top = MediaQuery.paddingOf(context).top;
+    final toolbarHeight = _toolbarHeight(location);
+    return PreferredSize(
+      preferredSize: Size.fromHeight(top + toolbarHeight),
+      child: SafeArea(
+        bottom: false,
+        left: false,
+        right: false,
+        child: SizedBox(
+          height: toolbarHeight,
+          child: _TsAppBarToolbar(
+            location: location,
+            title: title,
+            onBack: onBack,
+            trailing: trailing,
+            leading: leading,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TsAppBarToolbar extends StatelessWidget {
+  const _TsAppBarToolbar({
     required this.location,
     this.title,
     this.onBack,
     this.trailing,
     this.leading,
-    super.key,
   });
 
   final TsAppBarLocation location;
@@ -21,11 +60,6 @@ class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onBack;
   final Widget? trailing;
   final Widget? leading;
-
-  @override
-  Size get preferredSize => Size.fromHeight(
-        location == TsAppBarLocation.home ? 56 : 52,
-      );
 
   @override
   Widget build(BuildContext context) {
@@ -37,12 +71,11 @@ class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return switch (location) {
       TsAppBarLocation.home => Container(
-          height: 56,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: semantic.surfaceBase,
             border: Border(bottom: bottomBorder),
           ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
               leading ?? const SizedBox.shrink(),
@@ -52,7 +85,6 @@ class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
       TsAppBarLocation.backTitle => Container(
-          height: 52,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: semantic.surfaceBase,

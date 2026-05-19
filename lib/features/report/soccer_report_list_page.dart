@@ -22,7 +22,7 @@ class SoccerReportListPage extends StatelessWidget {
         elevation: 0,
         leading: TsBackButton(onPressed: () => context.pop()),
         title: Text(
-          '리포트',
+          '매치 프리뷰',
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
         ),
         centerTitle: true,
@@ -32,7 +32,12 @@ class SoccerReportListPage extends StatelessWidget {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: 16 + MediaQuery.paddingOf(context).bottom,
+        ),
         child: Column(
           children: [
             for (var i = 0; i < soccerReportsDummy.length; i++) ...[

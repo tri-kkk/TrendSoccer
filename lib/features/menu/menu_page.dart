@@ -338,7 +338,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
               const SizedBox(height: 16),
               MenuListItem(
                 iconAsset: TsAssets.iconBlog,
-                label: '리포트',
+                label: '매치 프리뷰',
                 onTap: () => context.push('/menu/reports/soccer'),
               ),
               const SizedBox(height: 16),

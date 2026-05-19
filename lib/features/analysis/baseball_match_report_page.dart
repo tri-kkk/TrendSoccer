@@ -54,14 +54,15 @@ class _BaseballMatchReportPageState
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
-      appBar: TsAppBar(
+      appBar: TsAppBar.preferred(
+        context,
         location: TsAppBarLocation.backTitle,
         title: '매치 리포트',
         onBack: () => context.pop(),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).padding.bottom,
+          bottom: TsSpacing.lg + MediaQuery.paddingOf(context).bottom,
         ),
         child: Column(
           children: [
