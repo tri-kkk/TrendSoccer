@@ -110,7 +110,7 @@ class SoccerReportDetailPage extends StatelessWidget {
                         report.author,
                         style: TsType.bodyLRegular.copyWith(color: semantic.textPrimary),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
                       Text(
                         '축구 데이터 분석가',
                         style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),

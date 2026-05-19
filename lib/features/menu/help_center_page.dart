@@ -41,7 +41,7 @@ class _HelpCenterPageState extends State<HelpCenterPage> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          '도움말',
+          '문의하기',
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
         ),
         centerTitle: true,

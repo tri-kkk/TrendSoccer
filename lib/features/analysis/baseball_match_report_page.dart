@@ -60,6 +60,9 @@ class _BaseballMatchReportPageState
         onBack: () => context.pop(),
       ),
       body: SingleChildScrollView(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom,
+        ),
         child: Column(
           children: [
             MatchHeader(

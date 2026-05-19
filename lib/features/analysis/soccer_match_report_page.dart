@@ -70,6 +70,9 @@ class _SoccerMatchReportPageState extends ConsumerState<SoccerMatchReportPage> {
         onBack: () => context.pop(),
       ),
       body: SingleChildScrollView(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom,
+        ),
         child: Column(
           children: [
             MatchHeader(

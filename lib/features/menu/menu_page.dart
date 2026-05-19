@@ -302,8 +302,15 @@ class _MenuPageState extends ConsumerState<MenuPage> {
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
       body: SafeArea(
+        top: false,
+        bottom: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: 16 + MediaQuery.of(context).padding.bottom,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -386,7 +393,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                   const SizedBox(height: 8),
                   MenuListItem(
                     icon: Icons.help_outline,
-                    label: '도움말',
+                    label: '문의하기',
                     onTap: () => context.push('/menu/help'),
                   ),
                   const SizedBox(height: 8),
