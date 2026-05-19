@@ -4,23 +4,23 @@ import 'package:flutter/material.dart';
 abstract final class TsAssets {
   static String logoHorizon(Brightness brightness) =>
       brightness == Brightness.dark
-          ? 'assets/images/logo/dark/horizon.svg'
-          : 'assets/images/logo/light/horizon.svg';
+          ? 'assets/images/tsLogo/dark/horizon.svg'
+          : 'assets/images/tsLogo/light/horizon.svg';
 
   static String logoVertical(Brightness brightness) =>
       brightness == Brightness.dark
-          ? 'assets/images/logo/dark/vertical.svg'
-          : 'assets/images/logo/light/vertical.svg';
+          ? 'assets/images/tsLogo/dark/vertical.svg'
+          : 'assets/images/tsLogo/light/vertical.svg';
 
   static String logoSymbol(Brightness brightness) =>
       brightness == Brightness.dark
-          ? 'assets/images/logo/dark/symbol.svg'
-          : 'assets/images/logo/light/symbol.svg';
+          ? 'assets/images/tsLogo/dark/symbol.svg'
+          : 'assets/images/tsLogo/light/symbol.svg';
 
   static String logoEditor(Brightness brightness) =>
       brightness == Brightness.dark
-          ? 'assets/images/logo/dark/editor.svg'
-          : 'assets/images/logo/light/editor.svg';
+          ? 'assets/images/tsLogo/dark/editor.svg'
+          : 'assets/images/tsLogo/light/editor.svg';
 
   static String leagueIcon(String leagueId, Brightness brightness) =>
       brightness == Brightness.dark

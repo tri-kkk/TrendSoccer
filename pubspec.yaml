@@ -32,8 +32,8 @@ flutter:
 
   assets:
     # Logos
-    - assets/images/logo/dark/
-    - assets/images/logo/light/
+    - assets/images/tsLogo/dark/
+    - assets/images/tsLogo/light/
 
     # League Icons (Analysis)
     - assets/images/league/icon/dark/
