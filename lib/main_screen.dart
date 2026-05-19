@@ -114,9 +114,12 @@ class MainScreen extends ConsumerWidget {
           Expanded(child: child),
         ],
       ),
-      bottomNavigationBar: TsBottomNavigation(
-        currentIndex: selectedIndex,
-        onTap: (index) => context.go(_tabPaths[index]),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: TsBottomNavigation(
+          currentIndex: selectedIndex,
+          onTap: (index) => context.go(_tabPaths[index]),
+        ),
       ),
     );
   }

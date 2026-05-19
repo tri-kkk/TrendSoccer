@@ -11,7 +11,6 @@ import 'package:trendsoccer/shared/widgets/banner/ts_banner.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/today_combo_card.dart';
-import 'package:trendsoccer/shared/widgets/icons/sports_icon.dart';
 
 class TrendPage extends StatefulWidget {
   const TrendPage({super.key});
@@ -112,34 +111,34 @@ class _TrendPageState extends State<TrendPage> {
     VoidCallback? onMoreTap,
   }) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final icon = sportType == SportType.soccer
+        ? Icons.sports_soccer
+        : Icons.sports_baseball;
+
     return Row(
       children: [
+        Container(
+          width: 32,
+          height: 32,
+          alignment: Alignment.center,
+          child: Icon(icon, size: 24, color: semantic.interactivePrimary),
+        ),
+        const SizedBox(width: 8),
         Expanded(
-          child: Row(
-            children: [
-              TsSportsIcon(
-                sport: sportType,
-                size: 32,
-                fill: SportsIconFill.primary,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TsType.headingH2.copyWith(color: semantic.textPrimary),
-                ),
-              ),
-            ],
-          ),
-        ),
-        GestureDetector(
-          onTap: onMoreTap,
-          behavior: HitTestBehavior.opaque,
           child: Text(
-            '더 보기 →',
-            style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+            title,
+            style: TsType.headingH2.copyWith(color: semantic.textPrimary),
           ),
         ),
+        if (onMoreTap != null)
+          GestureDetector(
+            onTap: onMoreTap,
+            behavior: HitTestBehavior.opaque,
+            child: Text(
+              '더 보기 →',
+              style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+            ),
+          ),
       ],
     );
   }
@@ -253,6 +252,11 @@ class _TrendPageState extends State<TrendPage> {
                 _buildBaseballCards(),
                 const SizedBox(height: 16),
 
+                _buildSectionHeader(
+                  sportType: SportType.soccer,
+                  title: '프리미엄 분석',
+                ),
+                const SizedBox(height: 16),
                 PremiumPickCard(
                   showCTA: true,
                   winRate: '78%',
