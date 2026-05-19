@@ -34,4 +34,8 @@ abstract final class TsAssets {
 
   static const socialGoogle = 'assets/images/social/google.svg';
   static const socialNaver = 'assets/images/social/naver.svg';
+
+  static const planFree = 'assets/images/plan/free.png';
+  static const planTrial = 'assets/images/plan/trial.png';
+  static const planPremium = 'assets/images/plan/premium.png';
 }

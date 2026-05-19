@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
+
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
-import 'package:trendsoccer/shared/widgets/logo/ts_logo.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -12,112 +12,124 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final logoColor = isDark ? TsLogoColor.white : TsLogoColor.black;
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
-      appBar: const TsAppBar(
-        location: TsAppBarLocation.backTitle,
-        title: '로그인',
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(TsSpacing.lg),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TsLogo(type: TsLogoType.vertical, color: logoColor),
-            const SizedBox(height: TsSpacing.sm),
-            Text(
-              'TrendSoccer',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: semantic.textPrimary,
-              ),
-            ),
-            const SizedBox(height: TsSpacing.xxxl),
-            _SocialLoginButton(
-              leading: Icon(Icons.g_mobiledata, size: 24, color: Colors.black87),
-              label: 'Google로 계속하기',
-              backgroundColor: Colors.white,
-              labelColor: Colors.black87,
-              onTap: () => context.push('/signup/terms'),
-            ),
-            const SizedBox(height: TsSpacing.md),
-            _SocialLoginButton(
-              leading: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              label: 'Naver로 계속하기',
-              backgroundColor: const Color(0xFF03C75A),
-              labelColor: Colors.white,
-              onTap: () => context.push('/signup/terms'),
-            ),
-            const SizedBox(height: TsSpacing.xl),
-            GestureDetector(
-              onTap: () => context.go('/trend'),
-              behavior: HitTestBehavior.opaque,
-              child: Text(
-                '비회원으로 둘러보기',
-                style: TsType.bodyLRegular.copyWith(
-                  color: semantic.textTertiary,
-                  decoration: TextDecoration.underline,
-                  decorationColor: semantic.textTertiary,
-                ),
-              ),
-            ),
-          ],
+      appBar: AppBar(
+        backgroundColor: semantic.surfaceBase,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
+          onPressed: () => context.pop(),
+        ),
+        title: Text(
+          '로그인',
+          style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+        ),
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(2),
+          child: Container(height: 2, color: semantic.textDisabled),
         ),
       ),
-    );
-  }
-}
-
-class _SocialLoginButton extends StatelessWidget {
-  const _SocialLoginButton({
-    required this.leading,
-    required this.label,
-    required this.backgroundColor,
-    required this.labelColor,
-    required this.onTap,
-  });
-
-  final Widget leading;
-  final String label;
-  final Color backgroundColor;
-  final Color labelColor;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        height: 48,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(width: 24, height: 24, child: Center(child: leading)),
-            const SizedBox(width: TsSpacing.md),
-            Text(
-              label,
-              style: TsType.bodyLBold.copyWith(color: labelColor),
-            ),
-          ],
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 48),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SvgPicture.asset(
+                TsAssets.logoSymbol(Theme.of(context).brightness),
+                width: 240,
+                height: 240,
+              ),
+              const SizedBox(height: 48),
+              Text(
+                'Explore',
+                style: TsType.displayHero.copyWith(color: semantic.textPrimary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'new insights',
+                style: TsType.displayHero.copyWith(color: semantic.textPrimary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'in the data arena!',
+                style: TsType.displayHero.copyWith(color: semantic.textPrimary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '프리미엄 AI가 읽어내는 축구와 야구의 흐름.',
+                style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                '정교한 데이터로 예측의 정확도를 높이세요.',
+                style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 48),
+              GestureDetector(
+                onTap: () => context.push('/signup/terms'),
+                child: Container(
+                  height: 48,
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: semantic.surfaceContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        TsAssets.socialGoogle,
+                        width: 24,
+                        height: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Google로 시작하기',
+                        style: TsType.bodyLBold.copyWith(color: semantic.textPrimary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: () => context.push('/signup/terms'),
+                child: Container(
+                  height: 48,
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: semantic.surfaceContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        TsAssets.socialNaver,
+                        width: 24,
+                        height: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Naver로 시작하기',
+                        style: TsType.bodyLBold.copyWith(color: semantic.textPrimary),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

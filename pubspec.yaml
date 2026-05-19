@@ -49,6 +49,9 @@ flutter:
     # UI icons (checks, etc.)
     - assets/images/icon/
 
+    # Plan ticket images (Menu)
+    - assets/images/plan/
+
   fonts:
     - family: Poppins
       fonts:

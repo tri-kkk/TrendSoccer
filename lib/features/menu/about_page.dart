@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
 class AboutPage extends StatelessWidget {
@@ -35,14 +37,10 @@ class AboutPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
+            SvgPicture.asset(
+              TsAssets.logoSymbol(Theme.of(context).brightness),
               width: 68,
               height: 120,
-              decoration: BoxDecoration(
-                color: semantic.surfaceContainer,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(Icons.sports_soccer, size: 48, color: semantic.interactivePrimary),
             ),
             const SizedBox(height: 8),
             Text(

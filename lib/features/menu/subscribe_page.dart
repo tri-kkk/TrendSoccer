@@ -139,7 +139,13 @@ class _SubscribePageState extends State<SubscribePage> {
         ),
         child: Row(
           children: [
-            _buildNavItem(semantic, Icons.trending_up, '트렌드', false, () => context.go('/trend')),
+            _buildNavItem(
+              semantic,
+              Icons.trending_up,
+              '트렌드',
+              false,
+              () => context.go('/trend'),
+            ),
             _buildNavItem(
               semantic,
               Icons.insert_chart_outlined,
@@ -147,7 +153,13 @@ class _SubscribePageState extends State<SubscribePage> {
               false,
               () => context.go('/analysis'),
             ),
-            _buildNavItem(semantic, Icons.calendar_today, '일정', false, () => context.go('/fixture')),
+            _buildNavItem(
+              semantic,
+              Icons.calendar_today,
+              '일정',
+              false,
+              () => context.go('/fixture'),
+            ),
             _buildNavItem(
               semantic,
               Icons.workspace_premium,
@@ -155,7 +167,13 @@ class _SubscribePageState extends State<SubscribePage> {
               false,
               () => context.go('/premium'),
             ),
-            _buildNavItem(semantic, Icons.menu, '메뉴', true, () => context.go('/menu')),
+            _buildNavItem(
+              semantic,
+              Icons.menu,
+              '메뉴',
+              true,
+              () => context.go('/menu'),
+            ),
           ],
         ),
       ),
@@ -169,7 +187,9 @@ class _SubscribePageState extends State<SubscribePage> {
     bool isActive,
     VoidCallback onTap,
   ) {
-    final color = isActive ? semantic.interactivePrimary : semantic.textTertiary;
+    final color = isActive
+        ? semantic.interactivePrimary
+        : semantic.textTertiary;
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -204,7 +224,9 @@ class _SubscribePageState extends State<SubscribePage> {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(8),
-        border: borderColor != null ? Border.all(color: borderColor, width: 1) : null,
+        border: borderColor != null
+            ? Border.all(color: borderColor, width: 1)
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,12 +241,18 @@ class _SubscribePageState extends State<SubscribePage> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.check, size: 16, color: semantic.interactivePrimary),
+                  Icon(
+                    Icons.check,
+                    size: 16,
+                    color: semantic.interactivePrimary,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       b,
-                      style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+                      style: TsType.bodyLRegular.copyWith(
+                        color: semantic.textSecondary,
+                      ),
                     ),
                   ),
                 ],
@@ -254,7 +282,9 @@ class _SubscribePageState extends State<SubscribePage> {
               ? semantic.interactivePrimary.withValues(alpha: 0.2)
               : semantic.surfaceContainer,
           borderRadius: BorderRadius.circular(4),
-          border: isSelected ? Border.all(color: semantic.interactivePrimary, width: 1) : null,
+          border: isSelected
+              ? Border.all(color: semantic.interactivePrimary, width: 1)
+              : null,
         ),
         child: Row(
           children: [
@@ -264,7 +294,9 @@ class _SubscribePageState extends State<SubscribePage> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected ? semantic.interactivePrimary : semantic.borderDefault,
+                  color: isSelected
+                      ? semantic.interactivePrimary
+                      : semantic.borderDefault,
                   width: 2,
                 ),
               ),
@@ -282,9 +314,17 @@ class _SubscribePageState extends State<SubscribePage> {
                   : null,
             ),
             const SizedBox(width: 16),
-            Text(price, style: TsType.bodyLRegular.copyWith(color: semantic.textPrimary)),
+            Text(
+              price,
+              style: TsType.bodyLRegular.copyWith(color: semantic.textPrimary),
+            ),
             const SizedBox(width: 8),
-            Text(period, style: TsType.labelSRegular.copyWith(color: semantic.textTertiary)),
+            Text(
+              period,
+              style: TsType.labelSRegular.copyWith(
+                color: semantic.textTertiary,
+              ),
+            ),
             const Spacer(),
             if (discountLabel != null)
               Container(
@@ -295,7 +335,9 @@ class _SubscribePageState extends State<SubscribePage> {
                 ),
                 child: Text(
                   discountLabel,
-                  style: TsType.bodyMBold.copyWith(color: semantic.interactivePrimary),
+                  style: TsType.bodyMBold.copyWith(
+                    color: semantic.interactivePrimary,
+                  ),
                 ),
               ),
           ],

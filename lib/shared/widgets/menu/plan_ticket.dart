@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
@@ -38,23 +38,11 @@ class PlanTicket extends StatelessWidget {
     };
   }
 
-  Widget _ticketIcon(TsSemanticColors semantic) {
+  String get _imageAsset {
     return switch (type) {
-      PlanType.free => Icon(
-          Icons.confirmation_number_outlined,
-          size: 48,
-          color: semantic.textDisabled,
-        ),
-      PlanType.trial => const Icon(
-          Icons.confirmation_number,
-          size: 48,
-          color: TsColors.membershipTrial500,
-        ),
-      PlanType.premium => const Icon(
-          Icons.confirmation_number,
-          size: 48,
-          color: TsColors.membershipPremium500,
-        ),
+      PlanType.free => TsAssets.planFree,
+      PlanType.trial => TsAssets.planTrial,
+      PlanType.premium => TsAssets.planPremium,
     };
   }
 
@@ -71,10 +59,11 @@ class PlanTicket extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(
+          Image.asset(
+            _imageAsset,
             width: 100,
             height: 100,
-            child: Center(child: _ticketIcon(semantic)),
+            fit: BoxFit.contain,
           ),
           const SizedBox(width: TsSpacing.lg),
           Expanded(
