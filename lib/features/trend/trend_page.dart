@@ -156,20 +156,23 @@ class _TrendPageState extends State<TrendPage> {
           final data = soccerDummy[index];
           return Padding(
             padding: const EdgeInsets.only(right: 10),
-            child: AnalysisCard(
-              leagueId: data.leagueId,
-              leagueName: data.leagueName,
-              date: data.date,
-              homeTeam: data.homeTeam,
-              awayTeam: data.awayTeam,
-              matchTime: data.matchTime,
-              homeLogoUrl: data.homeLogoUrl,
-              awayLogoUrl: data.awayLogoUrl,
-              isPremiumPick: false,
-              pickDirection: null,
-              winRate: null,
-              onAnalyze: () =>
-                  context.push('/analysis/soccer/match-report/${data.matchId}'),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 380),
+              child: AnalysisCard(
+                leagueId: data.leagueId,
+                leagueName: data.leagueName,
+                date: data.date,
+                homeTeam: data.homeTeam,
+                awayTeam: data.awayTeam,
+                matchTime: data.matchTime,
+                homeLogoUrl: data.homeLogoUrl,
+                awayLogoUrl: data.awayLogoUrl,
+                isPremiumPick: false,
+                pickDirection: null,
+                winRate: null,
+                onAnalyze: () => context
+                    .push('/analysis/soccer/match-report/${data.matchId}'),
+              ),
             ),
           );
         },
@@ -189,20 +192,23 @@ class _TrendPageState extends State<TrendPage> {
           final data = baseballDummy[index];
           return Padding(
             padding: const EdgeInsets.only(right: 10),
-            child: AnalysisCard(
-              leagueId: data.leagueId,
-              leagueName: data.leagueName,
-              date: data.date,
-              homeTeam: data.homeTeam,
-              awayTeam: data.awayTeam,
-              matchTime: data.matchTime,
-              homeLogoUrl: data.homeLogoUrl,
-              awayLogoUrl: data.awayLogoUrl,
-              isPremiumPick: false,
-              pickDirection: null,
-              winRate: null,
-              onAnalyze: () =>
-                  context.push('/analysis/baseball/match-report/${data.matchId}'),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 380),
+              child: AnalysisCard(
+                leagueId: data.leagueId,
+                leagueName: data.leagueName,
+                date: data.date,
+                homeTeam: data.homeTeam,
+                awayTeam: data.awayTeam,
+                matchTime: data.matchTime,
+                homeLogoUrl: data.homeLogoUrl,
+                awayLogoUrl: data.awayLogoUrl,
+                isPremiumPick: false,
+                pickDirection: null,
+                winRate: null,
+                onAnalyze: () => context
+                    .push('/analysis/baseball/match-report/${data.matchId}'),
+              ),
             ),
           );
         },
