@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 class PrivacyPolicyPage extends StatefulWidget {
@@ -46,10 +47,7 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
       appBar: AppBar(
         backgroundColor: semantic.surfaceBase,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
-          onPressed: () => context.pop(),
-        ),
+        leading: TsBackButton(onPressed: () => context.pop()),
         title: Text(
           '개인정보처리방침',
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),

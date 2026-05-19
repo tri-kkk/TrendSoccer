@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
 class TsBackButton extends StatelessWidget {
@@ -29,10 +31,14 @@ class TsBackButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(999),
           child: Padding(
             padding: const EdgeInsets.all(8),
-            child: Icon(
-              Icons.arrow_back,
-              size: 24,
-              color: semantic.textPrimary,
+            child: SvgPicture.asset(
+              TsAssets.iconArrowBack,
+              width: 24,
+              height: 24,
+              colorFilter: ColorFilter.mode(
+                semantic.textPrimary,
+                BlendMode.srcIn,
+              ),
             ),
           ),
         ),

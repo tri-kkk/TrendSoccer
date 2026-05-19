@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 class SubscribeSuccessPage extends ConsumerStatefulWidget {
@@ -39,10 +42,7 @@ class _SubscribeSuccessPageState extends ConsumerState<SubscribeSuccessPage> {
       appBar: AppBar(
         backgroundColor: semantic.surfaceBase,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
-          onPressed: () => context.pop(),
-        ),
+        leading: TsBackButton(onPressed: () => context.pop()),
         title: Text(
           '결제 완료',
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
@@ -66,7 +66,15 @@ class _SubscribeSuccessPageState extends ConsumerState<SubscribeSuccessPage> {
                   shape: BoxShape.circle,
                   color: semantic.interactivePrimary,
                 ),
-                child: Icon(Icons.rocket_launch, size: 40, color: semantic.surfaceBase),
+                child: SvgPicture.asset(
+                  TsAssets.iconRocketLaunch,
+                  width: 40,
+                  height: 40,
+                  colorFilter: ColorFilter.mode(
+                    semantic.surfaceBase,
+                    BlendMode.srcIn,
+                  ),
+                ),
               ),
               const SizedBox(height: 48),
               Text(

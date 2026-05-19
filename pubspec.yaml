@@ -46,8 +46,9 @@ flutter:
     # Social login symbols (Auth)
     - assets/images/social/
 
-    # UI icons (checks, etc.)
-    - assets/images/icon/
+    # UI icons
+    - assets/images/icon/foundation/
+    - assets/images/icon/sport/
 
     # Plan ticket images (Menu)
     - assets/images/plan/

@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
+import 'package:trendsoccer/shared/widgets/navigation/ts_bottom_navigation.dart';
 
 class SubscribePage extends ConsumerStatefulWidget {
   const SubscribePage({super.key});
@@ -14,7 +18,16 @@ class SubscribePage extends ConsumerStatefulWidget {
   ConsumerState<SubscribePage> createState() => _SubscribePageState();
 }
 
-class _SubscribePageState extends ConsumerState<SubscribePage> {  /// 0 = 3개월 (default selected), 1 = 1개월
+class _SubscribePageState extends ConsumerState<SubscribePage> {
+  static const _tabPaths = [
+    '/trend',
+    '/analysis',
+    '/fixture',
+    '/premium',
+    '/menu',
+  ];
+
+  /// 0 = 3개월 (default selected), 1 = 1개월
   int _selectedPlanIndex = 0;
 
   @override
@@ -26,10 +39,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {  /// 0 = 3개�
       appBar: AppBar(
         backgroundColor: semantic.surfaceBase,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
-          onPressed: () => context.pop(),
-        ),
+        leading: TsBackButton(onPressed: () => context.pop()),
         title: Text(
           '구독',
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
@@ -132,82 +142,11 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {  /// 0 = 3개�
           ],
         ),
       ),
-      bottomNavigationBar: Container(
-        height: 80,
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: semantic.surfaceRaised,
-          border: Border(
-            top: BorderSide(color: semantic.textDisabled, width: 1),
-          ),
-        ),
-        child: Row(
-          children: [
-            _buildNavItem(
-              semantic,
-              Icons.trending_up,
-              '트렌드',
-              false,
-              () => context.go('/trend'),
-            ),
-            _buildNavItem(
-              semantic,
-              Icons.insert_chart_outlined,
-              '분석',
-              false,
-              () => context.go('/analysis'),
-            ),
-            _buildNavItem(
-              semantic,
-              Icons.calendar_today,
-              '일정',
-              false,
-              () => context.go('/fixture'),
-            ),
-            _buildNavItem(
-              semantic,
-              Icons.workspace_premium,
-              '프리미엄',
-              false,
-              () => context.go('/premium'),
-            ),
-            _buildNavItem(
-              semantic,
-              Icons.menu,
-              '메뉴',
-              true,
-              () => context.go('/menu'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(
-    TsSemanticColors semantic,
-    IconData icon,
-    String label,
-    bool isActive,
-    VoidCallback onTap,
-  ) {
-    final color = isActive
-        ? semantic.interactivePrimary
-        : semantic.textTertiary;
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: SizedBox(
-          height: 56,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 24, color: color),
-              const SizedBox(height: 4),
-              Text(label, style: TsType.labelXsBold.copyWith(color: color)),
-            ],
-          ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: TsBottomNavigation(
+          currentIndex: 4,
+          onTap: (index) => context.go(_tabPaths[index]),
         ),
       ),
     );
@@ -245,10 +184,14 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {  /// 0 = 3개�
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.check,
-                    size: 16,
-                    color: semantic.interactivePrimary,
+                  SvgPicture.asset(
+                    TsAssets.iconCheckboxChecked,
+                    width: 16,
+                    height: 16,
+                    colorFilter: ColorFilter.mode(
+                      semantic.interactivePrimary,
+                      BlendMode.srcIn,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

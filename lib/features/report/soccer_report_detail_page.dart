@@ -6,6 +6,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/report/report_dummy_data.dart';
+import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 
 class SoccerReportDetailPage extends StatelessWidget {
@@ -30,10 +31,7 @@ class SoccerReportDetailPage extends StatelessWidget {
     return AppBar(
       backgroundColor: semantic.surfaceBase,
       elevation: 0,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
-        onPressed: () => context.pop(),
-      ),
+      leading: TsBackButton(onPressed: () => context.pop()),
       title: Text(
         title,
         style: TsType.headingH3.copyWith(color: semantic.textPrimary),

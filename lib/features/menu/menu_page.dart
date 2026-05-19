@@ -9,6 +9,7 @@ import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/theme_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/bottom_sheet/ts_bottom_sheet_handle.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
@@ -336,7 +337,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
               TsSectionHeader(title: '추가 기능'),
               const SizedBox(height: 16),
               MenuListItem(
-                icon: Icons.article,
+                iconAsset: TsAssets.iconBlog,
                 label: '리포트',
                 onTap: () => context.push('/menu/reports/soccer'),
               ),
@@ -348,19 +349,19 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   MenuListItem(
-                    icon: Icons.language,
+                    iconAsset: TsAssets.iconLanguage,
                     label: '언어',
                     onTap: () => _showLanguageSheet(context),
                   ),
                   const SizedBox(height: 8),
                   MenuListItem(
-                    icon: Icons.palette,
+                    iconAsset: TsAssets.iconTheme,
                     label: '테마',
                     onTap: () => _showThemeSheet(context),
                   ),
                   const SizedBox(height: 8),
                   MenuListItem(
-                    icon: Icons.notifications,
+                    iconAsset: TsAssets.iconNotifications,
                     label: '알림',
                     onTap: () => _showNotificationSheet(context),
                   ),
@@ -374,31 +375,31 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   MenuListItem(
-                    icon: Icons.info_outline,
+                    iconAsset: TsAssets.iconInfo,
                     label: 'About',
                     onTap: () => context.push('/menu/about'),
                   ),
                   const SizedBox(height: 8),
                   MenuListItem(
-                    icon: Icons.privacy_tip_outlined,
+                    iconAsset: TsAssets.iconPrivacyTip,
                     label: '개인정보처리방침',
                     onTap: () => context.push('/menu/privacy'),
                   ),
                   const SizedBox(height: 8),
                   MenuListItem(
-                    icon: Icons.description_outlined,
+                    iconAsset: TsAssets.iconInfo,
                     label: '이용약관',
                     onTap: () => context.push('/menu/terms'),
                   ),
                   const SizedBox(height: 8),
                   MenuListItem(
-                    icon: Icons.help_outline,
+                    iconAsset: TsAssets.iconHelp,
                     label: '문의하기',
                     onTap: () => context.push('/menu/help'),
                   ),
                   const SizedBox(height: 8),
                   const MenuListItem(
-                    icon: Icons.info,
+                    iconAsset: TsAssets.iconVersionInfo,
                     label: '앱 버전',
                     type: MenuItemType.value,
                     value: '1.0.0',

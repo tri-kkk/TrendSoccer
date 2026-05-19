@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
 class TsBottomNavigation extends StatelessWidget {
@@ -22,12 +24,12 @@ class TsBottomNavigation extends StatelessWidget {
     '메뉴',
   ];
 
-  static const List<IconData> _icons = [
-    Icons.trending_up,
-    Icons.insert_chart_outlined,
-    Icons.calendar_today,
-    Icons.workspace_premium,
-    Icons.menu,
+  static const List<String> _iconAssets = [
+    TsAssets.iconTrend,
+    TsAssets.iconAnalysis,
+    TsAssets.iconFixture,
+    TsAssets.iconPremium,
+    TsAssets.iconMenu,
   ];
 
   @override
@@ -47,7 +49,7 @@ class TsBottomNavigation extends StatelessWidget {
         children: List.generate(5, (index) {
           return Expanded(
             child: _NavTabItem(
-              icon: _icons[index],
+              iconAsset: _iconAssets[index],
               label: _labels[index],
               selected: index == currentIndex,
               onTap: () => onTap(index),
@@ -61,13 +63,13 @@ class TsBottomNavigation extends StatelessWidget {
 
 class _NavTabItem extends StatelessWidget {
   const _NavTabItem({
-    required this.icon,
+    required this.iconAsset,
     required this.label,
     required this.selected,
     required this.onTap,
   });
 
-  final IconData icon;
+  final String iconAsset;
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -88,7 +90,12 @@ class _NavTabItem extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 24, color: color),
+              SvgPicture.asset(
+                iconAsset,
+                width: 24,
+                height: 24,
+                colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+              ),
               const SizedBox(height: TsSpacing.xs),
               Text(
                 label,

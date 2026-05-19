@@ -109,23 +109,38 @@ abstract final class AppRouter {
         routes: [
           GoRoute(
             path: '/trend',
-            builder: (context, state) => const TrendPage(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const TrendPage(),
+            ),
           ),
           GoRoute(
             path: '/analysis',
-            builder: (context, state) => const AnalysisPage(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const AnalysisPage(),
+            ),
           ),
           GoRoute(
             path: '/fixture',
-            builder: (context, state) => const FixturePage(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const FixturePage(),
+            ),
           ),
           GoRoute(
             path: '/premium',
-            builder: (context, state) => const PremiumPage(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const PremiumPage(),
+            ),
           ),
           GoRoute(
             path: '/menu',
-            builder: (context, state) => const MenuPage(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const MenuPage(),
+            ),
           ),
         ],
       ),

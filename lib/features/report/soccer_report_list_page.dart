@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/report/report_dummy_data.dart';
+import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 
 class SoccerReportListPage extends StatelessWidget {
   const SoccerReportListPage({super.key});
@@ -17,10 +20,7 @@ class SoccerReportListPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: semantic.surfaceBase,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
-          onPressed: () => context.pop(),
-        ),
+        leading: TsBackButton(onPressed: () => context.pop()),
         title: Text(
           '리포트',
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
@@ -83,10 +83,14 @@ class _ReportCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               alignment: Alignment.center,
-              child: Icon(
-                Icons.article_outlined,
-                size: 32,
-                color: semantic.textTertiary,
+              child: SvgPicture.asset(
+                TsAssets.iconBlog,
+                width: 32,
+                height: 32,
+                colorFilter: ColorFilter.mode(
+                  semantic.textTertiary,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
             const SizedBox(width: 16),

@@ -6,6 +6,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 class SignupTermsPage extends StatefulWidget {
@@ -38,18 +39,26 @@ class _SignupTermsPageState extends State<SignupTermsPage> {
   }
 
   Widget _checkIcon(bool checked, TsSemanticColors semantic) {
-    return Icon(
-      checked ? Icons.check_box : Icons.check_box_outline_blank,
-      size: 24,
-      color: checked ? semantic.interactivePrimary : semantic.textDisabled,
+    return SvgPicture.asset(
+      checked ? TsAssets.iconCheckboxChecked : TsAssets.iconCheckboxUnchecked,
+      width: 24,
+      height: 24,
+      colorFilter: ColorFilter.mode(
+        checked ? semantic.interactivePrimary : semantic.textDisabled,
+        BlendMode.srcIn,
+      ),
     );
   }
 
   Widget _radioIcon(bool checked, TsSemanticColors semantic) {
-    return Icon(
-      checked ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-      size: 24,
-      color: checked ? semantic.interactivePrimary : semantic.textDisabled,
+    return SvgPicture.asset(
+      checked ? TsAssets.iconRadioChecked : TsAssets.iconRadioUnchecked,
+      width: 24,
+      height: 24,
+      colorFilter: ColorFilter.mode(
+        checked ? semantic.interactivePrimary : semantic.textDisabled,
+        BlendMode.srcIn,
+      ),
     );
   }
 
@@ -118,10 +127,7 @@ class _SignupTermsPageState extends State<SignupTermsPage> {
       appBar: AppBar(
         backgroundColor: semantic.surfaceBase,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
-          onPressed: () => context.pop(),
-        ),
+        leading: TsBackButton(onPressed: () => context.pop()),
         title: Text(
           '회원가입',
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),

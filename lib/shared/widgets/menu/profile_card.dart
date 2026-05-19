@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
 class ProfileCard extends StatelessWidget {
@@ -35,10 +37,14 @@ class ProfileCard extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: Icon(
-              Icons.person,
-              size: 24,
-              color: semantic.interactivePrimary,
+            child: SvgPicture.asset(
+              TsAssets.iconAccountCircle,
+              width: 24,
+              height: 24,
+              colorFilter: ColorFilter.mode(
+                semantic.interactivePrimary,
+                BlendMode.srcIn,
+              ),
             ),
           ),
           const SizedBox(width: TsSpacing.lg),

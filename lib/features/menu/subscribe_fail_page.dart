@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 class SubscribeFailPage extends StatelessWidget {
@@ -18,10 +21,7 @@ class SubscribeFailPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: semantic.surfaceBase,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
-          onPressed: () => context.pop(),
-        ),
+        leading: TsBackButton(onPressed: () => context.pop()),
         title: Text(
           '결제 실패',
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
@@ -45,7 +45,15 @@ class SubscribeFailPage extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: TsColors.systemWarning500,
                 ),
-                child: Icon(Icons.warning_rounded, size: 40, color: semantic.surfaceBase),
+                child: SvgPicture.asset(
+                  TsAssets.iconWarning,
+                  width: 40,
+                  height: 40,
+                  colorFilter: ColorFilter.mode(
+                    semantic.surfaceBase,
+                    BlendMode.srcIn,
+                  ),
+                ),
               ),
               const SizedBox(height: 48),
               Text(

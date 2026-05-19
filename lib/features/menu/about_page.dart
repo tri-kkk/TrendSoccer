@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -18,10 +19,7 @@ class AboutPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: semantic.surfaceBase,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
-          onPressed: () => context.pop(),
-        ),
+        leading: TsBackButton(onPressed: () => context.pop()),
         title: Text(
           'About',
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
@@ -113,7 +111,15 @@ class AboutPage extends StatelessWidget {
             const SizedBox(height: 16),
             Row(
               children: [
-                Icon(Icons.language, size: 24, color: semantic.textSecondary),
+                SvgPicture.asset(
+                  TsAssets.iconLanguage,
+                  width: 24,
+                  height: 24,
+                  colorFilter: ColorFilter.mode(
+                    semantic.textSecondary,
+                    BlendMode.srcIn,
+                  ),
+                ),
                 const SizedBox(width: 16),
                 Text(
                   'trendsoccer.com',
@@ -134,7 +140,15 @@ class AboutPage extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(Icons.check, size: 24, color: semantic.interactivePrimary),
+            SvgPicture.asset(
+              TsAssets.iconCheckboxChecked,
+              width: 24,
+              height: 24,
+              colorFilter: ColorFilter.mode(
+                semantic.interactivePrimary,
+                BlendMode.srcIn,
+              ),
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(

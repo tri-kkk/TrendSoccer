@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
@@ -27,13 +29,16 @@ class TsEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
-    final (icon, defaultTitle, defaultSubtitle) = switch (type) {
+    final (String? iconAsset, IconData? icon, defaultTitle, defaultSubtitle) =
+        switch (type) {
       TsEmptyStateType.premiumPickEmpty => (
-          Icons.hourglass_empty,
+          TsAssets.iconHourglassEmpty,
+          null,
           '오늘의 픽이 없습니다.',
           '오전 6시 또는 오후 6시에 다시 확인해 주세요.',
         ),
       _ => (
+          null,
           Icons.inbox,
           '데이터가 없습니다.',
           '나중에 다시 확인해 주세요.',
@@ -52,7 +57,18 @@ class TsEmptyState extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(icon, size: 48, color: semantic.textTertiary),
+            if (iconAsset != null)
+              SvgPicture.asset(
+                iconAsset,
+                width: 48,
+                height: 48,
+                colorFilter: ColorFilter.mode(
+                  semantic.textTertiary,
+                  BlendMode.srcIn,
+                ),
+              )
+            else
+              Icon(icon, size: 48, color: semantic.textTertiary),
             const SizedBox(height: TsSpacing.md),
             Text(
               resolvedTitle,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
@@ -8,7 +9,7 @@ enum MenuItemType { chevron, value }
 
 class MenuListItem extends StatelessWidget {
   const MenuListItem({
-    required this.icon,
+    required this.iconAsset,
     required this.label,
     this.type = MenuItemType.chevron,
     this.value,
@@ -16,7 +17,7 @@ class MenuListItem extends StatelessWidget {
     super.key,
   });
 
-  final IconData icon;
+  final String iconAsset;
   final String label;
   final MenuItemType type;
   final String? value;
@@ -40,7 +41,15 @@ class MenuListItem extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(icon, size: 24, color: semantic.textTertiary),
+            SvgPicture.asset(
+              iconAsset,
+              width: 24,
+              height: 24,
+              colorFilter: ColorFilter.mode(
+                semantic.textTertiary,
+                BlendMode.srcIn,
+              ),
+            ),
             const SizedBox(width: TsSpacing.lg),
             Expanded(
               child: Text(

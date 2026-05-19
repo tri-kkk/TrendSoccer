@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/premium/premium_dummy_data.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
@@ -183,7 +185,15 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.check, size: 24, color: semantic.interactivePrimary),
+        SvgPicture.asset(
+          TsAssets.iconCheckSmall,
+          width: 24,
+          height: 24,
+          colorFilter: ColorFilter.mode(
+            semantic.interactivePrimary,
+            BlendMode.srcIn,
+          ),
+        ),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
@@ -210,43 +220,43 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(height: 32),
-                  Container(
+                  SvgPicture.asset(
+                    TsAssets.iconPremium,
                     width: 80,
                     height: 80,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: semantic.interactivePrimary,
-                    ),
-                    child: Icon(
-                      Icons.star,
-                      size: 40,
-                      color: semantic.surfaceBase,
+                    colorFilter: ColorFilter.mode(
+                      semantic.interactivePrimary,
+                      BlendMode.srcIn,
                     ),
                   ),
                   const SizedBox(height: 32),
-                  Text(
-                    '프리미엄 전용 콘텐츠',
-                    style: TsType.displayHero.copyWith(
-                      color: semantic.textPrimary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'PREMIUM PICK과 야구 AI 조합 분석을',
-                    style: TsType.bodyLBold.copyWith(
-                      color: semantic.textSecondary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '구독 후 이용하실 수 있습니다.',
-                    style: TsType.bodyLBold.copyWith(
-                      color: semantic.textSecondary,
-                    ),
-                    textAlign: TextAlign.center,
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '프리미엄 전용 콘텐츠',
+                        style: TsType.displayHero.copyWith(
+                          color: semantic.textPrimary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'PREMIUM PICK과 야구 AI 조합 분석을',
+                        style: TsType.bodyLBold.copyWith(
+                          color: semantic.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '구독 후 이용하실 수 있습니다.',
+                        style: TsType.bodyLBold.copyWith(
+                          color: semantic.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 32),
                   Container(
@@ -266,11 +276,11 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _buildBenefitRow(semantic, '경기 시작 24시간 전 분석 우선 접근'),
+                        _buildBenefitRow(semantic, '24시간 우선 분석 접근'),
                         const SizedBox(height: 16),
-                        _buildBenefitRow(semantic, 'PREMIUM PICK 무제한 확인'),
+                        _buildBenefitRow(semantic, 'PREMIUM PICK 무제한'),
                         const SizedBox(height: 16),
-                        _buildBenefitRow(semantic, '야구 AI 조합 분석 + 광고 제거'),
+                        _buildBenefitRow(semantic, '야구 AI Analysis'),
                         const SizedBox(height: 16),
                         SizedBox(
                           width: double.infinity,
@@ -283,7 +293,6 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 32),
                 ],
               ),
             ),

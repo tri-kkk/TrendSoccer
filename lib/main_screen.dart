@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
-import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/badge/ts_badge.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
+import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';import 'package:trendsoccer/shared/widgets/badge/ts_badge.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/logo/ts_logo.dart';
 import 'package:trendsoccer/shared/widgets/navigation/ts_bottom_navigation.dart';
@@ -99,10 +100,14 @@ class MainScreen extends ConsumerWidget {
                           const SizedBox(width: 8),
                           GestureDetector(
                             onTap: () => context.go('/menu'),
-                            child: Icon(
-                              Icons.person,
-                              size: 24,
-                              color: semantic.textPrimary,
+                            child: SvgPicture.asset(
+                              TsAssets.iconAccountCircle,
+                              width: 24,
+                              height: 24,
+                              colorFilter: ColorFilter.mode(
+                                semantic.textPrimary,
+                                BlendMode.srcIn,
+                              ),
                             ),
                           ),
                         ],

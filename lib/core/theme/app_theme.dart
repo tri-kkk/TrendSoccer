@@ -22,6 +22,12 @@ abstract final class AppTheme {
         onError: semantic.interactiveOnPrimary,
         outline: semantic.borderDefault,
       ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
       appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -77,6 +83,12 @@ abstract final class AppTheme {
         error: TsColors.systemError500,
         onError: semantic.interactiveOnPrimary,
         outline: semantic.borderDefault,
+      ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
       ),
       appBarTheme: AppBarTheme(
         elevation: 0,

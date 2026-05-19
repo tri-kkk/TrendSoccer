@@ -38,4 +38,57 @@ abstract final class TsAssets {
   static const planFree = 'assets/images/plan/free.png';
   static const planTrial = 'assets/images/plan/trial.png';
   static const planPremium = 'assets/images/plan/premium.png';
+
+  // Foundation Icons
+  static const iconTrend = 'assets/images/icon/foundation/trend.svg';
+  static const iconAnalysis = 'assets/images/icon/foundation/analysis.svg';
+  static const iconFixture = 'assets/images/icon/foundation/fixture.svg';
+  static const iconPremium = 'assets/images/icon/foundation/premium.svg';
+  static const iconMenu = 'assets/images/icon/foundation/menu.svg';
+  static const iconArrowBack = 'assets/images/icon/foundation/arrow_back.svg';
+  static const iconNotifications =
+      'assets/images/icon/foundation/notifications.svg';
+  static const iconNotificationsNone =
+      'assets/images/icon/foundation/notifications_none.svg';
+  static const iconAccountCircle =
+      'assets/images/icon/foundation/account_circle.svg';
+  static const iconInfo = 'assets/images/icon/foundation/info.svg';
+  static const iconPrivacyTip = 'assets/images/icon/foundation/privacy_tip.svg';
+  static const iconBlog = 'assets/images/icon/foundation/blog.svg';
+  static const iconHelp = 'assets/images/icon/foundation/help.svg';
+  static const iconVersionInfo =
+      'assets/images/icon/foundation/version_info.svg';
+  static const iconTheme = 'assets/images/icon/foundation/theme.svg';
+  static const iconLanguage = 'assets/images/icon/foundation/language.svg';
+  static const iconCheckboxChecked =
+      'assets/images/icon/foundation/checkbox_checked.svg';
+  static const iconCheckboxUnchecked =
+      'assets/images/icon/foundation/checkbox_unchecked.svg';
+  static const iconCheckboxPartial =
+      'assets/images/icon/foundation/checkbox_partial.svg';
+  static const iconRadioChecked =
+      'assets/images/icon/foundation/radio_checked.svg';
+  static const iconRadioUnchecked =
+      'assets/images/icon/foundation/radio_unchecked.svg';
+  static const iconCelebration =
+      'assets/images/icon/foundation/celebration.svg';
+  static const iconRocketLaunch =
+      'assets/images/icon/foundation/rocket_launch.svg';
+  static const iconWarning = 'assets/images/icon/foundation/warning.svg';
+  static const iconHourglassEmpty =
+      'assets/images/icon/foundation/hourglass_empty.svg';
+  static const iconCheckCircle =
+      'assets/images/icon/foundation/check_circle.svg';
+  static const iconCheckSmall =
+      'assets/images/icon/foundation/check_small.svg';
+
+  // Sport Icons
+  static const sportSoccerPrimary =
+      'assets/images/icon/sport/soccer_primary.svg';
+  static const sportSoccerOnPrimary =
+      'assets/images/icon/sport/soccer_on_primary.svg';
+  static const sportBaseballPrimary =
+      'assets/images/icon/sport/baseball_primary.svg';
+  static const sportBaseballOnPrimary =
+      'assets/images/icon/sport/baseball_on_primary.svg';
 }

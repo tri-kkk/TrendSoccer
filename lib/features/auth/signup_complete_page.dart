@@ -7,7 +7,9 @@ import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 class SignupCompletePage extends ConsumerStatefulWidget {
@@ -20,9 +22,6 @@ class SignupCompletePage extends ConsumerStatefulWidget {
 class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
   Timer? _redirectTimer;
   int _countdown = 5;
-
-  static const _checkSmallIcon = 'assets/images/icon/check_small.svg';
-  static const _checkSmallPremiumIcon = 'assets/images/icon/check_small_premium.svg';
 
   @override
   void initState() {
@@ -55,25 +54,18 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
   }
 
   Widget _benefitRow({
-    required String iconAsset,
     required String text,
     required Color textColor,
-    required TsSemanticColors semantic,
+    required Color iconColor,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SvgPicture.asset(
-          iconAsset,
+          TsAssets.iconCheckSmall,
           width: 24,
           height: 24,
-          placeholderBuilder: (_) => Icon(
-            Icons.check_circle,
-            size: 24,
-            color: textColor == semantic.textSecondary
-                ? semantic.textSecondary
-                : semantic.interactivePrimary,
-          ),
+          colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -90,7 +82,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
     required TsSemanticColors semantic,
     required String header,
     required Color headerColor,
-    required String iconAsset,
+    required Color iconColor,
     required Color textColor,
     required List<String> benefits,
   }) {
@@ -112,10 +104,9 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
           for (var i = 0; i < benefits.length; i++) ...[
             if (i > 0) const SizedBox(height: 16),
             _benefitRow(
-              iconAsset: iconAsset,
               text: benefits[i],
               textColor: textColor,
-              semantic: semantic,
+              iconColor: iconColor,
             ),
           ],
         ],
@@ -132,8 +123,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
       appBar: AppBar(
         backgroundColor: semantic.surfaceBase,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
+        leading: TsBackButton(
           onPressed: () {
             _cancelRedirect();
             context.pop();
@@ -160,10 +150,14 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.check_circle,
-                size: 80,
-                color: semantic.interactivePrimary,
+              SvgPicture.asset(
+                TsAssets.iconCheckCircle,
+                width: 80,
+                height: 80,
+                colorFilter: ColorFilter.mode(
+                  semantic.interactivePrimary,
+                  BlendMode.srcIn,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
@@ -198,7 +192,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
                 semantic: semantic,
                 header: '무료 혜택',
                 headerColor: semantic.textPrimary,
-                iconAsset: _checkSmallIcon,
+                iconColor: semantic.textSecondary,
                 textColor: semantic.textSecondary,
                 benefits: const [
                   '경기 시작 2시간 전 분석 오픈',
@@ -211,7 +205,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
                 semantic: semantic,
                 header: '프리미엄 혜택',
                 headerColor: semantic.interactivePrimary,
-                iconAsset: _checkSmallPremiumIcon,
+                iconColor: semantic.interactivePrimary,
                 textColor: semantic.textPrimary,
                 benefits: const [
                   '24시간 우선 분석 접근',
