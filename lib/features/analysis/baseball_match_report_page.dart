@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/analysis/models/baseball_match_report_data.dart';
@@ -10,6 +11,7 @@ import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
 import 'package:trendsoccer/shared/widgets/baseball/premium/confidence_chip.dart';
 import 'package:trendsoccer/shared/widgets/report/match_header.dart';
 import 'package:trendsoccer/shared/widgets/report/report_toggle.dart';
+import 'package:trendsoccer/shared/widgets/subscribe_sheet.dart';
 
 class BaseballMatchReportPage extends StatefulWidget {
   const BaseballMatchReportPage({
@@ -64,7 +66,14 @@ class _BaseballMatchReportPageState extends State<BaseballMatchReportPage> {
               homeLogoUrl: data.homeLogoUrl,
               awayLogoUrl: data.awayLogoUrl,
               selectedTab: _selectedTab,
-              onTabChanged: (tab) => setState(() => _selectedTab = tab),
+              onTabChanged: (tab) {
+                if (tab == ReportTab.premium) {
+                  // TODO: Check real subscription status
+                  showSubscribeSheet(context, SportType.baseball);
+                  return;
+                }
+                setState(() => _selectedTab = tab);
+              },
             ),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),

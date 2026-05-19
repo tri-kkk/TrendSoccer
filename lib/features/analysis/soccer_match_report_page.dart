@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/analysis/models/soccer_match_report_data.dart';
@@ -10,6 +11,7 @@ import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
 import 'package:trendsoccer/shared/widgets/premium/score_box.dart';
 import 'package:trendsoccer/shared/widgets/report/match_header.dart';
 import 'package:trendsoccer/shared/widgets/report/report_toggle.dart';
+import 'package:trendsoccer/shared/widgets/subscribe_sheet.dart';
 
 class SoccerMatchReportPage extends StatefulWidget {
   const SoccerMatchReportPage({
@@ -75,7 +77,14 @@ class _SoccerMatchReportPageState extends State<SoccerMatchReportPage> {
               homeLogoUrl: data.homeLogoUrl,
               awayLogoUrl: data.awayLogoUrl,
               selectedTab: _selectedTab,
-              onTabChanged: (tab) => setState(() => _selectedTab = tab),
+              onTabChanged: (tab) {
+                if (tab == ReportTab.premium) {
+                  // TODO: Check real subscription status
+                  showSubscribeSheet(context, SportType.soccer);
+                  return;
+                }
+                setState(() => _selectedTab = tab);
+              },
             ),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
