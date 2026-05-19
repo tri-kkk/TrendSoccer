@@ -45,21 +45,13 @@ class SubscribeFailPage extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
+                      SvgPicture.asset(
+                        TsAssets.iconWarning,
                         width: 80,
                         height: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: TsColors.systemWarning500,
-                        ),
-                        child: SvgPicture.asset(
-                          TsAssets.iconWarning,
-                          width: 40,
-                          height: 40,
-                          colorFilter: ColorFilter.mode(
-                            semantic.surfaceBase,
-                            BlendMode.srcIn,
-                          ),
+                        colorFilter: ColorFilter.mode(
+                          TsColors.error500,
+                          BlendMode.srcIn,
                         ),
                       ),
                       const SizedBox(height: 48),

@@ -139,29 +139,29 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   Widget build(BuildContext context) {
     final path = GoRouterState.of(context).uri.path;
     final selectedIndex = _selectedIndexForLocation(path);
+    final isRootTab = _tabPaths.contains(path);
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final brightness = Theme.of(context).brightness;
     final auth = ref.watch(authProvider);
 
-    // Nested shell routes (e.g. /menu/reports/...) must pop normally.
-    // Only block back when the router stack cannot pop (tab roots).
-    final routerCanPop = GoRouter.of(context).canPop();
-
     return PopScope(
-      canPop: routerCanPop,
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
+
+        final router = GoRouter.of(context);
+        if (router.canPop()) {
+          router.pop();
+          return;
+        }
+
         _showExitDialog(context);
       },
       child: Scaffold(
         backgroundColor: semantic.surfaceBase,
         body: Column(
           children: [
-            if (selectedIndex == 0 ||
-                selectedIndex == 1 ||
-                selectedIndex == 2 ||
-                selectedIndex == 3 ||
-                selectedIndex == 4)
+            if (isRootTab)
               SafeArea(
                 bottom: false,
                 child: Container(

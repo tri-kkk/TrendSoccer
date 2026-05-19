@@ -66,21 +66,13 @@ class _SubscribeSuccessPageState extends ConsumerState<SubscribeSuccessPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
+                      SvgPicture.asset(
+                        TsAssets.iconRocketLaunch,
                         width: 80,
                         height: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: semantic.interactivePrimary,
-                        ),
-                        child: SvgPicture.asset(
-                          TsAssets.iconRocketLaunch,
-                          width: 40,
-                          height: 40,
-                          colorFilter: ColorFilter.mode(
-                            semantic.surfaceBase,
-                            BlendMode.srcIn,
-                          ),
+                        colorFilter: ColorFilter.mode(
+                          semantic.interactivePrimary,
+                          BlendMode.srcIn,
                         ),
                       ),
                       const SizedBox(height: 48),

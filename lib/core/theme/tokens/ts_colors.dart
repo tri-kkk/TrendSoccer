@@ -67,4 +67,7 @@ abstract final class TsColors {
   static const Color systemSuccess500 = Color(0xFF10B981);
   static const Color systemError500 = Color(0xFFEF4444);
   static const Color systemWarning500 = Color(0xFFF59E0B);
+
+  /// Alias for error emphasis (same as [systemError500]).
+  static const Color error500 = systemError500;
 }

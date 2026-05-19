@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 
 import 'package:trendsoccer/core/models/sport_type.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/analysis/analysis_dummy_data.dart';
 import 'package:trendsoccer/features/fixture/fixture_dummy_data.dart';
-import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/filter/ts_filter_chip.dart';
 import 'package:trendsoccer/shared/widgets/fixture/alarm_sheet.dart';
@@ -231,6 +233,63 @@ class _FixturePageState extends State<FixturePage> {
     }).toList();
   }
 
+  Widget _buildLiveFilterEmptyState(TsSemanticColors semantic) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SvgPicture.asset(
+          TsAssets.iconHourglassEmpty,
+          width: 48,
+          height: 48,
+          colorFilter: ColorFilter.mode(
+            semantic.textTertiary,
+            BlendMode.srcIn,
+          ),
+        ),
+        const SizedBox(height: TsSpacing.md),
+        Text(
+          '데이터가 없습니다.',
+          style: TsType.bodyLBold.copyWith(color: semantic.textSecondary),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: TsSpacing.md),
+        Text(
+          '나중에 다시 확인해주세요.',
+          style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: TsSpacing.md),
+        IntrinsicWidth(
+          child: GestureDetector(
+            onTap: () => setState(() {
+              _isLiveFilter = false;
+              _selectedDate = FixturePage._anchorToday;
+              _selectedLeagueId = 'all';
+            }),
+            child: Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: semantic.interactivePrimary,
+                  width: 2,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '오늘 경기 확인하기',
+                style: TsType.bodyMBold.copyWith(color: semantic.interactivePrimary),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
@@ -267,27 +326,9 @@ class _FixturePageState extends State<FixturePage> {
           if (matchWidgets.isEmpty)
             Expanded(
               child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: isLiveEmpty
-                      ? [
-                          Text(
-                            '진행 중인 경기가 없습니다',
-                            style: TsType.bodyLBold.copyWith(color: semantic.textSecondary),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                          TsButton(
-                            label: '전체 경기 보기',
-                            variant: TsButtonVariant.secondary,
-                            size: TsButtonSize.small,
-                            onPressed: () => setState(() => _isLiveFilter = false),
-                          ),
-                        ]
-                      : [
-                          TsEmptyState(type: TsEmptyStateType.defaultState),
-                        ],
-                ),
+                child: isLiveEmpty
+                    ? _buildLiveFilterEmptyState(semantic)
+                    : TsEmptyState(type: TsEmptyStateType.defaultState),
               ),
             )
           else
