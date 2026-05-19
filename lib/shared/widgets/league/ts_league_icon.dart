@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
@@ -56,9 +57,7 @@ class TsLeagueIcon extends StatelessWidget {
   }
 
   String _assetPath(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    final folder = brightness == Brightness.dark ? 'dark' : 'light';
-    return 'assets/images/leagues/icon/$folder/$leagueId.svg';
+    return TsAssets.leagueIcon(leagueId, Theme.of(context).brightness);
   }
 
   @override

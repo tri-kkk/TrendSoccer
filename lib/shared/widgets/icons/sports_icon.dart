@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
-/// 번들 에셋: `ic_soccer.svg` / `ic_baseball.svg` (`assets/images/icons/`).
+/// 번들 에셋: `ic_soccer.svg` / `ic_baseball.svg` (`assets/images/icon/`).
 enum SportsIconFill { primary, onPrimary }
 
 class TsSportsIcon extends StatelessWidget {
@@ -21,8 +21,8 @@ class TsSportsIcon extends StatelessWidget {
 
   static String _assetPath(SportType sport) {
     return switch (sport) {
-      SportType.soccer => 'assets/images/icons/ic_soccer.svg',
-      SportType.baseball => 'assets/images/icons/ic_baseball.svg',
+      SportType.soccer => 'assets/images/icon/ic_soccer.svg',
+      SportType.baseball => 'assets/images/icon/ic_baseball.svg',
     };
   }
 

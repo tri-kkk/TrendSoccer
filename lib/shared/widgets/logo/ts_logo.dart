@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
 enum TsLogoType { horizon, vertical, circle }
@@ -24,26 +25,26 @@ Future<String?> _loadLogoSvg(String path) =>
 String? _logoAssetPath(TsLogoType type, TsLogoColor color) {
   switch (type) {
     case TsLogoType.circle:
-      return 'assets/images/logos/logo_circle_editor.svg';
+      return TsAssets.logoEditor(Brightness.dark);
     case TsLogoType.horizon:
       switch (color) {
         case TsLogoColor.white:
-          return 'assets/images/logos/logo_horizon_white.svg';
+          return TsAssets.logoHorizon(Brightness.light);
         case TsLogoColor.black:
-          return 'assets/images/logos/logo_horizon_black.svg';
+          return TsAssets.logoHorizon(Brightness.dark);
         case TsLogoColor.gradient:
-          return 'assets/images/logos/logo_horizon_gradient.svg';
+          return TsAssets.logoHorizon(Brightness.dark);
         case TsLogoColor.editor:
           return null;
       }
     case TsLogoType.vertical:
       switch (color) {
         case TsLogoColor.white:
-          return 'assets/images/logos/logo_vertical_white.svg';
+          return TsAssets.logoVertical(Brightness.light);
         case TsLogoColor.black:
-          return 'assets/images/logos/logo_vertical_black.svg';
+          return TsAssets.logoVertical(Brightness.dark);
         case TsLogoColor.gradient:
-          return 'assets/images/logos/logo_vertical_gradient.svg';
+          return TsAssets.logoVertical(Brightness.dark);
         case TsLogoColor.editor:
           return null;
       }

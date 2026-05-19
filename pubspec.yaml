@@ -32,20 +32,22 @@ flutter:
 
   assets:
     # Logos
-    - assets/images/logos/
+    - assets/images/logo/dark/
+    - assets/images/logo/light/
 
     # League Icons (Analysis)
-    - assets/images/leagues/icon/dark/
+    - assets/images/league/icon/dark/
+    - assets/images/league/icon/light/
 
     # League Logos (Report)
-    - assets/images/leagues/logo/dark/
-    - assets/images/leagues/logo/light/
+    - assets/images/league/logo/dark/
+    - assets/images/league/logo/light/
 
-    # Login Symbols (Auth)
-    - assets/images/login_symbols/
+    # Social login symbols (Auth)
+    - assets/images/social/
 
     # UI icons (checks, etc.)
-    - assets/images/icons/
+    - assets/images/icon/
 
   fonts:
     - family: Poppins
