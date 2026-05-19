@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
     return Scaffold(
@@ -74,7 +76,10 @@ class LoginPage extends StatelessWidget {
               ),
               const SizedBox(height: 48),
               GestureDetector(
-                onTap: () => context.push('/signup/terms'),
+                onTap: () {
+                  ref.read(authProvider).loginWithGoogle();
+                  context.go('/trend');
+                },
                 child: Container(
                   height: 48,
                   width: double.infinity,
@@ -102,7 +107,10 @@ class LoginPage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               GestureDetector(
-                onTap: () => context.push('/signup/terms'),
+                onTap: () {
+                  ref.read(authProvider).loginWithNaver();
+                  context.push('/signup/terms');
+                },
                 child: Container(
                   height: 48,
                   width: double.infinity,

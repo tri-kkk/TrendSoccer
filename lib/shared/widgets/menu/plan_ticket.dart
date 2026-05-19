@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
-
-enum PlanType { free, trial, premium }
 
 class PlanTicket extends StatelessWidget {
   const PlanTicket({
@@ -24,6 +23,7 @@ class PlanTicket extends StatelessWidget {
 
   String get _title {
     return switch (type) {
+      PlanType.none => '무료 플랜',
       PlanType.free => '무료 플랜',
       PlanType.trial => '무료 체험 플랜',
       PlanType.premium => '프리미엄 플랜',
@@ -32,6 +32,7 @@ class PlanTicket extends StatelessWidget {
 
   static String _defaultLabel(PlanType type) {
     return switch (type) {
+      PlanType.none => '구독 시작하기',
       PlanType.free => '구독 시작하기',
       PlanType.trial => '구독 업그레이드',
       PlanType.premium => '구독 연장하기',
@@ -40,6 +41,7 @@ class PlanTicket extends StatelessWidget {
 
   String get _imageAsset {
     return switch (type) {
+      PlanType.none => TsAssets.planFree,
       PlanType.free => TsAssets.planFree,
       PlanType.trial => TsAssets.planTrial,
       PlanType.premium => TsAssets.planPremium,

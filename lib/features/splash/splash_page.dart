@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
+
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/logo/ts_logo.dart';
 
@@ -39,24 +39,31 @@ class _SplashPageState extends State<SplashPage> {
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              height: 120,
-              child: FittedBox(
-                fit: BoxFit.contain,
-                child: TsLogo(type: TsLogoType.vertical, color: logoColor),
+      body: Stack(
+        children: [
+          Center(
+            child: TsLogo(
+              type: TsLogoType.vertical,
+              color: logoColor,
+              height: 160,
+            ),
+          ),
+          Positioned(
+            bottom: 90,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: SizedBox(
+                width: 48,
+                height: 48,
+                child: CircularProgressIndicator(
+                  color: semantic.interactivePrimary,
+                  strokeWidth: 4,
+                ),
               ),
             ),
-            const SizedBox(height: TsSpacing.xl),
-            CircularProgressIndicator(
-              color: semantic.interactivePrimary,
-              strokeWidth: 2,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

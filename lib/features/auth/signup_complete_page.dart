@@ -1,21 +1,23 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
-class SignupCompletePage extends StatefulWidget {
+class SignupCompletePage extends ConsumerStatefulWidget {
   const SignupCompletePage({super.key});
 
   @override
-  State<SignupCompletePage> createState() => _SignupCompletePageState();
+  ConsumerState<SignupCompletePage> createState() => _SignupCompletePageState();
 }
 
-class _SignupCompletePageState extends State<SignupCompletePage> {
+class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
   Timer? _redirectTimer;
   int _countdown = 5;
 
@@ -25,6 +27,9 @@ class _SignupCompletePageState extends State<SignupCompletePage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(authProvider).completeSignup();
+    });
     _redirectTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) {
         _cancelRedirect();

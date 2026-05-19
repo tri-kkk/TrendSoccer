@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/models/sport_type.dart';
+import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
+import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/premium/premium_dummy_data.dart';
@@ -14,21 +17,28 @@ import 'package:trendsoccer/shared/widgets/combo/combo_dashboard.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/toggle/sports_toggle.dart';
 
-enum _PremiumUserState { subscriber, nonSubscriber }
-
-class PremiumPage extends StatefulWidget {
+class PremiumPage extends ConsumerStatefulWidget {
   const PremiumPage({super.key});
 
   @override
-  State<PremiumPage> createState() => _PremiumPageState();
+  ConsumerState<PremiumPage> createState() => _PremiumPageState();
 }
 
-class _PremiumPageState extends State<PremiumPage> {
-  /// Change to [nonSubscriber] to test promo layout.
-  final _PremiumUserState _userState = _PremiumUserState.subscriber;
-
+class _PremiumPageState extends ConsumerState<PremiumPage> {
   SportType _selectedSport = SportType.soccer;
   int _selectedComboDateIndex = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final sportParam = GoRouterState.of(context).uri.queryParameters['sport'];
+    if (sportParam == 'baseball' && _selectedSport != SportType.baseball) {
+      setState(() {
+        _selectedSport = SportType.baseball;
+        _selectedComboDateIndex = 0;
+      });
+    }
+  }
 
   PickDirection? _pickDirectionFromData(String? raw) {
     return switch (raw) {
@@ -188,10 +198,10 @@ class _PremiumPageState extends State<PremiumPage> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final auth = ref.watch(authProvider);
 
-    switch (_userState) {
-      case _PremiumUserState.nonSubscriber:
-        return Scaffold(
+    if (!auth.hasFullAccess) {
+      return Scaffold(
         backgroundColor: semantic.surfaceBase,
         body: SafeArea(
           child: Center(
@@ -267,7 +277,7 @@ class _PremiumPageState extends State<PremiumPage> {
                           child: TsButton(
                             label: '지금 구독하기 →',
                             variant: TsButtonVariant.primary,
-                            onPressed: () => context.push('/menu/subscribe'),
+                            onPressed: () => navigateToSubscribe(context, ref),
                           ),
                         ),
                       ],
@@ -280,30 +290,30 @@ class _PremiumPageState extends State<PremiumPage> {
           ),
         ),
       );
-      case _PremiumUserState.subscriber:
-        return Scaffold(
-          backgroundColor: semantic.surfaceBase,
-          body: SafeArea(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: SportsToggle(
-                    selectedSport: _selectedSport,
-                    onChanged: (sport) => setState(() {
-                      _selectedSport = sport;
-                      _selectedComboDateIndex = 0;
-                    }),
-                  ),
-                ),
-                if (_selectedSport == SportType.soccer)
-                  Expanded(child: _buildSoccerSection(context))
-                else
-                  Expanded(child: _buildBaseballSection()),
-              ],
-            ),
-          ),
-        );
     }
+
+    return Scaffold(
+      backgroundColor: semantic.surfaceBase,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: SportsToggle(
+                selectedSport: _selectedSport,
+                onChanged: (sport) => setState(() {
+                  _selectedSport = sport;
+                  _selectedComboDateIndex = 0;
+                }),
+              ),
+            ),
+            if (_selectedSport == SportType.soccer)
+              Expanded(child: _buildSoccerSection(context))
+            else
+              Expanded(child: _buildBaseballSection()),
+          ],
+        ),
+      ),
+    );
   }
 }

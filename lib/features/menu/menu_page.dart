@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
+import 'package:trendsoccer/core/models/auth_state.dart';
+import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
+import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/theme_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
@@ -11,11 +15,10 @@ import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/menu/guest_banner.dart';
 import 'package:trendsoccer/shared/widgets/menu/menu_list_item.dart';
 import 'package:trendsoccer/shared/widgets/menu/plan_ticket.dart';
+import 'package:trendsoccer/shared/widgets/menu/profile_card.dart';
 import 'package:trendsoccer/shared/widgets/radio/ts_radio_button.dart';
 import 'package:trendsoccer/shared/widgets/section/ts_section_header.dart';
 import 'package:trendsoccer/shared/widgets/toggle/ts_toggle.dart';
-
-enum _DemoUserState { notLoggedIn, free, trial, premium }
 
 class MenuPage extends ConsumerStatefulWidget {
   const MenuPage({super.key});
@@ -25,29 +28,37 @@ class MenuPage extends ConsumerStatefulWidget {
 }
 
 class _MenuPageState extends ConsumerState<MenuPage> {
-  /// Change initializer to test different states in dev mode.
-  final _DemoUserState _userState = _DemoUserState.trial;
-
-  PlanType _planTypeForState() {
-    return switch (_userState) {
-      _DemoUserState.notLoggedIn => PlanType.free,
-      _DemoUserState.free => PlanType.free,
-      _DemoUserState.trial => PlanType.trial,
-      _DemoUserState.premium => PlanType.premium,
+  PlanType _planTicketType(PlanType planType) {
+    return switch (planType) {
+      PlanType.none || PlanType.free => PlanType.free,
+      PlanType.trial => PlanType.trial,
+      PlanType.premium => PlanType.premium,
     };
   }
 
-  String _planSubtitleForState() {
-    return switch (_userState) {
-      _DemoUserState.notLoggedIn => '',
-      _DemoUserState.free => '지금 구독 시작하고 프리미엄 데이터를 확인하세요.',
-      _DemoUserState.trial => '36시간 12분 남음',
-      _DemoUserState.premium => '만료일 2026.05.08',
+  String _planSubtitle(AuthState state) {
+    return switch (state.planType) {
+      PlanType.none || PlanType.free => '지금 구독 시작하고 프리미엄 데이터를 확인하세요.',
+      PlanType.trial => _formatTrialRemaining(state.trialExpiresAt),
+      PlanType.premium => _formatPremiumExpiry(state.premiumExpiresAt),
     };
   }
 
-  void _showThemeSheet(BuildContext context) {
-    showModalBottomSheet<void>(
+  String _formatTrialRemaining(DateTime? expiresAt) {
+    if (expiresAt == null) return '';
+    final remaining = expiresAt.difference(DateTime.now());
+    if (remaining.isNegative) return '체험 기간 만료';
+    final hours = remaining.inHours;
+    final minutes = remaining.inMinutes % 60;
+    return '$hours시간 $minutes분 남음';
+  }
+
+  String _formatPremiumExpiry(DateTime? expiresAt) {
+    if (expiresAt == null) return '';
+    return '만료일 ${DateFormat('yyyy.MM.dd').format(expiresAt)}';
+  }
+
+  void _showThemeSheet(BuildContext context) {    showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => const _ThemeBottomSheet(),
@@ -72,6 +83,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
 
   void _showSignOutDialog(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final authNotifier = ref.read(authProvider);
 
     showDialog<void>(
       context: context,
@@ -124,11 +136,9 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
+                            authNotifier.signOut();
                             Navigator.of(dialogContext).pop();
-                            // TODO: Actual sign out logic
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('로그아웃 되었습니다.')),
-                            );
+                            context.go('/trend');
                           },
                           child: Container(
                             height: 32,
@@ -157,6 +167,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
 
   void _showDeleteAccountDialog(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final authNotifier = ref.read(authProvider);
     final deleteController = TextEditingController();
 
     showDialog<void>(
@@ -243,12 +254,10 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                             child: GestureDetector(
                               onTap: isDeleteTyped
                                   ? () {
+                                      authNotifier.deleteAccount();
                                       deleteController.dispose();
                                       Navigator.of(dialogContext).pop();
-                                      // TODO: Actual delete account logic
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('계정이 삭제되었습니다.')),
-                                      );
+                                      context.go('/splash');
                                     }
                                   : null,
                               child: Container(
@@ -287,7 +296,8 @@ class _MenuPageState extends ConsumerState<MenuPage> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final isLoggedIn = _userState != _DemoUserState.notLoggedIn;
+    final auth = ref.watch(authProvider);
+    final isLoggedIn = auth.isLoggedIn;
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
@@ -299,60 +309,23 @@ class _MenuPageState extends ConsumerState<MenuPage> {
             children: [
               if (!isLoggedIn)
                 GuestBanner(onJoinTap: () => context.push('/login'))
-              else ...[
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: semantic.surfaceRaised,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: semantic.surfaceContainer,
-                          border: Border.all(color: semantic.borderSubtle, width: 1),
-                        ),
-                        child: Icon(Icons.person, size: 24, color: semantic.textTertiary),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '트렌드사커',
-                              style: TsType.headingH3.copyWith(color: semantic.textPrimary),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'trendsoccer@gmail.com',
-                              style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+              else
+                ProfileCard(
+                  name: auth.userName,
+                  email: auth.userEmail,
                 ),
-              ],
               const SizedBox(height: 16),
 
               if (isLoggedIn) ...[
                 TsSectionHeader(title: '구독 정보'),
                 const SizedBox(height: 16),
                 PlanTicket(
-                  type: _planTypeForState(),
-                  subtitle: _planSubtitleForState(),
-                  buttonLabel: '구독 시작하기',
-                  onButtonTap: () => context.push('/menu/subscribe'),
+                  type: _planTicketType(auth.planType),
+                  subtitle: _planSubtitle(auth.state),
+                  onButtonTap: () => navigateToSubscribe(context, ref),
                 ),
                 const SizedBox(height: 16),
               ],
-
               TsSectionHeader(title: '추가 기능'),
               const SizedBox(height: 16),
               MenuListItem(
@@ -474,13 +447,28 @@ class _MenuPageState extends ConsumerState<MenuPage> {
   }
 }
 
-class _ThemeBottomSheet extends ConsumerWidget {
+class _ThemeBottomSheet extends ConsumerStatefulWidget {
   const _ThemeBottomSheet();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ThemeBottomSheet> createState() => _ThemeBottomSheetState();
+}
+
+class _ThemeBottomSheetState extends ConsumerState<_ThemeBottomSheet> {
+  ThemeMode? _draftMode;
+
+  ThemeMode get _selectedMode => _draftMode ?? ref.read(themeModeProvider);
+
+  void _selectMode(ThemeMode mode) => setState(() => _draftMode = mode);
+
+  void _applyTheme() {
+    ref.read(themeModeProvider.notifier).setThemeMode(_selectedMode);
+    Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final currentMode = ref.watch(themeModeProvider);
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
@@ -502,31 +490,28 @@ class _ThemeBottomSheet extends ConsumerWidget {
               _ThemeOption(
                 label: '다크 모드',
                 mode: ThemeMode.dark,
-                currentMode: currentMode,
-                onSelected: (mode) =>
-                    ref.read(themeModeProvider.notifier).setThemeMode(mode),
+                currentMode: _selectedMode,
+                onSelected: _selectMode,
               ),
               const SizedBox(height: TsSpacing.sm),
               _ThemeOption(
                 label: '라이트 모드',
                 mode: ThemeMode.light,
-                currentMode: currentMode,
-                onSelected: (mode) =>
-                    ref.read(themeModeProvider.notifier).setThemeMode(mode),
+                currentMode: _selectedMode,
+                onSelected: _selectMode,
               ),
               const SizedBox(height: TsSpacing.sm),
               _ThemeOption(
                 label: '시스템 설정',
                 mode: ThemeMode.system,
-                currentMode: currentMode,
-                onSelected: (mode) =>
-                    ref.read(themeModeProvider.notifier).setThemeMode(mode),
+                currentMode: _selectedMode,
+                onSelected: _selectMode,
               ),
               const SizedBox(height: TsSpacing.lg),
               TsButton(
                 label: '적용하기',
                 variant: TsButtonVariant.primary,
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: _applyTheme,
               ),
               const SizedBox(height: TsSpacing.sm),
               TsButton(

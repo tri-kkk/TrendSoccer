@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
-class SubscribePage extends StatefulWidget {
+class SubscribePage extends ConsumerStatefulWidget {
   const SubscribePage({super.key});
 
   @override
-  State<SubscribePage> createState() => _SubscribePageState();
+  ConsumerState<SubscribePage> createState() => _SubscribePageState();
 }
 
-class _SubscribePageState extends State<SubscribePage> {
-  /// 0 = 3개월 (default selected), 1 = 1개월
+class _SubscribePageState extends ConsumerState<SubscribePage> {  /// 0 = 3개월 (default selected), 1 = 1개월
   int _selectedPlanIndex = 0;
 
   @override
@@ -114,15 +115,18 @@ class _SubscribePageState extends State<SubscribePage> {
                 label: '프리미엄 구독 시작하기 →',
                 variant: TsButtonVariant.primary,
                 onPressed: () {
+                  if (!ref.read(authProvider).isLoggedIn) {
+                    context.push('/login');
+                    return;
+                  }
                   // 테스트: 9,900원(3개월) → 성공, 4,900원(1개월) → 실패
                   // TODO: 외부 웹뷰 결제 연동
                   if (_selectedPlanIndex == 0) {
-                    context.push('/menu/subscribe/success');
+                    context.push('/menu/subscribe/success', extra: 3);
                   } else {
-                    context.push('/menu/subscribe/fail');
+                    context.push('/menu/subscribe/fail', extra: 1);
                   }
-                },
-              ),
+                },              ),
             ),
             const SizedBox(height: 24),
           ],

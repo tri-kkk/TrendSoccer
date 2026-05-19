@@ -39,11 +39,13 @@ class TsLogo extends StatelessWidget {
   const TsLogo({
     this.type = TsLogoType.horizon,
     this.color = TsLogoColor.white,
+    this.height,
     super.key,
   });
 
   final TsLogoType type;
   final TsLogoColor color;
+  final double? height;
 
   Widget _fallback(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
@@ -71,8 +73,9 @@ class TsLogo extends StatelessWidget {
         ),
       TsLogoType.vertical => SvgPicture.asset(
           path,
+          height: height,
           fit: BoxFit.contain,
-          alignment: Alignment.centerLeft,
+          alignment: Alignment.center,
           placeholderBuilder: (context) => _fallback(context),
         ),
       TsLogoType.circle => SvgPicture.asset(

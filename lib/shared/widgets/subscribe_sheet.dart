@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:trendsoccer/core/models/sport_type.dart';
+import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
-class SubscribeSheet extends StatelessWidget {
+class SubscribeSheet extends ConsumerWidget {
   const SubscribeSheet({super.key, required this.sport});
 
   final SportType sport;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
     final description = sport == SportType.soccer
@@ -57,7 +58,7 @@ class SubscribeSheet extends StatelessWidget {
               variant: TsButtonVariant.primary,
               onPressed: () {
                 Navigator.of(context).pop();
-                context.push('/menu/subscribe');
+                navigateToSubscribe(context, ref);
               },
             ),
           ),

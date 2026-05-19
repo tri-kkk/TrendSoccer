@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/models/sport_type.dart';
+import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/analysis/models/soccer_match_report_data.dart';
@@ -13,7 +15,7 @@ import 'package:trendsoccer/shared/widgets/report/match_header.dart';
 import 'package:trendsoccer/shared/widgets/report/report_toggle.dart';
 import 'package:trendsoccer/shared/widgets/subscribe_sheet.dart';
 
-class SoccerMatchReportPage extends StatefulWidget {
+class SoccerMatchReportPage extends ConsumerStatefulWidget {
   const SoccerMatchReportPage({
     required this.matchId,
     super.key,
@@ -22,10 +24,11 @@ class SoccerMatchReportPage extends StatefulWidget {
   final String matchId;
 
   @override
-  State<SoccerMatchReportPage> createState() => _SoccerMatchReportPageState();
+  ConsumerState<SoccerMatchReportPage> createState() =>
+      _SoccerMatchReportPageState();
 }
 
-class _SoccerMatchReportPageState extends State<SoccerMatchReportPage> {
+class _SoccerMatchReportPageState extends ConsumerState<SoccerMatchReportPage> {
   ReportTab _selectedTab = ReportTab.standard;
 
   SoccerMatchReportData get _data => soccerMatchReportDummy;
@@ -79,9 +82,10 @@ class _SoccerMatchReportPageState extends State<SoccerMatchReportPage> {
               selectedTab: _selectedTab,
               onTabChanged: (tab) {
                 if (tab == ReportTab.premium) {
-                  // TODO: Check real subscription status
-                  showSubscribeSheet(context, SportType.soccer);
-                  return;
+                  if (!ref.read(authProvider).hasFullAccess) {
+                    showSubscribeSheet(context, SportType.soccer);
+                    return;
+                  }
                 }
                 setState(() => _selectedTab = tab);
               },

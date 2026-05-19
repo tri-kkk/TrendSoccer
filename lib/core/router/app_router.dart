@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/features/analysis/baseball_match_report_page.dart';
 import 'package:trendsoccer/features/analysis/analysis_page.dart';
@@ -23,7 +24,13 @@ import 'package:trendsoccer/main_screen.dart';
 
 /// v2 app routing: tab shell + auth/splash stubs.
 abstract final class AppRouter {
+  static final GlobalKey<NavigatorState> rootNavigatorKey =
+      GlobalKey<NavigatorState>(debugLabel: 'root');
+  static final GlobalKey<NavigatorState> shellNavigatorKey =
+      GlobalKey<NavigatorState>(debugLabel: 'shell');
+
   static final GoRouter router = GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
     routes: [
       GoRoute(
@@ -48,7 +55,10 @@ abstract final class AppRouter {
       ),
       GoRoute(
         path: '/menu/subscribe/success',
-        builder: (context, state) => const SubscribeSuccessPage(),
+        builder: (context, state) {
+          final months = state.extra is int ? state.extra! as int : 3;
+          return SubscribeSuccessPage(months: months);
+        },
       ),
       GoRoute(
         path: '/menu/subscribe/fail',
@@ -94,6 +104,7 @@ abstract final class AppRouter {
         },
       ),
       ShellRoute(
+        navigatorKey: shellNavigatorKey,
         builder: (context, state, child) => MainScreen(child: child),
         routes: [
           GoRoute(

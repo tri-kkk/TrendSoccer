@@ -1,12 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
-class SubscribeSuccessPage extends StatelessWidget {
-  const SubscribeSuccessPage({super.key});
+class SubscribeSuccessPage extends ConsumerStatefulWidget {
+  const SubscribeSuccessPage({this.months = 3, super.key});
+
+  final int months;
+
+  @override
+  ConsumerState<SubscribeSuccessPage> createState() =>
+      _SubscribeSuccessPageState();
+}
+
+class _SubscribeSuccessPageState extends ConsumerState<SubscribeSuccessPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(authProvider).subscribePremium(months: widget.months);
+    });
+  }
+
+  String get _priceLabel => widget.months == 3 ? '₩ 9,900' : '₩ 4,900';
+
+  String get _periodLabel => '${widget.months}개월';
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +44,7 @@ class SubscribeSuccessPage extends StatelessWidget {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          '구독 완료',
+          '결제 완료',
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
         ),
         centerTitle: true,
@@ -75,7 +97,10 @@ class SubscribeSuccessPage extends StatelessWidget {
                           '결제 금액',
                           style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
                         ),
-                        Text('₩ 9,900', style: TsType.headingH3.copyWith(color: semantic.textPrimary)),
+                        Text(
+                          _priceLabel,
+                          style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -88,7 +113,10 @@ class SubscribeSuccessPage extends StatelessWidget {
                             '구독 플랜',
                             style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
                           ),
-                          Text('3개월', style: TsType.headingH3.copyWith(color: semantic.textPrimary)),
+                          Text(
+                            _periodLabel,
+                            style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+                          ),
                         ],
                       ),
                     ),

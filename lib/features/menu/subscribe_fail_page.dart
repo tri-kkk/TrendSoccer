@@ -23,7 +23,7 @@ class SubscribeFailPage extends StatelessWidget {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          '구독 완료',
+          '결제 실패',
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
         ),
         centerTitle: true,
