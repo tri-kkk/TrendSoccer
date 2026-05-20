@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "969836267510",
+    "project_id": "trendsoccer",
+    "storage_bucket": "trendsoccer.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:969836267510:android:a04db98c1a021011e2a9d7",
+        "android_client_info": {
+          "package_name": "com.trendsoccer.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "969836267510-7mfd712i7obn0erdblg0552r9bcuul00.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.trendsoccer.app",
+            "certificate_hash": "c30255640d8bc6d1e67e8d15ef3fa8efdbdd3933"
+          }
+        },
+        {
+          "client_id": "969836267510-527f4vc6flh16b7dm9s8bjn0dd88eon7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCoPfz0xbDqTU9p36zXUCZgG2r9_axv-80"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "969836267510-1ntji8lp3dutpr92cvgfhnksvvjps8nv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

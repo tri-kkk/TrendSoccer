@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
+import 'package:flutter_naver_login/interface/types/naver_login_status.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
@@ -12,6 +13,7 @@ import 'package:trendsoccer/core/config/app_config.dart';
 import 'package:trendsoccer/core/models/api_response.dart';
 import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/services/auth_service.dart';
+import 'package:trendsoccer/core/services/fcm_service.dart';
 
 final authProvider = ChangeNotifierProvider<SupabaseAuthProvider>(
   (ref) => SupabaseAuthProvider(ref),
@@ -25,7 +27,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
         case AuthChangeEvent.signedIn:
           if (data.session != null) {
             _applySession(data.session!);
-            unawaited(loadProfile());
+            unawaited(_afterSignedIn());
           }
         case AuthChangeEvent.tokenRefreshed:
         case AuthChangeEvent.userUpdated:
@@ -197,6 +199,15 @@ class SupabaseAuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> _afterSignedIn() async {
+    await loadProfile();
+    try {
+      await _ref.read(fcmServiceProvider).initialize();
+    } catch (e) {
+      debugPrint('[Auth] FCM initialize failed: $e');
+    }
+  }
+
   Future<void> signOut() async {
     await Supabase.instance.client.auth.signOut();
     _resetToGuest();
@@ -226,29 +237,30 @@ class SupabaseAuthProvider extends ChangeNotifier {
   }
 
   Future<void> loginWithNaver() async {
-    await FlutterNaverLogin.initSdk(
-      clientId: AppConfig.naverClientId,
-      clientName: 'TrendSoccer',
-      clientSecret: AppConfig.naverClientSecret,
-    );
-
     final result = await FlutterNaverLogin.logIn();
     switch (result.status) {
-      case NaverLoginStatus.cancelledByUser:
+      case NaverLoginStatus.loggedOut:
         return;
       case NaverLoginStatus.error:
         throw Exception(
-          result.errorMessage.isNotEmpty
-              ? result.errorMessage
+          (result.errorMessage?.isNotEmpty ?? false)
+              ? result.errorMessage!
               : 'Naver sign-in failed',
         );
       case NaverLoginStatus.loggedIn:
         break;
     }
 
-    final naverAccessToken = result.accessToken.accessToken;
-    if (naverAccessToken.isEmpty || naverAccessToken == 'no token') {
-      throw Exception('Naver sign-in failed: access token is missing');
+    final loginToken = result.accessToken;
+    String naverAccessToken;
+    if (loginToken != null && loginToken.accessToken.isNotEmpty) {
+      naverAccessToken = loginToken.accessToken;
+    } else {
+      final currentToken = await FlutterNaverLogin.getCurrentAccessToken();
+      if (currentToken.accessToken.isEmpty) {
+        throw Exception('Naver sign-in failed: access token is missing');
+      }
+      naverAccessToken = currentToken.accessToken;
     }
 
     try {
@@ -270,8 +282,8 @@ class SupabaseAuthProvider extends ChangeNotifier {
           status: AuthStatus.loggedIn,
           loginMethod: LoginMethod.naver,
           planType: PlanType.free,
-          userName: result.account.name,
-          userEmail: result.account.email,
+          userName: result.account?.name ?? '',
+          userEmail: result.account?.email ?? '',
         );
         userProfile = null;
         notifyListeners();
