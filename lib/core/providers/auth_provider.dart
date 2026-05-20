@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
@@ -224,8 +225,128 @@ class SupabaseAuthProvider extends ChangeNotifier {
     );
   }
 
-  void loginWithNaver() {
-    // TODO(step 1-4): Supabase OAuth — custom Naver provider
+  Future<void> loginWithNaver() async {
+    await FlutterNaverLogin.initSdk(
+      clientId: AppConfig.naverClientId,
+      clientName: 'TrendSoccer',
+      clientSecret: AppConfig.naverClientSecret,
+    );
+
+    final result = await FlutterNaverLogin.logIn();
+    switch (result.status) {
+      case NaverLoginStatus.cancelledByUser:
+        return;
+      case NaverLoginStatus.error:
+        throw Exception(
+          result.errorMessage.isNotEmpty
+              ? result.errorMessage
+              : 'Naver sign-in failed',
+        );
+      case NaverLoginStatus.loggedIn:
+        break;
+    }
+
+    final naverAccessToken = result.accessToken.accessToken;
+    if (naverAccessToken.isEmpty || naverAccessToken == 'no token') {
+      throw Exception('Naver sign-in failed: access token is missing');
+    }
+
+    try {
+      final data =
+          await _ref.read(authServiceProvider).naverAuth(naverAccessToken);
+      await _handleNaverAuthResponse(
+        data,
+        stubMode: AuthService.useNaverStub,
+      );
+    } on ApiException catch (e) {
+      if (e.code == 'ACCOUNT_DELETED') {
+        throw ApiException(
+          code: e.code,
+          message: '탈퇴한 계정입니다. 다른 계정으로 로그인해주세요.',
+        );
+      }
+      if (e.code == 'CONSENT_REQUIRED') {
+        _state = AuthState(
+          status: AuthStatus.loggedIn,
+          loginMethod: LoginMethod.naver,
+          planType: PlanType.free,
+          userName: result.account.name,
+          userEmail: result.account.email,
+        );
+        userProfile = null;
+        notifyListeners();
+        return;
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _handleNaverAuthResponse(
+    Map<String, dynamic> data, {
+    required bool stubMode,
+  }) async {
+    final user = data['user'];
+    if (user is! Map<String, dynamic>) {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'Invalid Naver auth response',
+      );
+    }
+
+    final session = data['session'];
+    final sessionMap =
+        session is Map<String, dynamic> ? session : null;
+
+    await _applyNaverAuthState(
+      user: user,
+      stubMode: stubMode,
+      session: sessionMap,
+    );
+
+    final isNewUser = user['isNewUser'] as bool? ?? false;
+    if (isNewUser) {
+      userProfile = null;
+      notifyListeners();
+      return;
+    }
+
+    userProfile = UserProfile(
+      userId: user['userId'] as String? ?? '',
+      email: user['email'] as String? ?? '',
+      name: user['name'] as String? ?? '',
+      avatarUrl: user['avatarUrl'] as String?,
+      tier: 'free',
+      consents: const UserConsents(
+        terms: true,
+        privacy: true,
+        marketing: false,
+      ),
+    );
+    notifyListeners();
+    await loadProfile();
+  }
+
+  Future<void> _applyNaverAuthState({
+    required Map<String, dynamic> user,
+    required bool stubMode,
+    required Map<String, dynamic>? session,
+  }) async {
+    if (stubMode) {
+      _state = AuthState(
+        status: AuthStatus.loggedIn,
+        loginMethod: LoginMethod.naver,
+        planType: PlanType.free,
+        userName: user['name'] as String? ?? '',
+        userEmail: user['email'] as String? ?? '',
+      );
+      notifyListeners();
+      return;
+    }
+
+    final refreshToken = session?['refreshToken'] as String?;
+    if (refreshToken != null && refreshToken.isNotEmpty) {
+      await Supabase.instance.client.auth.setSession(refreshToken);
+    }
   }
 
   Future<bool> completeSignup({

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:trendsoccer/core/models/api_response.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
@@ -20,6 +21,37 @@ class LoginPage extends ConsumerStatefulWidget {
 
 class _LoginPageState extends ConsumerState<LoginPage> {
   bool _isLoading = false;
+
+  Future<void> _onNaverLoginTap() async {
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authProvider).loginWithNaver();
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
+      if (!ref.read(authProvider).isLoggedIn) return;
+
+      final auth = ref.read(authProvider);
+      if (auth.needsConsent) {
+        context.push('/signup/terms');
+      } else {
+        TsToast.success(context, '로그인 성공');
+        context.go('/trend');
+      }
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      if (e.code == 'ACCOUNT_DELETED') {
+        TsToast.error(context, e.message);
+      } else {
+        TsToast.error(context, '로그인에 실패했습니다. 다시 시도해주세요.');
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      TsToast.error(context, '로그인에 실패했습니다. 다시 시도해주세요.');
+    }
+  }
 
   Future<void> _onGoogleLoginTap() async {
     setState(() => _isLoading = true);
@@ -144,10 +176,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ),
                 const SizedBox(height: 12),
                 GestureDetector(
-                  onTap: () {
-                    ref.read(authProvider).loginWithNaver();
-                    context.push('/signup/terms');
-                  },
+                  onTap: _isLoading ? null : _onNaverLoginTap,
                   child: Container(
                     height: 48,
                     width: double.infinity,

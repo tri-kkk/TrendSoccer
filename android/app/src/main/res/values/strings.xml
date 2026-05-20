@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="naver_client_id">placeholder</string>
+    <string name="naver_client_secret">placeholder</string>
+</resources>

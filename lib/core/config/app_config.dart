@@ -11,6 +11,10 @@ abstract final class AppConfig {
 
   static String get googleWebClientId => dotenv.env['GOOGLE_WEB_CLIENT_ID']!;
 
+  static String get naverClientId => dotenv.env['NAVER_CLIENT_ID'] ?? '';
+
+  static String get naverClientSecret => dotenv.env['NAVER_CLIENT_SECRET'] ?? '';
+
   static SupabaseClient get supabaseClient => Supabase.instance.client;
 
   static Dio? _dio;
