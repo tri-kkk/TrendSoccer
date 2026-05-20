@@ -4,6 +4,50 @@ enum LoginMethod { none, google, naver }
 
 enum PlanType { none, free, trial, premium }
 
+class SubscriptionInfo {
+  const SubscriptionInfo({
+    required this.isActive,
+    this.plan,
+    this.startDate,
+    this.expiresAt,
+  });
+
+  final bool isActive;
+  final String? plan;
+  final DateTime? startDate;
+  final DateTime? expiresAt;
+}
+
+class TrialInfo {
+  const TrialInfo({
+    required this.used,
+    this.expiresAt,
+  });
+
+  final bool used;
+  final DateTime? expiresAt;
+}
+
+class UserProfile {
+  const UserProfile({
+    required this.userId,
+    required this.email,
+    required this.name,
+    this.avatarUrl,
+    required this.tier,
+    this.subscription,
+    this.trial,
+  });
+
+  final String userId;
+  final String email;
+  final String name;
+  final String? avatarUrl;
+  final String tier;
+  final SubscriptionInfo? subscription;
+  final TrialInfo? trial;
+}
+
 class AuthState {
   const AuthState({
     this.status = AuthStatus.guest,
