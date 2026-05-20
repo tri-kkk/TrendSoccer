@@ -33,6 +33,9 @@ class PremiumPickCard extends StatefulWidget {
     required this.streak,
     required this.recentWins,
     this.onCTATap,
+    this.winRateLabel,
+    this.countdownLabel,
+    this.streakLabel,
   });
 
   final bool showCTA;
@@ -41,6 +44,9 @@ class PremiumPickCard extends StatefulWidget {
   final String streak;
   final List<RecentWinData> recentWins;
   final VoidCallback? onCTATap;
+  final String? winRateLabel;
+  final String? countdownLabel;
+  final String? streakLabel;
 
   static const Color winBadgeBackground = Color(0x3310B981);
 
@@ -320,7 +326,7 @@ class _PremiumPickCardState extends State<PremiumPickCard>
               Expanded(
                 child: _StatCell(
                   value: widget.winRate,
-                  label: '적중률',
+                  label: widget.winRateLabel ?? '적중률',
                   valueColor: semantic.interactivePrimary,
                   semantic: semantic,
                 ),
@@ -335,7 +341,7 @@ class _PremiumPickCardState extends State<PremiumPickCard>
               Expanded(
                 child: _StatCell(
                   value: widget.countdown,
-                  label: '다음 업데이트',
+                  label: widget.countdownLabel ?? '다음 업데이트',
                   valueColor: semantic.textPrimary,
                   semantic: semantic,
                 ),
@@ -350,7 +356,7 @@ class _PremiumPickCardState extends State<PremiumPickCard>
               Expanded(
                 child: _StatCell(
                   value: widget.streak,
-                  label: '연속 적중',
+                  label: widget.streakLabel ?? '연속 적중',
                   valueColor: semantic.interactivePrimary,
                   semantic: semantic,
                 ),

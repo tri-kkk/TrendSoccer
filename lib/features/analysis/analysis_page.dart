@@ -10,7 +10,7 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/analysis/analysis_dummy_data.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer_matches_section.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
-import 'package:trendsoccer/shared/widgets/cards/premium_pick_card.dart';
+import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/today_combo_card.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/filter/ts_filter_chip.dart';
@@ -154,28 +154,8 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
             ),
             const SizedBox(height: 16),
             if (_selectedSport == SportType.soccer) ...[
-              PremiumPickCard(
+              PremiumPickStatsCard(
                 showCTA: true,
-                winRate: '78%',
-                countdown: '3h 42m',
-                streak: '5 WIN',
-                recentWins: const [
-                  RecentWinData(
-                    homeTeam: '바르셀로나',
-                    awayTeam: '바이에른',
-                    pickDirection: '홈',
-                  ),
-                  RecentWinData(
-                    homeTeam: '아스날',
-                    awayTeam: '첼시',
-                    pickDirection: '원정',
-                  ),
-                  RecentWinData(
-                    homeTeam: '레알 마드리드',
-                    awayTeam: '아틀레티코',
-                    pickDirection: '홈',
-                  ),
-                ],
                 onCTATap: () => onPremiumCtaTap(sport: SportType.soccer),
               ),
               const SizedBox(height: 16),

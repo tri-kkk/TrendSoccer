@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
+import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
+import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
@@ -11,7 +13,7 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/trend/trend_dummy_data.dart';
 import 'package:trendsoccer/shared/widgets/banner/ts_banner.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
-import 'package:trendsoccer/shared/widgets/cards/premium_pick_card.dart';
+import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/today_combo_card.dart';
 
 class TrendPage extends ConsumerStatefulWidget {
@@ -258,29 +260,17 @@ class _TrendPageState extends ConsumerState<TrendPage> {
                   title: '프리미엄 분석',
                 ),
                 const SizedBox(height: 16),
-                PremiumPickCard(
+                PremiumPickStatsCard(
                   showCTA: true,
-                  winRate: '78%',
-                  countdown: '3h 42m',
-                  streak: '5 WIN',
-                  recentWins: const [
-                    RecentWinData(
-                      homeTeam: '바르셀로나',
-                      awayTeam: '바이에른',
-                      pickDirection: '홈',
-                    ),
-                    RecentWinData(
-                      homeTeam: '아스날',
-                      awayTeam: '첼시',
-                      pickDirection: '원정',
-                    ),
-                    RecentWinData(
-                      homeTeam: '레알 마드리드',
-                      awayTeam: '아틀레티코',
-                      pickDirection: '홈',
-                    ),
-                  ],
-                  onCTATap: () => context.go('/premium'),
+                  useTrendLabels: true,
+                  onCTATap: () {
+                    final auth = ref.read(authProvider);
+                    if (auth.hasFullAccess) {
+                      context.go('/premium');
+                    } else {
+                      navigateToSubscribeIfLoggedIn(context, auth.isLoggedIn);
+                    }
+                  },
                 ),
                 const SizedBox(height: 16),
 

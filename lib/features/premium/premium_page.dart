@@ -6,14 +6,16 @@ import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/providers/soccer_provider.dart';
+import 'package:trendsoccer/core/utils/access_gate.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/premium/premium_dummy_data.dart';
+import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
-import 'package:trendsoccer/shared/widgets/cards/pick_direction_badge.dart';
-import 'package:trendsoccer/shared/widgets/cards/premium_pick_card.dart';
+import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_card.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_dashboard.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
@@ -42,76 +44,93 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
     }
   }
 
-  PickDirection? _pickDirectionFromData(String? raw) {
-    return switch (raw) {
-      'home' => PickDirection.home,
-      'draw' => PickDirection.draw,
-      'away' => PickDirection.away,
-      _ => null,
-    };
-  }
-
   Widget _buildSoccerSection(BuildContext context) {
-    if (premiumPickDummy.isEmpty) {
-      return const Center(
-        child: TsEmptyState(type: TsEmptyStateType.premiumPickEmpty),
-      );
-    }
+    final date = ref.watch(todayDateProvider);
+    final picksAsync = ref.watch(premiumPicksProvider(date));
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          PremiumPickCard(
-            showCTA: false,
-            winRate: '78%',
-            countdown: '3h 42m',
-            streak: '5 WIN',
-            recentWins: const [
-              RecentWinData(
-                homeTeam: '바르셀로나',
-                awayTeam: '바이에른',
-                pickDirection: '홈',
+    ref.listen(premiumPicksProvider(date), (previous, next) {
+      final wasLoading = previous?.isLoading ?? false;
+      if (wasLoading && next.hasError && context.mounted) {
+        TsToast.error(context, '프리미엄 픽 목록을 불러오지 못했습니다.');
+      }
+    });
+
+    return picksAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '프리미엄 픽 목록을 불러오지 못했습니다.',
+              style: TsType.bodyLRegular.copyWith(
+                color: Theme.of(context)
+                    .extension<TsSemanticColors>()!
+                    .textSecondary,
               ),
-              RecentWinData(
-                homeTeam: '아스날',
-                awayTeam: '첼시',
-                pickDirection: '원정',
-              ),
-              RecentWinData(
-                homeTeam: '레알 마드리드',
-                awayTeam: '아틀레티코',
-                pickDirection: '홈',
-              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            TsButton(
+              label: '다시 시도',
+              variant: TsButtonVariant.primary,
+              size: TsButtonSize.small,
+              onPressed: () => ref.invalidate(premiumPicksProvider(date)),
+            ),
+          ],
+        ),
+      ),
+      data: (picks) {
+        if (picks.isEmpty) {
+          return const Center(
+            child: TsEmptyState(
+              type: TsEmptyStateType.premiumPickEmpty,
+              title: 'No High-Confidence Picks Today',
+              subtitle: '오전 6시 또는 오후 6시에 다시 확인해 주세요.',
+            ),
+          );
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const PremiumPickStatsCard(showCTA: false),
+              const SizedBox(height: 16),
+              ...picks.asMap().entries.map((entry) {
+                final card = entry.value;
+                final match = card.match;
+                final leagueId = leagueIdForCard(match.league);
+
+                return Padding(
+                  padding: EdgeInsets.only(
+                    bottom: entry.key < picks.length - 1 ? 16 : 0,
+                  ),
+                  child: AnalysisCard(
+                    leagueId: leagueId,
+                    leagueName: match.league.name,
+                    date: formatSoccerCardDate(match.matchDate),
+                    homeTeam: match.homeTeam.name,
+                    awayTeam: match.awayTeam.name,
+                    matchTime: match.matchTime,
+                    homeLogoUrl: match.homeTeam.logo,
+                    awayLogoUrl: match.awayTeam.logo,
+                    isPremiumPick: true,
+                    pickDirection: pickDirectionFromCard(card),
+                    winRate: winRateLabelFromCard(card),
+                    onAnalyze: () => context.push(
+                      '/analysis/soccer/match-report/${match.matchId}',
+                      extra: match.matchTimestamp,
+                    ),
+                  ),
+                );
+              }),
+              const SizedBox(height: 24),
             ],
           ),
-          const SizedBox(height: 16),
-          ...premiumPickDummy.asMap().entries.map((entry) {
-            final data = entry.value;
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: entry.key < premiumPickDummy.length - 1 ? 16 : 0,
-              ),
-              child: AnalysisCard(
-                leagueId: data.leagueId,
-                leagueName: data.leagueName,
-                date: data.date,
-                homeTeam: data.homeTeam,
-                awayTeam: data.awayTeam,
-                matchTime: data.matchTime,
-                isPremiumPick: true,
-                pickDirection: _pickDirectionFromData(data.pickDirection),
-                winRate: data.winRate,
-                onAnalyze: () => context.push(
-                  '/analysis/soccer/match-report/${data.matchId}',
-                ),
-              ),
-            );
-          }),
-          const SizedBox(height: 24),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -197,7 +216,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final auth = ref.watch(authProvider);
 
-    if (!auth.hasFullAccess) {
+    if (!AccessGate.canViewPremiumContent(planType: auth.planType)) {
       return Scaffold(
         backgroundColor: semantic.surfaceBase,
         body: SafeArea(

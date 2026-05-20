@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
 import 'package:trendsoccer/core/services/soccer_service.dart';
 import 'package:trendsoccer/core/services/web_api_client.dart';
+import 'package:trendsoccer/shared/widgets/cards/pick_direction_badge.dart';
 
 /// Today's date in UTC (YYYY-MM-DD) for match list queries.
 final todayDateProvider = Provider<String>((ref) {
@@ -51,6 +52,68 @@ final filteredSoccerMatchesProvider =
         .toList();
   });
 });
+
+final premiumPicksProvider =
+    FutureProvider.family<List<SoccerAnalysisCard>, String>((ref, date) async {
+  final service = ref.read(soccerServiceProvider);
+  final picks = await service.getPremiumPicks(date: date);
+
+  if (picks.isNotEmpty) return picks;
+
+  try {
+    await ref.read(webDioProvider).get<dynamic>(
+      '/api/premium-picks',
+      queryParameters: <String, String>{'date': date},
+    );
+    return picks;
+  } on DioException {
+    rethrow;
+  } catch (e) {
+    throw Exception('Failed to load premium picks: $e');
+  }
+});
+
+final premiumPickStatsProvider =
+    FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
+  final service = ref.read(soccerServiceProvider);
+  final stats = await service.getPremiumPickStats(days: 7);
+
+  if (stats.isNotEmpty) return stats;
+
+  try {
+    await ref.read(webDioProvider).get<dynamic>(
+      '/api/premium-picks/stats',
+      queryParameters: <String, int>{'days': 7},
+    );
+    return stats;
+  } on DioException {
+    rethrow;
+  } catch (e) {
+    throw Exception('Failed to load premium pick stats: $e');
+  }
+});
+
+PickDirection? pickDirectionFromCard(SoccerAnalysisCard card) {
+  final raw = card.prediction?.direction?.toLowerCase();
+  if (raw == null || raw.isEmpty) return null;
+  if (raw.contains('home') || raw == 'h' || raw.contains('홈')) {
+    return PickDirection.home;
+  }
+  if (raw.contains('draw') || raw == 'd' || raw.contains('무')) {
+    return PickDirection.draw;
+  }
+  if (raw.contains('away') || raw == 'a' || raw.contains('원정')) {
+    return PickDirection.away;
+  }
+  return null;
+}
+
+String? winRateLabelFromCard(SoccerAnalysisCard card) {
+  final confidence = card.prediction?.confidence;
+  if (confidence == null) return null;
+  if (confidence <= 1) return '${(confidence * 100).round()}%';
+  return '${confidence.round()}%';
+}
 
 /// Maps API [LeagueInfo] to local [TsLeagueIcon] / filter chip ids.
 String leagueIdForCard(LeagueInfo league) {
