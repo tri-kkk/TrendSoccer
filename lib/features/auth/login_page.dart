@@ -79,9 +79,21 @@ class LoginPage extends ConsumerWidget {
               ),
               const SizedBox(height: 48),
               GestureDetector(
-                onTap: () {
-                  ref.read(authProvider).loginWithGoogle();
-                  context.go('/trend');
+                onTap: () async {
+                  try {
+                    await ref.read(authProvider).loginWithGoogle();
+                    if (!context.mounted) return;
+                    context.go('/trend');
+                  } catch (_) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Google 로그인에 실패했습니다. 다시 시도해 주세요.',
+                        ),
+                      ),
+                    );
+                  }
                 },
                 child: Container(
                   height: 48,

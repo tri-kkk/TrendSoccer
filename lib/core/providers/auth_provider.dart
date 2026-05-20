@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
+import 'package:trendsoccer/core/config/app_config.dart';
 import 'package:trendsoccer/core/models/auth_state.dart';
 
 final authProvider = ChangeNotifierProvider<SupabaseAuthProvider>(
@@ -175,8 +177,23 @@ class SupabaseAuthProvider extends ChangeNotifier {
     // TODO(step 1-9): call membership withdraw API
   }
 
-  void loginWithGoogle() {
-    // TODO(step 1-4): Supabase OAuth — signInWithOAuth(OAuthProvider.google)
+  Future<void> loginWithGoogle() async {
+    final googleSignIn = GoogleSignIn(
+      serverClientId: AppConfig.googleWebClientId,
+    );
+    final account = await googleSignIn.signIn();
+    if (account == null) return;
+
+    final authentication = await account.authentication;
+    final idToken = authentication.idToken;
+    if (idToken == null) {
+      throw Exception('Google sign-in failed: idToken is null');
+    }
+
+    await Supabase.instance.client.auth.signInWithIdToken(
+      provider: OAuthProvider.google,
+      idToken: idToken,
+    );
   }
 
   void loginWithNaver() {
