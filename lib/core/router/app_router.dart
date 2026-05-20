@@ -18,8 +18,10 @@ import 'package:trendsoccer/features/menu/terms_of_service_page.dart';
 import 'package:trendsoccer/features/premium/premium_page.dart';
 import 'package:trendsoccer/features/report/soccer_report_detail_page.dart';
 import 'package:trendsoccer/features/report/soccer_report_list_page.dart';
+import 'package:trendsoccer/features/maintenance/maintenance_page.dart';
 import 'package:trendsoccer/features/splash/splash_page.dart';
 import 'package:trendsoccer/features/trend/trend_page.dart';
+import 'package:trendsoccer/features/update/force_update_page.dart';
 import 'package:trendsoccer/main_screen.dart';
 
 /// v2 app routing: tab shell + auth/splash stubs.
@@ -36,6 +38,20 @@ abstract final class AppRouter {
       GoRoute(
         path: '/splash',
         builder: (context, state) => const SplashPage(),
+      ),
+      GoRoute(
+        path: '/maintenance',
+        builder: (context, state) {
+          final message = state.extra is String ? state.extra! as String : null;
+          return MaintenancePage(maintenanceMessage: message);
+        },
+      ),
+      GoRoute(
+        path: '/force-update',
+        builder: (context, state) {
+          final message = state.extra is String ? state.extra! as String : null;
+          return ForceUpdatePage(updateMessage: message);
+        },
       ),
       GoRoute(
         path: '/login',
