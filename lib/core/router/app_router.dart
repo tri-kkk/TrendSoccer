@@ -81,15 +81,6 @@ abstract final class AppRouter {
         builder: (context, state) => const HelpCenterPage(),
       ),
       GoRoute(
-        path: '/menu/reports/soccer',
-        builder: (context, state) => const SoccerReportListPage(),
-      ),
-      GoRoute(
-        path: '/menu/reports/soccer/:id',
-        builder: (context, state) =>
-            SoccerReportDetailPage(reportId: state.pathParameters['id'] ?? ''),
-      ),
-      GoRoute(
         path: '/analysis/soccer/match-report/:matchId',
         builder: (context, state) {
           final matchId = state.pathParameters['matchId'] ?? '';
@@ -141,6 +132,18 @@ abstract final class AppRouter {
               key: state.pageKey,
               child: const MenuPage(),
             ),
+            routes: [
+              GoRoute(
+                path: 'reports/soccer',
+                builder: (context, state) => const SoccerReportListPage(),
+              ),
+              GoRoute(
+                path: 'reports/soccer/:id',
+                builder: (context, state) => SoccerReportDetailPage(
+                  reportId: state.pathParameters['id'] ?? '',
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -6,8 +6,9 @@ import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/report/report_dummy_data.dart';
-import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
+import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
+import 'package:trendsoccer/shared/widgets/navigation/ts_bottom_navigation.dart';
 
 class SoccerReportDetailPage extends StatelessWidget {
   const SoccerReportDetailPage({
@@ -26,46 +27,48 @@ class SoccerReportDetailPage extends StatelessWidget {
     return null;
   }
 
-  PreferredSizeWidget _appBar(BuildContext context, String title) {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    return AppBar(
-      backgroundColor: semantic.surfaceBase,
-      elevation: 0,
-      leading: TsBackButton(onPressed: () => context.pop()),
-      title: Text(
-        title,
-        style: TsType.headingH3.copyWith(color: semantic.textPrimary),
-      ),
-      centerTitle: true,
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(2),
-        child: Container(height: 2, color: semantic.textDisabled),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final brightness = Theme.of(context).brightness;
     final report = _findReport();
+    final bottomPadding =
+        16 + MediaQuery.paddingOf(context).bottom + TsBottomNavigation.barHeight;
 
     if (report == null) {
       return Scaffold(
         backgroundColor: semantic.surfaceBase,
-        appBar: _appBar(context, '매치 리포트'),
-        body: const TsEmptyState(
-          title: '리포트를 찾을 수 없습니다.',
-          subtitle: '목록에서 다시 선택해 주세요.',
+        appBar: TsAppBar.preferred(
+          context,
+          location: TsAppBarLocation.backTitle,
+          title: '매치 프리뷰',
+          onBack: () => context.pop(),
+        ),
+        body: Padding(
+          padding: EdgeInsets.only(bottom: bottomPadding),
+          child: const TsEmptyState(
+            title: '리포트를 찾을 수 없습니다.',
+            subtitle: '목록에서 다시 선택해 주세요.',
+          ),
         ),
       );
     }
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
-      appBar: _appBar(context, '매치 리포트'),
+      appBar: TsAppBar.preferred(
+        context,
+        location: TsAppBarLocation.backTitle,
+        title: '매치 프리뷰',
+        onBack: () => context.pop(),
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: bottomPadding,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

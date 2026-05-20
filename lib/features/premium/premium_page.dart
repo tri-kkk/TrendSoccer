@@ -290,25 +290,26 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: SportsToggle(
-                selectedSport: _selectedSport,
-                onChanged: (sport) => setState(() {
-                  _selectedSport = sport;
-                  _selectedComboDateIndex = 0;
-                }),
-              ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: SportsToggle(
+              selectedSport: _selectedSport,
+              onChanged: (sport) => setState(() {
+                _selectedSport = sport;
+                _selectedComboDateIndex = 0;
+              }),
             ),
-            if (_selectedSport == SportType.soccer)
-              Expanded(child: _buildSoccerSection(context))
-            else
-              Expanded(child: _buildBaseballSection()),
-          ],
-        ),
+          ),
+          // Matches [AnalysisPage]: SizedBox below SportsToggle before first body block.
+          const SizedBox(height: 16),
+          if (_selectedSport == SportType.soccer)
+            Expanded(child: _buildSoccerSection(context))
+          else
+            Expanded(child: _buildBaseballSection()),
+        ],
       ),
     );
   }

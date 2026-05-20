@@ -13,6 +13,9 @@ class TsBottomNavigation extends StatelessWidget {
     super.key,
   });
 
+  /// Fixed outer height of the tab bar (matches [Container] below).
+  static const double barHeight = 80;
+
   final int currentIndex;
   final ValueChanged<int> onTap;
 
@@ -37,7 +40,7 @@ class TsBottomNavigation extends StatelessWidget {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
     return Container(
-      height: 80,
+      height: barHeight,
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
         color: semantic.surfaceRaised,
