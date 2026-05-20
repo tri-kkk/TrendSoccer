@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:trendsoccer/core/config/app_config.dart';
+import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/services/fcm_service.dart';
 import 'package:trendsoccer/core/providers/language_provider.dart';
 import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
@@ -35,13 +36,25 @@ Future<void> main() async {
   );
 }
 
-class TrendSoccerApp extends ConsumerWidget {
+class TrendSoccerApp extends ConsumerStatefulWidget {
   const TrendSoccerApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TrendSoccerApp> createState() => _TrendSoccerAppState();
+}
+
+class _TrendSoccerAppState extends ConsumerState<TrendSoccerApp> {
+  @override
+  void initState() {
+    super.initState();
+    ref.read(authProvider).initFromStoredToken();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
     final language = ref.watch(languageProvider);
+    ref.watch(authProvider);
 
     return MaterialApp.router(
       title: 'TrendSoccer',

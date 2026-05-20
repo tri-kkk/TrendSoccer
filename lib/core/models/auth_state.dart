@@ -2,7 +2,20 @@ enum AuthStatus { guest, loggedIn }
 
 enum LoginMethod { none, google, naver }
 
-enum PlanType { none, free, trial, premium }
+/// Client-side plan display state.
+///
+/// Server [UserProfile.tier] is only `'free'` | `'premium'`.
+/// [none] — not authenticated (no JWT); client-side "guest" concept.
+/// [premium] — active access: paid subscription or trial (server `tier` is
+/// `'premium'` with [UserProfile.premiumExpiresAt] in the future; trial is
+/// `premium` + `trial_used` on the server, not a separate tier).
+/// [trial] — retained for UI that distinguishes trial vs paid premium.
+enum PlanType {
+  none,
+  free,
+  trial,
+  premium,
+}
 
 DateTime? _parseJsonDateTime(Object? value) {
   if (value is String && value.isNotEmpty) {
@@ -11,66 +24,103 @@ DateTime? _parseJsonDateTime(Object? value) {
   return null;
 }
 
-class SubscriptionInfo {
-  const SubscriptionInfo({
-    required this.isActive,
-    this.plan,
-    this.startDate,
+bool _readJsonBool(Map<String, dynamic> json, String camel, String snake) {
+  final value = json[camel] ?? json[snake];
+  if (value is bool) return value;
+  return false;
+}
+
+DateTime? _readJsonDateTime(
+  Map<String, dynamic> json,
+  String camel,
+  String snake,
+) {
+  return _parseJsonDateTime(json[camel] ?? json[snake]);
+}
+
+String? _readJsonString(Map<String, dynamic> json, String camel, String snake) {
+  final value = json[camel] ?? json[snake];
+  if (value is String) return value;
+  return null;
+}
+
+class AuthSession {
+  const AuthSession({
+    required this.accessToken,
+    this.tokenType,
     this.expiresAt,
   });
 
-  factory SubscriptionInfo.fromJson(Map<String, dynamic> json) {
-    return SubscriptionInfo(
-      isActive: json['isActive'] as bool? ?? false,
-      plan: json['plan'] as String?,
-      startDate: _parseJsonDateTime(json['startDate']),
+  factory AuthSession.fromJson(Map<String, dynamic> json) {
+    return AuthSession(
+      accessToken: json['accessToken'] as String? ?? '',
+      tokenType: json['tokenType'] as String?,
       expiresAt: _parseJsonDateTime(json['expiresAt']),
     );
   }
 
-  final bool isActive;
-  final String? plan;
-  final DateTime? startDate;
+  final String accessToken;
+  final String? tokenType;
   final DateTime? expiresAt;
 }
 
-class TrialInfo {
-  const TrialInfo({
-    required this.used,
-    this.expiresAt,
+class LoginUser {
+  const LoginUser({
+    required this.userId,
+    required this.email,
+    required this.name,
+    this.avatarUrl,
+    required this.tier,
+    this.premiumExpiresAt,
+    this.isNewUser = false,
+    this.requiresConsent = false,
   });
 
-  factory TrialInfo.fromJson(Map<String, dynamic> json) {
-    return TrialInfo(
-      used: json['used'] as bool? ?? false,
-      expiresAt: _parseJsonDateTime(json['expiresAt']),
+  factory LoginUser.fromJson(Map<String, dynamic> json) {
+    return LoginUser(
+      userId: json['userId'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      avatarUrl: json['avatarUrl'] as String?,
+      tier: json['tier'] as String? ?? 'free',
+      premiumExpiresAt: _parseJsonDateTime(json['premiumExpiresAt']),
+      isNewUser: json['isNewUser'] as bool? ?? false,
+      requiresConsent: json['requiresConsent'] as bool? ?? false,
     );
   }
 
-  final bool used;
-  final DateTime? expiresAt;
+  final String userId;
+  final String email;
+  final String name;
+  final String? avatarUrl;
+  final String tier;
+  final DateTime? premiumExpiresAt;
+  final bool isNewUser;
+  final bool requiresConsent;
 }
 
-class UserConsents {
-  const UserConsents({
-    required this.terms,
-    required this.privacy,
-    required this.marketing,
+class LoginResponse {
+  const LoginResponse({
+    required this.session,
+    required this.user,
   });
 
-  factory UserConsents.fromJson(Map<String, dynamic> json) {
-    return UserConsents(
-      terms: json['terms'] as bool? ?? false,
-      privacy: json['privacy'] as bool? ?? false,
-      marketing: json['marketing'] as bool? ?? false,
+  factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    final rawSession = json['session'];
+    final rawUser = json['user'];
+
+    return LoginResponse(
+      session: rawSession is Map<String, dynamic>
+          ? AuthSession.fromJson(rawSession)
+          : AuthSession.fromJson(const {}),
+      user: rawUser is Map<String, dynamic>
+          ? LoginUser.fromJson(rawUser)
+          : LoginUser.fromJson(const {}),
     );
   }
 
-  final bool terms;
-  final bool privacy;
-  final bool marketing;
-
-  bool get isComplete => terms && privacy;
+  final AuthSession session;
+  final LoginUser user;
 }
 
 class UserProfile {
@@ -80,31 +130,29 @@ class UserProfile {
     required this.name,
     this.avatarUrl,
     required this.tier,
-    this.subscription,
-    this.trial,
-    this.consents,
+    this.premiumExpiresAt,
+    this.isNewUser = false,
+    this.requiresConsent = false,
+    this.trialUsed = false,
+    this.termsAgreedAt,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
-    final rawSubscription = json['subscription'];
-    final rawTrial = json['trial'];
-    final rawConsents = json['consents'];
-
     return UserProfile(
-      userId: json['userId'] as String? ?? '',
+      userId: _readJsonString(json, 'userId', 'user_id') ?? '',
       email: json['email'] as String? ?? '',
       name: json['name'] as String? ?? '',
-      avatarUrl: json['avatarUrl'] as String?,
+      avatarUrl: _readJsonString(json, 'avatarUrl', 'avatar_url'),
       tier: json['tier'] as String? ?? 'free',
-      subscription: rawSubscription is Map<String, dynamic>
-          ? SubscriptionInfo.fromJson(rawSubscription)
-          : null,
-      trial: rawTrial is Map<String, dynamic>
-          ? TrialInfo.fromJson(rawTrial)
-          : null,
-      consents: rawConsents is Map<String, dynamic>
-          ? UserConsents.fromJson(rawConsents)
-          : null,
+      premiumExpiresAt: _readJsonDateTime(
+        json,
+        'premiumExpiresAt',
+        'premium_expires_at',
+      ),
+      isNewUser: _readJsonBool(json, 'isNewUser', 'is_new_user'),
+      requiresConsent: _readJsonBool(json, 'requiresConsent', 'requires_consent'),
+      trialUsed: _readJsonBool(json, 'trialUsed', 'trial_used'),
+      termsAgreedAt: _readJsonDateTime(json, 'termsAgreedAt', 'terms_agreed_at'),
     );
   }
 
@@ -113,19 +161,11 @@ class UserProfile {
   final String name;
   final String? avatarUrl;
   final String tier;
-  final SubscriptionInfo? subscription;
-  final TrialInfo? trial;
-  final UserConsents? consents;
-
-  static PlanType planTypeFromTier(String tier) {
-    return switch (tier.toLowerCase()) {
-      'guest' => PlanType.none,
-      'free' => PlanType.free,
-      'trial' => PlanType.trial,
-      'premium' => PlanType.premium,
-      _ => PlanType.free,
-    };
-  }
+  final DateTime? premiumExpiresAt;
+  final bool isNewUser;
+  final bool requiresConsent;
+  final bool trialUsed;
+  final DateTime? termsAgreedAt;
 }
 
 class AuthState {

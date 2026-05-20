@@ -7,61 +7,25 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:flutter_naver_login/interface/types/naver_login_status.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 import 'package:trendsoccer/core/config/app_config.dart';
 import 'package:trendsoccer/core/models/api_response.dart';
 import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/services/auth_service.dart';
 import 'package:trendsoccer/core/services/fcm_service.dart';
+import 'package:trendsoccer/core/services/token_service.dart';
 
 final authProvider = ChangeNotifierProvider<SupabaseAuthProvider>(
   (ref) => SupabaseAuthProvider(ref),
 );
 
 class SupabaseAuthProvider extends ChangeNotifier {
-  SupabaseAuthProvider(this._ref) {
-    _authSubscription =
-        Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      switch (data.event) {
-        case AuthChangeEvent.signedIn:
-          if (data.session != null) {
-            _applySession(data.session!);
-            unawaited(_afterSignedIn());
-          }
-        case AuthChangeEvent.tokenRefreshed:
-        case AuthChangeEvent.userUpdated:
-          if (data.session != null) {
-            _applySession(data.session!);
-          }
-        case AuthChangeEvent.initialSession:
-          if (data.session != null) {
-            _applySession(data.session!);
-            unawaited(loadProfile());
-          } else {
-            _resetToGuest();
-          }
-        case AuthChangeEvent.signedOut:
-          _resetToGuest();
-        case AuthChangeEvent.passwordRecovery:
-        case AuthChangeEvent.mfaChallengeVerified:
-          break;
-        default:
-          break;
-      }
-    });
-    final session = Supabase.instance.client.auth.currentSession;
-    if (session != null) {
-      _applySession(session);
-    }
-  }
+  SupabaseAuthProvider(this._ref);
 
   final Ref _ref;
 
   AuthState _state = const AuthState();
   UserProfile? userProfile;
-
-  StreamSubscription? _authSubscription;
 
   AuthState get state => _state;
 
@@ -75,14 +39,15 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
   bool get isTrial => _state.isTrial;
 
-  bool get hasFullAccess =>
-      _state.planType == PlanType.premium || _state.planType == PlanType.trial;
+  bool get hasFullAccess => _state.planType == PlanType.premium;
 
   PlanType get planType => _state.planType;
 
   String get userName => _state.userName;
 
   String get userEmail => _state.userEmail;
+
+  String? get avatarUrl => userProfile?.avatarUrl;
 
   LoginMethod get loginMethod => _state.loginMethod;
 
@@ -94,22 +59,89 @@ class SupabaseAuthProvider extends ChangeNotifier {
     if (!isLoggedIn) return false;
     final profile = userProfile;
     if (profile == null) return true;
-    final consents = profile.consents;
-    if (consents == null) return true;
-    return !consents.isComplete;
+    if (profile.termsAgreedAt != null) return false;
+    return profile.requiresConsent;
   }
 
-  void _applySession(Session session) {
-    final user = session.user;
-    final metadata = user.userMetadata ?? {};
+  PlanType _resolvePlanType({
+    DateTime? premiumExpiresAt,
+    String? tier,
+  }) {
+    if (!isLoggedIn) return PlanType.none;
+    final effectiveTier = tier ?? userProfile?.tier;
+    final expiresAt = premiumExpiresAt ?? _state.premiumExpiresAt;
+    if (effectiveTier == 'premium') {
+      return PlanType.premium;
+    }
+    if (expiresAt != null && expiresAt.isAfter(DateTime.now())) {
+      return PlanType.premium;
+    }
+    return PlanType.free;
+  }
+
+  UserProfile _userProfileFromLoginUser(LoginUser user) {
+    return UserProfile(
+      userId: user.userId,
+      email: user.email,
+      name: user.name,
+      avatarUrl: user.avatarUrl,
+      tier: user.tier,
+      premiumExpiresAt: user.premiumExpiresAt,
+      isNewUser: user.isNewUser,
+      requiresConsent: user.requiresConsent,
+    );
+  }
+
+  Future<void> _applyLoginResponse(
+    LoginResponse response,
+    LoginMethod loginMethod,
+  ) async {
+    await _ref.read(tokenServiceProvider).saveToken(response.session.accessToken);
+
+    final user = response.user;
+    userProfile = _userProfileFromLoginUser(user);
     _state = AuthState(
       status: AuthStatus.loggedIn,
-      loginMethod: _loginMethodFromUser(user),
-      planType: PlanType.free,
-      userName: _stringFromMetadata(metadata['full_name']) ?? '',
-      userEmail: user.email ?? '',
+      loginMethod: loginMethod,
+      planType: _resolvePlanType(
+        premiumExpiresAt: user.premiumExpiresAt,
+        tier: user.tier,
+      ),
+      userName: user.name,
+      userEmail: user.email,
+      premiumExpiresAt: user.premiumExpiresAt,
     );
     notifyListeners();
+
+    try {
+      await _ref.read(fcmServiceProvider).initialize();
+    } catch (e) {
+      debugPrint('[Auth] FCM initialize failed: $e');
+    }
+  }
+
+  ApiException _mapAuthException(ApiException e) {
+    if (e.code == 'COOLDOWN_ACTIVE') {
+      final daysLeft = _daysLeftFromMessage(e.message);
+      final message = daysLeft != null
+          ? '탈퇴 후 재가입 대기 중입니다. ($daysLeft일 남음)'
+          : '탈퇴 후 재가입 대기 중입니다.';
+      return ApiException(code: e.code, message: message, messageEn: e.messageEn);
+    }
+    if (e.code == 'ACCOUNT_DELETED') {
+      return ApiException(
+        code: e.code,
+        message: '탈퇴한 계정입니다. 다른 계정으로 로그인해주세요.',
+        messageEn: e.messageEn,
+      );
+    }
+    return e;
+  }
+
+  int? _daysLeftFromMessage(String message) {
+    final match = RegExp(r'(\d+)').firstMatch(message);
+    if (match == null) return null;
+    return int.tryParse(match.group(1)!);
   }
 
   void _resetToGuest() {
@@ -118,89 +150,37 @@ class SupabaseAuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  String? _stringFromMetadata(Object? value) {
-    if (value is String && value.isNotEmpty) return value;
-    return null;
-  }
-
-  LoginMethod _loginMethodFromUser(User user) {
-    final provider = user.appMetadata['provider'] as String? ??
-        (user.identities?.isNotEmpty == true
-            ? user.identities!.first.provider
-            : null);
-    return switch (provider) {
-      'google' => LoginMethod.google,
-      'naver' => LoginMethod.naver,
-      _ => LoginMethod.none,
-    };
-  }
-
-  void updateFromProfile(UserProfile profile) {
+  void _syncStateFromUserProfile(UserProfile profile) {
     userProfile = profile;
-    final resolvedPlanType = _planTypeFromProfile(profile);
-    DateTime? trialExpiresAt;
-    DateTime? premiumExpiresAt;
-    var clearTrialExpiresAt = false;
-    var clearPremiumExpiresAt = false;
-
-    final trial = profile.trial;
-    if (trial != null && !trial.used) {
-      trialExpiresAt = trial.expiresAt;
-    } else {
-      clearTrialExpiresAt = true;
-    }
-
-    final subscription = profile.subscription;
-    if (subscription?.isActive == true) {
-      premiumExpiresAt = subscription!.expiresAt;
-    } else {
-      clearPremiumExpiresAt = true;
-    }
-
     _state = _state.copyWith(
       userName: profile.name,
       userEmail: profile.email,
-      planType: resolvedPlanType,
-      trialExpiresAt: trialExpiresAt,
-      premiumExpiresAt: premiumExpiresAt,
-      clearTrialExpiresAt: clearTrialExpiresAt,
-      clearPremiumExpiresAt: clearPremiumExpiresAt,
+      planType: _resolvePlanType(
+        premiumExpiresAt: profile.premiumExpiresAt,
+        tier: profile.tier,
+      ),
+      premiumExpiresAt: profile.premiumExpiresAt,
+      clearTrialExpiresAt: true,
     );
     notifyListeners();
   }
 
-  PlanType _planTypeFromProfile(UserProfile profile) {
-    final subscription = profile.subscription;
-    if (subscription?.isActive == true) {
-      return PlanType.premium;
+  Future<void> initFromStoredToken() async {
+    final hasToken = await _ref.read(tokenServiceProvider).hasToken();
+    if (!hasToken) {
+      _resetToGuest();
+      return;
     }
 
-    final trial = profile.trial;
-    if (trial != null &&
-        !trial.used &&
-        trial.expiresAt != null &&
-        trial.expiresAt!.isAfter(DateTime.now())) {
-      return PlanType.trial;
-    }
-
-    return UserProfile.planTypeFromTier(profile.tier);
-  }
-
-  Future<void> loadProfile() async {
-    try {
-      final profile = await _ref.read(authServiceProvider).fetchProfile();
-      updateFromProfile(profile);
-    } on ApiException catch (e) {
-      debugPrint('[Auth] loadProfile failed: $e');
-    } on DioException catch (e) {
-      debugPrint('[Auth] loadProfile network error: $e');
-    } catch (e) {
-      debugPrint('[Auth] loadProfile failed: $e');
-    }
-  }
-
-  Future<void> _afterSignedIn() async {
+    _state = _state.copyWith(status: AuthStatus.loggedIn);
+    notifyListeners();
     await loadProfile();
+
+    if (!await _ref.read(tokenServiceProvider).hasToken()) {
+      _resetToGuest();
+      return;
+    }
+
     try {
       await _ref.read(fcmServiceProvider).initialize();
     } catch (e) {
@@ -208,8 +188,21 @@ class SupabaseAuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> loadProfile() async {
+    try {
+      final profile = await _ref.read(authServiceProvider).fetchProfile();
+      _syncStateFromUserProfile(profile);
+    } on ApiException catch (e) {
+      debugPrint('[Auth] loadProfile warning: $e');
+    } on DioException catch (e) {
+      debugPrint('[Auth] loadProfile network warning: $e');
+    } catch (e) {
+      debugPrint('[Auth] loadProfile warning: $e');
+    }
+  }
+
   Future<void> signOut() async {
-    await Supabase.instance.client.auth.signOut();
+    await _ref.read(tokenServiceProvider).deleteToken();
     _resetToGuest();
   }
 
@@ -230,10 +223,13 @@ class SupabaseAuthProvider extends ChangeNotifier {
       throw Exception('Google sign-in failed: idToken is null');
     }
 
-    await Supabase.instance.client.auth.signInWithIdToken(
-      provider: OAuthProvider.google,
-      idToken: idToken,
-    );
+    try {
+      final response =
+          await _ref.read(authServiceProvider).googleAuth(idToken);
+      await _applyLoginResponse(response, LoginMethod.google);
+    } on ApiException catch (e) {
+      throw _mapAuthException(e);
+    }
   }
 
   Future<void> loginWithNaver() async {
@@ -264,100 +260,11 @@ class SupabaseAuthProvider extends ChangeNotifier {
     }
 
     try {
-      final data =
+      final response =
           await _ref.read(authServiceProvider).naverAuth(naverAccessToken);
-      await _handleNaverAuthResponse(
-        data,
-        stubMode: AuthService.useNaverStub,
-      );
+      await _applyLoginResponse(response, LoginMethod.naver);
     } on ApiException catch (e) {
-      if (e.code == 'ACCOUNT_DELETED') {
-        throw ApiException(
-          code: e.code,
-          message: '탈퇴한 계정입니다. 다른 계정으로 로그인해주세요.',
-        );
-      }
-      if (e.code == 'CONSENT_REQUIRED') {
-        _state = AuthState(
-          status: AuthStatus.loggedIn,
-          loginMethod: LoginMethod.naver,
-          planType: PlanType.free,
-          userName: result.account?.name ?? '',
-          userEmail: result.account?.email ?? '',
-        );
-        userProfile = null;
-        notifyListeners();
-        return;
-      }
-      rethrow;
-    }
-  }
-
-  Future<void> _handleNaverAuthResponse(
-    Map<String, dynamic> data, {
-    required bool stubMode,
-  }) async {
-    final user = data['user'];
-    if (user is! Map<String, dynamic>) {
-      throw const ApiException(
-        code: 'INVALID_RESPONSE',
-        message: 'Invalid Naver auth response',
-      );
-    }
-
-    final session = data['session'];
-    final sessionMap =
-        session is Map<String, dynamic> ? session : null;
-
-    await _applyNaverAuthState(
-      user: user,
-      stubMode: stubMode,
-      session: sessionMap,
-    );
-
-    final isNewUser = user['isNewUser'] as bool? ?? false;
-    if (isNewUser) {
-      userProfile = null;
-      notifyListeners();
-      return;
-    }
-
-    userProfile = UserProfile(
-      userId: user['userId'] as String? ?? '',
-      email: user['email'] as String? ?? '',
-      name: user['name'] as String? ?? '',
-      avatarUrl: user['avatarUrl'] as String?,
-      tier: 'free',
-      consents: const UserConsents(
-        terms: true,
-        privacy: true,
-        marketing: false,
-      ),
-    );
-    notifyListeners();
-    await loadProfile();
-  }
-
-  Future<void> _applyNaverAuthState({
-    required Map<String, dynamic> user,
-    required bool stubMode,
-    required Map<String, dynamic>? session,
-  }) async {
-    if (stubMode) {
-      _state = AuthState(
-        status: AuthStatus.loggedIn,
-        loginMethod: LoginMethod.naver,
-        planType: PlanType.free,
-        userName: user['name'] as String? ?? '',
-        userEmail: user['email'] as String? ?? '',
-      );
-      notifyListeners();
-      return;
-    }
-
-    final refreshToken = session?['refreshToken'] as String?;
-    if (refreshToken != null && refreshToken.isNotEmpty) {
-      await Supabase.instance.client.auth.setSession(refreshToken);
+      throw _mapAuthException(e);
     }
   }
 
@@ -366,68 +273,25 @@ class SupabaseAuthProvider extends ChangeNotifier {
     required bool privacy,
     required bool marketing,
   }) async {
-    var hadError = false;
-
     try {
-      await _ref.read(authServiceProvider).saveConsent(
-            terms: terms,
-            privacy: privacy,
-            marketing: marketing,
+      await _ref.read(authServiceProvider).agreeTerms(
+            email: userEmail,
+            termsAgreed: terms,
+            privacyAgreed: privacy,
+            marketingAgreed: marketing,
           );
+      await loadProfile();
+      return true;
     } on ApiException catch (e) {
-      hadError = true;
-      debugPrint('[Auth] saveConsent failed: $e');
+      debugPrint('[Auth] agreeTerms failed: $e');
+      return false;
     } on DioException catch (e) {
-      hadError = true;
-      debugPrint('[Auth] saveConsent network error: $e');
+      debugPrint('[Auth] agreeTerms network error: $e');
+      return false;
     } catch (e) {
-      hadError = true;
-      debugPrint('[Auth] saveConsent failed: $e');
+      debugPrint('[Auth] agreeTerms failed: $e');
+      return false;
     }
-
-    try {
-      final trialInfo = await _ref.read(authServiceProvider).grantTrial();
-      final expiresAt = trialInfo.expiresAt ??
-          DateTime.now().add(const Duration(hours: 48));
-      final consents = UserConsents(
-        terms: terms,
-        privacy: privacy,
-        marketing: marketing,
-      );
-
-      if (userProfile != null) {
-        final profile = userProfile!;
-        userProfile = UserProfile(
-          userId: profile.userId,
-          email: profile.email,
-          name: profile.name,
-          avatarUrl: profile.avatarUrl,
-          tier: 'trial',
-          subscription: profile.subscription,
-          trial: trialInfo,
-          consents: consents,
-        );
-      }
-
-      _state = _state.copyWith(
-        planType: PlanType.trial,
-        trialExpiresAt: expiresAt,
-        clearPremiumExpiresAt: true,
-      );
-      notifyListeners();
-    } on ApiException catch (e) {
-      hadError = true;
-      debugPrint('[Auth] grantTrial failed: $e');
-    } on DioException catch (e) {
-      hadError = true;
-      debugPrint('[Auth] grantTrial network error: $e');
-    } catch (e) {
-      hadError = true;
-      debugPrint('[Auth] grantTrial failed: $e');
-    }
-
-    await loadProfile();
-    return !hadError;
   }
 
   void subscribePremium({required int months}) {
@@ -441,12 +305,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
   void deleteAccount() {
     // TODO(step 1-9): call account deletion API
+    unawaited(_ref.read(tokenServiceProvider).deleteToken());
     _resetToGuest();
-  }
-
-  @override
-  void dispose() {
-    _authSubscription?.cancel();
-    super.dispose();
   }
 }

@@ -16,10 +16,15 @@ class AuthService {
   static const bool useNaverStub = true;
 
   static const _mePath = '/api/v1/mobile/me';
-  static const _subscriptionPath = '/api/v1/mobile/me/subscription';
-  static const _consentPath = '/api/v1/mobile/me/consent';
-  static const _trialPath = '/api/v1/mobile/auth/trial';
+  static const _subscriptionByEmailPath = '/api/subscription';
+  static const _googleAuthPath = '/api/v1/mobile/auth/google';
   static const _naverAuthPath = '/api/v1/mobile/auth/naver';
+  static const _agreeTermsPath = '/api/auth/agree-terms';
+
+  static const _deviceInfo = <String, String>{
+    'platform': 'android',
+    'appVersion': '1.0.0',
+  };
 
   Future<UserProfile> fetchProfile() async {
     return _api.get<UserProfile>(
@@ -29,63 +34,57 @@ class AuthService {
     );
   }
 
-  Future<SubscriptionInfo?> fetchSubscription() async {
-    return _api.get<SubscriptionInfo>(
-      _subscriptionPath,
-      fromJson: (json) =>
-          SubscriptionInfo.fromJson(json! as Map<String, dynamic>),
-    );
-  }
-
-  Future<void> saveConsent({
-    required bool terms,
-    required bool privacy,
-    required bool marketing,
-  }) async {
-    await _api.post<Object?>(
-      _consentPath,
-      data: <String, bool>{
-        'terms': terms,
-        'privacy': privacy,
-        'marketing': marketing,
+  /// Payment polling (v3 section 4-7).
+  Future<Map<String, dynamic>> fetchSubscriptionByEmail(String email) async {
+    return _api.get<Map<String, dynamic>>(
+      _subscriptionByEmailPath,
+      queryParameters: <String, String>{'email': email},
+      fromJson: (json) {
+        final map = json! as Map<String, dynamic>;
+        return <String, dynamic>{
+          'status': map['status'],
+          'expires_at': map['expires_at'] ?? map['expiresAt'],
+        };
       },
-      fromJson: (json) => json,
     );
   }
 
-  Future<TrialInfo> grantTrial() async {
-    return _api.post<TrialInfo>(
-      _trialPath,
+  Future<LoginResponse> googleAuth(String idToken) async {
+    return _api.post<LoginResponse>(
+      _googleAuthPath,
+      data: <String, dynamic>{
+        'accessToken': idToken,
+        'deviceInfo': _deviceInfo,
+      },
       fromJson: (json) =>
-          TrialInfo.fromJson(json! as Map<String, dynamic>),
+          LoginResponse.fromJson(json! as Map<String, dynamic>),
     );
   }
 
-  Future<Map<String, dynamic>> naverAuth(String accessToken) async {
+  Future<LoginResponse> naverAuth(String accessToken) async {
     if (useNaverStub) {
       return _naverAuthStubResponse();
     }
 
-    return _api.post<Map<String, dynamic>>(
+    return _api.post<LoginResponse>(
       _naverAuthPath,
       data: <String, dynamic>{
         'accessToken': accessToken,
-        'deviceInfo': <String, String>{
-          'platform': 'android',
-          'appVersion': '1.0.0',
-        },
+        'deviceInfo': _deviceInfo,
       },
-      fromJson: (json) => json! as Map<String, dynamic>,
+      fromJson: (json) =>
+          LoginResponse.fromJson(json! as Map<String, dynamic>),
     );
   }
 
-  Map<String, dynamic> _naverAuthStubResponse() {
-    final expiresAt = DateTime.now().add(const Duration(hours: 1)).toUtc().toIso8601String();
+  LoginResponse _naverAuthStubResponse() {
+    final expiresAt =
+        DateTime.now().add(const Duration(hours: 1)).toUtc().toIso8601String();
 
-    return <String, dynamic>{
+    return LoginResponse.fromJson(<String, dynamic>{
       'session': <String, dynamic>{
         'accessToken': 'stub-jwt',
-        'refreshToken': 'stub-refresh',
+        'tokenType': 'Bearer',
         'expiresAt': expiresAt,
       },
       'user': <String, dynamic>{
@@ -93,8 +92,29 @@ class AuthService {
         'email': 'user@naver.com',
         'name': '네이버 사용자',
         'avatarUrl': null,
+        'tier': 'free',
+        'premiumExpiresAt': null,
         'isNewUser': true,
+        'requiresConsent': true,
       },
-    };
+    });
+  }
+
+  Future<void> agreeTerms({
+    required String email,
+    required bool termsAgreed,
+    required bool privacyAgreed,
+    required bool marketingAgreed,
+  }) async {
+    await _api.post<Object?>(
+      _agreeTermsPath,
+      data: <String, dynamic>{
+        'email': email,
+        'termsAgreed': termsAgreed,
+        'privacyAgreed': privacyAgreed,
+        'marketingAgreed': marketingAgreed,
+      },
+      fromJson: (json) => json,
+    );
   }
 }
