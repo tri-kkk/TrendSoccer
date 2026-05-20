@@ -5,12 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
+import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 
 class SignupCompletePage extends ConsumerStatefulWidget {
   const SignupCompletePage({super.key});
@@ -26,9 +26,6 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(authProvider).completeSignup();
-    });
     _redirectTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) {
         _cancelRedirect();
@@ -37,6 +34,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
       setState(() => _countdown--);
       if (_countdown <= 0) {
         _cancelRedirect();
+        TsToast.success(context, '회원가입 완료! 프리미엄 체험을 시작합니다.');
         context.go('/trend');
       }
     });
@@ -182,7 +180,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  '48시간 프리미엄 체험이 시작되었습니다 !',
+                  '48시간 프리미엄 무료 체험이 시작되었습니다!',
                   style: TsType.bodyLRegular.copyWith(color: semantic.interactivePrimary),
                   textAlign: TextAlign.center,
                 ),

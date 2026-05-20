@@ -24,7 +24,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
         case AuthChangeEvent.signedIn:
           if (data.session != null) {
             _applySession(data.session!);
-            unawaited(loadProfile(_ref));
+            unawaited(loadProfile());
           }
         case AuthChangeEvent.tokenRefreshed:
         case AuthChangeEvent.userUpdated:
@@ -34,7 +34,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
         case AuthChangeEvent.initialSession:
           if (data.session != null) {
             _applySession(data.session!);
-            unawaited(loadProfile(_ref));
+            unawaited(loadProfile());
           } else {
             _resetToGuest();
           }
@@ -86,6 +86,15 @@ class SupabaseAuthProvider extends ChangeNotifier {
   DateTime? get trialExpiresAt => _state.trialExpiresAt;
 
   DateTime? get premiumExpiresAt => _state.premiumExpiresAt;
+
+  bool get needsConsent {
+    if (!isLoggedIn) return false;
+    final profile = userProfile;
+    if (profile == null) return true;
+    final consents = profile.consents;
+    if (consents == null) return true;
+    return !consents.isComplete;
+  }
 
   void _applySession(Session session) {
     final user = session.user;
@@ -174,9 +183,9 @@ class SupabaseAuthProvider extends ChangeNotifier {
     return UserProfile.planTypeFromTier(profile.tier);
   }
 
-  Future<void> loadProfile(Ref ref) async {
+  Future<void> loadProfile() async {
     try {
-      final profile = await ref.read(authServiceProvider).fetchProfile();
+      final profile = await _ref.read(authServiceProvider).fetchProfile();
       updateFromProfile(profile);
     } on ApiException catch (e) {
       debugPrint('[Auth] loadProfile failed: $e');
@@ -219,8 +228,73 @@ class SupabaseAuthProvider extends ChangeNotifier {
     // TODO(step 1-4): Supabase OAuth — custom Naver provider
   }
 
-  void completeSignup() {
-    // TODO(step 1-4): signup flow; profile/tier will come from /me endpoint
+  Future<bool> completeSignup({
+    required bool terms,
+    required bool privacy,
+    required bool marketing,
+  }) async {
+    var hadError = false;
+
+    try {
+      await _ref.read(authServiceProvider).saveConsent(
+            terms: terms,
+            privacy: privacy,
+            marketing: marketing,
+          );
+    } on ApiException catch (e) {
+      hadError = true;
+      debugPrint('[Auth] saveConsent failed: $e');
+    } on DioException catch (e) {
+      hadError = true;
+      debugPrint('[Auth] saveConsent network error: $e');
+    } catch (e) {
+      hadError = true;
+      debugPrint('[Auth] saveConsent failed: $e');
+    }
+
+    try {
+      final trialInfo = await _ref.read(authServiceProvider).grantTrial();
+      final expiresAt = trialInfo.expiresAt ??
+          DateTime.now().add(const Duration(hours: 48));
+      final consents = UserConsents(
+        terms: terms,
+        privacy: privacy,
+        marketing: marketing,
+      );
+
+      if (userProfile != null) {
+        final profile = userProfile!;
+        userProfile = UserProfile(
+          userId: profile.userId,
+          email: profile.email,
+          name: profile.name,
+          avatarUrl: profile.avatarUrl,
+          tier: 'trial',
+          subscription: profile.subscription,
+          trial: trialInfo,
+          consents: consents,
+        );
+      }
+
+      _state = _state.copyWith(
+        planType: PlanType.trial,
+        trialExpiresAt: expiresAt,
+        clearPremiumExpiresAt: true,
+      );
+      notifyListeners();
+    } on ApiException catch (e) {
+      hadError = true;
+      debugPrint('[Auth] grantTrial failed: $e');
+    } on DioException catch (e) {
+      hadError = true;
+      debugPrint('[Auth] grantTrial network error: $e');
+    } catch (e) {
+      hadError = true;
+      debugPrint('[Auth] grantTrial failed: $e');
+    }
+
+    await loadProfile();
+    return !hadError;
   }
 
   void subscribePremium({required int months}) {

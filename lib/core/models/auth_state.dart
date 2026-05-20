@@ -51,6 +51,28 @@ class TrialInfo {
   final DateTime? expiresAt;
 }
 
+class UserConsents {
+  const UserConsents({
+    required this.terms,
+    required this.privacy,
+    required this.marketing,
+  });
+
+  factory UserConsents.fromJson(Map<String, dynamic> json) {
+    return UserConsents(
+      terms: json['terms'] as bool? ?? false,
+      privacy: json['privacy'] as bool? ?? false,
+      marketing: json['marketing'] as bool? ?? false,
+    );
+  }
+
+  final bool terms;
+  final bool privacy;
+  final bool marketing;
+
+  bool get isComplete => terms && privacy;
+}
+
 class UserProfile {
   const UserProfile({
     required this.userId,
@@ -60,11 +82,13 @@ class UserProfile {
     required this.tier,
     this.subscription,
     this.trial,
+    this.consents,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     final rawSubscription = json['subscription'];
     final rawTrial = json['trial'];
+    final rawConsents = json['consents'];
 
     return UserProfile(
       userId: json['userId'] as String? ?? '',
@@ -78,6 +102,9 @@ class UserProfile {
       trial: rawTrial is Map<String, dynamic>
           ? TrialInfo.fromJson(rawTrial)
           : null,
+      consents: rawConsents is Map<String, dynamic>
+          ? UserConsents.fromJson(rawConsents)
+          : null,
     );
   }
 
@@ -88,6 +115,7 @@ class UserProfile {
   final String tier;
   final SubscriptionInfo? subscription;
   final TrialInfo? trial;
+  final UserConsents? consents;
 
   static PlanType planTypeFromTier(String tier) {
     return switch (tier.toLowerCase()) {

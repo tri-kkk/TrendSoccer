@@ -28,7 +28,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (!mounted) return;
       setState(() => _isLoading = false);
 
-      if (ref.read(authProvider).isLoggedIn) {
+      if (!ref.read(authProvider).isLoggedIn) return;
+
+      await ref.read(authProvider).loadProfile();
+      if (!mounted) return;
+
+      final auth = ref.read(authProvider);
+      if (auth.needsConsent) {
+        context.push('/signup/terms');
+      } else {
         TsToast.success(context, '로그인 성공');
         context.go('/trend');
       }
