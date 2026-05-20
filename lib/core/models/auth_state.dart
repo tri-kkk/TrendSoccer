@@ -4,6 +4,13 @@ enum LoginMethod { none, google, naver }
 
 enum PlanType { none, free, trial, premium }
 
+DateTime? _parseJsonDateTime(Object? value) {
+  if (value is String && value.isNotEmpty) {
+    return DateTime.tryParse(value);
+  }
+  return null;
+}
+
 class SubscriptionInfo {
   const SubscriptionInfo({
     required this.isActive,
@@ -11,6 +18,15 @@ class SubscriptionInfo {
     this.startDate,
     this.expiresAt,
   });
+
+  factory SubscriptionInfo.fromJson(Map<String, dynamic> json) {
+    return SubscriptionInfo(
+      isActive: json['isActive'] as bool? ?? false,
+      plan: json['plan'] as String?,
+      startDate: _parseJsonDateTime(json['startDate']),
+      expiresAt: _parseJsonDateTime(json['expiresAt']),
+    );
+  }
 
   final bool isActive;
   final String? plan;
@@ -23,6 +39,13 @@ class TrialInfo {
     required this.used,
     this.expiresAt,
   });
+
+  factory TrialInfo.fromJson(Map<String, dynamic> json) {
+    return TrialInfo(
+      used: json['used'] as bool? ?? false,
+      expiresAt: _parseJsonDateTime(json['expiresAt']),
+    );
+  }
 
   final bool used;
   final DateTime? expiresAt;
@@ -39,6 +62,25 @@ class UserProfile {
     this.trial,
   });
 
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    final rawSubscription = json['subscription'];
+    final rawTrial = json['trial'];
+
+    return UserProfile(
+      userId: json['userId'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      avatarUrl: json['avatarUrl'] as String?,
+      tier: json['tier'] as String? ?? 'free',
+      subscription: rawSubscription is Map<String, dynamic>
+          ? SubscriptionInfo.fromJson(rawSubscription)
+          : null,
+      trial: rawTrial is Map<String, dynamic>
+          ? TrialInfo.fromJson(rawTrial)
+          : null,
+    );
+  }
+
   final String userId;
   final String email;
   final String name;
@@ -46,6 +88,16 @@ class UserProfile {
   final String tier;
   final SubscriptionInfo? subscription;
   final TrialInfo? trial;
+
+  static PlanType planTypeFromTier(String tier) {
+    return switch (tier.toLowerCase()) {
+      'guest' => PlanType.none,
+      'free' => PlanType.free,
+      'trial' => PlanType.trial,
+      'premium' => PlanType.premium,
+      _ => PlanType.free,
+    };
+  }
 }
 
 class AuthState {

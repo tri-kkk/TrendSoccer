@@ -1,23 +1,31 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 import 'package:trendsoccer/core/config/app_config.dart';
+import 'package:trendsoccer/core/models/api_response.dart';
 import 'package:trendsoccer/core/models/auth_state.dart';
+import 'package:trendsoccer/core/services/auth_service.dart';
 
 final authProvider = ChangeNotifierProvider<SupabaseAuthProvider>(
-  (ref) => SupabaseAuthProvider(),
+  (ref) => SupabaseAuthProvider(ref),
 );
 
 class SupabaseAuthProvider extends ChangeNotifier {
-  SupabaseAuthProvider() {
+  SupabaseAuthProvider(this._ref) {
     _authSubscription =
         Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       switch (data.event) {
         case AuthChangeEvent.signedIn:
+          if (data.session != null) {
+            _applySession(data.session!);
+            unawaited(loadProfile(_ref));
+          }
         case AuthChangeEvent.tokenRefreshed:
         case AuthChangeEvent.userUpdated:
           if (data.session != null) {
@@ -26,6 +34,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
         case AuthChangeEvent.initialSession:
           if (data.session != null) {
             _applySession(data.session!);
+            unawaited(loadProfile(_ref));
           } else {
             _resetToGuest();
           }
@@ -43,6 +52,8 @@ class SupabaseAuthProvider extends ChangeNotifier {
       _applySession(session);
     }
   }
+
+  final Ref _ref;
 
   AuthState _state = const AuthState();
   UserProfile? userProfile;
@@ -160,12 +171,20 @@ class SupabaseAuthProvider extends ChangeNotifier {
       return PlanType.trial;
     }
 
-    return switch (profile.tier.toLowerCase()) {
-      'premium' => PlanType.premium,
-      'trial' => PlanType.trial,
-      'free' => PlanType.free,
-      _ => PlanType.free,
-    };
+    return UserProfile.planTypeFromTier(profile.tier);
+  }
+
+  Future<void> loadProfile(Ref ref) async {
+    try {
+      final profile = await ref.read(authServiceProvider).fetchProfile();
+      updateFromProfile(profile);
+    } on ApiException catch (e) {
+      debugPrint('[Auth] loadProfile failed: $e');
+    } on DioException catch (e) {
+      debugPrint('[Auth] loadProfile network error: $e');
+    } catch (e) {
+      debugPrint('[Auth] loadProfile failed: $e');
+    }
   }
 
   Future<void> signOut() async {
