@@ -62,7 +62,7 @@ class H2HSection extends StatefulWidget {
 }
 
 class _H2HSectionState extends State<H2HSection> {
-  bool _isExpanded = true;
+  bool _isExpanded = false;
 
   Widget _buildScoreBoxRow(TsSemanticColors semantic) {
     final meetings = widget.recentMeetings;
