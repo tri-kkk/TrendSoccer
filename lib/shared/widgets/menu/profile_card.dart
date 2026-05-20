@@ -29,22 +29,13 @@ class ProfileCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
+          SvgPicture.asset(
+            TsAssets.iconAccountCircle,
             width: 40,
             height: 40,
-            decoration: BoxDecoration(
-              color: semantic.surfaceContainer,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: SvgPicture.asset(
-              TsAssets.iconAccountCircle,
-              width: 24,
-              height: 24,
-              colorFilter: ColorFilter.mode(
-                semantic.interactivePrimary,
-                BlendMode.srcIn,
-              ),
+            colorFilter: ColorFilter.mode(
+              semantic.interactivePrimary,
+              BlendMode.srcIn,
             ),
           ),
           const SizedBox(width: TsSpacing.lg),

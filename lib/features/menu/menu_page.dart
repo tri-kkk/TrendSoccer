@@ -463,7 +463,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                     Opacity(
                       opacity: 0.5,
                       child: Container(
-                        width: 2,
+                        width: 1,
                         height: 17,
                         color: semantic.textPrimary,
                       ),
@@ -619,20 +619,21 @@ class _ThemeOption extends StatelessWidget {
 enum _LanguageCode { ko, en }
 
 AppLanguage _appLanguageFromCode(_LanguageCode code) => switch (code) {
-      _LanguageCode.ko => AppLanguage.ko,
-      _LanguageCode.en => AppLanguage.en,
-    };
+  _LanguageCode.ko => AppLanguage.ko,
+  _LanguageCode.en => AppLanguage.en,
+};
 
 _LanguageCode _languageCodeFromApp(AppLanguage language) => switch (language) {
-      AppLanguage.ko => _LanguageCode.ko,
-      AppLanguage.en => _LanguageCode.en,
-    };
+  AppLanguage.ko => _LanguageCode.ko,
+  AppLanguage.en => _LanguageCode.en,
+};
 
 class _LanguageBottomSheet extends ConsumerStatefulWidget {
   const _LanguageBottomSheet();
 
   @override
-  ConsumerState<_LanguageBottomSheet> createState() => _LanguageBottomSheetState();
+  ConsumerState<_LanguageBottomSheet> createState() =>
+      _LanguageBottomSheetState();
 }
 
 class _LanguageBottomSheetState extends ConsumerState<_LanguageBottomSheet> {

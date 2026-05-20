@@ -40,13 +40,12 @@ void _showExitDialog(BuildContext context) {
   showDialog<void>(
     context: context,
     builder: (dialogContext) {
-      final dialogSemantic =
-          Theme.of(dialogContext).extension<TsSemanticColors>()!;
+      final dialogSemantic = Theme.of(
+        dialogContext,
+      ).extension<TsSemanticColors>()!;
       return Dialog(
         backgroundColor: dialogSemantic.surfaceOverlay,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -171,8 +170,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 bottom: false,
                 child: Container(
                   height: 56,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: semantic.surfaceBase,
                     border: Border(

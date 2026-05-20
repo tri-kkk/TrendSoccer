@@ -55,7 +55,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           left: 16,
           right: 16,
           top: 24,
-          bottom: 24 + MediaQuery.paddingOf(context).bottom,
+          bottom: 16 + MediaQuery.paddingOf(context).bottom,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

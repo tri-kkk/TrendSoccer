@@ -167,7 +167,7 @@ class _H2HSectionState extends State<H2HSection> {
                   SizedBox(
                     width: double.infinity,
                     child: Text(
-                      'Recently Meetings',
+                      '최근 맞대결',
                       style: TsType.bodyLRegular.copyWith(
                         color: semantic.textSecondary,
                       ),
