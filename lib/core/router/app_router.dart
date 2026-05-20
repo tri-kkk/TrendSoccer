@@ -100,7 +100,17 @@ abstract final class AppRouter {
         path: '/analysis/soccer/match-report/:matchId',
         builder: (context, state) {
           final matchId = state.pathParameters['matchId'] ?? '';
-          return SoccerMatchReportPage(matchId: matchId);
+          DateTime? matchTimestampUtc;
+          final extra = state.extra;
+          if (extra is DateTime) {
+            matchTimestampUtc = extra.toUtc();
+          } else if (extra is String) {
+            matchTimestampUtc = DateTime.tryParse(extra)?.toUtc();
+          }
+          return SoccerMatchReportPage(
+            matchId: matchId,
+            matchTimestampUtc: matchTimestampUtc,
+          );
         },
       ),
       GoRoute(

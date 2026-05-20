@@ -80,6 +80,7 @@ class _SoccerAnalysisCardItem extends StatelessWidget {
       winRate: null,
       onAnalyze: () => context.push(
         '/analysis/soccer/match-report/${match.matchId}',
+        extra: match.matchTimestamp,
       ),
     );
   }
