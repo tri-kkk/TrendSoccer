@@ -54,7 +54,11 @@ class MenuListItem extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: TsType.bodyLRegular.copyWith(color: semantic.textPrimary),
+                style: TsType.bodyLRegular.copyWith(
+                  color: semantic.textPrimary,
+                  fontFamily: 'Pretendard',
+                  fontFamilyFallback: const ['Poppins'],
+                ),
               ),
             ),
             if (type == MenuItemType.chevron)

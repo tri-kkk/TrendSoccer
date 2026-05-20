@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/providers/language_provider.dart';
 import 'package:trendsoccer/core/providers/theme_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
@@ -507,9 +508,9 @@ class _ThemeBottomSheetState extends ConsumerState<_ThemeBottomSheet> {
 
   void _selectMode(ThemeMode mode) => setState(() => _draftMode = mode);
 
-  void _applyTheme() {
-    ref.read(themeModeProvider.notifier).setThemeMode(_selectedMode);
-    Navigator.of(context).pop();
+  Future<void> _applyTheme() async {
+    await ref.read(themeModeProvider.notifier).setThemeMode(_selectedMode);
+    if (mounted) Navigator.of(context).pop();
   }
 
   @override
@@ -617,15 +618,38 @@ class _ThemeOption extends StatelessWidget {
 
 enum _LanguageCode { ko, en }
 
-class _LanguageBottomSheet extends StatefulWidget {
+AppLanguage _appLanguageFromCode(_LanguageCode code) => switch (code) {
+      _LanguageCode.ko => AppLanguage.ko,
+      _LanguageCode.en => AppLanguage.en,
+    };
+
+_LanguageCode _languageCodeFromApp(AppLanguage language) => switch (language) {
+      AppLanguage.ko => _LanguageCode.ko,
+      AppLanguage.en => _LanguageCode.en,
+    };
+
+class _LanguageBottomSheet extends ConsumerStatefulWidget {
   const _LanguageBottomSheet();
 
   @override
-  State<_LanguageBottomSheet> createState() => _LanguageBottomSheetState();
+  ConsumerState<_LanguageBottomSheet> createState() => _LanguageBottomSheetState();
 }
 
-class _LanguageBottomSheetState extends State<_LanguageBottomSheet> {
-  _LanguageCode _selected = _LanguageCode.ko;
+class _LanguageBottomSheetState extends ConsumerState<_LanguageBottomSheet> {
+  _LanguageCode? _draftLanguage;
+
+  _LanguageCode get _selected =>
+      _draftLanguage ?? _languageCodeFromApp(ref.read(languageProvider));
+
+  void _selectLanguage(_LanguageCode language) =>
+      setState(() => _draftLanguage = language);
+
+  Future<void> _applyLanguage() async {
+    await ref
+        .read(languageProvider.notifier)
+        .setLanguage(_appLanguageFromCode(_selected));
+    if (mounted) Navigator.of(context).pop();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -656,19 +680,19 @@ class _LanguageBottomSheetState extends State<_LanguageBottomSheet> {
               _LanguageOptionRow(
                 label: '한국어',
                 selected: _selected == _LanguageCode.ko,
-                onTap: () => setState(() => _selected = _LanguageCode.ko),
+                onTap: () => _selectLanguage(_LanguageCode.ko),
               ),
               const SizedBox(height: TsSpacing.sm),
               _LanguageOptionRow(
                 label: 'English',
                 selected: _selected == _LanguageCode.en,
-                onTap: () => setState(() => _selected = _LanguageCode.en),
+                onTap: () => _selectLanguage(_LanguageCode.en),
               ),
               const SizedBox(height: TsSpacing.lg),
               TsButton(
                 label: '적용하기',
                 variant: TsButtonVariant.primary,
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: _applyLanguage,
               ),
               const SizedBox(height: TsSpacing.sm),
               TsButton(

@@ -149,6 +149,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
 
+        if (isRootTab) {
+          _showExitDialog(context);
+          return;
+        }
+
         final router = GoRouter.of(context);
         if (router.canPop()) {
           router.pop();

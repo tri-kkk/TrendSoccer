@@ -50,7 +50,7 @@ class _AlarmSheetState extends State<AlarmSheet> {
         if (states.contains(WidgetState.selected)) {
           return semantic.surfaceBase;
         }
-        return Colors.white;
+        return semantic.surfaceOverlay;
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
@@ -67,7 +67,7 @@ class _AlarmSheetState extends State<AlarmSheet> {
 
     return Container(
       decoration: BoxDecoration(
-        color: semantic.surfaceRaised,
+        color: semantic.surfaceOverlay,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       padding: EdgeInsets.only(
@@ -114,7 +114,7 @@ class _AlarmSheetState extends State<AlarmSheet> {
             ],
           ),
           const SizedBox(height: 16),
-          Container(height: 1, color: const Color(0xFFD9D9D9)),
+          Container(height: 1, color: semantic.borderSubtle),
           const SizedBox(height: 16),
           ..._events.asMap().entries.map((entry) {
             final i = entry.key;
@@ -127,19 +127,20 @@ class _AlarmSheetState extends State<AlarmSheet> {
                   Expanded(
                     child: Text(
                       event.label,
-                      style: TsType.bodyLRegular.copyWith(color: Colors.white),
+                      style: TsType.bodyLRegular.copyWith(
+                        color: semantic.textPrimary,
+                      ),
                     ),
                   ),
                   _styledSwitch(
                     semantic: semantic,
                     value: event.isOn,
-                    onChanged: _masterSwitch
-                        ? (val) {
-                            setState(() {
-                              event.isOn = val;
-                            });
-                          }
-                        : null,
+                    onChanged: (val) {
+                      setState(() {
+                        event.isOn = val;
+                        _masterSwitch = _events.every((e) => e.isOn);
+                      });
+                    },
                   ),
                 ],
               ),

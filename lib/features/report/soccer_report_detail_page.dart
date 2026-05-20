@@ -8,7 +8,6 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/report/report_dummy_data.dart';
 import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
-import 'package:trendsoccer/shared/widgets/navigation/ts_bottom_navigation.dart';
 
 class SoccerReportDetailPage extends StatelessWidget {
   const SoccerReportDetailPage({
@@ -32,8 +31,7 @@ class SoccerReportDetailPage extends StatelessWidget {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final brightness = Theme.of(context).brightness;
     final report = _findReport();
-    final bottomPadding =
-        16 + MediaQuery.paddingOf(context).bottom + TsBottomNavigation.barHeight;
+    final bottomPadding = 16 + MediaQuery.paddingOf(context).bottom;
 
     if (report == null) {
       return Scaffold(
