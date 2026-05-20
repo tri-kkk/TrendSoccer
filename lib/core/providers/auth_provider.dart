@@ -207,7 +207,9 @@ class SupabaseAuthProvider extends ChangeNotifier {
   }
 
   Future<void> withdraw() async {
-    // TODO(step 1-9): call membership withdraw API
+    await _ref.read(authServiceProvider).withdraw();
+    await _ref.read(tokenServiceProvider).deleteToken();
+    _resetToGuest();
   }
 
   Future<void> loginWithGoogle() async {
@@ -303,9 +305,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteAccount() {
-    // TODO(step 1-9): call account deletion API
-    unawaited(_ref.read(tokenServiceProvider).deleteToken());
-    _resetToGuest();
+  Future<void> deleteAccount() async {
+    await withdraw();
   }
 }

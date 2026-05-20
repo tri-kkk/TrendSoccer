@@ -29,5 +29,13 @@ subprojects {
         if (android.namespace.isNullOrEmpty()) {
             android.namespace = project.group.toString()
         }
+        android.compileOptions {
+            sourceCompatibility = JavaVersion.VERSION_11
+            targetCompatibility = JavaVersion.VERSION_11
+        }
+    }
+    tasks.withType<JavaCompile>().configureEach {
+        sourceCompatibility = JavaVersion.VERSION_11.toString()
+        targetCompatibility = JavaVersion.VERSION_11.toString()
     }
 }

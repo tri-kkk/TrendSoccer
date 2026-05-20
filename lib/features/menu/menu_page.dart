@@ -18,8 +18,10 @@ import 'package:trendsoccer/shared/widgets/menu/guest_banner.dart';
 import 'package:trendsoccer/shared/widgets/menu/menu_list_item.dart';
 import 'package:trendsoccer/shared/widgets/menu/plan_ticket.dart';
 import 'package:trendsoccer/shared/widgets/menu/profile_card.dart';
+import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/radio/ts_radio_button.dart';
 import 'package:trendsoccer/shared/widgets/section/ts_section_header.dart';
+import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 import 'package:trendsoccer/shared/widgets/toggle/ts_toggle.dart';
 
 class MenuPage extends ConsumerStatefulWidget {
@@ -30,6 +32,8 @@ class MenuPage extends ConsumerStatefulWidget {
 }
 
 class _MenuPageState extends ConsumerState<MenuPage> {
+  bool _isDeletingAccount = false;
+
   PlanType _planTicketType(PlanType planType) {
     return switch (planType) {
       PlanType.none || PlanType.free => PlanType.free,
@@ -147,9 +151,11 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: GestureDetector(
-                          onTap: () {
-                            authNotifier.signOut();
+                          onTap: () async {
                             Navigator.of(dialogContext).pop();
+                            await authNotifier.signOut();
+                            if (!context.mounted) return;
+                            TsToast.success(context, '로그아웃 되었습니다.');
                             context.go('/trend');
                           },
                           child: Container(
@@ -288,11 +294,31 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                           Expanded(
                             child: GestureDetector(
                               onTap: isDeleteTyped
-                                  ? () {
-                                      authNotifier.deleteAccount();
+                                  ? () async {
                                       deleteController.dispose();
                                       Navigator.of(dialogContext).pop();
-                                      context.go('/splash');
+                                      setState(() => _isDeletingAccount = true);
+                                      try {
+                                        await authNotifier.deleteAccount();
+                                        if (!context.mounted) return;
+                                        TsToast.success(
+                                          context,
+                                          '계정이 삭제되었습니다.',
+                                        );
+                                        context.go('/splash');
+                                      } catch (_) {
+                                        if (!context.mounted) return;
+                                        TsToast.error(
+                                          context,
+                                          '계정 삭제에 실패했습니다. 다시 시도해주세요.',
+                                        );
+                                      } finally {
+                                        if (mounted) {
+                                          setState(
+                                            () => _isDeletingAccount = false,
+                                          );
+                                        }
+                                      }
                                     }
                                   : null,
                               child: Container(
@@ -338,7 +364,9 @@ class _MenuPageState extends ConsumerState<MenuPage> {
     final auth = ref.watch(authProvider);
     final isLoggedIn = auth.isLoggedIn;
 
-    return Scaffold(
+    return TsLoadingOverlay(
+      isLoading: _isDeletingAccount,
+      child: Scaffold(
       backgroundColor: semantic.surfaceBase,
       body: SafeArea(
         top: false,
@@ -489,6 +517,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

@@ -16,6 +16,7 @@ class AuthService {
   static const bool useNaverStub = true;
 
   static const _mePath = '/api/v1/mobile/me';
+  static const _withdrawPath = '/api/v1/mobile/me/withdraw';
   static const _subscriptionByEmailPath = '/api/subscription';
   static const _googleAuthPath = '/api/v1/mobile/auth/google';
   static const _naverAuthPath = '/api/v1/mobile/auth/naver';
@@ -98,6 +99,13 @@ class AuthService {
         'requiresConsent': true,
       },
     });
+  }
+
+  Future<void> withdraw() async {
+    await _api.post<Object?>(
+      _withdrawPath,
+      fromJson: (json) => json,
+    );
   }
 
   Future<void> agreeTerms({
