@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:trendsoccer/core/models/soccer_models.dart';
+import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -11,14 +14,15 @@ import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/today_combo_card.dart';
 
-class TrendPage extends StatefulWidget {
+class TrendPage extends ConsumerStatefulWidget {
   const TrendPage({super.key});
 
   @override
-  State<TrendPage> createState() => _TrendPageState();
+  ConsumerState<TrendPage> createState() => _TrendPageState();
 }
 
-class _TrendPageState extends State<TrendPage> {
+class _TrendPageState extends ConsumerState<TrendPage> {
+  static const int _maxSoccerPreviewCards = 7;
   static const int _bannerCount = 3;
   static const double _analysisCardViewportFraction = 0.96;
 
@@ -132,35 +136,47 @@ class _TrendPageState extends State<TrendPage> {
   }
 
   Widget _buildSoccerCards() {
-    final soccerDummy = soccerAnalysisDummy;
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final date = ref.watch(todayDateProvider);
+    final matchesAsync = ref.watch(soccerMatchesProvider(date));
+
     return SizedBox(
       height: 220,
-      child: PageView.builder(
-        controller: _soccerCardsPageController,
-        padEnds: false,
-        itemCount: soccerDummy.length,
-        itemBuilder: (context, index) {
-          final data = soccerDummy[index];
-          return Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 380),
-              child: AnalysisCard(
-                leagueId: data.leagueId,
-                leagueName: data.leagueName,
-                date: data.date,
-                homeTeam: data.homeTeam,
-                awayTeam: data.awayTeam,
-                matchTime: data.matchTime,
-                homeLogoUrl: data.homeLogoUrl,
-                awayLogoUrl: data.awayLogoUrl,
-                isPremiumPick: false,
-                pickDirection: null,
-                winRate: null,
-                onAnalyze: () => context
-                    .push('/analysis/soccer/match-report/${data.matchId}'),
+      child: matchesAsync.when(
+        loading: () => Center(
+          child: CircularProgressIndicator(color: semantic.interactivePrimary),
+        ),
+        error: (error, stackTrace) => Center(
+          child: Text(
+            '경기 목록을 불러오지 못했습니다.',
+            style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        data: (matches) {
+          final preview = matches.take(_maxSoccerPreviewCards).toList();
+          if (preview.isEmpty) {
+            return Center(
+              child: Text(
+                '오늘 예정된 경기가 없습니다.',
+                style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
+                textAlign: TextAlign.center,
               ),
-            ),
+            );
+          }
+          return PageView.builder(
+            controller: _soccerCardsPageController,
+            padEnds: false,
+            itemCount: preview.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 380),
+                  child: _TrendSoccerCard(card: preview[index]),
+                ),
+              );
+            },
           );
         },
       ),
@@ -280,6 +296,35 @@ class _TrendPageState extends State<TrendPage> {
             ),
           ),
         ),
+    );
+  }
+}
+
+class _TrendSoccerCard extends StatelessWidget {
+  const _TrendSoccerCard({required this.card});
+
+  final SoccerAnalysisCard card;
+
+  @override
+  Widget build(BuildContext context) {
+    final match = card.match;
+    final leagueId = leagueIdForCard(match.league);
+
+    return AnalysisCard(
+      leagueId: leagueId,
+      leagueName: match.league.name,
+      date: formatSoccerCardDate(match.matchDate),
+      homeTeam: match.homeTeam.name,
+      awayTeam: match.awayTeam.name,
+      matchTime: match.matchTime,
+      homeLogoUrl: match.homeTeam.logo,
+      awayLogoUrl: match.awayTeam.logo,
+      isPremiumPick: false,
+      pickDirection: null,
+      winRate: null,
+      onAnalyze: () => context.push(
+        '/analysis/soccer/match-report/${match.matchId}',
+      ),
     );
   }
 }

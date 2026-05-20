@@ -9,6 +9,8 @@ abstract final class AppConfig {
 
   static String get apiBaseUrl => dotenv.env['API_BASE_URL']!;
 
+  static String get webApiBaseUrl => dotenv.env['WEB_API_BASE_URL']!;
+
   static String get googleWebClientId => dotenv.env['GOOGLE_WEB_CLIENT_ID']!;
 
   static String get naverClientId => dotenv.env['NAVER_CLIENT_ID'] ?? '';
@@ -18,10 +20,22 @@ abstract final class AppConfig {
   static SupabaseClient get supabaseClient => Supabase.instance.client;
 
   static Dio? _dio;
+  static Dio? _webDio;
 
   static Dio get dio {
     return _dio ??= Dio(
       BaseOptions(baseUrl: apiBaseUrl),
+    );
+  }
+
+  static Dio get webDio {
+    return _webDio ??= Dio(
+      BaseOptions(
+        baseUrl: webApiBaseUrl,
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 30),
+        headers: const {'Accept': 'application/json'},
+      ),
     );
   }
 }
