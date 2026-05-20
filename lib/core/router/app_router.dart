@@ -14,6 +14,7 @@ import 'package:trendsoccer/features/menu/privacy_policy_page.dart';
 import 'package:trendsoccer/features/menu/subscribe_fail_page.dart';
 import 'package:trendsoccer/features/menu/subscribe_page.dart';
 import 'package:trendsoccer/features/menu/subscribe_success_page.dart';
+import 'package:trendsoccer/features/payment/payment_webview_page.dart';
 import 'package:trendsoccer/features/menu/terms_of_service_page.dart';
 import 'package:trendsoccer/features/premium/premium_page.dart';
 import 'package:trendsoccer/features/report/soccer_report_detail_page.dart';
@@ -79,6 +80,21 @@ abstract final class AppRouter {
       GoRoute(
         path: '/menu/subscribe/fail',
         builder: (context, state) => const SubscribeFailPage(),
+      ),
+      GoRoute(
+        path: '/payment/webview',
+        builder: (context, state) {
+          final extra = state.extra;
+          if (extra is! PaymentWebviewRouteArgs) {
+            return const Scaffold(
+              body: Center(child: Text('Invalid payment session')),
+            );
+          }
+          return PaymentWebviewPage(
+            paymentUrl: extra.paymentUrl,
+            ordNo: extra.ordNo,
+          );
+        },
       ),
       GoRoute(
         path: '/menu/about',

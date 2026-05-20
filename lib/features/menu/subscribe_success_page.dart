@@ -1,37 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
-class SubscribeSuccessPage extends ConsumerStatefulWidget {
+class SubscribeSuccessPage extends StatelessWidget {
   const SubscribeSuccessPage({this.months = 3, super.key});
 
   final int months;
 
-  @override
-  ConsumerState<SubscribeSuccessPage> createState() =>
-      _SubscribeSuccessPageState();
-}
+  String get _priceLabel => months == 3 ? '₩ 9,900' : '₩ 4,900';
 
-class _SubscribeSuccessPageState extends ConsumerState<SubscribeSuccessPage> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(authProvider).subscribePremium(months: widget.months);
-    });
-  }
-
-  String get _priceLabel => widget.months == 3 ? '₩ 9,900' : '₩ 4,900';
-
-  String get _periodLabel => '${widget.months}개월';
+  String get _periodLabel => '$months개월';
 
   @override
   Widget build(BuildContext context) {

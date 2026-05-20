@@ -112,7 +112,7 @@ class SubscribeFailPage extends StatelessWidget {
                         child: TsButton(
                           label: '다시 시도하기',
                           variant: TsButtonVariant.primary,
-                          onPressed: () => context.pop(),
+                          onPressed: () => context.go('/menu/subscribe'),
                         ),
                       ),
                       const SizedBox(height: 8),

@@ -3,13 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:trendsoccer/core/models/api_response.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/services/payment_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/features/payment/payment_webview_page.dart';
 import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
+import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/navigation/ts_bottom_navigation.dart';
+import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 
 class SubscribePage extends ConsumerStatefulWidget {
   const SubscribePage({super.key});
@@ -27,16 +32,117 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     '/menu',
   ];
 
-  /// 0 = 3개월 (default selected), 1 = 1개월
+  /// 0 = quarterly (3개월), 1 = monthly (1개월)
   int _selectedPlanIndex = 0;
+  bool _isLoading = false;
+  String? _loadingMessage;
+
+  String get _selectedPlan => _selectedPlanIndex == 0 ? 'quarterly' : 'monthly';
+
+  int get _successMonths => _selectedPlanIndex == 0 ? 3 : 1;
+
+  Future<void> _startPremium() async {
+    if (!ref.read(authProvider).isLoggedIn) {
+      context.push('/login');
+      return;
+    }
+
+    final auth = ref.read(authProvider);
+    final userId = auth.userProfile?.userId;
+    final email = auth.userEmail;
+
+    if (userId == null || userId.isEmpty || email.isEmpty) {
+      TsToast.error(context, '결제 초기화에 실패했습니다. 다시 시도해주세요.');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _loadingMessage = null;
+    });
+
+    try {
+      final initResponse = await ref.read(paymentServiceProvider).initPayment(
+            plan: _selectedPlan,
+            userId: userId,
+          );
+
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _loadingMessage = null;
+      });
+
+      final status = await context.push<String?>(
+        '/payment/webview',
+        extra: PaymentWebviewRouteArgs(
+          paymentUrl: initResponse.paymentUrl,
+          ordNo: initResponse.ordNo,
+        ),
+      );
+
+      if (!mounted) return;
+
+      if (status == null) {
+        TsToast.info(context, '결제가 취소되었습니다.');
+        return;
+      }
+
+      if (status != 'success') {
+        context.push('/menu/subscribe/fail');
+        return;
+      }
+
+      setState(() {
+        _isLoading = true;
+        _loadingMessage = '결제 확인 중...';
+      });
+
+      final subscription = await ref
+          .read(paymentServiceProvider)
+          .pollSubscription(email: email);
+
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _loadingMessage = null;
+      });
+
+      if (subscription != null) {
+        await ref.read(authProvider).loadProfile();
+        if (!mounted) return;
+        context.push('/menu/subscribe/success', extra: _successMonths);
+        TsToast.success(context, '프리미엄 구독이 시작되었습니다!');
+      } else {
+        context.push('/menu/subscribe/success', extra: _successMonths);
+        TsToast.info(context, '결제가 처리 중입니다. 잠시 후 반영됩니다.');
+      }
+    } on ApiException {
+      if (!mounted) return;
+      TsToast.error(context, '결제 초기화에 실패했습니다. 다시 시도해주세요.');
+    } catch (_) {
+      if (!mounted) return;
+      TsToast.error(context, '결제 초기화에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _loadingMessage = null;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
-    return Scaffold(
-      backgroundColor: semantic.surfaceBase,
-      appBar: AppBar(
+    return TsLoadingOverlay(
+      isLoading: _isLoading,
+      message: _loadingMessage,
+      child: Scaffold(
+        backgroundColor: semantic.surfaceBase,
+        appBar: AppBar(
         backgroundColor: semantic.surfaceBase,
         elevation: 0,
         leading: TsBackButton(onPressed: () => context.pop()),
@@ -129,19 +235,8 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
               child: TsButton(
                 label: '프리미엄 구독 시작하기 →',
                 variant: TsButtonVariant.primary,
-                onPressed: () {
-                  if (!ref.read(authProvider).isLoggedIn) {
-                    context.push('/login');
-                    return;
-                  }
-                  // 테스트: 9,900원(3개월) → 성공, 4,900원(1개월) → 실패
-                  // TODO: 외부 웹뷰 결제 연동
-                  if (_selectedPlanIndex == 0) {
-                    context.push('/menu/subscribe/success', extra: 3);
-                  } else {
-                    context.push('/menu/subscribe/fail', extra: 1);
-                  }
-                },              ),
+                onPressed: _startPremium,
+              ),
             ),
             const SizedBox(height: 24),
           ],
@@ -153,6 +248,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           currentIndex: 4,
           onTap: (index) => context.go(_tabPaths[index]),
         ),
+      ),
       ),
     );
   }
