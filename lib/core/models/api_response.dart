@@ -1,0 +1,75 @@
+class ApiError {
+  const ApiError({
+    required this.code,
+    required this.message,
+    this.messageEn,
+  });
+
+  factory ApiError.fromJson(Map<String, dynamic> json) {
+    return ApiError(
+      code: json['code'] as String? ?? 'UNKNOWN_ERROR',
+      message: json['message'] as String? ?? 'Unknown error',
+      messageEn: json['messageEn'] as String?,
+    );
+  }
+
+  final String code;
+  final String message;
+  final String? messageEn;
+}
+
+class ApiException implements Exception {
+  const ApiException({
+    required this.code,
+    required this.message,
+    this.messageEn,
+  });
+
+  factory ApiException.fromApiError(ApiError error) {
+    return ApiException(
+      code: error.code,
+      message: error.message,
+      messageEn: error.messageEn,
+    );
+  }
+
+  final String code;
+  final String message;
+  final String? messageEn;
+
+  @override
+  String toString() => 'ApiException($code): $message';
+}
+
+class ApiResponse<T> {
+  const ApiResponse({
+    required this.success,
+    this.data,
+    this.meta,
+    this.error,
+  });
+
+  factory ApiResponse.fromJson(
+    Map<String, dynamic> json,
+    T Function(Object? json)? fromJsonT,
+  ) {
+    final success = json['success'] as bool? ?? false;
+    final rawData = json['data'];
+    final rawMeta = json['meta'];
+    final rawError = json['error'];
+
+    return ApiResponse(
+      success: success,
+      data: success && rawData != null
+          ? (fromJsonT != null ? fromJsonT(rawData) : rawData as T)
+          : null,
+      meta: rawMeta is Map<String, dynamic> ? rawMeta : null,
+      error: rawError is Map<String, dynamic> ? ApiError.fromJson(rawError) : null,
+    );
+  }
+
+  final bool success;
+  final T? data;
+  final Map<String, dynamic>? meta;
+  final ApiError? error;
+}
