@@ -59,7 +59,8 @@ class _MenuPageState extends ConsumerState<MenuPage> {
     return '만료일 ${DateFormat('yyyy.MM.dd').format(expiresAt)}';
   }
 
-  void _showThemeSheet(BuildContext context) {    showModalBottomSheet<void>(
+  void _showThemeSheet(BuildContext context) {
+    showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => const _ThemeBottomSheet(),
@@ -106,12 +107,16 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                 children: [
                   Text(
                     '로그아웃',
-                    style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+                    style: TsType.headingH2.copyWith(
+                      color: semantic.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Text(
                     '정말 로그아웃 하시겠습니까 ?',
-                    style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+                    style: TsType.bodyLRegular.copyWith(
+                      color: semantic.textSecondary,
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Row(
@@ -123,12 +128,17 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                             height: 32,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: semantic.textDisabled, width: 2),
+                              border: Border.all(
+                                color: semantic.textDisabled,
+                                width: 2,
+                              ),
                             ),
                             alignment: Alignment.center,
                             child: Text(
                               '취소',
-                              style: TsType.bodyMBold.copyWith(color: semantic.textDisabled),
+                              style: TsType.bodyMBold.copyWith(
+                                color: semantic.textDisabled,
+                              ),
                             ),
                           ),
                         ),
@@ -150,7 +160,9 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                             alignment: Alignment.center,
                             child: Text(
                               '로그아웃',
-                              style: TsType.bodyMBold.copyWith(color: semantic.surfaceBase),
+                              style: TsType.bodyMBold.copyWith(
+                                color: semantic.surfaceBase,
+                              ),
                             ),
                           ),
                         ),
@@ -177,7 +189,8 @@ class _MenuPageState extends ConsumerState<MenuPage> {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (ctx, setDialogState) {
-            final isDeleteTyped = deleteController.text.toUpperCase() == 'DELETE';
+            final isDeleteTyped =
+                deleteController.text.toUpperCase() == 'DELETE';
             return Center(
               child: Material(
                 color: Colors.transparent,
@@ -194,17 +207,23 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                     children: [
                       Text(
                         '계정 삭제',
-                        style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+                        style: TsType.headingH2.copyWith(
+                          color: semantic.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Text(
                         '계정을 삭제하면 모든 데이터가 삭제되며 복구할 수 없습니다.',
-                        style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+                        style: TsType.bodyLRegular.copyWith(
+                          color: semantic.textSecondary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Text(
                         '\'DELETE\'를 입력하여 확인하세요.',
-                        style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+                        style: TsType.bodyLRegular.copyWith(
+                          color: semantic.textSecondary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Container(
@@ -212,17 +231,26 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                         decoration: BoxDecoration(
                           color: semantic.surfaceContainer,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: semantic.borderDefault, width: 1),
+                          border: Border.all(
+                            color: semantic.borderDefault,
+                            width: 1,
+                          ),
                         ),
                         child: TextField(
                           controller: deleteController,
                           onChanged: (_) => setDialogState(() {}),
                           textAlign: TextAlign.center,
-                          style: TsType.labelSRegular.copyWith(color: semantic.textPrimary),
+                          style: TsType.labelSRegular.copyWith(
+                            color: semantic.textPrimary,
+                          ),
                           decoration: InputDecoration(
                             hintText: 'DELETE',
-                            hintStyle: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                            hintStyle: TsType.labelSRegular.copyWith(
+                              color: semantic.textTertiary,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                            ),
                             border: InputBorder.none,
                           ),
                         ),
@@ -240,12 +268,17 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                                 height: 32,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: semantic.textDisabled, width: 2),
+                                  border: Border.all(
+                                    color: semantic.textDisabled,
+                                    width: 2,
+                                  ),
                                 ),
                                 alignment: Alignment.center,
                                 child: Text(
                                   '취소',
-                                  style: TsType.bodyMBold.copyWith(color: semantic.textDisabled),
+                                  style: TsType.bodyMBold.copyWith(
+                                    color: semantic.textDisabled,
+                                  ),
                                 ),
                               ),
                             ),
@@ -266,7 +299,9 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                                 decoration: BoxDecoration(
                                   color: isDeleteTyped
                                       ? semantic.interactivePrimary
-                                      : semantic.interactivePrimary.withValues(alpha: 0.3),
+                                      : semantic.interactivePrimary.withValues(
+                                          alpha: 0.3,
+                                        ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 alignment: Alignment.center,
@@ -275,7 +310,9 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                                   style: TsType.bodyMBold.copyWith(
                                     color: isDeleteTyped
                                         ? semantic.surfaceBase
-                                        : semantic.surfaceBase.withValues(alpha: 0.5),
+                                        : semantic.surfaceBase.withValues(
+                                            alpha: 0.5,
+                                          ),
                                   ),
                                 ),
                               ),
@@ -318,10 +355,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
               if (!isLoggedIn)
                 GuestBanner(onJoinTap: () => context.push('/login'))
               else
-                ProfileCard(
-                  name: auth.userName,
-                  email: auth.userEmail,
-                ),
+                ProfileCard(name: auth.userName, email: auth.userEmail),
               const SizedBox(height: 16),
 
               if (isLoggedIn) ...[
@@ -418,7 +452,9 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                         opacity: 0.5,
                         child: Text(
                           '로그아웃',
-                          style: TsType.labelSRegular.copyWith(color: semantic.textPrimary),
+                          style: TsType.labelSRegular.copyWith(
+                            color: semantic.textPrimary,
+                          ),
                         ),
                       ),
                     ),
@@ -438,7 +474,9 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                         opacity: 0.5,
                         child: Text(
                           '회원탈퇴',
-                          style: TsType.labelSRegular.copyWith(color: semantic.textPrimary),
+                          style: TsType.labelSRegular.copyWith(
+                            color: semantic.textPrimary,
+                          ),
                         ),
                       ),
                     ),

@@ -7,7 +7,7 @@ import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
-enum TsEmptyStateType { defaultState, withAction, premiumPickEmpty }
+enum TsEmptyStateType { defaultState, withAction, premiumPickEmpty, noData }
 
 class TsEmptyState extends StatelessWidget {
   const TsEmptyState({
@@ -36,6 +36,18 @@ class TsEmptyState extends StatelessWidget {
           null,
           '오늘의 픽이 없습니다.',
           '오전 6시 또는 오후 6시에 다시 확인해 주세요.',
+        ),
+      TsEmptyStateType.withAction => (
+          TsAssets.iconHourglassEmpty,
+          null,
+          '데이터가 없습니다.',
+          '나중에 다시 확인해 주세요.',
+        ),
+      TsEmptyStateType.noData => (
+          TsAssets.iconHourglassEmpty,
+          null,
+          '데이터가 없습니다.',
+          '나중에 다시 확인해주세요.',
         ),
       _ => (
           null,
@@ -81,11 +93,12 @@ class TsEmptyState extends StatelessWidget {
               style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
               textAlign: TextAlign.center,
             ),
-            if (type == TsEmptyStateType.withAction) ...[
+            if (type == TsEmptyStateType.withAction && onButtonPressed != null) ...[
               const SizedBox(height: TsSpacing.md),
               TsButton(
                 label: buttonLabel ?? '날짜 변경',
                 variant: TsButtonVariant.primary,
+                size: TsButtonSize.small,
                 onPressed: onButtonPressed,
               ),
             ],

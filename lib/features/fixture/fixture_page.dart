@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:trendsoccer/core/models/sport_type.dart';
-import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/analysis/analysis_dummy_data.dart';
 import 'package:trendsoccer/features/fixture/fixture_dummy_data.dart';
-import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/filter/ts_filter_chip.dart';
 import 'package:trendsoccer/shared/widgets/fixture/alarm_sheet.dart';
@@ -231,6 +229,14 @@ class _FixturePageState extends State<FixturePage> {
     }).toList();
   }
 
+  void _resetFromLiveEmpty() {
+    setState(() {
+      _isLiveFilter = false;
+      _selectedDate = FixturePage._anchorToday;
+      _selectedLeagueId = 'all';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
@@ -266,28 +272,25 @@ class _FixturePageState extends State<FixturePage> {
           ),
           if (matchWidgets.isEmpty)
             Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: isLiveEmpty
-                      ? [
-                          Text(
-                            '진행 중인 경기가 없습니다',
-                            style: TsType.bodyLBold.copyWith(color: semantic.textSecondary),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                          TsButton(
-                            label: '전체 경기 보기',
-                            variant: TsButtonVariant.secondary,
-                            size: TsButtonSize.small,
-                            onPressed: () => setState(() => _isLiveFilter = false),
-                          ),
-                        ]
-                      : [
-                          TsEmptyState(type: TsEmptyStateType.defaultState),
-                        ],
-                ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                      child: Center(
+                        child: isLiveEmpty
+                            ? TsEmptyState(
+                                type: TsEmptyStateType.withAction,
+                                buttonLabel: '오늘 경기 확인하기',
+                                onButtonPressed: _resetFromLiveEmpty,
+                              )
+                            : const TsEmptyState(
+                                type: TsEmptyStateType.noData,
+                              ),
+                      ),
+                    ),
+                  );
+                },
               ),
             )
           else

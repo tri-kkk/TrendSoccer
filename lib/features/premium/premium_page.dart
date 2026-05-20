@@ -122,11 +122,11 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
 
     final hasData = dayData != null && dayData.combos.isNotEmpty;
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: ComboDashboard(
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          ComboDashboard(
             dateTitle: dayData?.dateTitle ?? '',
             comboCountText: dayData?.comboCountText ?? '',
             dateTabs: comboDateLabels,
@@ -140,44 +140,31 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
             highOddsHitRate: dayData?.highOddsHitRate ?? '0%',
             highOddsHitDetail: dayData?.highOddsHitDetail ?? '(0/0)',
           ),
-        ),
-        const SizedBox(height: 16),
-        if (hasData)
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  ...dayData.combos.asMap().entries.map((entry) {
-                    final combo = entry.value;
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: entry.key < dayData.combos.length - 1 ? 12 : 0,
-                      ),
-                      child: ComboCard(
-                        leagueId: combo.leagueId,
-                        comboCount: combo.comboCount,
-                        comboType: combo.comboType,
-                        status: combo.status,
-                        matches: combo.matches,
-                        aiReport: combo.aiReport,
-                        totalOdds: combo.totalOdds,
-                        confidence: combo.confidence,
-                      ),
-                    );
-                  }),
-                  const SizedBox(height: 24),
-                ],
-              ),
-            ),
-          )
-        else
-          const Expanded(
-            child: Center(
-              child: TsEmptyState(type: TsEmptyStateType.defaultState),
-            ),
-          ),
-      ],
+          const SizedBox(height: 16),
+          if (hasData)
+            ...dayData.combos.asMap().entries.map((entry) {
+              final combo = entry.value;
+              return Padding(
+                padding: EdgeInsets.only(
+                  bottom: entry.key < dayData.combos.length - 1 ? 12 : 0,
+                ),
+                child: ComboCard(
+                  leagueId: combo.leagueId,
+                  comboCount: combo.comboCount,
+                  comboType: combo.comboType,
+                  status: combo.status,
+                  matches: combo.matches,
+                  aiReport: combo.aiReport,
+                  totalOdds: combo.totalOdds,
+                  confidence: combo.confidence,
+                ),
+              );
+            })
+          else
+            const TsEmptyState(type: TsEmptyStateType.defaultState),
+          const SizedBox(height: 24),
+        ],
+      ),
     );
   }
 
