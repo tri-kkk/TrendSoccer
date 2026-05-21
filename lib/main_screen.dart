@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -236,7 +237,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           top: false,
           child: TsBottomNavigation(
             currentIndex: selectedIndex,
-            onTap: (index) => context.go(_tabPaths[index]),
+            onTap: (index) {
+              if (index == 2) {
+                ref.read(fixtureSelectedDateProvider.notifier).state =
+                    fixtureTodayDateString();
+                ref.read(fixtureLiveFilterProvider.notifier).state = false;
+                ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
+              }
+              context.go(_tabPaths[index]);
+            },
           ),
         ),
       ),
