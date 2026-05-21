@@ -50,11 +50,14 @@ class AuthService {
     );
   }
 
-  Future<LoginResponse> googleAuth(String idToken) async {
+  Future<LoginResponse> googleAuth(String accessToken) async {
+    print(
+      '[AUTH] Request body token field: accessToken (OAuth), value length: ${accessToken.length}',
+    );
     return _api.post<LoginResponse>(
       _googleAuthPath,
       data: <String, dynamic>{
-        'accessToken': idToken,
+        'accessToken': accessToken,
         'deviceInfo': _deviceInfo,
       },
       fromJson: (json) =>

@@ -32,6 +32,30 @@ abstract final class TsAssets {
           ? 'assets/images/league/logo/dark/$leagueId.svg'
           : 'assets/images/league/logo/light/$leagueId.svg';
 
+  /// Maps API [league_code] values to local league icon asset ids.
+  static String? leagueIconIdFromApiCode(String? apiCode) {
+    if (apiCode == null || apiCode.isEmpty) return null;
+    return _apiLeagueCodeToIconId[apiCode.toUpperCase()];
+  }
+
+  static const _apiLeagueCodeToIconId = <String, String>{
+    'PL': 'premier_league',
+    'PD': 'laliga',
+    'BL1': 'bundesliga',
+    'SA': 'serie_a',
+    'FL1': 'ligue_1',
+    'DED': 'eredivisie',
+    'MLS': 'mls',
+    'KL': 'k_league',
+    'KL1': 'k_league',
+    'KL2': 'k_league',
+    'J1': 'j1_league',
+    'UCL': 'champions_league',
+    'CL': 'champions_league',
+    'UEL': 'europa_league',
+    'EL': 'europa_league',
+  };
+
   static const socialGoogle = 'assets/images/social/google.svg';
   static const socialNaver = 'assets/images/social/naver.svg';
 

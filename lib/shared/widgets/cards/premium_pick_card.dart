@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/models/sport_type.dart';
+import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
@@ -32,6 +33,7 @@ class PremiumPickCard extends StatefulWidget {
     required this.countdown,
     required this.streak,
     required this.recentWins,
+    this.teamLogoMap = const {},
     this.onCTATap,
     this.winRateLabel,
     this.countdownLabel,
@@ -43,6 +45,7 @@ class PremiumPickCard extends StatefulWidget {
   final String countdown;
   final String streak;
   final List<RecentWinData> recentWins;
+  final Map<String, String> teamLogoMap;
   final VoidCallback? onCTATap;
   final String? winRateLabel;
   final String? countdownLabel;
@@ -134,6 +137,24 @@ class _PremiumPickCardState extends State<PremiumPickCard>
     );
   }
 
+  Widget _teamLogo(TsSemanticColors semantic, String teamName) {
+    final url = findTeamLogo(widget.teamLogoMap, teamName);
+    if (url == null || url.isEmpty) {
+      return _teamLogoPlaceholder(semantic);
+    }
+
+    return ClipOval(
+      child: Image.network(
+        url,
+        width: 16,
+        height: 16,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) =>
+            _teamLogoPlaceholder(semantic),
+      ),
+    );
+  }
+
   Widget _buildWinRow(RecentWinData data, {required Key key}) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     return SizedBox(
@@ -161,7 +182,7 @@ class _PremiumPickCardState extends State<PremiumPickCard>
                   ),
                 ),
                 const SizedBox(width: TsSpacing.xs),
-                _teamLogoPlaceholder(semantic),
+                _teamLogo(semantic, data.homeTeam),
                 const SizedBox(width: TsSpacing.xs),
                 Text(
                   'VS',
@@ -170,7 +191,7 @@ class _PremiumPickCardState extends State<PremiumPickCard>
                   ),
                 ),
                 const SizedBox(width: TsSpacing.xs),
-                _teamLogoPlaceholder(semantic),
+                _teamLogo(semantic, data.awayTeam),
                 const SizedBox(width: TsSpacing.xs),
                 Flexible(
                   flex: 1,
@@ -356,7 +377,7 @@ class _PremiumPickCardState extends State<PremiumPickCard>
               Expanded(
                 child: _StatCell(
                   value: widget.streak,
-                  label: widget.streakLabel ?? '연속 적중',
+                  label: widget.streakLabel ?? '현재 연승',
                   valueColor: semantic.interactivePrimary,
                   semantic: semantic,
                 ),

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -32,11 +33,13 @@ class TsLeagueIcon extends StatelessWidget {
   const TsLeagueIcon({
     required this.leagueId,
     this.size = 16,
+    this.logoUrl,
     super.key,
   });
 
   final String leagueId;
   final double size;
+  final String? logoUrl;
 
   Widget _fallback(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
@@ -52,6 +55,31 @@ class TsLeagueIcon extends StatelessWidget {
       child: Text(
         _leagueInitials(leagueId),
         style: TsType.labelXsBold.copyWith(color: semantic.textTertiary),
+      ),
+    );
+  }
+
+  Widget _networkLogo(BuildContext context) {
+    final url = logoUrl;
+    if (url == null || url.isEmpty) {
+      return _fallback(context);
+    }
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(size / 2),
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: CachedNetworkImage(
+          imageUrl: url,
+          fit: BoxFit.cover,
+          placeholder: (context, _) => Container(
+            width: size,
+            height: size,
+            color: semantic.surfaceContainer,
+          ),
+          errorWidget: (context, url, error) => _fallback(context),
+        ),
       ),
     );
   }
@@ -72,14 +100,14 @@ class TsLeagueIcon extends StatelessWidget {
         }
         final svg = snapshot.data;
         if (svg == null || svg.isEmpty) {
-          return _fallback(context);
+          return _networkLogo(context);
         }
         return SvgPicture.string(
           svg,
           width: size,
           height: size,
           fit: BoxFit.contain,
-          placeholderBuilder: (BuildContext context) => _fallback(context),
+          placeholderBuilder: (BuildContext context) => _networkLogo(context),
         );
       },
     );

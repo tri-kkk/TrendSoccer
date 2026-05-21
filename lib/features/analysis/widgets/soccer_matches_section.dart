@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/models/soccer_models.dart';
+import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -14,10 +15,21 @@ import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 class SoccerMatchesSection extends ConsumerWidget {
   const SoccerMatchesSection({super.key});
 
+  static Widget _buildEmptyState(BuildContext context) {
+    return SizedBox(
+      height: MediaQuery.sizeOf(context).height * 0.4,
+      child: const Center(
+        child: TsEmptyState(
+          title: '경기가 없습니다',
+          subtitle: '오늘 예정된 경기가 없거나 필터 조건에 맞는 경기가 없습니다.',
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final date = ref.watch(todayDateProvider);
     final matchesAsync = ref.watch(filteredSoccerMatchesProvider);
 
     ref.listen(filteredSoccerMatchesProvider, (previous, next) {
@@ -32,16 +44,18 @@ class SoccerMatchesSection extends ConsumerWidget {
         padding: EdgeInsets.symmetric(vertical: 48),
         child: Center(child: CircularProgressIndicator()),
       ),
-      error: (error, stackTrace) => _InlineError(
-        semantic: semantic,
-        onRetry: () => ref.invalidate(soccerMatchesProvider(date)),
+      error: (error, stackTrace) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 32),
+        child: Center(
+          child: _InlineError(
+            semantic: semantic,
+            onRetry: () => ref.invalidate(analysisSoccerMatchesProvider),
+          ),
+        ),
       ),
       data: (matches) {
         if (matches.isEmpty) {
-          return const TsEmptyState(
-            title: '경기가 없습니다',
-            subtitle: '오늘 예정된 경기가 없거나 필터 조건에 맞는 경기가 없습니다.',
-          );
+          return _buildEmptyState(context);
         }
         return Column(
           children: [
@@ -56,25 +70,29 @@ class SoccerMatchesSection extends ConsumerWidget {
   }
 }
 
-class _SoccerAnalysisCardItem extends StatelessWidget {
+class _SoccerAnalysisCardItem extends ConsumerWidget {
   const _SoccerAnalysisCardItem({required this.card});
 
   final SoccerAnalysisCard card;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final match = card.match;
     final leagueId = leagueIdForCard(match.league);
+    final planType = ref.watch(authProvider).planType;
 
     return AnalysisCard(
       leagueId: leagueId,
       leagueName: match.league.name,
+      leagueLogoUrl: match.league.icon,
       date: formatSoccerCardDate(match.matchDate),
       homeTeam: match.homeTeam.name,
       awayTeam: match.awayTeam.name,
       matchTime: match.matchTime,
       homeLogoUrl: match.homeTeam.logo,
       awayLogoUrl: match.awayTeam.logo,
+      matchTimestamp: match.matchTimestamp,
+      planType: planType,
       isPremiumPick: false,
       pickDirection: null,
       winRate: null,
@@ -97,25 +115,22 @@ class _InlineError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '경기 목록을 불러오지 못했습니다.',
-            style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          TsButton(
-            label: '다시 시도',
-            variant: TsButtonVariant.primary,
-            size: TsButtonSize.small,
-            onPressed: onRetry,
-          ),
-        ],
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          '경기 목록을 불러오지 못했습니다.',
+          style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+        TsButton(
+          label: '다시 시도',
+          variant: TsButtonVariant.primary,
+          size: TsButtonSize.small,
+          onPressed: onRetry,
+        ),
+      ],
     );
   }
 }

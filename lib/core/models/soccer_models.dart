@@ -40,17 +40,49 @@ Map<String, dynamic>? _readMap(Map<String, dynamic> json, List<String> keys) {
   return null;
 }
 
+double? _flatPredictionConfidence(Map<String, dynamic> json) {
+  final home = _parseDouble(json['home_probability']);
+  final draw = _parseDouble(json['draw_probability']);
+  final away = _parseDouble(json['away_probability']);
+  final winner = json['predicted_winner']?.toString().toLowerCase();
+  if (winner == 'home') return home;
+  if (winner == 'draw') return draw;
+  if (winner == 'away') return away;
+
+  final probabilities = [home, draw, away].whereType<double>().toList();
+  if (probabilities.isEmpty) return null;
+  return probabilities.reduce((a, b) => a > b ? a : b);
+}
+
+(String, String) _dateTimePartsFromTimestamp(DateTime? timestamp) {
+  if (timestamp == null) return ('', '');
+  final local = timestamp.toLocal();
+  final month = local.month.toString().padLeft(2, '0');
+  final day = local.day.toString().padLeft(2, '0');
+  final hour = local.hour.toString().padLeft(2, '0');
+  final minute = local.minute.toString().padLeft(2, '0');
+  return ('${local.year}-$month-$day', '$hour:$minute');
+}
+
 class TeamInfo {
   const TeamInfo({
     required this.name,
     this.logo,
   });
 
-  factory TeamInfo.fromJson(Map<String, dynamic> json) {
-    return TeamInfo(
-      name: _readString(json, const ['name', 'teamName', 'team_name']) ?? '',
-      logo: _readString(json, const ['logo', 'logoUrl', 'logo_url', 'image']),
-    );
+  factory TeamInfo.fromJson(dynamic json) {
+    if (json is String) {
+      return TeamInfo(name: json, logo: null);
+    }
+    if (json is Map) {
+      final map =
+          json is Map<String, dynamic> ? json : Map<String, dynamic>.from(json);
+      return TeamInfo(
+        name: _readString(map, const ['name', 'teamName', 'team_name']) ?? '',
+        logo: _readString(map, const ['logo', 'logoUrl', 'logo_url', 'image']),
+      );
+    }
+    return const TeamInfo(name: '');
   }
 
   final String name;
@@ -68,11 +100,20 @@ class LeagueInfo {
 
   factory LeagueInfo.fromJson(Map<String, dynamic> json) {
     return LeagueInfo(
-      id: _parseInt(json['id'] ?? json['leagueId'] ?? json['league_id']) ?? 0,
-      name: _readString(json, const ['name', 'leagueName', 'league_name']) ??
+      id: _parseInt(
+            json['id'] ??
+                json['leagueId'] ??
+                json['league_id'] ??
+                json['leaguePriority'],
+          ) ??
+          0,
+      name: _readString(
+            json,
+            const ['name', 'leagueName', 'league_name', 'leagueNameEn'],
+          ) ??
           '',
       code: _readString(json, const ['code', 'leagueCode', 'league_code']),
-      icon: _readString(json, const ['icon', 'iconUrl', 'icon_url']),
+      icon: _readString(json, const ['icon', 'iconUrl', 'icon_url', 'leagueLogo']),
       country:
           _readString(json, const ['country', 'countryName', 'country_name']),
     );
@@ -114,9 +155,15 @@ class SoccerOdds {
 
   factory SoccerOdds.fromJson(Map<String, dynamic> json) {
     return SoccerOdds(
-      home: _parseDouble(json['home'] ?? json['homeOdds'] ?? json['home_odds']),
-      draw: _parseDouble(json['draw'] ?? json['drawOdds'] ?? json['draw_odds']),
-      away: _parseDouble(json['away'] ?? json['awayOdds'] ?? json['away_odds']),
+      home: _parseDouble(
+        json['home_odds'] ?? json['home'] ?? json['homeOdds'],
+      ),
+      draw: _parseDouble(
+        json['draw_odds'] ?? json['draw'] ?? json['drawOdds'],
+      ),
+      away: _parseDouble(
+        json['away_odds'] ?? json['away'] ?? json['awayOdds'],
+      ),
     );
   }
 
@@ -160,15 +207,27 @@ class SoccerPrediction {
       json,
       const ['recommendation', 'recommendationInfo', 'recommendation_info'],
     );
+    final flatDirection = json['predicted_winner']?.toString();
+    final flatConfidence = _flatPredictionConfidence(json);
 
     return SoccerPrediction(
       direction: _readString(
-        json,
-        const ['direction', 'prediction', 'pickDirection', 'pick_direction'],
-      ),
+            json,
+            const [
+              'direction',
+              'prediction',
+              'pickDirection',
+              'pick_direction',
+              'predicted_winner',
+            ],
+          ) ??
+          flatDirection,
       confidence: _parseDouble(
-        json['confidence'] ?? json['confidenceScore'] ?? json['confidence_score'],
-      ),
+            json['confidence'] ??
+                json['confidenceScore'] ??
+                json['confidence_score'],
+          ) ??
+          flatConfidence,
       recommendation: recommendationJson == null
           ? null
           : RecommendationInfo.fromJson(recommendationJson),
@@ -195,6 +254,82 @@ class SoccerMatch {
   });
 
   factory SoccerMatch.fromJson(Map<String, dynamic> json) {
+    print('[SOCCER] SoccerMatch.fromJson keys: ${json.keys.toList()}');
+    final homeValue = json['homeTeam'] ?? json['home_team'] ?? json['home'];
+    final awayValue = json['awayTeam'] ?? json['away_team'] ?? json['away'];
+    final isFlat = homeValue is String || awayValue is String;
+
+    if (isFlat) {
+      print(
+        '[SOCCER] Field mapping: flat format — home_team/away_team strings, leagueName, commence_time',
+      );
+      final matchId =
+          _parseInt(json['match_id'] ?? json['matchId'] ?? json['id']) ?? 0;
+      final matchTimestamp = _parseDateTime(json['commence_time']) ??
+          _parseDateTime(
+            json['matchTimestamp'] ??
+                json['match_timestamp'] ??
+                json['timestamp'] ??
+                json['kickoff'],
+          );
+      final (derivedDate, derivedTime) =
+          _dateTimePartsFromTimestamp(matchTimestamp);
+      final homeScore = _parseInt(json['finalScoreHome']);
+      final awayScore = _parseInt(json['finalScoreAway']);
+
+      return SoccerMatch(
+        matchId: matchId,
+        apiMatchId: matchId,
+        homeTeam: TeamInfo(
+          name: homeValue is String ? homeValue : '',
+          logo: _readString(
+            json,
+            const ['home_team_logo', 'homeTeamLogo', 'homeLogo'],
+          ),
+        ),
+        awayTeam: TeamInfo(
+          name: awayValue is String ? awayValue : '',
+          logo: _readString(
+            json,
+            const ['away_team_logo', 'awayTeamLogo', 'awayLogo'],
+          ),
+        ),
+        league: LeagueInfo(
+          id: _parseInt(json['leaguePriority'] ?? json['league_id']) ?? 0,
+          name: _readString(
+                json,
+                const ['leagueName', 'leagueNameEn', 'league_name'],
+              ) ??
+              '',
+          code: _readString(json, const ['league_code', 'leagueCode', 'code']),
+          icon: _readString(json, const ['leagueLogo', 'league_logo', 'icon']),
+        ),
+        matchDate: _readString(
+              json,
+              const ['matchDate', 'match_date', 'date'],
+            ) ??
+            derivedDate,
+        matchTime: _readString(
+              json,
+              const [
+                'matchTime',
+                'match_time',
+                'time',
+                'kickoffTime',
+                'kickoff_time',
+              ],
+            ) ??
+            derivedTime,
+        matchTimestamp: matchTimestamp,
+        status: _normalizeStatus(
+          _readString(json, const ['matchStatus', 'match_status', 'status']),
+        ),
+        score: homeScore != null || awayScore != null
+            ? ScoreInfo(home: homeScore, away: awayScore)
+            : null,
+      );
+    }
+
     final homeJson = _readMap(
       json,
       const ['homeTeam', 'home_team', 'home'],
@@ -206,6 +341,9 @@ class SoccerMatch {
     final leagueJson = _readMap(
       json,
       const ['league', 'leagueInfo', 'league_info'],
+    );
+    print(
+      '[SOCCER] Field mapping: homeTeam<=homeTeam|home_team|home (found: ${homeJson != null}), awayTeam<=awayTeam|away_team|away (found: ${awayJson != null}), league<=league|leagueInfo|league_info (found: ${leagueJson != null})',
     );
     final scoreJson = _readMap(json, const ['score', 'scores', 'result']);
 
@@ -236,10 +374,14 @@ class SoccerMatch {
       matchId: matchId,
       apiMatchId: apiMatchId,
       homeTeam: homeJson == null
-          ? const TeamInfo(name: '')
+          ? (homeValue != null
+              ? TeamInfo.fromJson(homeValue)
+              : const TeamInfo(name: ''))
           : TeamInfo.fromJson(homeJson),
       awayTeam: awayJson == null
-          ? const TeamInfo(name: '')
+          ? (awayValue != null
+              ? TeamInfo.fromJson(awayValue)
+              : const TeamInfo(name: ''))
           : TeamInfo.fromJson(awayJson),
       league: leagueJson == null
           ? const LeagueInfo(id: 0, name: '')
@@ -247,13 +389,14 @@ class SoccerMatch {
       matchDate: matchDate,
       matchTime: matchTime,
       matchTimestamp: _parseDateTime(
-        json['matchTimestamp'] ??
+        json['commence_time'] ??
+            json['matchTimestamp'] ??
             json['match_timestamp'] ??
             json['timestamp'] ??
             json['kickoff'],
       ),
       status: _normalizeStatus(
-        _readString(json, const ['status', 'matchStatus', 'match_status']),
+        _readString(json, const ['matchStatus', 'match_status', 'status']),
       ),
       score: scoreJson == null ? null : ScoreInfo.fromJson(scoreJson),
     );
@@ -298,20 +441,41 @@ class SoccerAnalysisCard {
   });
 
   factory SoccerAnalysisCard.fromJson(Map<String, dynamic> json) {
-    final matchJson = _readMap(json, const ['match', 'fixture', 'game']) ?? json;
+    print('[SOCCER] fromJson keys: ${json.keys.toList()}');
+    print(
+      '[SOCCER] Field mapping: match<=match|fixture|game|root; odds<=odds|matchOdds|match_odds|flat home_odds; grade<=grade|pickGrade|pick_grade; prediction<=prediction|analysis|pick|flat predicted_winner',
+    );
+
+    final nestedMatchJson = _readMap(json, const ['match', 'fixture', 'game']);
+    final matchJson = nestedMatchJson ?? json;
+
     final oddsJson = _readMap(json, const ['odds', 'matchOdds', 'match_odds']);
+    final hasFlatOdds = json.containsKey('home_odds') ||
+        json.containsKey('draw_odds') ||
+        json.containsKey('away_odds');
+
     final predictionJson = _readMap(
       json,
       const ['prediction', 'analysis', 'pick'],
     );
+    final hasFlatPrediction = json.containsKey('predicted_winner') ||
+        json.containsKey('home_probability') ||
+        json.containsKey('draw_probability') ||
+        json.containsKey('away_probability');
 
     return SoccerAnalysisCard(
       match: SoccerMatch.fromJson(matchJson),
-      odds: oddsJson == null ? null : SoccerOdds.fromJson(oddsJson),
+      odds: oddsJson != null
+          ? SoccerOdds.fromJson(oddsJson)
+          : hasFlatOdds
+              ? SoccerOdds.fromJson(json)
+              : null,
       grade: _readString(json, const ['grade', 'pickGrade', 'pick_grade']),
-      prediction: predictionJson == null
-          ? null
-          : SoccerPrediction.fromJson(predictionJson),
+      prediction: predictionJson != null
+          ? SoccerPrediction.fromJson(predictionJson)
+          : hasFlatPrediction
+              ? SoccerPrediction.fromJson(json)
+              : null,
     );
   }
 

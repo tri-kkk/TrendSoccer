@@ -31,32 +31,46 @@ class PremiumPickStatsView {
   );
 
   factory PremiumPickStatsView.fromMap(Map<String, dynamic> map) {
-    return PremiumPickStatsView(
-      winRate: _formatWinRate(
-        map['winRate'] ?? map['win_rate'] ?? map['accuracy'] ?? map['hitRate'],
-      ),
-      countdown: _formatCountdown(
-        map['countdown'] ??
-            map['nextUpdate'] ??
-            map['next_update'] ??
-            map['updateTime'] ??
-            map['update_time'],
-      ),
-      streak: _formatStreak(
-        map['streak'] ?? map['winStreak'] ?? map['win_streak'] ?? map['currentStreak'],
-      ),
-      pickCount: _formatPickCount(
+    final statsRaw = map['stats'];
+    final stats =
+        statsRaw is Map ? Map<String, dynamic>.from(statsRaw) : null;
+
+    final winRate = stats?['winRate'] ??
+        map['winRate'] ??
+        map['win_rate'] ??
+        map['accuracy'] ??
+        map['hitRate'];
+    final streak = stats?['streak'] ??
+        map['streak'] ??
+        map['winStreak'] ??
+        map['win_streak'] ??
+        map['currentStreak'];
+    final streakType = stats?['streakType'] ??
+        stats?['streak_type'] ??
+        map['streakType'] ??
+        map['streak_type'];
+    final total = stats?['total'] ??
+        map['total'] ??
         map['pickCount'] ??
-            map['pick_count'] ??
-            map['todayPicks'] ??
-            map['today_picks'] ??
-            map['picksToday'],
-      ),
+        map['pick_count'] ??
+        map['todayPicks'] ??
+        map['today_picks'] ??
+        map['picksToday'];
+
+    print(
+      '[SOCCER] PremiumPickStats parsed: winRate=$winRate, streak=$streak, total=$total',
+    );
+
+    return PremiumPickStatsView(
+      winRate: _formatWinRate(winRate),
+      countdown: formatCountdown(nextKstUpdateRemaining()),
+      streak: _formatStreak(streak, streakType),
+      pickCount: _formatPickCount(total),
       recentWins: _parseRecentWins(
-        map['recentWins'] ??
-            map['recent_wins'] ??
-            map['recentResults'] ??
+        map['recentResults'] ??
             map['recent_results'] ??
+            map['recentWins'] ??
+            map['recent_wins'] ??
             map['wins'],
       ),
     );
@@ -70,6 +84,7 @@ List<RecentWinData> _parseRecentWins(Object? value) {
       .whereType<Map>()
       .map((item) {
         final map = Map<String, dynamic>.from(item);
+        final matchTeams = _parseMatchTeams(map['match']);
         return RecentWinData(
           homeTeam: _readString(map, const [
                 'homeTeam',
@@ -77,6 +92,7 @@ List<RecentWinData> _parseRecentWins(Object? value) {
                 'home',
                 'homeTeamName',
               ]) ??
+              matchTeams?.home ??
               '—',
           awayTeam: _readString(map, const [
                 'awayTeam',
@@ -84,9 +100,11 @@ List<RecentWinData> _parseRecentWins(Object? value) {
                 'away',
                 'awayTeamName',
               ]) ??
+              matchTeams?.away ??
               '—',
           pickDirection: _formatPickDirectionLabel(
-            map['pickDirection'] ??
+            map['predicted'] ??
+                map['pickDirection'] ??
                 map['pick_direction'] ??
                 map['pick'] ??
                 map['direction'],
@@ -97,6 +115,16 @@ List<RecentWinData> _parseRecentWins(Object? value) {
       .toList();
 
   return wins.isEmpty ? PremiumPickStatsView.placeholder.recentWins : wins;
+}
+
+({String home, String away})? _parseMatchTeams(Object? match) {
+  if (match is! String || match.isEmpty) return null;
+  final parts = match.split(RegExp(r'\s+vs\s+', caseSensitive: false));
+  if (parts.length < 2) return null;
+  return (
+    home: parts.first.trim(),
+    away: parts.sublist(1).join(' vs ').trim(),
+  );
 }
 
 String? _readString(Map<String, dynamic> map, List<String> keys) {
@@ -117,51 +145,53 @@ String _formatWinRate(Object? value) {
   return raw.contains('%') ? raw : '$raw%';
 }
 
-String _formatStreak(Object? value) {
+String _formatStreak(Object? value, [Object? streakType]) {
   if (value == null) return '-';
-  if (value is num) return '${value.round()} WIN';
-  final raw = value.toString();
-  if (raw.toUpperCase().contains('WIN')) return raw;
-  return '$raw WIN';
+
+  final type = streakType?.toString().toLowerCase() ?? '';
+  if (type.contains('los')) return '-';
+
+  final count = value is num
+      ? value.round()
+      : int.tryParse(value.toString()) ?? 0;
+  if (count <= 0) return '-';
+  if (!type.contains('win')) return '-';
+
+  return '$count연승';
+}
+
+/// Remaining time until the next premium-pick update (KST 06:00 / 18:00).
+Duration nextKstUpdateRemaining() {
+  final now = DateTime.now().toUtc();
+  final todayDate = DateTime.utc(now.year, now.month, now.day);
+  final update0900Utc = todayDate.add(const Duration(hours: 9));
+  final update2100Utc = todayDate.add(const Duration(hours: 21));
+
+  final DateTime nextUpdateUtc;
+  if (now.isBefore(update0900Utc)) {
+    nextUpdateUtc = update0900Utc;
+  } else if (now.isBefore(update2100Utc)) {
+    nextUpdateUtc = update2100Utc;
+  } else {
+    nextUpdateUtc = update0900Utc.add(const Duration(days: 1));
+  }
+
+  return nextUpdateUtc.difference(now);
+}
+
+/// Formats a countdown duration as HH:MM:SS.
+String formatCountdown(Duration duration) {
+  if (duration.isNegative) return '00:00:00';
+  final hours = duration.inHours.toString().padLeft(2, '0');
+  final minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
+  final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
+  return '$hours:$minutes:$seconds';
 }
 
 String _formatPickCount(Object? value) {
   if (value == null) return '-';
   if (value is num) return '${value.round()}';
   return value.toString();
-}
-
-String _formatCountdown(Object? value) {
-  if (value == null) return '-';
-  if (value is String && value.isNotEmpty) return value;
-
-  if (value is num) {
-    final minutes = value.round();
-    if (minutes >= 60) {
-      final hours = minutes ~/ 60;
-      final mins = minutes % 60;
-      return mins > 0 ? '${hours}h ${mins}m' : '${hours}h';
-    }
-    return '${minutes}m';
-  }
-
-  if (value is String) {
-    final parsed = DateTime.tryParse(value);
-    if (parsed != null) {
-      final diff = parsed.toUtc().difference(DateTime.now().toUtc());
-      if (diff.isNegative) return '곧 업데이트';
-      return _durationLabel(diff);
-    }
-  }
-  return '-';
-}
-
-String _durationLabel(Duration duration) {
-  if (duration.inHours > 0) {
-    return '${duration.inHours}h ${duration.inMinutes % 60}m';
-  }
-  final minutes = duration.inMinutes;
-  return minutes > 0 ? '${minutes}m' : '1m';
 }
 
 String _formatPickDirectionLabel(Object? value) {

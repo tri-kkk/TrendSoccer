@@ -1,9 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/access_gate.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/cards/pick_direction_badge.dart';
 import 'package:trendsoccer/shared/widgets/league/ts_league_icon.dart';
@@ -18,6 +20,9 @@ class AnalysisCard extends StatelessWidget {
     required this.matchTime,
     this.homeLogoUrl,
     this.awayLogoUrl,
+    this.leagueLogoUrl,
+    this.matchTimestamp,
+    this.planType,
     this.onAnalyze,
     this.isPremiumPick = false,
     this.pickDirection,
@@ -33,6 +38,9 @@ class AnalysisCard extends StatelessWidget {
   final String matchTime;
   final String? homeLogoUrl;
   final String? awayLogoUrl;
+  final String? leagueLogoUrl;
+  final DateTime? matchTimestamp;
+  final PlanType? planType;
   final VoidCallback? onAnalyze;
   final bool isPremiumPick;
   final PickDirection? pickDirection;
@@ -71,6 +79,61 @@ class AnalysisCard extends StatelessWidget {
     );
   }
 
+  Widget _buildAnalyzeButton(TsSemanticColors semantic) {
+    final timestamp = matchTimestamp;
+    final tier = planType;
+    if (timestamp != null && tier != null) {
+      final kickoff = timestamp.toUtc();
+      final canView = AccessGate.canViewStandardAnalysis(
+        matchTimestamp: kickoff,
+        planType: tier,
+      );
+      if (canView) {
+        return TsButton(
+          label: '분석보기',
+          variant: TsButtonVariant.primary,
+          onPressed: onAnalyze,
+        );
+      }
+
+      final until = AccessGate.timeUntilUnlock(
+        matchTimestamp: kickoff,
+        planType: tier,
+      );
+      final label = until != null
+          ? AccessGate.formatTimeUntilUnlock(until)
+          : '분석보기';
+
+      return SizedBox(
+        width: double.infinity,
+        height: 48,
+        child: Material(
+          color: semantic.textDisabled,
+          borderRadius: BorderRadius.circular(8),
+          child: InkWell(
+            onTap: onAnalyze,
+            borderRadius: BorderRadius.circular(8),
+            child: Center(
+              child: Text(
+                label,
+                style: TsType.bodyLBold.copyWith(color: semantic.textTertiary),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return TsButton(
+      label: '분석하기',
+      variant: TsButtonVariant.primary,
+      onPressed: onAnalyze,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
@@ -93,7 +156,11 @@ class AnalysisCard extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TsLeagueIcon(leagueId: leagueId, size: 24),
+                    TsLeagueIcon(
+                      leagueId: leagueId,
+                      size: 24,
+                      logoUrl: leagueLogoUrl,
+                    ),
                     const SizedBox(width: TsSpacing.sm),
                     Text(
                       leagueName,
@@ -202,11 +269,7 @@ class AnalysisCard extends StatelessWidget {
               ),
               const SizedBox(height: TsSpacing.lg),
             ],
-            TsButton(
-              label: '분석하기',
-              variant: TsButtonVariant.primary,
-              onPressed: onAnalyze,
-            ),
+            _buildAnalyzeButton(semantic),
           ],
         ),
       ),

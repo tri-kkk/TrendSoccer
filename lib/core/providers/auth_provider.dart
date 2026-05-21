@@ -213,24 +213,47 @@ class SupabaseAuthProvider extends ChangeNotifier {
   }
 
   Future<void> loginWithGoogle() async {
-    final googleSignIn = GoogleSignIn(
-      serverClientId: AppConfig.googleWebClientId,
-    );
-    final account = await googleSignIn.signIn();
-    if (account == null) return;
-
-    final authentication = await account.authentication;
-    final idToken = authentication.idToken;
-    if (idToken == null) {
-      throw Exception('Google sign-in failed: idToken is null');
-    }
-
     try {
-      final response =
-          await _ref.read(authServiceProvider).googleAuth(idToken);
-      await _applyLoginResponse(response, LoginMethod.google);
-    } on ApiException catch (e) {
-      throw _mapAuthException(e);
+      print('[AUTH] Step 1: Starting Google Sign-In');
+      final googleSignIn = GoogleSignIn(
+        serverClientId: AppConfig.googleWebClientId,
+      );
+      final account = await googleSignIn.signIn();
+      if (account == null) return;
+
+      print('[AUTH] Step 2: Got account: ${account.email}');
+      final authentication = await account.authentication;
+      final idToken = authentication.idToken;
+      final accessToken = authentication.accessToken;
+      print(
+        '[AUTH] Step 3: idToken=${idToken != null}, accessToken=${accessToken != null}, accessToken length: ${accessToken?.length}',
+      );
+      if (accessToken == null) {
+        throw Exception('Google sign-in failed: accessToken is null');
+      }
+
+      print('[AUTH] Step 4: Calling /api/v1/mobile/auth/google');
+      try {
+        final response =
+            await _ref.read(authServiceProvider).googleAuth(accessToken);
+        print(
+          '[AUTH] Step 5: Login response received, isNewUser=${response.user.isNewUser}',
+        );
+        await _applyLoginResponse(response, LoginMethod.google);
+      } on ApiException catch (e) {
+        throw _mapAuthException(e);
+      }
+    } catch (e) {
+      print('[AUTH] ERROR: ${e.runtimeType}: $e');
+      if (e is ApiException) {
+        print('[AUTH] API Error code: ${e.code}, message: ${e.message}');
+      }
+      if (e is DioException) {
+        print(
+          '[AUTH] Dio Error: ${e.type}, statusCode: ${e.response?.statusCode}, data: ${e.response?.data}',
+        );
+      }
+      rethrow;
     }
   }
 

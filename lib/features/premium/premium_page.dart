@@ -110,6 +110,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                   child: AnalysisCard(
                     leagueId: leagueId,
                     leagueName: match.league.name,
+                    leagueLogoUrl: match.league.icon,
                     date: formatSoccerCardDate(match.matchDate),
                     homeTeam: match.homeTeam.name,
                     awayTeam: match.awayTeam.name,

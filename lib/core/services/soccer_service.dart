@@ -15,17 +15,69 @@ class SoccerService {
 
   static const _analysisTimeout = Duration(seconds: 20);
 
+  static const analysisLeagueCodes = [
+    'PL', // EPL (Premier League)
+    'PD', // La Liga
+    'BL1', // Bundesliga
+    'SA', // Serie A
+    'FL1', // Ligue 1
+    'DED', // Eredivisie
+    'MLS', // MLS
+    'KL', // K League
+    'KL1', // K League 1 (alternate code)
+    'KL2', // K League 2
+    'J1', // J League
+    'UCL', // Champions League
+    'UEL', // Europa League
+    'CL', // Champions League (alternate)
+    'EL', // Europa League (alternate)
+  ];
+
+  static final Set<String> _analysisLeagueCodeSet =
+      analysisLeagueCodes.map((code) => code.toUpperCase()).toSet();
+
   // TODO: Replace with /api/v1/mobile/soccer/matches when available
   Future<List<SoccerAnalysisCard>> getMatches({
-    required String date,
+    String? date,
     String? league,
   }) async {
+    print('[SOCCER] getMatches called with date: $date');
     try {
+      final queryParameters = <String, String>{};
+      if (date != null && date.isNotEmpty) {
+        queryParameters['date'] = date;
+      }
       final response = await _dio.get<dynamic>(
         '/api/odds-from-db',
-        queryParameters: <String, String>{'date': date},
+        queryParameters: queryParameters.isEmpty ? null : queryParameters,
       );
-      final cards = _adaptToAnalysisCards(response.data);
+      final raw = response.data;
+      print('[SOCCER] Raw response type: ${raw.runtimeType}');
+      if (raw is Map) {
+        print('[SOCCER] Raw response keys: ${raw.keys.toList()}');
+      } else {
+        print('[SOCCER] Raw response keys: not a map');
+      }
+      if (raw is Map && raw.containsKey('data')) {
+        print('[SOCCER] data is List: ${raw['data'] is List}');
+        print('[SOCCER] data length: ${(raw['data'] as List?)?.length}');
+        if (raw['data'] is List && (raw['data'] as List).isNotEmpty) {
+          final first = (raw['data'] as List).first;
+          if (first is Map) {
+            print('[SOCCER] First item keys: ${first.keys.toList()}');
+            print(
+              '[SOCCER] First item sample: home_team=${first['home_team']}, away_team=${first['away_team']}',
+            );
+          }
+        }
+      }
+      if (raw is List) {
+        print('[SOCCER] Response is direct List, length: ${raw.length}');
+        if (raw.isNotEmpty && raw.first is Map) {
+          print('[SOCCER] First item keys: ${(raw.first as Map).keys.toList()}');
+        }
+      }
+      final cards = _filterAnalysisLeagueCards(_adaptToAnalysisCards(raw));
       if (league == null || league.isEmpty) return cards;
       return cards.where((card) => _matchesLeague(card, league)).toList();
     } catch (e) {
@@ -90,24 +142,232 @@ class SoccerService {
   }
 
   // TODO: Replace with /api/v1/mobile/soccer/premium-picks/stats when available
-  Future<Map<String, dynamic>> getPremiumPickStats({int days = 7}) async {
+  Future<Map<String, dynamic>> getPremiumPickStats({int days = 30}) async {
+    print('[SOCCER] getPremiumPickStats days=$days');
     try {
       final response = await _dio.get<dynamic>(
         '/api/premium-picks/stats',
         queryParameters: <String, int>{'days': days},
       );
-      return _adaptToMap(response.data);
+      final raw = response.data;
+      print(
+        '[SOCCER] getPremiumPickStats raw response type: ${raw.runtimeType}',
+      );
+      print(
+        '[SOCCER] getPremiumPickStats raw keys: ${raw is Map ? raw.keys.toList() : "not map"}',
+      );
+      if (raw is Map<String, dynamic>) return raw;
+      if (raw is Map) return Map<String, dynamic>.from(raw);
+      return <String, dynamic>{};
     } catch (e) {
       return {};
     }
   }
 
+  Future<Map<String, dynamic>> getPremiumPickHistory() async {
+    try {
+      final response = await _dio.get<dynamic>('/api/premium-picks/history');
+      final raw = response.data;
+      if (raw is Map<String, dynamic>) return raw;
+      if (raw is Map) return Map<String, dynamic>.from(raw);
+      return <String, dynamic>{};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  Map<String, dynamic> calculateRecentStats(
+    Map<String, dynamic> historyResponse, {
+    int windowSize = 30,
+  }) {
+    final picks = _extractHistoryPicks(historyResponse);
+    if (picks.isEmpty) return {};
+
+    final settled = picks.where((pick) {
+      final result = _readPickResult(pick)?.toUpperCase();
+      return result == 'WIN' || result == 'LOSE';
+    }).toList();
+
+    settled.sort((a, b) {
+      final aTime = _readCommenceTime(a);
+      final bTime = _readCommenceTime(b);
+      if (aTime == null && bTime == null) return 0;
+      if (aTime == null) return 1;
+      if (bTime == null) return -1;
+      return bTime.compareTo(aTime);
+    });
+
+    final window = settled.take(windowSize).toList();
+    if (window.isEmpty) return {};
+
+    var wins = 0;
+    var losses = 0;
+    for (final pick in window) {
+      if (_readPickResult(pick)?.toUpperCase() == 'WIN') {
+        wins++;
+      } else {
+        losses++;
+      }
+    }
+
+    final total = window.length;
+    final winRate = total > 0 ? ((wins / total) * 100).round() : 0;
+
+    var streak = 0;
+    for (final pick in window) {
+      if (_readPickResult(pick)?.toUpperCase() == 'WIN') {
+        streak++;
+      } else {
+        break;
+      }
+    }
+
+    final recentResults =
+        window.take(7).map(_toRecentResultEntry).toList(growable: false);
+
+    print(
+      '[SOCCER] calculateRecentStats: winRate=$winRate, streak=$streak, total=$total',
+    );
+
+    return {
+      'winRate': winRate,
+      'wins': wins,
+      'losses': losses,
+      'streak': streak,
+      'streakType': streak > 0 ? 'winning' : 'losing',
+      'total': total,
+      'recentResults': recentResults,
+    };
+  }
+
+  List<Map<String, dynamic>> _extractHistoryPicks(
+    Map<String, dynamic> response,
+  ) {
+    for (final key in const [
+      'picks',
+      'data',
+      'history',
+      'results',
+      'items',
+    ]) {
+      final value = response[key];
+      if (value is List) {
+        return value
+            .whereType<Map>()
+            .map((item) => Map<String, dynamic>.from(item))
+            .toList();
+      }
+    }
+    return const [];
+  }
+
+  String? _readPickResult(Map<String, dynamic> pick) {
+    for (final key in const ['result', 'outcome', 'status']) {
+      final value = pick[key];
+      if (value is String && value.isNotEmpty) return value;
+    }
+    return null;
+  }
+
+  DateTime? _readCommenceTime(Map<String, dynamic> pick) {
+    for (final key in const [
+      'commence_time',
+      'commenceTime',
+      'kickoff',
+      'kickoff_time',
+      'date',
+      'matchDate',
+      'match_date',
+    ]) {
+      final value = pick[key];
+      if (value == null) continue;
+      if (value is DateTime) return value.toUtc();
+      if (value is num) {
+        final timestamp = value > 1e12 ? value.toInt() : (value * 1000).toInt();
+        return DateTime.fromMillisecondsSinceEpoch(timestamp, isUtc: true);
+      }
+      if (value is String) {
+        final parsed = DateTime.tryParse(value);
+        if (parsed != null) return parsed.toUtc();
+      }
+    }
+    return null;
+  }
+
+  Map<String, dynamic> _toRecentResultEntry(Map<String, dynamic> pick) {
+    final match = pick['match'];
+    if (match is String && match.isNotEmpty) {
+      return {
+        'match': match,
+        'predicted': pick['predicted'] ??
+            pick['prediction'] ??
+            pick['pick'] ??
+            pick['direction'],
+        'score': pick['score'],
+        'result': pick['result'],
+        'date': pick['date'] ?? pick['commence_time'] ?? pick['commenceTime'],
+      };
+    }
+
+    final home = pick['homeTeam'] ?? pick['home_team'] ?? pick['home'];
+    final away = pick['awayTeam'] ?? pick['away_team'] ?? pick['away'];
+    final matchLabel = (home != null && away != null) ? '$home vs $away' : '';
+
+    return {
+      if (matchLabel.isNotEmpty) 'match': matchLabel,
+      'predicted': pick['predicted'] ??
+          pick['prediction'] ??
+          pick['pick'] ??
+          pick['direction'],
+      'score': pick['score'],
+      'result': pick['result'],
+      'date': pick['date'] ?? pick['commence_time'] ?? pick['commenceTime'],
+    };
+  }
+
+  List<SoccerAnalysisCard> _filterAnalysisLeagueCards(
+    List<SoccerAnalysisCard> cards,
+  ) {
+    final excludedCodes = <String>{};
+    final filtered = cards.where((card) {
+      final code = card.match.league.code?.toUpperCase();
+      if (code == null || !_analysisLeagueCodeSet.contains(code)) {
+        if (code != null && code.isNotEmpty) {
+          excludedCodes.add(code);
+        }
+        return false;
+      }
+      return true;
+    }).toList();
+
+    if (excludedCodes.isNotEmpty) {
+      print(
+        '[SOCCER] Filtered non-analysis league codes: ${excludedCodes.toList()}',
+      );
+    }
+    print(
+      '[SOCCER] Analysis league filter: ${cards.length} -> ${filtered.length} cards',
+    );
+    return filtered;
+  }
+
   List<SoccerAnalysisCard> _adaptToAnalysisCards(dynamic data) {
     final items = _extractList(data);
-    return items
+    print('[SOCCER] Parsing ${items.length} items into SoccerAnalysisCard');
+    final cards = items
         .whereType<Map<String, dynamic>>()
         .map(SoccerAnalysisCard.fromJson)
         .toList();
+    if (cards.isNotEmpty) {
+      final card = cards.first;
+      print(
+        '[SOCCER] Parsed card: home=${card.match.homeTeam.name}, away=${card.match.awayTeam.name}, league=${card.match.league.name}',
+      );
+    }
+    if (items.isNotEmpty && cards.isEmpty) {
+      print('[SOCCER] WARNING: Data exists but parsed 0 cards');
+    }
+    return cards;
   }
 
   Map<String, dynamic> _adaptToMap(dynamic data) {

@@ -92,6 +92,21 @@ abstract final class AccessGate {
     return remaining.isNegative ? Duration.zero : remaining;
   }
 
+  /// Countdown label for locked analysis cards (Figma copy).
+  static String formatTimeUntilUnlock(Duration duration) {
+    if (duration <= Duration.zero) return '분석보기';
+    if (duration.inDays >= 1) {
+      return '${duration.inDays}일 ${duration.inHours % 24}시간 후 오픈';
+    }
+    if (duration.inHours >= 1) {
+      return '${duration.inHours}시간 ${duration.inMinutes % 60}분 후 오픈';
+    }
+    if (duration.inMinutes >= 1) {
+      return '${duration.inMinutes}분 후 오픈';
+    }
+    return '분석보기';
+  }
+
   /// Premium-only surfaces: H2H/deep analysis, PREMIUM PICK list, baseball AI/combos.
   static bool canViewPremiumContent({required PlanType planType}) {
     return planType == PlanType.premium;

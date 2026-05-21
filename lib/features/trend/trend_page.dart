@@ -262,7 +262,6 @@ class _TrendPageState extends ConsumerState<TrendPage> {
                 const SizedBox(height: 16),
                 PremiumPickStatsCard(
                   showCTA: true,
-                  useTrendLabels: true,
                   onCTATap: () {
                     final auth = ref.read(authProvider);
                     if (auth.hasFullAccess) {
@@ -303,6 +302,7 @@ class _TrendSoccerCard extends StatelessWidget {
     return AnalysisCard(
       leagueId: leagueId,
       leagueName: match.league.name,
+      leagueLogoUrl: match.league.icon,
       date: formatSoccerCardDate(match.matchDate),
       homeTeam: match.homeTeam.name,
       awayTeam: match.awayTeam.name,
