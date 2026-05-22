@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 import 'package:trendsoccer/core/models/soccer_models.dart';
+import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/services/soccer_service.dart';
 import 'package:trendsoccer/core/services/web_api_client.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
@@ -95,24 +96,49 @@ Future<List<SoccerAnalysisCard>> _fetchAnalysisSoccerMatches(
   return filtered;
 }
 
-/// Normalized team name → logo URL from 7-day analysis match data.
+/// Normalized team name → logo URL from analysis, fixture, and history data.
 final teamLogoMapProvider = Provider<Map<String, String>>((ref) {
-  final matchesAsync = ref.watch(analysisSoccerMatchesProvider);
-  return matchesAsync.maybeWhen(
-    data: _buildTeamLogoMap,
-    orElse: () => const {},
-  );
-});
-
-Map<String, String> _buildTeamLogoMap(List<SoccerAnalysisCard> cards) {
   final map = <String, String>{};
-  for (final card in cards) {
-    _addTeamLogoEntry(map, card.match.homeTeam);
-    _addTeamLogoEntry(map, card.match.awayTeam);
-  }
+
+  ref.watch(analysisSoccerMatchesProvider).maybeWhen(
+        data: (cards) {
+          for (final card in cards) {
+            _addTeamLogoEntry(map, card.match.homeTeam);
+            _addTeamLogoEntry(map, card.match.awayTeam);
+          }
+        },
+        orElse: () {},
+      );
+
+  ref.watch(soccerFixturesProvider).maybeWhen(
+        data: (matches) {
+          for (final match in matches) {
+            _addTeamLogoEntryByName(map, match.homeTeam, match.homeTeamLogo);
+            _addTeamLogoEntryByName(map, match.awayTeam, match.awayTeamLogo);
+          }
+        },
+        orElse: () {},
+      );
+
+  ref.watch(premiumPickStatsProvider).maybeWhen(
+        data: (stats) {
+          final teamLogos = stats['teamLogos'];
+          if (teamLogos is Map) {
+            for (final entry in teamLogos.entries) {
+              _addTeamLogoEntryByName(
+                map,
+                entry.key.toString(),
+                entry.value?.toString(),
+              );
+            }
+          }
+        },
+        orElse: () {},
+      );
+
   print('[SOCCER] teamLogoMap built with ${map.length} teams');
   return map;
-}
+});
 
 const _diacriticMap = {
   'ä': 'a',
@@ -168,11 +194,19 @@ String normalizeTeamNameForLogo(String input) {
 }
 
 void _addTeamLogoEntry(Map<String, String> map, TeamInfo team) {
-  final name = team.name.trim();
-  final logo = team.logo?.trim();
-  if (name.isEmpty || logo == null || logo.isEmpty) return;
+  _addTeamLogoEntryByName(map, team.name, team.logo);
+}
 
-  final lowered = name.toLowerCase();
+void _addTeamLogoEntryByName(
+  Map<String, String> map,
+  String name,
+  String? logoUrl,
+) {
+  final trimmedName = name.trim();
+  final logo = logoUrl?.trim();
+  if (trimmedName.isEmpty || logo == null || logo.isEmpty) return;
+
+  final lowered = trimmedName.toLowerCase();
   map[lowered] = logo;
 
   final stripped = stripDiacritics(lowered);
@@ -180,23 +214,171 @@ void _addTeamLogoEntry(Map<String, String> map, TeamInfo team) {
     map[stripped] = logo;
   }
 
-  final normalized = normalizeTeamNameForLogo(name);
+  final normalized = normalizeTeamNameForLogo(trimmedName);
   map[normalized] = logo;
+
+  for (final entry in _teamNameAliases.entries) {
+    if (entry.value == normalized || entry.key == normalized) {
+      map[entry.key] = logo;
+      map[normalizeTeamNameForLogo(entry.value)] = logo;
+    }
+  }
 }
 
-/// Looks up a team logo URL with exact then contains-based matching.
+final _loggedMissingTeamLogos = <String>{};
+
+const _teamNameSkipWords = {
+  'fc',
+  'sc',
+  'cf',
+  'afc',
+  'united',
+  'city',
+  'real',
+  'club',
+  'sporting',
+  'the',
+  'and',
+  'de',
+  'as',
+  'ss',
+  'ssc',
+  'ol',
+  'vfl',
+  'rb',
+};
+
+const _teamNameAliases = <String, String>{
+  'man city': 'manchester city',
+  'man united': 'manchester united',
+  'man utd': 'manchester united',
+  'atletico': 'atletico madrid',
+  'atletico madrid': 'atletico de madrid',
+  'real madrid': 'real madrid cf',
+  'barcelona': 'fc barcelona',
+  'barca': 'fc barcelona',
+  'bayern': 'bayern munich',
+  'bayern munich': 'bayern munchen',
+  'dortmund': 'borussia dortmund',
+  'bvb': 'borussia dortmund',
+  'leipzig': 'rb leipzig',
+  'leverkusen': 'bayer leverkusen',
+  'tottenham': 'tottenham hotspur',
+  'spurs': 'tottenham hotspur',
+  'wolves': 'wolverhampton wanderers',
+  'brighton': 'brighton and hove albion',
+  'newcastle': 'newcastle united',
+  'west ham': 'west ham united',
+  'nottm forest': 'nottingham forest',
+  'nott forest': 'nottingham forest',
+  'palace': 'crystal palace',
+  'villa': 'aston villa',
+  'bournemouth': 'afc bournemouth',
+  'sociedad': 'real sociedad',
+  'betis': 'real betis',
+  'bilbao': 'athletic bilbao',
+  'athletic': 'athletic bilbao',
+  'sevilla': 'sevilla fc',
+  'villarreal': 'villarreal cf',
+  'inter': 'inter milan',
+  'inter milan': 'fc internazionale milano',
+  'ac milan': 'ac milan',
+  'napoli': 'ssc napoli',
+  'roma': 'as roma',
+  'lazio': 'ss lazio',
+  'juventus': 'juventus fc',
+  'juve': 'juventus fc',
+  'psg': 'paris saint germain',
+  'paris': 'paris saint germain',
+  'lyon': 'olympique lyonnais',
+  'marseille': 'olympique de marseille',
+  'monaco': 'as monaco',
+  'freiburg': 'sc freiburg',
+  'wolfsburg': 'vfl wolfsburg',
+  'koln': 'fc koln',
+  'cologne': '1 fc koln',
+  'mainz': '1 fsv mainz 05',
+  'frankfurt': 'eintracht frankfurt',
+  'ajax': 'afc ajax',
+  'psv': 'psv eindhoven',
+  'feyenoord': 'feyenoord rotterdam',
+};
+
+String? _resolveTeamAlias(String normalizedName) {
+  if (_teamNameAliases.containsKey(normalizedName)) {
+    return _teamNameAliases[normalizedName];
+  }
+  return null;
+}
+
+String? _primaryTeamWord(String normalizedName) {
+  final words = normalizedName
+      .split(' ')
+      .where((word) => word.isNotEmpty && word.length >= 3)
+      .toList();
+  if (words.isEmpty) return null;
+
+  final candidates =
+      words.where((word) => !_teamNameSkipWords.contains(word)).toList();
+  if (candidates.isEmpty) {
+    return words.reduce((a, b) => a.length >= b.length ? a : b);
+  }
+  return candidates.reduce((a, b) => a.length >= b.length ? a : b);
+}
+
+String? _lookupLogoForKeys(Map<String, String> logoMap, Set<String> keys) {
+  for (final key in keys) {
+    if (key.isNotEmpty && logoMap.containsKey(key)) {
+      return logoMap[key];
+    }
+  }
+  return null;
+}
+
+String? _wordBasedLogoMatch(
+  Map<String, String> logoMap,
+  String normalizedLookup,
+) {
+  final primary = _primaryTeamWord(normalizedLookup);
+  if (primary == null || primary.length < 3) return null;
+
+  for (final entry in logoMap.entries) {
+    final normalizedEntry = normalizeTeamNameForLogo(entry.key);
+    if (normalizedEntry.contains(primary)) return entry.value;
+
+    final entryPrimary = _primaryTeamWord(normalizedEntry);
+    if (entryPrimary != null && entryPrimary == primary) {
+      return entry.value;
+    }
+  }
+  return null;
+}
+
+/// Looks up a team logo URL with exact, alias, contains, and word-based matching.
 String? findTeamLogo(Map<String, String> logoMap, String teamName) {
+  if (teamName.trim().isEmpty || logoMap.isEmpty) return null;
+
   final lookupKeys = <String>{
     teamName.toLowerCase().trim(),
     stripDiacritics(teamName.toLowerCase().trim()),
     normalizeTeamNameForLogo(teamName),
   }..removeWhere((key) => key.isEmpty);
 
-  for (final key in lookupKeys) {
-    if (logoMap.containsKey(key)) return logoMap[key];
-  }
+  final exactMatch = _lookupLogoForKeys(logoMap, lookupKeys);
+  if (exactMatch != null) return exactMatch;
 
   final normalizedLookup = normalizeTeamNameForLogo(teamName);
+
+  final aliasTarget = _resolveTeamAlias(normalizedLookup);
+  if (aliasTarget != null) {
+    final aliasMatch = _lookupLogoForKeys(logoMap, {
+      aliasTarget,
+      normalizeTeamNameForLogo(aliasTarget),
+      stripDiacritics(aliasTarget),
+    });
+    if (aliasMatch != null) return aliasMatch;
+  }
+
   for (final entry in logoMap.entries) {
     final normalizedEntry = normalizeTeamNameForLogo(entry.key);
     if (entry.key.contains(normalizedLookup) ||
@@ -205,6 +387,14 @@ String? findTeamLogo(Map<String, String> logoMap, String teamName) {
         normalizedLookup.contains(normalizedEntry)) {
       return entry.value;
     }
+  }
+
+  final wordMatch = _wordBasedLogoMatch(logoMap, normalizedLookup);
+  if (wordMatch != null) return wordMatch;
+
+  if (_loggedMissingTeamLogos.add(teamName)) {
+    print('[SOCCER] Logo NOT found for: "$teamName"');
+    print('[SOCCER] Available keys sample: ${logoMap.keys.take(10).toList()}');
   }
   return null;
 }

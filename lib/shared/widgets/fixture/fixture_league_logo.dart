@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/fixture/fixture_league_names.dart';
 import 'package:trendsoccer/shared/widgets/league/ts_league_icon.dart';
 
 export 'fixture_league_names.dart';
@@ -23,12 +22,17 @@ class FixtureLeagueLogo extends StatelessWidget {
   final String? leagueLogoUrl;
   final double size;
 
-  String get _initials {
-    final label = fixtureDisplayLeagueName(leagueName, leagueCode);
-    final trimmed = label.trim();
-    if (trimmed.isEmpty) return '--';
-    if (trimmed.length == 1) return trimmed.toUpperCase();
-    return trimmed.substring(0, 2).toUpperCase();
+  String get _codeLabel {
+    final code = leagueCode.trim().toUpperCase();
+    if (code.isEmpty) return '--';
+    if (code.length <= 4) return code;
+    return code.substring(0, 3);
+  }
+
+  double get _codeFontSize {
+    final length = _codeLabel.length;
+    if (length <= 2) return 11;
+    return 9;
   }
 
   Widget _textFallback(TsSemanticColors semantic) {
@@ -41,11 +45,13 @@ class FixtureLeagueLogo extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: Text(
-        _initials,
+        _codeLabel,
         style: TsType.labelXsBold.copyWith(
           color: semantic.textTertiary,
-          fontSize: size <= 16 ? 8 : 10,
+          fontSize: _codeFontSize,
         ),
+        maxLines: 1,
+        overflow: TextOverflow.clip,
       ),
     );
   }

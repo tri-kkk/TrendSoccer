@@ -55,9 +55,9 @@ final soccerFixturesProvider =
 });
 
 final baseballFixturesProvider =
-    FutureProvider.family<List<FixtureMatch>, String>((ref, date) async {
+    FutureProvider.autoDispose<List<FixtureMatch>>((ref) async {
   final service = ref.read(fixtureServiceProvider);
-  return service.getBaseballFixtures(date: date);
+  return service.getBaseballFixturesRange();
 });
 
 final liveFixturesProvider =
@@ -70,32 +70,26 @@ final rawFixturesProvider = Provider<AsyncValue<List<FixtureMatch>>>((ref) {
   final sport = ref.watch(fixtureSelectedSportProvider);
 
   if (sport == 'baseball') {
-    final date = ref.watch(fixtureSelectedDateProvider);
-    return ref.watch(baseballFixturesProvider(date));
+    return ref.watch(baseballFixturesProvider);
   }
   return ref.watch(soccerFixturesProvider);
 });
 
 List<FixtureMatch> _scopeMatchesForFilters(
   List<FixtureMatch> matches, {
-  required String sport,
   required String selectedDate,
   required bool liveFilter,
 }) {
   if (liveFilter) {
     return matches.where((match) => match.status == 'live').toList();
   }
-  if (sport == 'soccer') {
-    return matches
-        .where((match) => matchIsOnDate(match, selectedDate))
-        .toList();
-  }
-  return matches;
+  return matches
+      .where((match) => matchIsOnDate(match, selectedDate))
+      .toList();
 }
 
 final fixtureAvailableLeaguesProvider =
     Provider<List<FixtureLeagueOption>>((ref) {
-  final sport = ref.watch(fixtureSelectedSportProvider);
   final selectedDate = ref.watch(fixtureSelectedDateProvider);
   final liveFilter = ref.watch(fixtureLiveFilterProvider);
 
@@ -103,7 +97,6 @@ final fixtureAvailableLeaguesProvider =
         data: (matches) => _extractLeagueOptions(
           _scopeMatchesForFilters(
             matches,
-            sport: sport,
             selectedDate: selectedDate,
             liveFilter: liveFilter,
           ),
@@ -130,7 +123,6 @@ List<FixtureLeagueOption> _extractLeagueOptions(List<FixtureMatch> matches) {
 final filteredFixturesProvider =
     Provider<AsyncValue<List<FixtureMatch>>>((ref) {
   final rawAsync = ref.watch(rawFixturesProvider);
-  final sport = ref.watch(fixtureSelectedSportProvider);
   final selectedDate = ref.watch(fixtureSelectedDateProvider);
   final selectedLeague = ref.watch(fixtureSelectedLeagueProvider);
   final liveFilter = ref.watch(fixtureLiveFilterProvider);
@@ -138,7 +130,6 @@ final filteredFixturesProvider =
   return rawAsync.whenData((matches) {
     var filtered = _scopeMatchesForFilters(
       matches,
-      sport: sport,
       selectedDate: selectedDate,
       liveFilter: liveFilter,
     );
@@ -160,10 +151,9 @@ final fixtureLeagueGroupsProvider =
 
 void invalidateFixtureData(WidgetRef ref) {
   final sport = ref.read(fixtureSelectedSportProvider);
-  final date = ref.read(fixtureSelectedDateProvider);
 
   if (sport == 'baseball') {
-    ref.invalidate(baseballFixturesProvider(date));
+    ref.invalidate(baseballFixturesProvider);
   } else {
     ref.invalidate(soccerFixturesProvider);
   }

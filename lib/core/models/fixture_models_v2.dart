@@ -80,37 +80,43 @@ class FixtureMatch {
       awayTeam:
           _readString(json, const ['away_team', 'awayTeam']) ??
               _readTeamName(json, isHome: false),
-      homeTeamLogo: _readString(json, const [
-        'home_team_logo',
-        'homeTeamLogo',
-        'homeCrest',
-        'homeTeamLogoUrl',
-        'home_logo',
-        'homeLogo',
-      ]),
-      awayTeamLogo: _readString(json, const [
-        'away_team_logo',
-        'awayTeamLogo',
-        'awayCrest',
-        'awayTeamLogoUrl',
-        'away_logo',
-        'awayLogo',
-      ]),
+      homeTeamLogo: _nonEmptyOrNull(
+        json['home_team_logo'] ??
+            json['home_crest'] ??
+            json['homeCrest'] ??
+            json['homeTeamLogo'] ??
+            json['homeTeamLogoUrl'] ??
+            json['home_logo'] ??
+            json['homeLogo'],
+      ),
+      awayTeamLogo: _nonEmptyOrNull(
+        json['away_team_logo'] ??
+            json['away_crest'] ??
+            json['awayCrest'] ??
+            json['awayTeamLogo'] ??
+            json['awayTeamLogoUrl'] ??
+            json['away_logo'] ??
+            json['awayLogo'],
+      ),
       leagueCode: league.code,
       leagueName: league.name,
-      leagueLogo: league.logo,
+      leagueLogo: _nonEmptyOrNull(
+        json['leagueLogo'] ?? json['league_logo'] ?? league.logo,
+      ),
       matchDate: displayParts.$1,
       matchTime: displayParts.$2,
       matchTimestamp: resolvedTimestamp,
       status: normalizeMatchStatus(rawStatus),
       homeScore: _parseInt(
         json['finalScoreHome'] ??
+            json['final_score_home'] ??
             json['homeScore'] ??
             json['home_score'] ??
             json['homeGoals'],
       ),
       awayScore: _parseInt(
         json['finalScoreAway'] ??
+            json['final_score_away'] ??
             json['awayScore'] ??
             json['away_score'] ??
             json['awayGoals'],
@@ -211,15 +217,16 @@ String normalizeMatchStatus(String raw) {
 }
 
 DateTime? _parseFixtureDateTime(Map<String, dynamic> json) {
-  final commence = json['commence_time'] ?? json['commenceTime'];
-  if (commence != null) {
-    final parsed = DateTime.tryParse(commence.toString());
+  final isoRaw =
+      json['commence_time'] ?? json['commenceTime'] ?? json['match_date'];
+  if (isoRaw != null) {
+    final parsed = DateTime.tryParse(isoRaw.toString());
     if (parsed != null) {
       return parsed.isUtc ? parsed : parsed.toUtc();
     }
   }
 
-  final dateRaw = json['date'] ?? json['matchDate'] ?? json['match_date'];
+  final dateRaw = json['date'] ?? json['matchDate'];
   final timeRaw = json['time'] ?? json['matchTime'] ?? json['match_time'];
   final dateStr = dateRaw?.toString();
   final timeStr = timeRaw?.toString() ?? '00:00';
@@ -296,15 +303,105 @@ DateTime? _parseDateTimeFromParts(String? date, String? time) {
   return parsed.isUtc ? parsed : parsed.toUtc();
 }
 
+/// Reverse map for finished-match responses where [league] is a full name string.
+const _leagueNameToCode = <String, String>{
+  'Premier League': 'PL',
+  'La Liga': 'PD',
+  'Bundesliga': 'BL1',
+  'Serie A': 'SA',
+  'Ligue 1': 'FL1',
+  'Eredivisie': 'DED',
+  'Major League Soccer': 'MLS',
+  'MLS': 'MLS',
+  'K League 1': 'KL',
+  'K League 2': 'KL2',
+  'J1 League': 'J1',
+  'J League': 'J1',
+  'UEFA Champions League': 'UCL',
+  'Champions League': 'UCL',
+  'UEFA Europa League': 'UEL',
+  'Europa League': 'UEL',
+  'UEFA Europa Conference League': 'ECL',
+  'Conference League': 'ECL',
+  'Scottish Premiership': 'SPL',
+  'Scottish Premier League': 'SPL',
+  'Saudi Pro League': 'SAL',
+  'Egyptian Premier League': 'EGY',
+  'Super League Greece': 'GSL',
+  'Greek Super League': 'GSL',
+  'Swiss Super League': 'SSL',
+  'Jupiler Pro League': 'JPL',
+  'Belgian Pro League': 'JPL',
+  'Campeonato Brasileiro Série A': 'BSA',
+  'Brasileirão': 'BSA',
+  'Brasileirao': 'BSA',
+  'Primeira Liga': 'PPL',
+  'Serie B': 'SB',
+  '2. Bundesliga': 'BL2',
+  'Bundesliga 2': 'BL2',
+  'Championship': 'CHP',
+  'EFL Championship': 'CHP',
+  'League Two': 'L2',
+  'Ligue 2': 'L2',
+  'Liga MX': 'MX',
+  'Chinese Super League': 'CSL',
+  'Super Lig': 'DSL',
+  'Süper Lig': 'DSL',
+  'A-League': 'AUS',
+  'A League': 'AUS',
+  'Copa Libertadores': 'COPA',
+  'Copa Sudamericana': 'COSU',
+};
+
+String? _lookupLeagueCodeFromName(String value) {
+  final trimmed = value.trim();
+  if (trimmed.isEmpty) return null;
+  final direct = _leagueNameToCode[trimmed];
+  if (direct != null) return direct;
+
+  final lower = trimmed.toLowerCase();
+  for (final entry in _leagueNameToCode.entries) {
+    if (entry.key.toLowerCase() == lower) return entry.value;
+  }
+  return null;
+}
+
+String _resolveLeagueCode({required String code, required String name}) {
+  final trimmedCode = code.trim();
+  final trimmedName = name.trim();
+
+  final fromName = _lookupLeagueCodeFromName(trimmedName);
+  if (fromName != null) return fromName;
+
+  final fromCodeAsName = _lookupLeagueCodeFromName(trimmedCode);
+  if (fromCodeAsName != null) return fromCodeAsName;
+
+  if (trimmedCode.isNotEmpty &&
+      trimmedCode.length <= 6 &&
+      RegExp(r'^[A-Za-z0-9]+$').hasMatch(trimmedCode)) {
+    return trimmedCode.toUpperCase();
+  }
+
+  return trimmedCode;
+}
+
 ({String code, String name, String? logo}) _readLeagueFields(
   Map<String, dynamic> json,
 ) {
   final leagueValue = json['league'];
   if (leagueValue is String && leagueValue.isNotEmpty) {
+    final code =
+        _readString(json, const ['leagueCode', 'league_code', 'code']) ?? '';
+    final name = _readString(json, const [
+          'leagueName',
+          'leagueNameEn',
+          'league_name',
+        ]) ??
+        leagueValue;
     return (
-      code: _readString(json, const ['leagueCode', 'league_code', 'code']) ?? '',
-      name: leagueValue,
-      logo: _readString(json, const ['leagueLogo', 'league_logo']),
+      code: _resolveLeagueCode(code: code, name: name),
+      name: name,
+      logo: _nonEmptyOrNull(json['leagueLogo'] ?? json['league_logo']),
     );
   }
 
@@ -316,55 +413,60 @@ DateTime? _parseDateTimeFromParts(String? date, String? time) {
   ]);
 
   if (leagueMap != null) {
-    return (
-      code: _readString(leagueMap, const [
-            'code',
-            'leagueCode',
-            'league_code',
-            'id',
-            'leagueId',
-            'league_id',
-          ]) ??
-          '',
-      name: _readString(leagueMap, const [
-            'name',
-            'leagueName',
-            'league_name',
-          ]) ??
-          '',
-      logo: _readString(leagueMap, const [
-        'logo',
-        'leagueLogo',
-        'league_logo',
-        'icon',
-        'image',
-      ]),
-    );
-  }
-
-  return (
-    code: _readString(json, const [
-          'league_code',
-          'leagueCode',
+    final code = _readString(leagueMap, const [
           'code',
+          'leagueCode',
+          'league_code',
+          'id',
           'leagueId',
           'league_id',
         ]) ??
-        '',
-    name: _readString(json, const [
+        '';
+    final name = _readString(leagueMap, const [
+          'name',
           'leagueName',
-          'leagueNameEn',
           'league_name',
-          'competition',
         ]) ??
-        '',
-    logo: _readString(json, const [
-      'leagueLogo',
-      'league_logo',
-      'leagueIcon',
-      'league_icon',
-      'icon',
-    ]),
+        '';
+    return (
+      code: _resolveLeagueCode(code: code, name: name),
+      name: name,
+      logo: _nonEmptyOrNull(
+        leagueMap['logo'] ??
+            leagueMap['leagueLogo'] ??
+            leagueMap['league_logo'] ??
+            leagueMap['icon'] ??
+            leagueMap['image'],
+      ),
+    );
+  }
+
+  final code = _readString(json, const [
+        'league_code',
+        'leagueCode',
+        'code',
+        'leagueId',
+        'league_id',
+      ]) ??
+      '';
+  final name = _readString(json, const [
+        'leagueName',
+        'leagueNameEn',
+        'league_name',
+        'competition',
+      ]) ??
+      code;
+
+  return (
+    code: _resolveLeagueCode(code: code, name: name),
+    name: name,
+    logo: _nonEmptyOrNull(
+      json['leagueLogo'] ??
+          json['league_logo'] ??
+          json['leagueIcon'] ??
+          json['league_icon'] ??
+          json['icon'],
+    ),
   );
 }
 
@@ -373,6 +475,12 @@ int? _parseInt(Object? value) {
   if (value is num) return value.toInt();
   if (value is String) return int.tryParse(value);
   return null;
+}
+
+String? _nonEmptyOrNull(dynamic value) {
+  if (value == null) return null;
+  final str = value.toString().trim();
+  return str.isEmpty ? null : str;
 }
 
 String? _readString(Map<String, dynamic> json, List<String> keys) {

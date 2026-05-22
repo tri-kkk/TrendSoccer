@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -29,8 +30,137 @@ class FixturePage extends ConsumerStatefulWidget {
 class _FixturePageState extends ConsumerState<FixturePage> {
   static final _md = DateFormat('M.dd');
   static const _weekdays = ['월', '화', '수', '목', '금', '토', '일'];
+  static const _pageScrollPhysics = PageScrollPhysics(
+    parent: ClampingScrollPhysics(),
+  );
+  static const _verticalScrollPhysics = AlwaysScrollableScrollPhysics(
+    parent: ClampingScrollPhysics(),
+  );
+
+  static const _dateChipWidth = 72.0;
+  static const _dateChipGap = 8.0;
+  static const _dateChipHorizontalPadding = 16.0;
 
   final Set<String> _notificationMatchIds = {};
+  late final PageController _pageController;
+  final ScrollController _dateChipScrollController = ScrollController();
+  bool _syncingPage = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _todayChipIndex());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollDateChipToIndex(_dateChipIndexForPage(_todayChipIndex()));
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _dateChipScrollController.dispose();
+    super.dispose();
+  }
+
+  int _dateChipIndexForPage(int pageIndex) => pageIndex + 1;
+
+  void _scrollDateChipToIndex(int chipIndex) {
+    if (!_dateChipScrollController.hasClients) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_dateChipScrollController.hasClients) return;
+
+      final screenWidth = MediaQuery.sizeOf(context).width;
+      final targetOffset = _dateChipHorizontalPadding +
+          (chipIndex * (_dateChipWidth + _dateChipGap)) -
+          (screenWidth / 2) +
+          (_dateChipWidth / 2);
+      final clampedOffset = targetOffset.clamp(
+        0.0,
+        _dateChipScrollController.position.maxScrollExtent,
+      );
+
+      _dateChipScrollController.animateTo(
+        clampedOffset,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  List<DateTime> _chipDates() {
+    final today = DateTime.now();
+    final todayDay = DateTime(today.year, today.month, today.day);
+    return fixtureDateChipDates(todayDay);
+  }
+
+  int _todayChipIndex() => 2;
+
+  int _dateIndexFor(String dateStr) {
+    return _chipDates().indexWhere((date) => fixtureDateString(date) == dateStr);
+  }
+
+  void _onPageChanged(int index) {
+    if (_syncingPage) return;
+
+    final dateStr = fixtureDateString(_chipDates()[index]);
+    ref.read(fixtureSelectedDateProvider.notifier).state = dateStr;
+    ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
+    ref.read(fixtureLiveFilterProvider.notifier).state = false;
+    _scrollDateChipToIndex(_dateChipIndexForPage(index));
+  }
+
+  void _resetFixtureToTodayOnSportChange() {
+    final todayPageIndex = _todayChipIndex();
+    final todayChipIndex = _dateChipIndexForPage(todayPageIndex);
+
+    ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
+    ref.read(fixtureLiveFilterProvider.notifier).state = false;
+    ref.read(fixtureSelectedDateProvider.notifier).state =
+        fixtureTodayDateString();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_pageController.hasClients) {
+        _syncingPage = true;
+        _pageController.jumpToPage(todayPageIndex);
+        _syncingPage = false;
+      }
+      _scrollDateChipToIndex(todayChipIndex);
+    });
+  }
+
+  void _jumpToPageIndex(int index) {
+    if (!_pageController.hasClients) return;
+    _syncingPage = true;
+    _pageController.jumpToPage(index);
+    _syncingPage = false;
+  }
+
+  void _selectDateAtIndex(int index) {
+    if (index < 0 || index >= _chipDates().length) return;
+
+    _syncingPage = true;
+    ref.read(fixtureLiveFilterProvider.notifier).state = false;
+    ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
+    ref.read(fixtureSelectedDateProvider.notifier).state =
+        fixtureDateString(_chipDates()[index]);
+
+    if (!_pageController.hasClients) {
+      _syncingPage = false;
+      return;
+    }
+
+    _pageController
+        .animateToPage(
+          index,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        )
+        .whenComplete(() {
+      if (mounted) _syncingPage = false;
+    });
+  }
 
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
@@ -71,51 +201,41 @@ class _FixturePageState extends ConsumerState<FixturePage> {
     final todayDay = DateTime(today.year, today.month, today.day);
     final selectedDateStr = ref.watch(fixtureSelectedDateProvider);
     final isLiveFilter = ref.watch(fixtureLiveFilterProvider);
-    final chipDates = fixtureDateChipDates(todayDay);
-
-    final children = <Widget>[
-      DateNavChip(
-        type: DateNavChipType.live,
-        isActive: isLiveFilter,
-        onTap: () {
-          ref.read(fixtureLiveFilterProvider.notifier).state = true;
-          ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
-        },
-      ),
-      const SizedBox(width: 8),
-    ];
-
-    for (final date in chipDates) {
-      final dateStr = fixtureDateString(date);
-      final isToday = _isSameDay(date, todayDay);
-      final isActive = !isLiveFilter && selectedDateStr == dateStr;
-
-      children.add(
-        DateNavChip(
-          type: isToday ? DateNavChipType.today : DateNavChipType.date,
-          dayLabel: isToday ? '오늘' : _weekdays[date.weekday - 1],
-          dateLabel: _md.format(date),
-          isActive: isActive,
-          onTap: () {
-            ref.read(fixtureLiveFilterProvider.notifier).state = false;
-            ref.read(fixtureSelectedDateProvider.notifier).state = dateStr;
-            ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
-          },
-        ),
-      );
-      children.add(const SizedBox(width: 8));
-    }
-
-    if (children.isNotEmpty) {
-      children.removeLast();
-    }
+    final chipDates = _chipDates();
 
     return SizedBox(
-      height: 56,
-      child: ListView(
+      height: 40,
+      child: SingleChildScrollView(
+        controller: _dateChipScrollController,
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.zero,
-        children: children,
+        child: Row(
+          children: [
+            DateNavChip(
+              type: DateNavChipType.live,
+              isActive: isLiveFilter,
+              onTap: () {
+                ref.read(fixtureLiveFilterProvider.notifier).state = true;
+                ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
+              },
+            ),
+            const SizedBox(width: _dateChipGap),
+            for (var i = 0; i < chipDates.length; i++) ...[
+              if (i > 0) const SizedBox(width: _dateChipGap),
+              DateNavChip(
+                type: _isSameDay(chipDates[i], todayDay)
+                    ? DateNavChipType.today
+                    : DateNavChipType.date,
+                dayLabel: _isSameDay(chipDates[i], todayDay)
+                    ? '오늘'
+                    : _weekdays[chipDates[i].weekday - 1],
+                dateLabel: _md.format(chipDates[i]),
+                isActive: !isLiveFilter &&
+                    selectedDateStr == fixtureDateString(chipDates[i]),
+                onTap: () => _selectDateAtIndex(i),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -170,6 +290,13 @@ class _FixturePageState extends ConsumerState<FixturePage> {
     List<FixtureLeagueGroup> groups, {
     required bool isBaseball,
   }) {
+    for (final group in groups) {
+      print(
+        '[FIXTURE] League group: ${group.leagueCode} '
+        'name=${group.leagueName} logo=${group.leagueLogo ?? "NULL"}',
+      );
+    }
+
     return groups.asMap().entries.expand((entry) {
       final gi = entry.key;
       final group = entry.value;
@@ -220,11 +347,144 @@ class _FixturePageState extends ConsumerState<FixturePage> {
     }).toList();
   }
 
+  List<FixtureLeagueGroup> _groupsForDate({
+    required List<FixtureMatch> matches,
+    required String dateStr,
+    required String? selectedLeague,
+  }) {
+    var filtered =
+        matches.where((match) => matchIsOnDate(match, dateStr)).toList();
+
+    if (selectedLeague != null && selectedLeague.isNotEmpty) {
+      filtered = filtered
+          .where((match) => match.leagueKey == selectedLeague)
+          .toList();
+    }
+
+    return groupMatchesByLeague(filtered);
+  }
+
+  Widget _buildEmptyDayState({required bool isLiveFilter}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: _verticalScrollPhysics,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: isLiveFilter
+                  ? TsEmptyState(
+                      type: TsEmptyStateType.withAction,
+                      title: '진행 중인 경기가 없습니다',
+                      buttonLabel: '오늘 경기 확인하기',
+                      onButtonPressed: _resetFromLiveEmpty,
+                    )
+                  : const TsEmptyState(
+                      type: TsEmptyStateType.noData,
+                      title: '경기가 없습니다',
+                      subtitle: '선택한 날짜에 예정된 경기가 없습니다.',
+                    ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMatchScrollView(
+    List<FixtureLeagueGroup> groups, {
+    required bool isBaseball,
+  }) {
+    if (groups.isEmpty) {
+      return _buildEmptyDayState(isLiveFilter: false);
+    }
+
+    final matchWidgets = _buildMatchWidgets(groups, isBaseball: isBaseball);
+    return ListView(
+      physics: _verticalScrollPhysics,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      children: [
+        ...matchWidgets,
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildDayPage({
+    required String dateStr,
+    required List<FixtureMatch> matches,
+    required String? selectedLeague,
+    required bool isBaseball,
+  }) {
+    final groups = _groupsForDate(
+      matches: matches,
+      dateStr: dateStr,
+      selectedLeague: selectedLeague,
+    );
+    return _buildMatchScrollView(groups, isBaseball: isBaseball);
+  }
+
+  Widget _buildLiveMatchArea({
+    required AsyncValue<List<FixtureLeagueGroup>> groupsAsync,
+    required bool isBaseball,
+    required TsSemanticColors semantic,
+  }) {
+    return groupsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '경기 일정을 불러오지 못했습니다.',
+              style: TextStyle(color: semantic.textSecondary),
+            ),
+            const SizedBox(height: 16),
+            TsButton(
+              label: '다시 시도',
+              variant: TsButtonVariant.primary,
+              size: TsButtonSize.small,
+              onPressed: () => invalidateFixtureData(ref),
+            ),
+          ],
+        ),
+      ),
+      data: (groups) {
+        if (groups.isEmpty) {
+          return _buildEmptyDayState(isLiveFilter: true);
+        }
+        return _buildMatchScrollView(groups, isBaseball: isBaseball);
+      },
+    );
+  }
+
+  Widget _buildDatePageView({
+    required List<FixtureMatch> allMatches,
+    required bool isBaseball,
+    required String? selectedLeague,
+    required List<DateTime> chipDates,
+  }) {
+    return PageView.builder(
+      controller: _pageController,
+      dragStartBehavior: DragStartBehavior.down,
+      physics: _pageScrollPhysics,
+      itemCount: chipDates.length,
+      onPageChanged: _onPageChanged,
+      itemBuilder: (context, index) {
+        return _buildDayPage(
+          dateStr: fixtureDateString(chipDates[index]),
+          matches: allMatches,
+          selectedLeague: selectedLeague,
+          isBaseball: isBaseball,
+        );
+      },
+    );
+  }
+
   void _resetFromLiveEmpty() {
     ref.read(fixtureLiveFilterProvider.notifier).state = false;
-    ref.read(fixtureSelectedDateProvider.notifier).state =
-        fixtureTodayDateString();
     ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
+    _selectDateAtIndex(_todayChipIndex());
   }
 
   @override
@@ -234,13 +494,29 @@ class _FixturePageState extends ConsumerState<FixturePage> {
     final selectedSport = _selectedSport(selectedSportStr);
     final isBaseball = selectedSportStr == 'baseball';
     final isLiveFilter = ref.watch(fixtureLiveFilterProvider);
+    final selectedLeague = ref.watch(fixtureSelectedLeagueProvider);
     final leagues = ref.watch(fixtureAvailableLeaguesProvider);
     final groupsAsync = ref.watch(fixtureLeagueGroupsProvider);
+    final rawAsync = ref.watch(rawFixturesProvider);
+    final chipDates = _chipDates();
 
     ref.listen(rawFixturesProvider, (previous, next) {
       final wasLoading = previous?.isLoading ?? false;
       if (wasLoading && next.hasError && context.mounted) {
         TsToast.error(context, '경기 일정을 불러오지 못했습니다.');
+      }
+    });
+
+    ref.listen(fixtureSelectedDateProvider, (previous, next) {
+      if (_syncingPage || ref.read(fixtureLiveFilterProvider)) return;
+
+      final index = _dateIndexFor(next);
+      if (index < 0 || !_pageController.hasClients) return;
+
+      final currentPage =
+          _pageController.page?.round() ?? _pageController.initialPage;
+      if (currentPage != index) {
+        _jumpToPageIndex(index);
       }
     });
 
@@ -259,11 +535,7 @@ class _FixturePageState extends ConsumerState<FixturePage> {
                   onChanged: (sport) {
                     ref.read(fixtureSelectedSportProvider.notifier).state =
                         sport == SportType.baseball ? 'baseball' : 'soccer';
-                    ref.read(fixtureSelectedLeagueProvider.notifier).state =
-                        null;
-                    ref.read(fixtureLiveFilterProvider.notifier).state = false;
-                    ref.read(fixtureSelectedDateProvider.notifier).state =
-                        fixtureTodayDateString();
+                    _resetFixtureToTodayOnSportChange();
                   },
                 ),
                 const SizedBox(height: 16),
@@ -274,69 +546,40 @@ class _FixturePageState extends ConsumerState<FixturePage> {
             ),
           ),
           Expanded(
-            child: groupsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stackTrace) => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '경기 일정을 불러오지 못했습니다.',
-                      style: TextStyle(color: semantic.textSecondary),
-                    ),
-                    const SizedBox(height: 16),
-                    TsButton(
-                      label: '다시 시도',
-                      variant: TsButtonVariant.primary,
-                      size: TsButtonSize.small,
-                      onPressed: () => invalidateFixtureData(ref),
-                    ),
-                  ],
-                ),
-              ),
-              data: (groups) {
-                if (groups.isEmpty) {
-                  return LayoutBuilder(
-                    builder: (context, constraints) {
-                      return SingleChildScrollView(
-                        child: ConstrainedBox(
-                          constraints:
-                              BoxConstraints(minHeight: constraints.maxHeight),
-                          child: Center(
-                            child: isLiveFilter
-                                ? TsEmptyState(
-                                    type: TsEmptyStateType.withAction,
-                                    title: '진행 중인 경기가 없습니다',
-                                    buttonLabel: '오늘 경기 확인하기',
-                                    onButtonPressed: _resetFromLiveEmpty,
-                                  )
-                                : const TsEmptyState(
-                                    type: TsEmptyStateType.noData,
-                                    title: '경기가 없습니다',
-                                    subtitle:
-                                        '선택한 날짜에 예정된 경기가 없습니다.',
-                                  ),
+            child: isLiveFilter
+                ? _buildLiveMatchArea(
+                    groupsAsync: groupsAsync,
+                    isBaseball: isBaseball,
+                    semantic: semantic,
+                  )
+                : rawAsync.when(
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (error, stackTrace) => Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '경기 일정을 불러오지 못했습니다.',
+                            style: TextStyle(color: semantic.textSecondary),
                           ),
-                        ),
-                      );
-                    },
-                  );
-                }
-
-                final matchWidgets =
-                    _buildMatchWidgets(groups, isBaseball: isBaseball);
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ...matchWidgets,
-                      const SizedBox(height: 24),
-                    ],
+                          const SizedBox(height: 16),
+                          TsButton(
+                            label: '다시 시도',
+                            variant: TsButtonVariant.primary,
+                            size: TsButtonSize.small,
+                            onPressed: () => invalidateFixtureData(ref),
+                          ),
+                        ],
+                      ),
+                    ),
+                    data: (matches) => _buildDatePageView(
+                      allMatches: matches,
+                      isBaseball: isBaseball,
+                      selectedLeague: selectedLeague,
+                      chipDates: chipDates,
+                    ),
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),

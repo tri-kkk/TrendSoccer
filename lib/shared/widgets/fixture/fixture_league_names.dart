@@ -38,6 +38,19 @@ const fixtureLeagueNameMap = <String, String>{
   'CL2': 'AFC 챔피언스리그2',
   'COPA': '코파 리베르타도레스',
   'COSU': '코파 수다메리카나',
+  'DZA': '알제리 리그',
+  'LMX': '리가MX',
+  'ABL': '오스트리아 분데스리가',
+  'TDP': '포르투갈 타사',
+  'SD': '세군다 디비시온',
+  'ELC': '챔피언십',
+  'CDF': '쿠프 드 프랑스',
+  'DFB': 'DFB 포칼',
+  'ARG': '아르헨티나 프리메라',
+  'KBO': 'KBO',
+  'MLB': 'MLB',
+  'NPB': 'NPB',
+  'CPBL': 'CPBL',
 };
 
 String fixtureDisplayLeagueName(String? name, String? code) {

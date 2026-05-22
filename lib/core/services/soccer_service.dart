@@ -168,9 +168,16 @@ class SoccerService {
     try {
       final response = await _dio.get<dynamic>('/api/premium-picks/history');
       final raw = response.data;
-      if (raw is Map<String, dynamic>) return raw;
-      if (raw is Map) return Map<String, dynamic>.from(raw);
-      return <String, dynamic>{};
+      final history = raw is Map<String, dynamic>
+          ? raw
+          : raw is Map
+              ? Map<String, dynamic>.from(raw)
+              : <String, dynamic>{};
+      final picks = _extractHistoryPicks(history);
+      if (picks.isNotEmpty) {
+        print('[SOCCER] History pick fields: ${picks.first.keys.toList()}');
+      }
+      return history;
     } catch (e) {
       return {};
     }
@@ -182,6 +189,8 @@ class SoccerService {
   }) {
     final picks = _extractHistoryPicks(historyResponse);
     if (picks.isEmpty) return {};
+
+    final teamLogos = _extractTeamLogosFromHistoryPicks(picks);
 
     final settled = picks.where((pick) {
       final result = _readPickResult(pick)?.toUpperCase();
@@ -237,7 +246,68 @@ class SoccerService {
       'streakType': streak > 0 ? 'winning' : 'losing',
       'total': total,
       'recentResults': recentResults,
+      if (teamLogos.isNotEmpty) 'teamLogos': teamLogos,
     };
+  }
+
+  Map<String, String> _extractTeamLogosFromHistoryPicks(
+    List<Map<String, dynamic>> picks,
+  ) {
+    final logos = <String, String>{};
+    for (final pick in picks) {
+      _addHistoryPickTeamLogo(logos, pick, isHome: true);
+      _addHistoryPickTeamLogo(logos, pick, isHome: false);
+    }
+    return logos;
+  }
+
+  void _addHistoryPickTeamLogo(
+    Map<String, String> logos,
+    Map<String, dynamic> pick, {
+    required bool isHome,
+  }) {
+    final name = _readHistoryPickString(
+      pick,
+      isHome
+          ? const ['homeTeam', 'home_team', 'home', 'homeTeamName']
+          : const ['awayTeam', 'away_team', 'away', 'awayTeamName'],
+    );
+    final logo = _readHistoryPickString(
+      pick,
+      isHome
+          ? const [
+              'home_team_logo',
+              'homeTeamLogo',
+              'homeLogo',
+              'home_logo',
+              'home_crest',
+              'homeCrest',
+            ]
+          : const [
+              'away_team_logo',
+              'awayTeamLogo',
+              'awayLogo',
+              'away_logo',
+              'away_crest',
+              'awayCrest',
+            ],
+    );
+    if (name != null && logo != null) {
+      logos[name] = logo;
+    }
+  }
+
+  String? _readHistoryPickString(
+    Map<String, dynamic> pick,
+    List<String> keys,
+  ) {
+    for (final key in keys) {
+      final value = pick[key];
+      if (value is String && value.trim().isNotEmpty) {
+        return value.trim();
+      }
+    }
+    return null;
   }
 
   List<Map<String, dynamic>> _extractHistoryPicks(
@@ -315,6 +385,8 @@ class SoccerService {
 
     return {
       if (matchLabel.isNotEmpty) 'match': matchLabel,
+      if (home is String && home.isNotEmpty) 'homeTeam': home,
+      if (away is String && away.isNotEmpty) 'awayTeam': away,
       'predicted': pick['predicted'] ??
           pick['prediction'] ??
           pick['pick'] ??

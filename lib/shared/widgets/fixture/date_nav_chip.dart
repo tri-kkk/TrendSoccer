@@ -6,6 +6,8 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
 enum DateNavChipType { today, live, date }
 
+const _dateNavChipHeight = 40.0;
+
 class DateNavChip extends StatelessWidget {
   const DateNavChip({
     required this.type,
@@ -73,21 +75,24 @@ class _TodayChip extends StatelessWidget {
       color: isActive ? semantic.surfaceBase : semantic.textSecondary,
     );
 
-    return Container(
-      constraints: const BoxConstraints(minWidth: 80),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: isActive ? semantic.interactivePrimary : semantic.surfaceContainer,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(dayLabel, style: dayStyle),
-          const SizedBox(height: 2),
-          Text(dateLabel, style: dateStyle),
-        ],
+    return SizedBox(
+      height: _dateNavChipHeight,
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 80),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: isActive ? semantic.interactivePrimary : semantic.surfaceContainer,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(dayLabel, style: dayStyle),
+            const SizedBox(height: 2),
+            Text(dateLabel, style: dateStyle),
+          ],
+        ),
       ),
     );
   }
@@ -108,13 +113,16 @@ class _LiveChip extends StatelessWidget {
       color: isActive ? semantic.textPrimary : semantic.textTertiary,
     );
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: isActive ? TsColors.systemError500 : semantic.surfaceContainer,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
+    return SizedBox(
+      height: _dateNavChipHeight,
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 80),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: isActive ? TsColors.systemError500 : semantic.surfaceContainer,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        alignment: Alignment.center,
         child: Text('LIVE', style: textStyle),
       ),
     );
@@ -143,21 +151,24 @@ class _DateChip extends StatelessWidget {
       color: isActive ? semantic.surfaceBase : semantic.textSecondary,
     );
 
-    return Container(
-      constraints: const BoxConstraints(minWidth: 80),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: isActive ? semantic.interactivePrimary : semantic.surfaceContainer,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(dayLabel, style: dayStyle),
-          const SizedBox(height: 2),
-          Text(dateLabel, style: dateStyle),
-        ],
+    return SizedBox(
+      height: _dateNavChipHeight,
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 80),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: isActive ? semantic.interactivePrimary : semantic.surfaceContainer,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(dayLabel, style: dayStyle),
+            const SizedBox(height: 2),
+            Text(dateLabel, style: dateStyle),
+          ],
+        ),
       ),
     );
   }

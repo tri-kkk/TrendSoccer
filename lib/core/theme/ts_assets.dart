@@ -54,6 +54,10 @@ abstract final class TsAssets {
     'CL': 'champions_league',
     'UEL': 'europa_league',
     'EL': 'europa_league',
+    'KBO': 'kbo',
+    'MLB': 'mlb',
+    'NPB': 'npb',
+    'CPBL': 'cpbl',
   };
 
   static const socialGoogle = 'assets/images/social/google.svg';

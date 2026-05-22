@@ -19,16 +19,17 @@ class FixtureService {
         '/api/odds-from-db',
         queryParameters: const <String, String>{
           'league': 'ALL',
-          'daysAhead': '7',
+          'daysBack': '2',
+          'daysAhead': '4',
         },
       );
       final matches = _parseFixtures(
         response.data,
         sport: 'soccer',
-        label: 'Soccer fixtures (odds-from-db)',
-      );
+        label: 'Soccer fixtures (daysBack=2, daysAhead=4)',
+      )..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
 
-      print('[FIXTURE] Total soccer fixtures loaded: ${matches.length}');
+      print('[FIXTURE] Soccer fixtures loaded: ${matches.length} matches');
       final dates = matches
           .map((match) {
             final local = match.matchTimestamp.toLocal();
@@ -45,21 +46,76 @@ class FixtureService {
       );
       return matches;
     } catch (e) {
-      print('[FIXTURE] Soccer fixtures (odds-from-db) failed: $e');
+      print('[FIXTURE] Soccer fixtures failed: $e');
       return const [];
     }
   }
 
+  Future<List<FixtureMatch>> getBaseballFixturesRange() async {
+    final today = DateTime.now();
+    final todayDay = DateTime(today.year, today.month, today.day);
+    final dates = List.generate(
+      7,
+      (index) => todayDay.add(Duration(days: index - 2)),
+    );
+
+    final results = await Future.wait(
+      dates.map((date) => getBaseballFixtures(date: _formatApiDate(date))),
+    );
+
+    final merged = results.expand((matches) => matches).toList()
+      ..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
+
+    print(
+      '[FIXTURE] Baseball fixtures range: ${merged.length} matches from 7 dates',
+    );
+    return merged;
+  }
+
+  String _formatApiDate(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
+  }
+
+  String _baseballStatusForDate(String dateStr) {
+    final date = DateTime.parse(dateStr);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final targetDay = DateTime(date.year, date.month, date.day);
+    final diffDays = targetDay.difference(today).inDays;
+
+    if (diffDays < -1) return 'finished';
+    if (diffDays > 1) return 'scheduled';
+    return 'all';
+  }
+
+  Map<String, String> _baseballQueryParametersForDate(String dateStr) {
+    final status = _baseballStatusForDate(dateStr);
+    final params = <String, String>{
+      'date': dateStr,
+      'status': status,
+      'limit': '50',
+    };
+    if (status == 'finished') {
+      params['skipML'] = 'true';
+    }
+    return params;
+  }
+
   Future<List<FixtureMatch>> getBaseballFixtures({required String date}) async {
     try {
+      final status = _baseballStatusForDate(date);
+      print('[FIXTURE] Baseball call: date=$date, status=$status');
+
       final response = await _dio.get<dynamic>(
         '/api/baseball/matches',
-        queryParameters: <String, String>{'date': date},
+        queryParameters: _baseballQueryParametersForDate(date),
       );
       final matches = _parseFixtures(
         response.data,
         sport: 'baseball',
-        label: 'Baseball fixtures for $date',
+        label: 'Baseball fixtures for $date (status=$status)',
       );
       print('[FIXTURE] Baseball fixtures for $date: ${matches.length} matches');
       return matches;
