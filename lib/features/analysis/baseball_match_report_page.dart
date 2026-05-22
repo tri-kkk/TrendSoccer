@@ -4,13 +4,14 @@ import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/providers/baseball_match_report_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/analysis/models/baseball_match_report_data.dart';
-import 'package:trendsoccer/features/analysis/widgets/baseball/premium/premium_sections.dart';
-import 'package:trendsoccer/features/analysis/widgets/baseball/standard/standard_sections.dart';
+import 'package:trendsoccer/features/analysis/models/baseball_standard_parser.dart';
+import 'package:trendsoccer/features/analysis/widgets/baseball/premium/baseball_ai_tab.dart';
+import 'package:trendsoccer/features/analysis/widgets/baseball/standard/baseball_standard_tab.dart';
 import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
-import 'package:trendsoccer/shared/widgets/baseball/premium/confidence_chip.dart';
 import 'package:trendsoccer/shared/widgets/report/match_header.dart';
 import 'package:trendsoccer/shared/widgets/report/report_toggle.dart';
 import 'package:trendsoccer/shared/widgets/subscribe_sheet.dart';
@@ -32,25 +33,45 @@ class _BaseballMatchReportPageState
     extends ConsumerState<BaseballMatchReportPage> {
   ReportTab _selectedTab = ReportTab.standard;
 
-  BaseballMatchReportData get _data => baseballMatchReportDummy;
+  int? get _numericMatchId => int.tryParse(widget.matchId);
 
-  ConfidenceLevel _toConfidence(String level) {
-    switch (level) {
-      case 'high':
-        return ConfidenceLevel.high;
-      case 'medium':
-        return ConfidenceLevel.medium;
-      case 'low':
-        return ConfidenceLevel.low;
-      default:
-        return ConfidenceLevel.medium;
+  BaseballMatchReportData get _headerFallbackSource => baseballMatchReportDummy;
+
+  Widget _buildStandardTab() {
+    final matchId = _numericMatchId;
+    if (matchId == null) {
+      return Padding(
+        padding: const EdgeInsets.all(TsSpacing.lg),
+        child: BaseballStandardTabError(onRetry: () {}),
+      );
     }
+    return BaseballStandardTab(matchId: matchId);
+  }
+
+  Widget _buildAiTab() {
+    final matchId = _numericMatchId;
+    if (matchId == null) {
+      return Padding(
+        padding: const EdgeInsets.all(TsSpacing.lg),
+        child: BaseballAiTabError(onRetry: () {}),
+      );
+    }
+    return BaseballAiTab(matchId: matchId);
   }
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final data = _data;
+    final headerFallback =
+        baseballStandardHeaderFallback(_headerFallbackSource);
+
+    final matchId = _numericMatchId;
+    final headerParsed = matchId != null
+        ? ref.watch(baseballMatchDetailProvider(matchId)).maybeWhen(
+              data: (raw) => parseBaseballStandardDetail(raw),
+              orElse: () => headerFallback,
+            )
+        : headerFallback;
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
@@ -67,12 +88,12 @@ class _BaseballMatchReportPageState
         child: Column(
           children: [
             MatchHeader(
-              leagueId: data.leagueId,
-              matchDate: data.matchDate,
-              homeTeam: data.homeTeam,
-              awayTeam: data.awayTeam,
-              homeLogoUrl: data.homeLogoUrl,
-              awayLogoUrl: data.awayLogoUrl,
+              leagueId: headerParsed.leagueId,
+              matchDate: headerParsed.matchDateDisplay,
+              homeTeam: headerParsed.homeTeam,
+              awayTeam: headerParsed.awayTeam,
+              homeLogoUrl: headerParsed.homeLogoUrl,
+              awayLogoUrl: headerParsed.awayLogoUrl,
               selectedTab: _selectedTab,
               onTabChanged: (tab) {
                 if (tab == ReportTab.premium) {
@@ -89,82 +110,8 @@ class _BaseballMatchReportPageState
               switchInCurve: Curves.easeInOut,
               switchOutCurve: Curves.easeInOut,
               child: _selectedTab == ReportTab.standard
-                  ? KeyedSubtree(
-                      key: const ValueKey<Object>('baseball_report_standard'),
-                      child: Padding(
-                        padding: const EdgeInsets.all(TsSpacing.lg),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            StartingPitchersSection(
-                              awayPitcher: data.awayPitcher,
-                              homePitcher: data.homePitcher,
-                            ),
-                            const SizedBox(height: TsSpacing.xl),
-                            PitcherAnalysisSection(paragraphs: data.pitcherAnalysis),
-                            const SizedBox(height: TsSpacing.xl),
-                            BaseballH2HSection(matches: data.h2hMatches),
-                            const SizedBox(height: TsSpacing.xl),
-                            BaseballOddsSection(
-                              awayOdds: data.awayOdds,
-                              homeOdds: data.homeOdds,
-                              awayTeam: data.awayTeam,
-                              homeTeam: data.homeTeam,
-                              overUnderLines: data.ouLines,
-                            ),
-                            const SizedBox(height: TsSpacing.xl),
-                          ],
-                        ),
-                      ),
-                    )
-                  : KeyedSubtree(
-                      key: const ValueKey<Object>('baseball_report_premium'),
-                      child: Padding(
-                        padding: const EdgeInsets.all(TsSpacing.lg),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            WinProbabilitySection(
-                              awayProb: data.awayWinProb,
-                              homeProb: data.homeWinProb,
-                              awayTeam: data.awayTeam,
-                              homeTeam: data.homeTeam,
-                              description: data.winProbDescription,
-                            ),
-                            const SizedBox(height: TsSpacing.xl),
-                            OverUnderSection(
-                              baseLine: data.ouBaseLine,
-                              overOdds: data.ouOverOdds,
-                              underOdds: data.ouUnderOdds,
-                              isFavoredUnder: data.isFavoredUnder,
-                            ),
-                            const SizedBox(height: TsSpacing.xl),
-                            HomeAwayRecordSection(
-                              awayRecord: data.awayRecord,
-                              homeRecord: data.homeRecord,
-                              awayTeam: data.awayTeam,
-                              homeTeam: data.homeTeam,
-                            ),
-                            const SizedBox(height: TsSpacing.xl),
-                            WinRateSection(
-                              awayWinRate: data.awayWinRate,
-                              homeWinRate: data.homeWinRate,
-                              confidence: _toConfidence(data.confidenceLevel),
-                            ),
-                            const SizedBox(height: TsSpacing.xl),
-                            TeamProductionSection(
-                              items: data.teamProduction,
-                              comment: data.teamProductionComment,
-                            ),
-                            const SizedBox(height: TsSpacing.xl),
-                            SeasonTeamStatsSection(
-                              items: data.seasonTeamStats,
-                            ),
-                            const SizedBox(height: TsSpacing.xl),
-                          ],
-                        ),
-                      ),
-                    ),
+                  ? _buildStandardTab()
+                  : _buildAiTab(),
             ),
           ],
         ),

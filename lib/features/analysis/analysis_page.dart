@@ -5,14 +5,14 @@ import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/analysis/analysis_dummy_data.dart';
+import 'package:trendsoccer/features/analysis/widgets/baseball_matches_section.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer_matches_section.dart';
-import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/today_combo_card.dart';
-import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/filter/ts_filter_chip.dart';
 import 'package:trendsoccer/shared/widgets/league/ts_league_icon.dart';
 import 'package:trendsoccer/shared/widgets/toggle/sports_toggle.dart';
@@ -26,22 +26,20 @@ class AnalysisPage extends ConsumerStatefulWidget {
 
 class _AnalysisPageState extends ConsumerState<AnalysisPage> {
   SportType _selectedSport = SportType.soccer;
-  String _selectedLeagueId = 'all';
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final sportParam = GoRouterState.of(context).uri.queryParameters['sport'];
     if (sportParam == 'baseball' && _selectedSport != SportType.baseball) {
-      setState(() {
-        _selectedSport = SportType.baseball;
-        _selectedLeagueId = 'all';
-      });
+      setState(() => _selectedSport = SportType.baseball);
+      ref.read(selectedBaseballLeagueProvider.notifier).state = null;
     }
   }
 
   Widget _buildFilterChips() {
     final selectedSoccerLeague = ref.watch(selectedLeagueProvider);
+    final selectedBaseballLeague = ref.watch(selectedBaseballLeagueProvider);
 
     return SizedBox(
       height: 32,
@@ -49,7 +47,7 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
         scrollDirection: Axis.horizontal,
         itemCount: _selectedSport == SportType.soccer
             ? soccerAnalysisLeagueChips.length
-            : baseballLeagueFilters.length,
+            : baseballAnalysisLeagueChips.length,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           if (_selectedSport == SportType.soccer) {
@@ -73,63 +71,27 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
             );
           }
 
-          final filter = baseballLeagueFilters[index];
-          final isSelected = _selectedLeagueId == filter.id;
+          final chip = baseballAnalysisLeagueChips[index];
+          final isSelected = chip.isAll
+              ? selectedBaseballLeague == null
+              : selectedBaseballLeague == chip.code;
           return TsFilterChip(
-            label: filter.label,
+            label: chip.displayLabel,
             isSelected: isSelected,
-            type: filter.hasIcon
+            type: chip.iconId != null
                 ? TsFilterChipType.withIcon
                 : TsFilterChipType.textOnly,
-            iconWidget: filter.hasIcon
-                ? TsLeagueIcon(leagueId: filter.id, size: 16)
+            iconWidget: chip.iconId != null
+                ? TsLeagueIcon(leagueId: chip.iconId!, size: 16)
                 : null,
-            onTap: () => setState(() => _selectedLeagueId = filter.id),
+            onTap: () {
+              ref.read(selectedBaseballLeagueProvider.notifier).state =
+                  chip.isAll ? null : chip.code;
+            },
           );
         },
       ),
     );
-  }
-
-  List<Widget> _buildBaseballCardWidgets(BuildContext context) {
-    final allCards = baseballAnalysisDummy;
-
-    final filteredCards = _selectedLeagueId == 'all'
-        ? allCards
-        : allCards.where((c) => c.leagueId == _selectedLeagueId).toList();
-
-    if (filteredCards.isEmpty) {
-      return [
-        SizedBox(
-          height: MediaQuery.sizeOf(context).height * 0.4,
-          child: const Center(child: TsEmptyState()),
-        ),
-      ];
-    }
-
-    return filteredCards.asMap().entries.map((entry) {
-      final index = entry.key;
-      final data = entry.value;
-      return Padding(
-        padding: EdgeInsets.only(
-          bottom: index < filteredCards.length - 1 ? 16 : 0,
-        ),
-        child: AnalysisCard(
-          leagueId: data.leagueId,
-          leagueName: data.leagueName,
-          date: data.date,
-          homeTeam: data.homeTeam,
-          awayTeam: data.awayTeam,
-          matchTime: data.matchTime,
-          isPremiumPick: false,
-          pickDirection: null,
-          winRate: null,
-          onAnalyze: () => context.push(
-            '/analysis/baseball/match-report/${data.matchId}',
-          ),
-        ),
-      );
-    }).toList();
   }
 
   @override
@@ -157,12 +119,12 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
             child: SportsToggle(
               selectedSport: _selectedSport,
               onChanged: (sport) {
-                setState(() {
-                  _selectedSport = sport;
-                  _selectedLeagueId = 'all';
-                });
+                setState(() => _selectedSport = sport);
                 if (sport == SportType.soccer) {
                   ref.read(selectedLeagueProvider.notifier).state = null;
+                } else {
+                  ref.read(selectedBaseballLeagueProvider.notifier).state =
+                      null;
                 }
               },
             ),
@@ -183,7 +145,8 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
                       comboCount: '20',
                       accuracy: '50%',
                       avgOdds: '4.29',
-                      onCTATap: () => onPremiumCtaTap(sport: SportType.baseball),
+                      onCTATap: () =>
+                          onPremiumCtaTap(sport: SportType.baseball),
                     ),
                   const SizedBox(height: 16),
                   _buildFilterChips(),
@@ -191,7 +154,7 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
                   if (_selectedSport == SportType.soccer)
                     const SoccerMatchesSection()
                   else
-                    ..._buildBaseballCardWidgets(context),
+                    const BaseballMatchesSection(),
                   const SizedBox(height: 24),
                 ],
               ),

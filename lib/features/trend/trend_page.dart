@@ -3,14 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:trendsoccer/core/models/baseball_models.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/features/trend/trend_dummy_data.dart';
 import 'package:trendsoccer/shared/widgets/banner/ts_banner.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
@@ -25,6 +26,7 @@ class TrendPage extends ConsumerStatefulWidget {
 
 class _TrendPageState extends ConsumerState<TrendPage> {
   static const int _maxSoccerPreviewCards = 7;
+  static const int _maxBaseballPreviewCards = 7;
   static const int _bannerCount = 3;
   static const double _analysisCardViewportFraction = 0.96;
 
@@ -186,35 +188,49 @@ class _TrendPageState extends ConsumerState<TrendPage> {
   }
 
   Widget _buildBaseballCards() {
-    final baseballDummy = baseballAnalysisDummy;
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final matchesAsync = ref.watch(baseballAnalysisMatchesProvider);
+
     return SizedBox(
       height: 220,
-      child: PageView.builder(
-        controller: _baseballCardsPageController,
-        padEnds: false,
-        itemCount: baseballDummy.length,
-        itemBuilder: (context, index) {
-          final data = baseballDummy[index];
-          return Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 380),
-              child: AnalysisCard(
-                leagueId: data.leagueId,
-                leagueName: data.leagueName,
-                date: data.date,
-                homeTeam: data.homeTeam,
-                awayTeam: data.awayTeam,
-                matchTime: data.matchTime,
-                homeLogoUrl: data.homeLogoUrl,
-                awayLogoUrl: data.awayLogoUrl,
-                isPremiumPick: false,
-                pickDirection: null,
-                winRate: null,
-                onAnalyze: () => context
-                    .push('/analysis/baseball/match-report/${data.matchId}'),
+      child: matchesAsync.when(
+        loading: () => Center(
+          child: CircularProgressIndicator(color: semantic.interactivePrimary),
+        ),
+        error: (error, stackTrace) => Center(
+          child: Text(
+            '경기 목록을 불러오지 못했습니다.',
+            style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        data: (matches) {
+          final todayMatches = matches
+              .where(baseballMatchIsToday)
+              .take(_maxBaseballPreviewCards)
+              .toList();
+          if (todayMatches.isEmpty) {
+            return Center(
+              child: Text(
+                '오늘 예정된 경기가 없습니다.',
+                style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
+                textAlign: TextAlign.center,
               ),
-            ),
+            );
+          }
+          return PageView.builder(
+            controller: _baseballCardsPageController,
+            padEnds: false,
+            itemCount: todayMatches.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 380),
+                  child: _TrendBaseballCard(card: todayMatches[index]),
+                ),
+              );
+            },
           );
         },
       ),
@@ -285,6 +301,33 @@ class _TrendPageState extends ConsumerState<TrendPage> {
             ),
           ),
         ),
+    );
+  }
+}
+
+class _TrendBaseballCard extends StatelessWidget {
+  const _TrendBaseballCard({required this.card});
+
+  final BaseballAnalysisCard card;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnalysisCard(
+      leagueId: baseballLeagueIconId(card.league),
+      leagueName: card.league,
+      date: formatBaseballCardDate(card),
+      homeTeam: card.homeDisplayTeam,
+      awayTeam: card.awayDisplayTeam,
+      matchTime: formatBaseballMatchTimeKst(card),
+      homeLogoUrl: card.homeTeamLogo,
+      awayLogoUrl: card.awayTeamLogo,
+      isPremiumPick: false,
+      pickDirection: null,
+      winRate: null,
+      onAnalyze: () => context.push(
+        '/analysis/baseball/match-report/${card.matchId}',
+        extra: card.matchTimestamp,
+      ),
     );
   }
 }

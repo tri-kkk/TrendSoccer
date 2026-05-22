@@ -4,6 +4,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/shared/widgets/report/ratio_bar.dart';
 
 class BaseballOULine {
   const BaseballOULine({
@@ -26,6 +27,8 @@ class BaseballOddsSection extends StatelessWidget {
     required this.awayTeam,
     required this.homeTeam,
     required this.overUnderLines,
+    this.homeWinProbRatio,
+    this.awayWinProbRatio,
     super.key,
   });
 
@@ -34,6 +37,8 @@ class BaseballOddsSection extends StatelessWidget {
   final String awayTeam;
   final String homeTeam;
   final List<BaseballOULine> overUnderLines;
+  final double? homeWinProbRatio;
+  final double? awayWinProbRatio;
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +61,15 @@ class BaseballOddsSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (homeWinProbRatio != null && awayWinProbRatio != null) ...[
+                _WinProbabilityBar(
+                  homeRatio: homeWinProbRatio!.clamp(0.0, 1.0),
+                  awayRatio: awayWinProbRatio!.clamp(0.0, 1.0),
+                  homeTeam: homeTeam,
+                  awayTeam: awayTeam,
+                ),
+                const SizedBox(height: 16),
+              ],
               Row(
                 children: [
                   Expanded(
@@ -75,28 +89,82 @@ class BaseballOddsSection extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: Text(
-                  'Over / Under',
-                  style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
-                  textAlign: TextAlign.center,
+              if (overUnderLines.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: Text(
+                    'Over / Under',
+                    style: TsType.bodyLRegular.copyWith(
+                      color: semantic.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              const _OuTableHeaderRow(),
-              const SizedBox(height: 16),
-              for (var i = 0; i < overUnderLines.length; i++) ...[
-                _OuLineRow(line: overUnderLines[i]),
-                if (i < overUnderLines.length - 1) ...[
-                  const SizedBox(height: 8),
-                  Container(height: 1, color: semantic.borderSubtle),
-                  const SizedBox(height: 8),
+                const SizedBox(height: 16),
+                const _OuTableHeaderRow(),
+                const SizedBox(height: 16),
+                for (var i = 0; i < overUnderLines.length; i++) ...[
+                  _OuLineRow(line: overUnderLines[i]),
+                  if (i < overUnderLines.length - 1) ...[
+                    const SizedBox(height: 8),
+                    Container(height: 1, color: semantic.borderSubtle),
+                    const SizedBox(height: 8),
+                  ],
                 ],
               ],
             ],
           ),
+        ),
+      ],
+    );
+  }
+}
+
+class _WinProbabilityBar extends StatelessWidget {
+  const _WinProbabilityBar({
+    required this.homeRatio,
+    required this.awayRatio,
+    required this.homeTeam,
+    required this.awayTeam,
+  });
+
+  final double homeRatio;
+  final double awayRatio;
+  final String homeTeam;
+  final String awayTeam;
+
+  @override
+  Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final homePercent = (homeRatio * 100).round();
+    final awayPercent = (awayRatio * 100).round();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          '승리 확률',
+          style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: TsSpacing.sm),
+        RatioBar(
+          segments: [
+            RatioSegment(
+              flex: awayRatio,
+              color: TsColors.systemError500,
+              label: '$awayPercent%',
+              bottomLabel: awayTeam,
+            ),
+            RatioSegment(
+              flex: homeRatio,
+              color: semantic.interactivePrimary,
+              label: '$homePercent%',
+              bottomLabel: homeTeam,
+            ),
+          ],
+          height: 32,
         ),
       ],
     );
