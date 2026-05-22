@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/features/analysis/baseball_match_report_page.dart';
 import 'package:trendsoccer/features/analysis/analysis_page.dart';
 import 'package:trendsoccer/features/analysis/soccer_match_report_page.dart';
@@ -116,15 +117,13 @@ abstract final class AppRouter {
         path: '/analysis/soccer/match-report/:matchId',
         builder: (context, state) {
           final matchId = state.pathParameters['matchId'] ?? '';
-          DateTime? matchTimestampUtc;
           final extra = state.extra;
-          if (extra is DateTime) {
-            matchTimestampUtc = extra.toUtc();
-          } else if (extra is String) {
-            matchTimestampUtc = DateTime.tryParse(extra)?.toUtc();
-          }
+          final headerData = MatchHeaderData.fromRouteExtra(extra);
+          final matchTimestampUtc =
+              MatchHeaderData.timestampFromRouteExtra(extra)?.toUtc();
           return SoccerMatchReportPage(
             matchId: matchId,
+            initialHeader: headerData,
             matchTimestampUtc: matchTimestampUtc,
           );
         },
@@ -133,7 +132,11 @@ abstract final class AppRouter {
         path: '/analysis/baseball/match-report/:matchId',
         builder: (context, state) {
           final matchId = state.pathParameters['matchId'] ?? '';
-          return BaseballMatchReportPage(matchId: matchId);
+          final headerData = MatchHeaderData.fromRouteExtra(state.extra);
+          return BaseballMatchReportPage(
+            matchId: matchId,
+            initialHeader: headerData,
+          );
         },
       ),
       ShellRoute(

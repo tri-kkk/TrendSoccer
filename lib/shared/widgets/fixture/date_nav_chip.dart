@@ -15,6 +15,7 @@ class DateNavChip extends StatelessWidget {
     this.dayLabel,
     this.dateLabel,
     this.onTap,
+    this.expandWidth = false,
     super.key,
   });
 
@@ -23,6 +24,7 @@ class DateNavChip extends StatelessWidget {
   final String? dayLabel;
   final String? dateLabel;
   final VoidCallback? onTap;
+  final bool expandWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +39,7 @@ class DateNavChip extends StatelessWidget {
           isActive: isActive,
           dayLabel: dayLabel ?? 'Today',
           dateLabel: dateLabel ?? '',
+          expandWidth: expandWidth,
         ),
         DateNavChipType.live => _LiveChip(
           semantic: semantic,
@@ -47,6 +50,7 @@ class DateNavChip extends StatelessWidget {
           isActive: isActive,
           dayLabel: dayLabel ?? '',
           dateLabel: dateLabel ?? '',
+          expandWidth: expandWidth,
         ),
       },
     );
@@ -59,12 +63,14 @@ class _TodayChip extends StatelessWidget {
     required this.isActive,
     required this.dayLabel,
     required this.dateLabel,
+    this.expandWidth = false,
   });
 
   final TsSemanticColors semantic;
   final bool isActive;
   final String dayLabel;
   final String dateLabel;
+  final bool expandWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -77,8 +83,10 @@ class _TodayChip extends StatelessWidget {
 
     return SizedBox(
       height: _dateNavChipHeight,
+      width: expandWidth ? double.infinity : null,
       child: Container(
-        constraints: const BoxConstraints(minWidth: 80),
+        width: expandWidth ? double.infinity : null,
+        constraints: expandWidth ? null : const BoxConstraints(minWidth: 80),
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
           color: isActive ? semantic.interactivePrimary : semantic.surfaceContainer,
@@ -135,12 +143,14 @@ class _DateChip extends StatelessWidget {
     required this.isActive,
     required this.dayLabel,
     required this.dateLabel,
+    this.expandWidth = false,
   });
 
   final TsSemanticColors semantic;
   final bool isActive;
   final String dayLabel;
   final String dateLabel;
+  final bool expandWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -153,8 +163,10 @@ class _DateChip extends StatelessWidget {
 
     return SizedBox(
       height: _dateNavChipHeight,
+      width: expandWidth ? double.infinity : null,
       child: Container(
-        constraints: const BoxConstraints(minWidth: 80),
+        width: expandWidth ? double.infinity : null,
+        constraints: expandWidth ? null : const BoxConstraints(minWidth: 80),
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
           color: isActive ? semantic.interactivePrimary : semantic.surfaceContainer,

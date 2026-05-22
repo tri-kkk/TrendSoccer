@@ -4,7 +4,14 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
-enum FixtureMatchStatus { scheduled, live, finished }
+enum FixtureMatchStatus {
+  scheduled,
+  live,
+  finished,
+  interrupted,
+  postponed,
+  cancelled,
+}
 
 class FixtureStatus extends StatefulWidget {
   const FixtureStatus({
@@ -101,6 +108,29 @@ class _FixtureStatusState extends State<FixtureStatus> with TickerProviderStateM
         FixtureMatchStatus.finished => Center(
             child: Text(
               widget.timeText ?? 'FT',
+              style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        FixtureMatchStatus.interrupted => Center(
+            child: Text(
+              widget.timeText ?? '중단',
+              style: TsType.labelSRegular.copyWith(
+                color: TsColors.systemWarning500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        FixtureMatchStatus.postponed => Center(
+            child: Text(
+              widget.timeText ?? '연기',
+              style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        FixtureMatchStatus.cancelled => Center(
+            child: Text(
+              widget.timeText ?? '취소',
               style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
               textAlign: TextAlign.center,
             ),

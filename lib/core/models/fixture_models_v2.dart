@@ -15,6 +15,7 @@ class FixtureMatch {
     required this.matchTime,
     required this.matchTimestamp,
     required this.status,
+    required this.rawStatus,
     this.homeScore,
     this.awayScore,
     required this.sport,
@@ -33,8 +34,11 @@ class FixtureMatch {
   final String matchTime;
   final DateTime matchTimestamp;
 
-  /// Normalized status: scheduled, live, finished, postponed, cancelled.
+  /// Normalized status: scheduled, live, finished, postponed, cancelled, interrupted.
   final String status;
+
+  /// Original API status code (e.g. IN5, FT, NS).
+  final String rawStatus;
   final int? homeScore;
   final int? awayScore;
   final String sport;
@@ -55,13 +59,15 @@ class FixtureMatch {
     final displayParts = _displayDateTimeParts(resolvedTimestamp);
     final league = _readLeagueFields(json);
 
-    final rawStatus = _readString(json, const [
+    final rawStatus = (_readString(json, const [
           'matchStatus',
           'match_status',
           'status',
           'state',
         ]) ??
-        'NS';
+        'NS')
+        .trim()
+        .toUpperCase();
 
     return FixtureMatch(
       matchId: _parseInt(
@@ -107,6 +113,7 @@ class FixtureMatch {
       matchTime: displayParts.$2,
       matchTimestamp: resolvedTimestamp,
       status: normalizeMatchStatus(rawStatus),
+      rawStatus: rawStatus,
       homeScore: _parseInt(
         json['finalScoreHome'] ??
             json['final_score_home'] ??
@@ -184,28 +191,62 @@ String normalizeMatchStatus(String raw) {
       return 'scheduled';
     case '1H':
     case '2H':
+    case '3H':
+    case '4H':
+    case '5H':
+    case '6H':
+    case '7H':
+    case '8H':
+    case '9H':
+    case '10H':
+    case '11H':
+    case '12H':
+    case '13H':
+    case '14H':
+    case '15H':
     case 'HT':
     case 'ET':
     case 'BT':
     case 'P':
     case 'LIVE':
     case 'IN_PLAY':
+    case 'IN1':
+    case 'IN2':
+    case 'IN3':
+    case 'IN4':
+    case 'IN5':
+    case 'IN6':
+    case 'IN7':
+    case 'IN8':
+    case 'IN9':
+    case 'IN10':
+    case 'IN11':
+    case 'IN12':
+    case 'IN13':
+    case 'IN14':
+    case 'IN15':
       return 'live';
     case 'FT':
     case 'AET':
     case 'PEN':
     case 'FINISHED':
     case 'FIN':
+    case 'ABD':
+    case 'AWD':
+    case 'WO':
       return 'finished';
     case 'PST':
     case 'POSTPONED':
+    case 'POST':
       return 'postponed';
     case 'CANC':
-    case 'ABD':
     case 'CANCELLED':
     case 'CANCELED':
       return 'cancelled';
+    case 'INTR':
+      return 'interrupted';
     default:
+      if (_isBaseballInningCode(value)) return 'live';
       if (value.contains('LIVE') || value.contains('IN_PLAY')) {
         return 'live';
       }
@@ -214,6 +255,18 @@ String normalizeMatchStatus(String raw) {
       if (value.contains('CANC')) return 'cancelled';
       return value.isEmpty ? 'scheduled' : value.toLowerCase();
   }
+}
+
+bool _isBaseballInningCode(String value) {
+  if (value.startsWith('IN') && value.length > 2) {
+    final inning = int.tryParse(value.substring(2));
+    return inning != null && inning >= 1 && inning <= 15;
+  }
+  if (value.endsWith('H') && value.length >= 2) {
+    final inning = int.tryParse(value.substring(0, value.length - 1));
+    return inning != null && inning >= 1 && inning <= 15;
+  }
+  return false;
 }
 
 DateTime? _parseFixtureDateTime(Map<String, dynamic> json) {

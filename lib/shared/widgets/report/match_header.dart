@@ -15,12 +15,16 @@ class MatchHeader extends StatelessWidget {
     required this.awayTeam,
     required this.selectedTab,
     required this.onTabChanged,
+    this.leagueName,
+    this.leagueLogoUrl,
     this.homeLogoUrl,
     this.awayLogoUrl,
     super.key,
   });
 
   final String leagueId;
+  final String? leagueName;
+  final String? leagueLogoUrl;
   final String matchDate;
   final String homeTeam;
   final String awayTeam;
@@ -36,8 +40,8 @@ class MatchHeader extends StatelessWidget {
     height: 28 / 22,
   );
 
-  static const double _teamLogoSize = 80;
-  static const double _teamColumnWidth = 80;
+  static const double _teamLogoSize = 48;
+  static const double _teamColumnWidth = 72;
 
   Widget _teamLogo(BuildContext context, String? url) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
@@ -104,7 +108,26 @@ class MatchHeader extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          TsLeagueIcon(leagueId: leagueId, size: 24),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TsLeagueIcon(
+                leagueId: leagueId,
+                size: 24,
+                logoUrl: leagueLogoUrl,
+              ),
+              if (leagueName != null && leagueName!.trim().isNotEmpty) ...[
+                const SizedBox(width: TsSpacing.sm),
+                Text(
+                  leagueName!,
+                  style: TsType.labelSRegular.copyWith(
+                    color: semantic.textTertiary,
+                  ),
+                ),
+              ],
+            ],
+          ),
           const SizedBox(height: TsSpacing.lg),
           Text(
             matchDate,

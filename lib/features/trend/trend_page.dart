@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/core/models/baseball_models.dart';
+import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
@@ -14,8 +15,8 @@ import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/banner/ts_banner.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
+import 'package:trendsoccer/shared/widgets/cards/baseball_today_combo_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
-import 'package:trendsoccer/shared/widgets/cards/today_combo_card.dart';
 
 class TrendPage extends ConsumerStatefulWidget {
   const TrendPage({super.key});
@@ -289,12 +290,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
                 ),
                 const SizedBox(height: 16),
 
-                TodayComboCard(
-                  comboCount: '20',
-                  accuracy: '50%',
-                  avgOdds: '4.29',
-                  onCTATap: () => context.go('/premium'),
-                ),
+                const BaseballTodayComboCard(),
 
                 const SizedBox(height: 24),
               ],
@@ -326,7 +322,7 @@ class _TrendBaseballCard extends StatelessWidget {
       winRate: null,
       onAnalyze: () => context.push(
         '/analysis/baseball/match-report/${card.matchId}',
-        extra: card.matchTimestamp,
+        extra: MatchHeaderData.fromBaseballCard(card),
       ),
     );
   }
@@ -357,7 +353,7 @@ class _TrendSoccerCard extends StatelessWidget {
       winRate: null,
       onAnalyze: () => context.push(
         '/analysis/soccer/match-report/${match.matchId}',
-        extra: match.matchTimestamp,
+        extra: MatchHeaderData.fromSoccerCard(card),
       ),
     );
   }

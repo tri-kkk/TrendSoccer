@@ -7,6 +7,7 @@ import 'package:trendsoccer/core/models/fixture_models_v2.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/baseball_status.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/filter/ts_filter_chip.dart';
@@ -168,8 +169,14 @@ class _FixturePageState extends ConsumerState<FixturePage> {
   SportType _selectedSport(String sport) =>
       sport == 'baseball' ? SportType.baseball : SportType.soccer;
 
-  FixtureMatchStatus _toFixtureStatus(String status) {
-    switch (status) {
+  FixtureMatchStatus _toFixtureStatus(
+    FixtureMatch match, {
+    required bool isBaseball,
+  }) {
+    if (isBaseball) {
+      return _baseballFixtureStatus(match);
+    }
+    switch (match.status) {
       case 'live':
         return FixtureMatchStatus.live;
       case 'finished':
@@ -179,21 +186,80 @@ class _FixturePageState extends ConsumerState<FixturePage> {
     }
   }
 
-  String? _scoreText(FixtureMatch match, {required bool isHome}) {
-    if (match.status == 'scheduled') return null;
+  FixtureMatchStatus _baseballFixtureStatus(FixtureMatch match) {
+    if (BaseballStatus.isInterrupted(match.rawStatus)) {
+      return FixtureMatchStatus.interrupted;
+    }
+    if (BaseballStatus.isLive(match.rawStatus)) {
+      return FixtureMatchStatus.live;
+    }
+    switch (match.status) {
+      case 'finished':
+        return FixtureMatchStatus.finished;
+      case 'postponed':
+        return FixtureMatchStatus.postponed;
+      case 'cancelled':
+        return FixtureMatchStatus.cancelled;
+      case 'interrupted':
+        return FixtureMatchStatus.interrupted;
+      default:
+        return FixtureMatchStatus.scheduled;
+    }
+  }
+
+  String? _scoreText(
+    FixtureMatch match, {
+    required bool isHome,
+    required bool isBaseball,
+  }) {
+    if (isBaseball) {
+      if (match.status == 'scheduled' ||
+          match.status == 'postponed' ||
+          match.status == 'cancelled') {
+        return null;
+      }
+    } else if (match.status == 'scheduled') {
+      return null;
+    }
     final score = isHome ? match.homeScore : match.awayScore;
     return score?.toString();
   }
 
   String? _statusTimeText(FixtureMatch match, {required bool isBaseball}) {
+    if (isBaseball) {
+      return _baseballStatusTimeText(match);
+    }
     switch (match.status) {
       case 'live':
         return null;
       case 'finished':
-        return isBaseball ? 'Final' : 'FT';
+        return 'FT';
       default:
         return fixtureMatchTimeKst(match);
     }
+  }
+
+  String? _baseballStatusTimeText(FixtureMatch match) {
+    if (match.status == 'postponed') return '연기';
+    if (match.status == 'cancelled') return '취소';
+    if (BaseballStatus.isInterrupted(match.rawStatus)) return '중단';
+
+    if (BaseballStatus.isScheduled(match.rawStatus) ||
+        match.status == 'scheduled') {
+      return fixtureMatchTimeKst(match);
+    }
+
+    if (match.status == 'finished' || BaseballStatus.isFinished(match.rawStatus)) {
+      return 'Final';
+    }
+
+    if (BaseballStatus.isLive(match.rawStatus)) {
+      final display = BaseballStatus.displayStatus(match.rawStatus);
+      if (display.isNotEmpty) return display;
+      return 'LIVE';
+    }
+
+    return BaseballStatus.displayStatus(match.rawStatus);
   }
 
   Widget _buildDateNavStrip() {
@@ -312,14 +378,14 @@ class _FixturePageState extends ConsumerState<FixturePage> {
           children: [
             for (final match in group.matches)
               FixtureMatchRow(
-                status: _toFixtureStatus(match.status),
+                status: _toFixtureStatus(match, isBaseball: isBaseball),
                 timeText: _statusTimeText(match, isBaseball: isBaseball),
                 homeTeam: match.homeTeam,
                 awayTeam: match.awayTeam,
                 homeLogoUrl: match.homeTeamLogo,
                 awayLogoUrl: match.awayTeamLogo,
-                homeScore: _scoreText(match, isHome: true),
-                awayScore: _scoreText(match, isHome: false),
+                homeScore: _scoreText(match, isHome: true, isBaseball: isBaseball),
+                awayScore: _scoreText(match, isHome: false, isBaseball: isBaseball),
                 isNotificationOn: _notificationMatchIds
                     .contains(match.matchId.toString()),
                 onNotificationTap:

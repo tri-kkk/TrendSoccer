@@ -68,6 +68,7 @@ class TeamInfo {
   const TeamInfo({
     required this.name,
     this.logo,
+    this.id,
   });
 
   factory TeamInfo.fromJson(dynamic json) {
@@ -80,6 +81,9 @@ class TeamInfo {
       return TeamInfo(
         name: _readString(map, const ['name', 'teamName', 'team_name']) ?? '',
         logo: _readString(map, const ['logo', 'logoUrl', 'logo_url', 'image']),
+        id: _parseInt(
+          map['id'] ?? map['teamId'] ?? map['team_id'],
+        ),
       );
     }
     return const TeamInfo(name: '');
@@ -87,12 +91,14 @@ class TeamInfo {
 
   final String name;
   final String? logo;
+  final int? id;
 }
 
 class LeagueInfo {
   const LeagueInfo({
     required this.id,
     required this.name,
+    this.nameEn,
     this.code,
     this.icon,
     this.country,
@@ -109,9 +115,13 @@ class LeagueInfo {
           0,
       name: _readString(
             json,
-            const ['name', 'leagueName', 'league_name', 'leagueNameEn'],
+            const ['name', 'leagueName', 'league_name'],
           ) ??
           '',
+      nameEn: _readString(
+        json,
+        const ['leagueNameEn', 'league_name_en', 'nameEn'],
+      ),
       code: _readString(json, const ['code', 'leagueCode', 'league_code']),
       icon: _readString(json, const ['icon', 'iconUrl', 'icon_url', 'leagueLogo']),
       country:
@@ -121,6 +131,7 @@ class LeagueInfo {
 
   final int id;
   final String name;
+  final String? nameEn;
   final String? code;
   final String? icon;
   final String? country;
@@ -286,6 +297,7 @@ class SoccerMatch {
             json,
             const ['home_team_logo', 'homeTeamLogo', 'homeLogo'],
           ),
+          id: _parseInt(json['home_team_id'] ?? json['homeTeamId']),
         ),
         awayTeam: TeamInfo(
           name: awayValue is String ? awayValue : '',
@@ -293,14 +305,19 @@ class SoccerMatch {
             json,
             const ['away_team_logo', 'awayTeamLogo', 'awayLogo'],
           ),
+          id: _parseInt(json['away_team_id'] ?? json['awayTeamId']),
         ),
         league: LeagueInfo(
           id: _parseInt(json['leaguePriority'] ?? json['league_id']) ?? 0,
           name: _readString(
                 json,
-                const ['leagueName', 'leagueNameEn', 'league_name'],
+                const ['leagueName', 'league_name', 'name'],
               ) ??
               '',
+          nameEn: _readString(
+            json,
+            const ['leagueNameEn', 'league_name_en'],
+          ),
           code: _readString(json, const ['league_code', 'leagueCode', 'code']),
           icon: _readString(json, const ['leagueLogo', 'league_logo', 'icon']),
         ),

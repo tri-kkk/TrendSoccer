@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
@@ -122,7 +123,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                     winRate: winRateLabelFromCard(card),
                     onAnalyze: () => context.push(
                       '/analysis/soccer/match-report/${match.matchId}',
-                      extra: match.matchTimestamp,
+                      extra: MatchHeaderData.fromSoccerCard(card),
                     ),
                   ),
                 );

@@ -21,6 +21,69 @@ final todayDateProvider = Provider<String>((ref) {
 /// Selected league filter chip id; `null` = 전체.
 final selectedLeagueProvider = StateProvider<String?>((ref) => null);
 
+List<DateTime> soccerAnalysisDateTimes() {
+  final today = DateTime.now();
+  final todayDay = DateTime(today.year, today.month, today.day);
+  return List.generate(3, (index) => todayDay.add(Duration(days: index)));
+}
+
+final soccerAnalysisDateProvider = StateProvider<String>(
+  (ref) => fixtureTodayDateString(),
+);
+
+final soccerAnalysisDatesProvider = Provider<List<String>>((ref) {
+  return soccerAnalysisDateTimes().map(fixtureDateString).toList();
+});
+
+bool soccerMatchIsOnDate(SoccerAnalysisCard card, String dateStr) {
+  final timestamp = card.match.matchTimestamp;
+  if (timestamp != null) {
+    return fixtureDateString(timestamp.toLocal()) == dateStr;
+  }
+
+  final matchDate = card.match.matchDate.trim();
+  if (RegExp(r'^\d{4}-\d{2}-\d{2}').hasMatch(matchDate)) {
+    return matchDate.substring(0, 10) == dateStr;
+  }
+  return false;
+}
+
+List<SoccerAnalysisCard> filterSoccerAnalysisMatches(
+  List<SoccerAnalysisCard> matches,
+  String dateStr,
+  String? selectedLeague,
+) {
+  var filtered =
+      matches.where((card) => soccerMatchIsOnDate(card, dateStr)).toList();
+
+  if (selectedLeague == null) return filtered;
+
+  final chip = soccerAnalysisLeagueChips.firstWhere(
+    (filter) => filter.id == selectedLeague,
+    orElse: () => soccerAnalysisLeagueChips.first,
+  );
+  final codes = chip.codes;
+  if (codes == null || codes.isEmpty) return filtered;
+
+  final codeSet = codes.map((code) => code.toUpperCase()).toSet();
+  return filtered.where((card) {
+    final leagueCode = card.match.league.code?.toUpperCase();
+    return leagueCode != null && codeSet.contains(leagueCode);
+  }).toList();
+}
+
+final filteredSoccerAnalysisByDateProvider =
+    Provider<AsyncValue<List<SoccerAnalysisCard>>>((ref) {
+  final selectedDate = ref.watch(soccerAnalysisDateProvider);
+  final selectedLeague = ref.watch(selectedLeagueProvider);
+  final matchesAsync = ref.watch(analysisSoccerMatchesProvider);
+
+  return matchesAsync.whenData(
+    (matches) =>
+        filterSoccerAnalysisMatches(matches, selectedDate, selectedLeague),
+  );
+});
+
 /// Today's matches for Trend preview (single date).
 final soccerMatchesProvider =
     FutureProvider.family<List<SoccerAnalysisCard>, String>((ref, date) async {

@@ -12,9 +12,12 @@ import 'package:trendsoccer/shared/widgets/league/ts_league_icon.dart';
 /// 오늘의 추천 조합 — Trend / Combo entry (Figma 963:12446).
 class TodayComboCard extends StatelessWidget {
   const TodayComboCard({
-    this.comboCount = '20',
-    this.accuracy = '50%',
-    this.avgOdds = '4.29',
+    this.comboCount = '-',
+    this.accuracy = '-',
+    this.avgOdds = '-',
+    this.leagues,
+    this.subtitle,
+    this.statusSummary,
     this.onCTATap,
     super.key,
   });
@@ -22,6 +25,9 @@ class TodayComboCard extends StatelessWidget {
   final String comboCount;
   final String accuracy;
   final String avgOdds;
+  final List<String>? leagues;
+  final String? subtitle;
+  final String? statusSummary;
   final VoidCallback? onCTATap;
 
   @override
@@ -60,28 +66,7 @@ class TodayComboCard extends StatelessWidget {
           const SizedBox(height: TsSpacing.lg),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              _LeagueIconBox(
-                bgColor: Color(0x0FEF4444),
-                borderColor: Color(0x1AEF4444),
-                leagueId: 'kbo',
-                leagueName: 'KBO',
-              ),
-              SizedBox(width: TsSpacing.md),
-              _LeagueIconBox(
-                bgColor: Color(0x0F00C2FF),
-                borderColor: Color(0x1A00C2FF),
-                leagueId: 'mlb',
-                leagueName: 'MLB',
-              ),
-              SizedBox(width: TsSpacing.md),
-              _LeagueIconBox(
-                bgColor: Color(0x0FF59E0B),
-                borderColor: Color(0x1AF59E0B),
-                leagueId: 'npb',
-                leagueName: 'NPB',
-              ),
-            ],
+            children: _buildLeagueIcons(),
           ),
           const SizedBox(height: TsSpacing.lg),
           Column(
@@ -89,13 +74,15 @@ class TodayComboCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                '오늘의 AI 조합을 확인하세요.',
+                subtitle ?? '오늘의 AI 조합을 확인하세요.',
                 style: TsType.bodyLBold.copyWith(color: semantic.textPrimary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: TsSpacing.xs),
               Text(
-                '매일 3대 리그 AI 분석 조합 제공',
+                statusSummary?.isNotEmpty == true
+                    ? statusSummary!
+                    : '매일 3대 리그 AI 분석 조합 제공',
                 style: TsType.labelSRegular.copyWith(
                   color: semantic.textTertiary,
                 ),
@@ -208,6 +195,41 @@ class TodayComboCard extends StatelessWidget {
       ),
     );
   }
+
+  List<Widget> _buildLeagueIcons() {
+    final leagueCodes = leagues?.where((league) => league.isNotEmpty).toList();
+    if (leagueCodes == null || leagueCodes.isEmpty) {
+      return const [
+        _LeagueIconBox(
+          bgColor: Color(0x0FEF4444),
+          borderColor: Color(0x1AEF4444),
+          leagueId: 'kbo',
+          leagueName: 'KBO',
+        ),
+        SizedBox(width: TsSpacing.md),
+        _LeagueIconBox(
+          bgColor: Color(0x0F00C2FF),
+          borderColor: Color(0x1A00C2FF),
+          leagueId: 'mlb',
+          leagueName: 'MLB',
+        ),
+        SizedBox(width: TsSpacing.md),
+        _LeagueIconBox(
+          bgColor: Color(0x0FF59E0B),
+          borderColor: Color(0x1AF59E0B),
+          leagueId: 'npb',
+          leagueName: 'NPB',
+        ),
+      ];
+    }
+
+    return [
+      for (var i = 0; i < leagueCodes.length; i++) ...[
+        if (i > 0) const SizedBox(width: TsSpacing.md),
+        _LeagueIconBox.fromLeagueCode(leagueCodes[i]),
+      ],
+    ];
+  }
 }
 
 class _LeagueIconBox extends StatelessWidget {
@@ -217,6 +239,46 @@ class _LeagueIconBox extends StatelessWidget {
     required this.leagueId,
     required this.leagueName,
   });
+
+  factory _LeagueIconBox.fromLeagueCode(String leagueCode) {
+    final upper = leagueCode.trim().toUpperCase();
+    final style = _leagueStyles[upper] ?? _defaultLeagueStyle;
+    return _LeagueIconBox(
+      bgColor: style.bgColor,
+      borderColor: style.borderColor,
+      leagueId: style.leagueId,
+      leagueName: upper,
+    );
+  }
+
+  static const _defaultLeagueStyle = _LeagueStyle(
+    bgColor: Color(0x0F00C2FF),
+    borderColor: Color(0x1A00C2FF),
+    leagueId: 'mlb',
+  );
+
+  static const _leagueStyles = {
+    'KBO': _LeagueStyle(
+      bgColor: Color(0x0FEF4444),
+      borderColor: Color(0x1AEF4444),
+      leagueId: 'kbo',
+    ),
+    'MLB': _LeagueStyle(
+      bgColor: Color(0x0F00C2FF),
+      borderColor: Color(0x1A00C2FF),
+      leagueId: 'mlb',
+    ),
+    'NPB': _LeagueStyle(
+      bgColor: Color(0x0FF59E0B),
+      borderColor: Color(0x1AF59E0B),
+      leagueId: 'npb',
+    ),
+    'CPBL': _LeagueStyle(
+      bgColor: Color(0x0F8B5CF6),
+      borderColor: Color(0x1A8B5CF6),
+      leagueId: 'cpbl',
+    ),
+  };
 
   final Color bgColor;
   final Color borderColor;
@@ -248,4 +310,16 @@ class _LeagueIconBox extends StatelessWidget {
       ),
     );
   }
+}
+
+class _LeagueStyle {
+  const _LeagueStyle({
+    required this.bgColor,
+    required this.borderColor,
+    required this.leagueId,
+  });
+
+  final Color bgColor;
+  final Color borderColor;
+  final String leagueId;
 }

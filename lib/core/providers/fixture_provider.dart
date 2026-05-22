@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/legacy.dart';
 
 import 'package:trendsoccer/core/models/fixture_models_v2.dart';
 import 'package:trendsoccer/core/services/fixture_service.dart';
+import 'package:trendsoccer/core/utils/baseball_status.dart';
 
 String fixtureDateString(DateTime date) {
   final month = date.month.toString().padLeft(2, '0');
@@ -79,8 +80,18 @@ List<FixtureMatch> _scopeMatchesForFilters(
   List<FixtureMatch> matches, {
   required String selectedDate,
   required bool liveFilter,
+  required String sport,
 }) {
   if (liveFilter) {
+    if (sport == 'baseball') {
+      return matches
+          .where(
+            (match) =>
+                BaseballStatus.isLive(match.rawStatus) ||
+                BaseballStatus.isInterrupted(match.rawStatus),
+          )
+          .toList();
+    }
     return matches.where((match) => match.status == 'live').toList();
   }
   return matches
@@ -92,6 +103,7 @@ final fixtureAvailableLeaguesProvider =
     Provider<List<FixtureLeagueOption>>((ref) {
   final selectedDate = ref.watch(fixtureSelectedDateProvider);
   final liveFilter = ref.watch(fixtureLiveFilterProvider);
+  final sport = ref.watch(fixtureSelectedSportProvider);
 
   return ref.watch(rawFixturesProvider).maybeWhen(
         data: (matches) => _extractLeagueOptions(
@@ -99,6 +111,7 @@ final fixtureAvailableLeaguesProvider =
             matches,
             selectedDate: selectedDate,
             liveFilter: liveFilter,
+            sport: sport,
           ),
         ),
         orElse: () => const [],
@@ -126,12 +139,14 @@ final filteredFixturesProvider =
   final selectedDate = ref.watch(fixtureSelectedDateProvider);
   final selectedLeague = ref.watch(fixtureSelectedLeagueProvider);
   final liveFilter = ref.watch(fixtureLiveFilterProvider);
+  final sport = ref.watch(fixtureSelectedSportProvider);
 
   return rawAsync.whenData((matches) {
     var filtered = _scopeMatchesForFilters(
       matches,
       selectedDate: selectedDate,
       liveFilter: liveFilter,
+      sport: sport,
     );
 
     if (selectedLeague != null && selectedLeague.isNotEmpty) {

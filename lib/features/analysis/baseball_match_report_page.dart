@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_match_report_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/features/analysis/models/baseball_match_report_data.dart';
 import 'package:trendsoccer/features/analysis/models/baseball_standard_parser.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/premium/baseball_ai_tab.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/standard/baseball_standard_tab.dart';
@@ -19,10 +19,12 @@ import 'package:trendsoccer/shared/widgets/subscribe_sheet.dart';
 class BaseballMatchReportPage extends ConsumerStatefulWidget {
   const BaseballMatchReportPage({
     required this.matchId,
+    this.initialHeader,
     super.key,
   });
 
   final String matchId;
+  final MatchHeaderData? initialHeader;
 
   @override
   ConsumerState<BaseballMatchReportPage> createState() =>
@@ -35,7 +37,25 @@ class _BaseballMatchReportPageState
 
   int? get _numericMatchId => int.tryParse(widget.matchId);
 
-  BaseballMatchReportData get _headerFallbackSource => baseballMatchReportDummy;
+  MatchHeaderData _resolveHeader() {
+    final matchId = _numericMatchId;
+    final base = widget.initialHeader ??
+        (matchId != null
+            ? MatchHeaderData.placeholder(matchId: matchId)
+            : MatchHeaderData.placeholder(matchId: 0));
+
+    if (matchId == null) return base;
+
+    final apiHeader = ref.watch(baseballMatchDetailProvider(matchId)).maybeWhen(
+          data: (raw) => MatchHeaderData.fromBaseballStandardParsed(
+            parseBaseballStandardDetail(raw),
+            matchId: matchId,
+          ),
+          orElse: () => null,
+        );
+
+    return base.mergeWith(apiHeader);
+  }
 
   Widget _buildStandardTab() {
     final matchId = _numericMatchId;
@@ -62,16 +82,7 @@ class _BaseballMatchReportPageState
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final headerFallback =
-        baseballStandardHeaderFallback(_headerFallbackSource);
-
-    final matchId = _numericMatchId;
-    final headerParsed = matchId != null
-        ? ref.watch(baseballMatchDetailProvider(matchId)).maybeWhen(
-              data: (raw) => parseBaseballStandardDetail(raw),
-              orElse: () => headerFallback,
-            )
-        : headerFallback;
+    final header = _resolveHeader();
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
@@ -88,12 +99,14 @@ class _BaseballMatchReportPageState
         child: Column(
           children: [
             MatchHeader(
-              leagueId: headerParsed.leagueId,
-              matchDate: headerParsed.matchDateDisplay,
-              homeTeam: headerParsed.homeTeam,
-              awayTeam: headerParsed.awayTeam,
-              homeLogoUrl: headerParsed.homeLogoUrl,
-              awayLogoUrl: headerParsed.awayLogoUrl,
+              leagueId: header.resolvedLeagueIconId,
+              leagueName: header.leagueName,
+              leagueLogoUrl: header.leagueLogo,
+              matchDate: header.displayDate,
+              homeTeam: header.homeTeam,
+              awayTeam: header.awayTeam,
+              homeLogoUrl: header.homeTeamLogo,
+              awayLogoUrl: header.awayTeamLogo,
               selectedTab: _selectedTab,
               onTabChanged: (tab) {
                 if (tab == ReportTab.premium) {

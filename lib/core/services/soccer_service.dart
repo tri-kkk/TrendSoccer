@@ -85,13 +85,30 @@ class SoccerService {
     }
   }
 
-  // TODO: Replace with /api/v1/mobile/soccer/analysis when available
-  Future<Map<String, dynamic>> getMatchAnalysis({required int matchId}) async {
+  Future<Map<String, dynamic>> getMatchAnalysis({
+    required String league,
+    required String homeTeam,
+    required String awayTeam,
+    required String date,
+    required String time,
+  }) async {
+    print('[SOCCER] POST /api/analysis for $homeTeam vs $awayTeam');
     try {
-      final response = await _dio.get<dynamic>(
+      final response = await _dio.post<dynamic>(
         '/api/analysis',
-        queryParameters: <String, dynamic>{'matchId': matchId},
-        options: Options(receiveTimeout: _analysisTimeout),
+        data: <String, dynamic>{
+          'match': <String, String>{
+            'league': league,
+            'homeTeam': homeTeam,
+            'awayTeam': awayTeam,
+            'date': date,
+            'time': time,
+          },
+        },
+        options: Options(
+          receiveTimeout: _analysisTimeout,
+          sendTimeout: _analysisTimeout,
+        ),
       );
       return _adaptToMap(response.data);
     } catch (e) {
@@ -99,24 +116,45 @@ class SoccerService {
     }
   }
 
-  // TODO: Replace with /api/v1/mobile/soccer/premium when available
-  Future<Map<String, dynamic>> getMatchPremium({required int matchId}) async {
+  Future<Map<String, dynamic>> getMatchH2H({
+    required int homeTeamId,
+    required int awayTeamId,
+    int last = 10,
+  }) async {
+    print(
+      '[SOCCER] GET /api/h2h-enhanced for team1=$homeTeamId team2=$awayTeamId',
+    );
     try {
       final response = await _dio.get<dynamic>(
         '/api/h2h-enhanced',
-        queryParameters: <String, dynamic>{'matchId': matchId},
+        queryParameters: <String, dynamic>{
+          'team1': homeTeamId,
+          'team2': awayTeamId,
+          'last': last,
+        },
       );
       return _adaptToMap(response.data);
-    } catch (_) {
-      try {
-        final response = await _dio.get<dynamic>(
-          '/api/h2h',
-          queryParameters: <String, dynamic>{'matchId': matchId},
-        );
-        return _adaptToMap(response.data);
-      } catch (e) {
-        rethrow;
-      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> getMatchH2HAnalysis({
+    required String homeTeam,
+    required String awayTeam,
+  }) async {
+    print('[SOCCER] GET /api/h2h-analysis for $homeTeam vs $awayTeam');
+    try {
+      final response = await _dio.get<dynamic>(
+        '/api/h2h-analysis',
+        queryParameters: <String, String>{
+          'homeTeam': homeTeam,
+          'awayTeam': awayTeam,
+        },
+      );
+      return _adaptToMap(response.data);
+    } catch (e) {
+      rethrow;
     }
   }
 

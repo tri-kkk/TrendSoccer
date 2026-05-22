@@ -63,11 +63,53 @@ const baseballAnalysisLeagueChips = [
 
 final selectedBaseballLeagueProvider = StateProvider<String?>((ref) => null);
 
+String baseballDateString(DateTime date) {
+  final month = date.month.toString().padLeft(2, '0');
+  final day = date.day.toString().padLeft(2, '0');
+  return '${date.year}-$month-$day';
+}
+
+String baseballTodayDateString() => baseballDateString(DateTime.now());
+
+List<DateTime> baseballAnalysisDateTimes() {
+  final today = DateTime.now();
+  final todayDay = DateTime(today.year, today.month, today.day);
+  return List.generate(3, (index) => todayDay.add(Duration(days: index)));
+}
+
+final baseballAnalysisDateProvider = StateProvider<String>(
+  (ref) => baseballTodayDateString(),
+);
+
+final baseballAnalysisDatesProvider = Provider<List<String>>((ref) {
+  return baseballAnalysisDateTimes().map(baseballDateString).toList();
+});
+
+bool baseballMatchIsOnDate(BaseballAnalysisCard card, String dateStr) {
+  final local = card.matchTimestamp.toLocal();
+  return baseballDateString(local) == dateStr;
+}
+
 final baseballAnalysisMatchesProvider =
     FutureProvider.autoDispose<List<BaseballAnalysisCard>>((ref) async {
   final service = ref.read(baseballServiceProvider);
-  final matches = await service.getUpcomingMatches();
-  return matches.where((match) => !_isFinishedBaseballStatus(match.status)).toList();
+  final dates = ref.watch(baseballAnalysisDatesProvider);
+  final results = await Future.wait(
+    dates.map((date) => service.getMatches(date: date)),
+  );
+
+  final byId = <int, BaseballAnalysisCard>{};
+  for (final dayMatches in results) {
+    for (final match in dayMatches) {
+      if (match.matchId == 0) continue;
+      if (_isFinishedBaseballStatus(match.status)) continue;
+      byId[match.matchId] = match;
+    }
+  }
+
+  final merged = byId.values.toList()
+    ..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
+  return merged;
 });
 
 bool _isFinishedBaseballStatus(String status) {
@@ -82,15 +124,34 @@ final filteredBaseballAnalysisProvider =
     Provider<AsyncValue<List<BaseballAnalysisCard>>>((ref) {
   final matchesAsync = ref.watch(baseballAnalysisMatchesProvider);
   final selectedLeague = ref.watch(selectedBaseballLeagueProvider);
+  final selectedDate = ref.watch(baseballAnalysisDateProvider);
 
   return matchesAsync.whenData((matches) {
-    if (selectedLeague == null || selectedLeague.isEmpty) return matches;
-    final code = selectedLeague.toUpperCase();
-    return matches
-        .where((match) => match.league.toUpperCase() == code)
-        .toList();
+    var filtered =
+        matches.where((match) => baseballMatchIsOnDate(match, selectedDate)).toList();
+    if (selectedLeague != null && selectedLeague.isNotEmpty) {
+      final code = selectedLeague.toUpperCase();
+      filtered =
+          filtered.where((match) => match.league.toUpperCase() == code).toList();
+    }
+    return filtered;
   });
 });
+
+List<BaseballAnalysisCard> filterBaseballAnalysisMatches({
+  required List<BaseballAnalysisCard> matches,
+  required String dateStr,
+  String? selectedLeague,
+}) {
+  var filtered =
+      matches.where((match) => baseballMatchIsOnDate(match, dateStr)).toList();
+  if (selectedLeague != null && selectedLeague.isNotEmpty) {
+    final code = selectedLeague.toUpperCase();
+    filtered =
+        filtered.where((match) => match.league.toUpperCase() == code).toList();
+  }
+  return filtered;
+}
 
 String baseballLeagueIconId(String league) {
   final upper = league.trim().toUpperCase();

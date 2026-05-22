@@ -192,6 +192,143 @@ class SoccerStandardTabError extends StatelessWidget {
   }
 }
 
+/// Displays markdown analysis from POST `/api/analysis`.
+class SoccerStandardMarkdownTab extends StatelessWidget {
+  const SoccerStandardMarkdownTab({
+    required this.markdown,
+    required this.planType,
+    this.matchTimestampUtc,
+    super.key,
+  });
+
+  final String markdown;
+  final PlanType planType;
+  final DateTime? matchTimestampUtc;
+
+  @override
+  Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final matchTimestamp = matchTimestampUtc;
+    final canView = matchTimestamp == null
+        ? true
+        : AccessGate.canViewStandardAnalysis(
+            matchTimestamp: matchTimestamp,
+            planType: planType,
+          );
+
+    final lockMessage = matchTimestamp == null
+        ? null
+        : _buildLockOverlayMessage(
+            matchTimestamp: matchTimestamp,
+            planType: planType,
+          );
+
+    final content = markdown.isEmpty
+        ? Text(
+            '분석 결과가 없습니다.',
+            style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+            textAlign: TextAlign.center,
+          )
+        : SelectableText(
+            markdown,
+            style: TsType.bodyMRegular.copyWith(
+              color: semantic.textPrimary,
+              height: 1.6,
+            ),
+          );
+
+    // TODO: Parse markdown into structured sections
+    return BlurableSection(
+      isBlurred: !canView,
+      blurMessage: lockMessage,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(TsSpacing.lg),
+        decoration: BoxDecoration(
+          color: semantic.surfaceRaised,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: content,
+      ),
+    );
+  }
+
+  String? _buildLockOverlayMessage({
+    required DateTime matchTimestamp,
+    required PlanType planType,
+  }) {
+    final message = AccessGate.lockMessage(
+      matchTimestamp: matchTimestamp,
+      planType: planType,
+    );
+    if (message == null) return null;
+
+    final until = AccessGate.timeUntilUnlock(
+      matchTimestamp: matchTimestamp,
+      planType: planType,
+    );
+    if (until == null || until <= Duration.zero) return message;
+    return '$message\n${_formatUnlockCountdown(until)} 후 오픈';
+  }
+
+  String _formatUnlockCountdown(Duration duration) {
+    if (duration.inDays > 0) {
+      return '${duration.inDays}일 ${duration.inHours % 24}시간';
+    }
+    if (duration.inHours > 0) {
+      return '${duration.inHours}시간 ${duration.inMinutes % 60}분';
+    }
+    final minutes = duration.inMinutes;
+    return minutes > 0 ? '$minutes분' : '1분';
+  }
+}
+
+/// Refreshes lock countdown text periodically while the markdown tab is visible.
+class SoccerStandardMarkdownTabHost extends StatefulWidget {
+  const SoccerStandardMarkdownTabHost({
+    required this.markdown,
+    required this.planType,
+    this.matchTimestampUtc,
+    super.key,
+  });
+
+  final String markdown;
+  final PlanType planType;
+  final DateTime? matchTimestampUtc;
+
+  @override
+  State<SoccerStandardMarkdownTabHost> createState() =>
+      _SoccerStandardMarkdownTabHostState();
+}
+
+class _SoccerStandardMarkdownTabHostState
+    extends State<SoccerStandardMarkdownTabHost> {
+  Timer? _countdownTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SoccerStandardMarkdownTab(
+      markdown: widget.markdown,
+      planType: widget.planType,
+      matchTimestampUtc: widget.matchTimestampUtc,
+    );
+  }
+}
+
 /// Refreshes lock countdown text periodically while the tab is visible.
 class SoccerStandardTabHost extends StatefulWidget {
   const SoccerStandardTabHost({

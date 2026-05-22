@@ -16,11 +16,11 @@ import 'package:trendsoccer/shared/widgets/premium/section_title.dart';
 
 class SoccerPremiumTab extends ConsumerWidget {
   const SoccerPremiumTab({
-    required this.matchId,
+    required this.params,
     super.key,
   });
 
-  final int matchId;
+  final SoccerAnalysisParams params;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,7 +37,7 @@ class SoccerPremiumTab extends ConsumerWidget {
       );
     }
 
-    final premiumAsync = ref.watch(soccerPremiumProvider(matchId));
+    final premiumAsync = ref.watch(soccerH2HAnalysisProvider(params));
 
     return premiumAsync.when(
       loading: () => const KeyedSubtree(
@@ -52,7 +52,7 @@ class SoccerPremiumTab extends ConsumerWidget {
         child: Padding(
           padding: const EdgeInsets.all(TsSpacing.lg),
           child: SoccerStandardTabError(
-            onRetry: () => ref.invalidate(soccerPremiumProvider(matchId)),
+            onRetry: () => ref.invalidate(soccerH2HAnalysisProvider(params)),
           ),
         ),
       ),
