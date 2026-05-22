@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
@@ -5,40 +7,80 @@ import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
-class ThreeMethodAnalysisSection extends StatelessWidget {
-  const ThreeMethodAnalysisSection({
-    super.key,
-    this.paLabel = 'P/A비교',
-    required this.paPercent,
-    required this.paHomeRatio,
-    this.minMaxLabel = 'MIN-MAX 비교',
-    required this.minMaxPercent,
-    required this.minMaxHomeRatio,
-    this.firstGoalLabel = '선제골',
-    required this.firstGoalPercent,
-    required this.firstGoalHomeRatio,
+class ThreeMethodData {
+  const ThreeMethodData({
+    required this.label,
+    this.win,
+    this.draw,
+    this.lose,
   });
 
-  final String paLabel;
-  final String paPercent;
-  final double paHomeRatio;
+  final String label;
+  final double? win;
+  final double? draw;
+  final double? lose;
+}
 
-  final String minMaxLabel;
-  final String minMaxPercent;
-  final double minMaxHomeRatio;
+class ThreeMethodAnalysisSection extends StatelessWidget {
+  const ThreeMethodAnalysisSection({
+    required this.methods,
+    super.key,
+  });
 
-  final String firstGoalLabel;
-  final String firstGoalPercent;
-  final double firstGoalHomeRatio;
+  final List<ThreeMethodData> methods;
 
-  Widget _buildMethodRow(
-    String label,
-    String percent,
-    double homeRatio,
-    TsSemanticColors semantic,
-  ) {
-    final homeFlex = (homeRatio * 100).round().clamp(1, 99);
-    final awayFlex = ((1 - homeRatio) * 100).round().clamp(1, 99);
+  double _normalizedRate(double? value) {
+    if (value == null) return 0;
+    if (value <= 1) return value;
+    return value / 100;
+  }
+
+  String _pickLabel(double win, double lose) {
+    if (win >= lose) {
+      return '홈 ${(win * 100).round()}%';
+    }
+    return '원정 ${(lose * 100).round()}%';
+  }
+
+  Widget _buildMethodBar(ThreeMethodData method, TsSemanticColors semantic) {
+    final win = _normalizedRate(method.win);
+    final draw = _normalizedRate(method.draw);
+    final lose = _normalizedRate(method.lose);
+    final total = win + draw + lose;
+
+    if (total <= 0) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                method.label,
+                style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+              ),
+              Text(
+                '-',
+                style: TsType.labelSBold.copyWith(color: semantic.textPrimary),
+              ),
+            ],
+          ),
+          const SizedBox(height: TsSpacing.sm),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: SizedBox(
+              width: double.infinity,
+              height: 8,
+              child: ColoredBox(color: semantic.surfaceContainer),
+            ),
+          ),
+        ],
+      );
+    }
+
+    final winFlex = math.max(1, (win / total * 100).round());
+    final drawFlex = math.max(1, (draw / total * 100).round());
+    final loseFlex = math.max(1, (lose / total * 100).round());
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -47,30 +89,44 @@ class ThreeMethodAnalysisSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              label,
+              method.label,
               style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             ),
             Text(
-              percent,
-              style: TsType.labelSRegular.copyWith(color: semantic.textPrimary),
+              _pickLabel(win, lose),
+              style: TsType.labelSBold.copyWith(color: semantic.textPrimary),
             ),
           ],
         ),
         const SizedBox(height: TsSpacing.sm),
-        SizedBox(
-          width: double.infinity,
-          height: 8,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: SizedBox(
+            width: double.infinity,
+            height: 8,
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(
-                  flex: homeFlex,
-                  child: Container(color: semantic.interactivePrimary),
+                  flex: winFlex,
+                  child: Container(
+                    height: 8,
+                    color: semantic.interactivePrimary,
+                  ),
                 ),
                 Expanded(
-                  flex: awayFlex,
-                  child: Container(color: TsColors.systemError500),
+                  flex: drawFlex,
+                  child: Container(
+                    height: 8,
+                    color: semantic.textTertiary,
+                  ),
+                ),
+                Expanded(
+                  flex: loseFlex,
+                  child: Container(
+                    height: 8,
+                    color: TsColors.systemError500,
+                  ),
                 ),
               ],
             ),
@@ -83,6 +139,10 @@ class ThreeMethodAnalysisSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+
+    print(
+      '[SOCCER] 3-Method data: ${methods.map((m) => 'win=${m.win} draw=${m.draw} lose=${m.lose}').toList()}',
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,22 +160,12 @@ class ThreeMethodAnalysisSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildMethodRow(paLabel, paPercent, paHomeRatio, semantic),
-              const SizedBox(height: TsSpacing.sm),
-              _buildMethodRow(
-                minMaxLabel,
-                minMaxPercent,
-                minMaxHomeRatio,
-                semantic,
-              ),
-              const SizedBox(height: TsSpacing.sm),
-              _buildMethodRow(
-                firstGoalLabel,
-                firstGoalPercent,
-                firstGoalHomeRatio,
-                semantic,
-              ),
+              for (var i = 0; i < methods.length; i++) ...[
+                if (i > 0) const SizedBox(height: TsSpacing.sm),
+                _buildMethodBar(methods[i], semantic),
+              ],
             ],
           ),
         ),

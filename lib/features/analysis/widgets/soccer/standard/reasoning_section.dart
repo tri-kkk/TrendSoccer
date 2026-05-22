@@ -4,10 +4,20 @@ import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
+class ReasoningDisplayItem {
+  const ReasoningDisplayItem({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+}
+
 class ReasoningSection extends StatelessWidget {
   const ReasoningSection({required this.items, super.key});
 
-  final List<String> items;
+  final List<ReasoningDisplayItem> items;
 
   @override
   Widget build(BuildContext context) {
@@ -48,12 +58,33 @@ class ReasoningSection extends StatelessWidget {
                     ),
                     const SizedBox(width: TsSpacing.sm),
                     Expanded(
-                      child: Text(
-                        items[i],
-                        style: TsType.bodyLRegular.copyWith(
-                          color: semantic.textPrimary,
-                        ),
-                      ),
+                      child: items[i].value.isEmpty
+                          ? Text(
+                              items[i].label,
+                              style: TsType.bodyLRegular.copyWith(
+                                color: semantic.textPrimary,
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    items[i].label,
+                                    style: TsType.bodyLRegular.copyWith(
+                                      color: semantic.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: TsSpacing.sm),
+                                Text(
+                                  items[i].value,
+                                  style: TsType.bodyLRegular.copyWith(
+                                    color: semantic.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
                     ),
                   ],
                 ),

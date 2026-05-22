@@ -7,9 +7,16 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/report/ratio_bar.dart';
 
 class PowerIndexSection extends StatelessWidget {
-  const PowerIndexSection({required this.homeRatio, super.key});
+  const PowerIndexSection({
+    required this.homeRatio,
+    required this.homePowerDisplay,
+    required this.awayPowerDisplay,
+    super.key,
+  });
 
   final double homeRatio;
+  final String homePowerDisplay;
+  final String awayPowerDisplay;
 
   @override
   Widget build(BuildContext context) {
@@ -32,23 +39,39 @@ class PowerIndexSection extends StatelessWidget {
             color: semantic.surfaceRaised,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: SizedBox(
-            width: double.infinity,
-            child: RatioBar(
-              segments: [
-                RatioSegment(
-                  flex: hr,
-                  color: semantic.interactivePrimary,
-                  bottomLabel: '홈 파워',
-                ),
-                RatioSegment(
-                  flex: awayRatio,
-                  color: TsColors.systemError500,
-                  bottomLabel: '원정 파워',
-                ),
-              ],
-              height: 8,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    homePowerDisplay,
+                    style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+                  ),
+                  Text(
+                    awayPowerDisplay,
+                    style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+                  ),
+                ],
+              ),
+              const SizedBox(height: TsSpacing.sm),
+              RatioBar(
+                segments: [
+                  RatioSegment(
+                    flex: hr,
+                    color: semantic.interactivePrimary,
+                    bottomLabel: '홈 파워',
+                  ),
+                  RatioSegment(
+                    flex: awayRatio,
+                    color: TsColors.systemError500,
+                    bottomLabel: '원정 파워',
+                  ),
+                ],
+                height: 8,
+              ),
+            ],
           ),
         ),
       ],

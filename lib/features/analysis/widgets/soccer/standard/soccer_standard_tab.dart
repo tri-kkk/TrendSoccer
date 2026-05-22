@@ -55,9 +55,9 @@ class SoccerStandardTab extends StatelessWidget {
             prediction: parsed.prediction,
             winProbability: parsed.winProbability,
             powerDiff: parsed.powerDiff,
-            analyzedMatches: parsed.analyzedMatches,
-            patternStats: parsed.patternStats,
             gradeBadgeType: parsed.gradeBadge,
+            analysisMatchCount: parsed.analysisMatchCount,
+            patternMatchCount: parsed.patternMatchCount,
           ),
         ),
         const SizedBox(height: TsSpacing.xl),
@@ -69,7 +69,13 @@ class SoccerStandardTab extends StatelessWidget {
           awayOdds: parsed.awayOdds,
         ),
         const SizedBox(height: TsSpacing.xl),
-        gated(PowerIndexSection(homeRatio: parsed.homePowerRatio)),
+        gated(
+          PowerIndexSection(
+            homeRatio: parsed.homePowerRatio,
+            homePowerDisplay: parsed.homePowerDisplay,
+            awayPowerDisplay: parsed.awayPowerDisplay,
+          ),
+        ),
         const SizedBox(height: TsSpacing.xl),
         gated(
           FinalProbabilitySection(
@@ -82,14 +88,7 @@ class SoccerStandardTab extends StatelessWidget {
         gated(TeamStatisticsSection(stats: parsed.teamStats)),
         const SizedBox(height: TsSpacing.xl),
         gated(
-          ThreeMethodAnalysisSection(
-            paPercent: '${(parsed.paHomeRatio * 100).round()}%',
-            paHomeRatio: parsed.paHomeRatio,
-            minMaxPercent: '${(parsed.minMaxHomeRatio * 100).round()}%',
-            minMaxHomeRatio: parsed.minMaxHomeRatio,
-            firstGoalPercent: '${(parsed.firstGoalHomeRatio * 100).round()}%',
-            firstGoalHomeRatio: parsed.firstGoalHomeRatio,
-          ),
+          ThreeMethodAnalysisSection(methods: parsed.threeMethods),
         ),
         const SizedBox(height: TsSpacing.xl),
       ],

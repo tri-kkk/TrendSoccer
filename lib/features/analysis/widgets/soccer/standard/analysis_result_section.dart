@@ -4,25 +4,24 @@ import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/badge/ts_badge.dart';
-import 'package:trendsoccer/shared/widgets/report/info_cell.dart';
 
 class AnalysisResultSection extends StatelessWidget {
   const AnalysisResultSection({
     required this.prediction,
     required this.winProbability,
     required this.powerDiff,
-    required this.analyzedMatches,
-    required this.patternStats,
     required this.gradeBadgeType,
+    required this.analysisMatchCount,
+    required this.patternMatchCount,
     super.key,
   });
 
   final String prediction;
   final String winProbability;
   final String powerDiff;
-  final String analyzedMatches;
-  final String patternStats;
   final String gradeBadgeType;
+  final String analysisMatchCount;
+  final String patternMatchCount;
 
   static TsBadgeType _badgeType(String raw) {
     return switch (raw) {
@@ -56,45 +55,45 @@ class AnalysisResultSection extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Expanded(
-                    child: InfoCell(value: prediction, label: '예측'),
+                  _ResultGridCell(
+                    label: '예측',
+                    value: prediction,
+                    semantic: semantic,
                   ),
                   const SizedBox(width: TsSpacing.sm),
-                  Expanded(
-                    child: InfoCell(
-                      value: winProbability,
-                      label: '승리 확률',
-                    ),
+                  _ResultGridCell(
+                    label: '승리 확률',
+                    value: winProbability,
+                    semantic: semantic,
                   ),
                   const SizedBox(width: TsSpacing.sm),
-                  Expanded(
-                    child: InfoCell(value: powerDiff, label: '파워차'),
+                  _ResultGridCell(
+                    label: '파워차',
+                    value: powerDiff,
+                    semantic: semantic,
                   ),
                 ],
               ),
               const SizedBox(height: TsSpacing.sm),
               Row(
                 children: [
-                  Expanded(
-                    child: InfoCell(
-                      value: analyzedMatches,
-                      label: '분석 경기',
-                    ),
+                  _ResultGridCell(
+                    label: '분석 경기',
+                    value: analysisMatchCount,
+                    semantic: semantic,
                   ),
                   const SizedBox(width: TsSpacing.sm),
-                  Expanded(
-                    child: InfoCell(
-                      value: patternStats,
-                      label: '패턴 통계',
-                    ),
+                  _ResultGridCell(
+                    label: '패턴 통계',
+                    value: patternMatchCount,
+                    semantic: semantic,
                   ),
                   const SizedBox(width: TsSpacing.sm),
-                  Expanded(
-                    child: InfoCell(
-                      value: '',
-                      label: '추천',
-                      valueWidget: TsBadge(type: _badgeType(gradeBadgeType)),
-                    ),
+                  _ResultGridCell(
+                    label: '추천',
+                    value: '',
+                    semantic: semantic,
+                    valueWidget: TsBadge(type: _badgeType(gradeBadgeType)),
                   ),
                 ],
               ),
@@ -102,6 +101,51 @@ class AnalysisResultSection extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ResultGridCell extends StatelessWidget {
+  const _ResultGridCell({
+    required this.label,
+    required this.value,
+    required this.semantic,
+    this.valueWidget,
+  });
+
+  final String label;
+  final String value;
+  final TsSemanticColors semantic;
+  final Widget? valueWidget;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(TsSpacing.sm),
+        decoration: BoxDecoration(
+          color: semantic.surfaceContainer,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: TsSpacing.sm),
+            valueWidget ??
+                Text(
+                  value,
+                  style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+                  textAlign: TextAlign.center,
+                ),
+          ],
+        ),
+      ),
     );
   }
 }

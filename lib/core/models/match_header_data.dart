@@ -22,6 +22,9 @@ class MatchHeaderData {
     this.matchDate = '',
     this.matchTime = '',
     this.matchTimestamp,
+    this.homeOdds,
+    this.drawOdds,
+    this.awayOdds,
   });
 
   final int matchId;
@@ -39,9 +42,13 @@ class MatchHeaderData {
   final String matchDate;
   final String matchTime;
   final DateTime? matchTimestamp;
+  final double? homeOdds;
+  final double? drawOdds;
+  final double? awayOdds;
 
   factory MatchHeaderData.fromSoccerCard(SoccerAnalysisCard card) {
     final match = card.match;
+    final odds = card.odds;
     return MatchHeaderData(
       matchId: match.matchId,
       homeTeam: match.homeTeam.name,
@@ -58,6 +65,9 @@ class MatchHeaderData {
       matchDate: match.matchDate,
       matchTime: match.matchTime,
       matchTimestamp: match.matchTimestamp,
+      homeOdds: odds?.home,
+      drawOdds: odds?.draw,
+      awayOdds: odds?.away,
     );
   }
 
@@ -186,7 +196,13 @@ class MatchHeaderData {
     if (home.isEmpty || away.isEmpty || home == '-' || away == '-') {
       return false;
     }
-    return apiLeagueName.isNotEmpty;
+    final code = leagueCode?.trim();
+    if (code == null || code.isEmpty) return false;
+    if (homeTeamId == null || awayTeamId == null) return false;
+    if (homeOdds == null || drawOdds == null || awayOdds == null) {
+      return false;
+    }
+    return true;
   }
 
   MatchHeaderData mergeWith(MatchHeaderData? other) {
@@ -207,6 +223,9 @@ class MatchHeaderData {
       matchDate: _preferText(other.matchDate, matchDate),
       matchTime: other.matchTime.isNotEmpty ? other.matchTime : matchTime,
       matchTimestamp: other.matchTimestamp ?? matchTimestamp,
+      homeOdds: other.homeOdds ?? homeOdds,
+      drawOdds: other.drawOdds ?? drawOdds,
+      awayOdds: other.awayOdds ?? awayOdds,
     );
   }
 

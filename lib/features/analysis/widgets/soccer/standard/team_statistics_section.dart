@@ -12,6 +12,8 @@ class TeamStatItem {
     required this.awayValue,
     required this.homeDisplay,
     required this.awayDisplay,
+    this.homeHighlighted = false,
+    this.awayHighlighted = false,
   });
 
   final String label;
@@ -19,6 +21,8 @@ class TeamStatItem {
   final double awayValue;
   final String homeDisplay;
   final String awayDisplay;
+  final bool homeHighlighted;
+  final bool awayHighlighted;
 }
 
 class TeamStatisticsSection extends StatelessWidget {
@@ -82,7 +86,11 @@ class _TeamStatRow extends StatelessWidget {
           children: [
             Text(
               stat.homeDisplay,
-              style: TsType.bodyMBold.copyWith(color: semantic.textPrimary),
+              style: TsType.bodyMBold.copyWith(
+                color: stat.homeHighlighted
+                    ? semantic.interactivePrimary
+                    : semantic.textPrimary,
+              ),
             ),
             Text(
               stat.label,
@@ -92,7 +100,11 @@ class _TeamStatRow extends StatelessWidget {
             ),
             Text(
               stat.awayDisplay,
-              style: TsType.bodyMBold.copyWith(color: semantic.textPrimary),
+              style: TsType.bodyMBold.copyWith(
+                color: stat.awayHighlighted
+                    ? TsColors.systemError500
+                    : semantic.textPrimary,
+              ),
             ),
           ],
         ),

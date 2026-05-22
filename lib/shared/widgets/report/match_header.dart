@@ -41,7 +41,6 @@ class MatchHeader extends StatelessWidget {
   );
 
   static const double _teamLogoSize = 48;
-  static const double _teamColumnWidth = 72;
 
   Widget _teamLogo(BuildContext context, String? url) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
@@ -73,23 +72,30 @@ class MatchHeader extends StatelessWidget {
 
   Widget _teamColumn(BuildContext context, String team, String? logoUrl) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    return SizedBox(
-      width: _teamColumnWidth,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _teamLogo(context, logoUrl),
-          const SizedBox(height: TsSpacing.sm),
-          Text(
-            team,
-            style: TsType.headingH3.copyWith(color: semantic.textPrimary),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+    final teamNameStyle = TsType.headingH3.copyWith(color: semantic.textPrimary);
+    final teamNameBlockHeight =
+        (teamNameStyle.fontSize ?? 16) * (teamNameStyle.height ?? 1) * 2;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        _teamLogo(context, logoUrl),
+        const SizedBox(height: TsSpacing.sm),
+        SizedBox(
+          height: teamNameBlockHeight,
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Text(
+              team,
+              style: teamNameStyle,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -140,14 +146,20 @@ class MatchHeader extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _teamColumn(context, homeTeam, homeLogoUrl),
-              const SizedBox(width: TsSpacing.xxxl),
+              Expanded(
+                flex: 3,
+                child: _teamColumn(context, homeTeam, homeLogoUrl),
+              ),
+              const SizedBox(width: TsSpacing.md),
               Text(
                 'VS',
                 style: _vsTextStyle.copyWith(color: semantic.textTertiary),
               ),
-              const SizedBox(width: TsSpacing.xxxl),
-              _teamColumn(context, awayTeam, awayLogoUrl),
+              const SizedBox(width: TsSpacing.md),
+              Expanded(
+                flex: 3,
+                child: _teamColumn(context, awayTeam, awayLogoUrl),
+              ),
             ],
           ),
           const SizedBox(height: TsSpacing.lg),

@@ -15,6 +15,27 @@ class SoccerService {
 
   static const _analysisTimeout = Duration(seconds: 20);
 
+  static const Map<String, int> leagueIdMap = {
+    'PL': 39,
+    'PD': 140,
+    'BL1': 78,
+    'SA': 135,
+    'FL1': 61,
+    'PPL': 94,
+    'DED': 88,
+    'CL': 2,
+    'UCL': 2,
+    'EL': 3,
+    'UEL': 3,
+    'WC': 1,
+    'ELC': 40,
+    'KL': 292,
+    'KL1': 292,
+    'KL2': 293,
+    'J1': 98,
+    'MLS': 253,
+  };
+
   static const analysisLeagueCodes = [
     'PL', // EPL (Premier League)
     'PD', // La Liga
@@ -85,32 +106,76 @@ class SoccerService {
     }
   }
 
-  Future<Map<String, dynamic>> getMatchAnalysis({
-    required String league,
+  Future<Map<String, dynamic>> getMatchPrediction({
     required String homeTeam,
     required String awayTeam,
-    required String date,
-    required String time,
+    required int homeTeamId,
+    required int awayTeamId,
+    required String leagueCode,
+    required double homeOdds,
+    required double drawOdds,
+    required double awayOdds,
   }) async {
-    print('[SOCCER] POST /api/analysis for $homeTeam vs $awayTeam');
+    print('[SOCCER] POST /api/predict-v2 for $homeTeam vs $awayTeam');
+    final normalizedCode = leagueCode.trim().toUpperCase();
     try {
       final response = await _dio.post<dynamic>(
-        '/api/analysis',
+        '/api/predict-v2',
         data: <String, dynamic>{
-          'match': <String, String>{
-            'league': league,
-            'homeTeam': homeTeam,
-            'awayTeam': awayTeam,
-            'date': date,
-            'time': time,
-          },
+          'homeTeam': homeTeam,
+          'awayTeam': awayTeam,
+          'homeTeamId': homeTeamId,
+          'awayTeamId': awayTeamId,
+          'leagueId': leagueIdMap[normalizedCode] ?? 39,
+          'leagueCode': normalizedCode,
+          'season': '2025',
+          'homeOdds': homeOdds,
+          'drawOdds': drawOdds,
+          'awayOdds': awayOdds,
         },
         options: Options(
           receiveTimeout: _analysisTimeout,
           sendTimeout: _analysisTimeout,
         ),
       );
-      return _adaptToMap(response.data);
+      final adapted = _adaptToMap(response.data);
+      print('[SOCCER] predict-v2 response keys: ${adapted.keys.toList()}');
+      if (adapted['prediction'] != null) {
+        final pred = adapted['prediction'];
+        if (pred is Map) {
+          print('[SOCCER] prediction keys: ${pred.keys.toList()}');
+          print('[SOCCER] prediction.recommendation: ${pred['recommendation']}');
+          print('[SOCCER] prediction.finalProb: ${pred['finalProb']}');
+          print('[SOCCER] prediction.homePower: ${pred['homePower']}');
+          print('[SOCCER] prediction.awayPower: ${pred['awayPower']}');
+          print('[SOCCER] prediction.patternStats: ${pred['patternStats']}');
+          final patternStats = pred['patternStats'];
+          if (patternStats is Map) {
+            print(
+              '[SOCCER] patternStats keys: ${patternStats.keys.toList()}',
+            );
+          }
+          for (final key in pred.keys) {
+            if (![
+              'recommendation',
+              'finalProb',
+              'homePower',
+              'awayPower',
+              'patternStats',
+            ].contains(key)) {
+              print(
+                '[SOCCER] prediction.$key type: ${pred[key].runtimeType}',
+              );
+              if (pred[key] is Map) {
+                print(
+                  '[SOCCER] prediction.$key keys: ${(pred[key] as Map).keys.toList()}',
+                );
+              }
+            }
+          }
+        }
+      }
+      return adapted;
     } catch (e) {
       rethrow;
     }
@@ -121,9 +186,7 @@ class SoccerService {
     required int awayTeamId,
     int last = 10,
   }) async {
-    print(
-      '[SOCCER] GET /api/h2h-enhanced for team1=$homeTeamId team2=$awayTeamId',
-    );
+    print('[SOCCER] GET /api/h2h-enhanced for $homeTeamId vs $awayTeamId');
     try {
       final response = await _dio.get<dynamic>(
         '/api/h2h-enhanced',

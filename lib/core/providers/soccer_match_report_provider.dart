@@ -6,34 +6,37 @@ import 'package:trendsoccer/core/services/soccer_service.dart';
 class SoccerAnalysisParams {
   const SoccerAnalysisParams({
     required this.matchId,
-    required this.league,
     required this.homeTeam,
     required this.awayTeam,
-    required this.date,
-    required this.time,
+    required this.leagueCode,
     this.homeTeamId,
     this.awayTeamId,
+    this.homeOdds,
+    this.drawOdds,
+    this.awayOdds,
   });
 
   final int matchId;
-  final String league;
   final String homeTeam;
   final String awayTeam;
-  final String date;
-  final String time;
+  final String leagueCode;
   final int? homeTeamId;
   final int? awayTeamId;
+  final double? homeOdds;
+  final double? drawOdds;
+  final double? awayOdds;
 
   factory SoccerAnalysisParams.fromHeader(MatchHeaderData header) {
     return SoccerAnalysisParams(
       matchId: header.matchId,
-      league: header.apiLeagueName,
       homeTeam: header.homeTeam,
       awayTeam: header.awayTeam,
-      date: header.apiDate,
-      time: header.apiTime,
+      leagueCode: header.leagueCode?.trim().toUpperCase() ?? '',
       homeTeamId: header.homeTeamId,
       awayTeamId: header.awayTeamId,
+      homeOdds: header.homeOdds,
+      drawOdds: header.drawOdds,
+      awayOdds: header.awayOdds,
     );
   }
 
@@ -42,37 +45,57 @@ class SoccerAnalysisParams {
     return identical(this, other) ||
         other is SoccerAnalysisParams &&
             matchId == other.matchId &&
-            league == other.league &&
             homeTeam == other.homeTeam &&
             awayTeam == other.awayTeam &&
-            date == other.date &&
-            time == other.time &&
+            leagueCode == other.leagueCode &&
             homeTeamId == other.homeTeamId &&
-            awayTeamId == other.awayTeamId;
+            awayTeamId == other.awayTeamId &&
+            homeOdds == other.homeOdds &&
+            drawOdds == other.drawOdds &&
+            awayOdds == other.awayOdds;
   }
 
   @override
   int get hashCode => Object.hash(
         matchId,
-        league,
         homeTeam,
         awayTeam,
-        date,
-        time,
+        leagueCode,
         homeTeamId,
         awayTeamId,
+        homeOdds,
+        drawOdds,
+        awayOdds,
       );
 }
 
-final soccerAnalysisProvider =
+final soccerPredictionProvider =
     FutureProvider.family<Map<String, dynamic>, SoccerAnalysisParams>(
         (ref, params) async {
-  return ref.read(soccerServiceProvider).getMatchAnalysis(
-        league: params.league,
+  final homeTeamId = params.homeTeamId;
+  final awayTeamId = params.awayTeamId;
+  final homeOdds = params.homeOdds;
+  final drawOdds = params.drawOdds;
+  final awayOdds = params.awayOdds;
+
+  if (homeTeamId == null ||
+      awayTeamId == null ||
+      params.leagueCode.isEmpty ||
+      homeOdds == null ||
+      drawOdds == null ||
+      awayOdds == null) {
+    throw StateError('Missing metadata for predict-v2 request');
+  }
+
+  return ref.read(soccerServiceProvider).getMatchPrediction(
         homeTeam: params.homeTeam,
         awayTeam: params.awayTeam,
-        date: params.date,
-        time: params.time,
+        homeTeamId: homeTeamId,
+        awayTeamId: awayTeamId,
+        leagueCode: params.leagueCode,
+        homeOdds: homeOdds,
+        drawOdds: drawOdds,
+        awayOdds: awayOdds,
       );
 });
 
