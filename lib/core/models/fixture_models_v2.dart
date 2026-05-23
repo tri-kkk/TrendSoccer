@@ -52,6 +52,7 @@ class FixtureMatch {
   factory FixtureMatch.fromJson(
     Map<String, dynamic> json, {
     required String sport,
+    int? statusDebugIndex,
   }) {
     final resolvedTimestamp =
         _parseFixtureDateTime(json) ??
@@ -59,15 +60,23 @@ class FixtureMatch {
     final displayParts = _displayDateTimeParts(resolvedTimestamp);
     final league = _readLeagueFields(json);
 
-    final rawStatus = (_readString(json, const [
-          'matchStatus',
-          'match_status',
-          'status',
-          'state',
-        ]) ??
-        'NS')
-        .trim()
-        .toUpperCase();
+    final statusStr = _readString(json, const [
+      'matchStatus',
+      'match_status',
+      'status',
+      'state',
+    ]);
+    final rawStatus = (statusStr ?? 'NS').trim().toUpperCase();
+    final normalizedStatus = normalizeMatchStatus(rawStatus);
+
+    if (statusDebugIndex != null && statusDebugIndex < 5) {
+      print(
+        '[FIXTURE] status fields: status=${json['status']}, matchStatus=${json['matchStatus']}',
+      );
+      print(
+        '[FIXTURE] Match status raw: "${statusStr ?? ''}" → normalized: "$normalizedStatus"',
+      );
+    }
 
     return FixtureMatch(
       matchId: _parseInt(
@@ -112,7 +121,7 @@ class FixtureMatch {
       matchDate: displayParts.$1,
       matchTime: displayParts.$2,
       matchTimestamp: resolvedTimestamp,
-      status: normalizeMatchStatus(rawStatus),
+      status: normalizedStatus,
       rawStatus: rawStatus,
       homeScore: _parseInt(
         json['finalScoreHome'] ??

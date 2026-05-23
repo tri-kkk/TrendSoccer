@@ -26,8 +26,8 @@ class TrendPage extends ConsumerStatefulWidget {
 }
 
 class _TrendPageState extends ConsumerState<TrendPage> {
-  static const int _maxSoccerPreviewCards = 7;
-  static const int _maxBaseballPreviewCards = 7;
+  static const int _maxSoccerPreviewCards = 5;
+  static const int _maxBaseballPreviewCards = 5;
   static const int _bannerCount = 3;
   static const double _analysisCardViewportFraction = 0.96;
 
@@ -142,8 +142,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
 
   Widget _buildSoccerCards() {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final date = ref.watch(todayDateProvider);
-    final matchesAsync = ref.watch(soccerMatchesProvider(date));
+    final matchesAsync = ref.watch(analysisSoccerMatchesProvider);
 
     return SizedBox(
       height: 220,
@@ -163,7 +162,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
           if (preview.isEmpty) {
             return Center(
               child: Text(
-                '오늘 예정된 경기가 없습니다.',
+                '예정된 축구 경기가 없습니다.',
                 style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
                 textAlign: TextAlign.center,
               ),
@@ -206,14 +205,11 @@ class _TrendPageState extends ConsumerState<TrendPage> {
           ),
         ),
         data: (matches) {
-          final todayMatches = matches
-              .where(baseballMatchIsToday)
-              .take(_maxBaseballPreviewCards)
-              .toList();
-          if (todayMatches.isEmpty) {
+          final preview = matches.take(_maxBaseballPreviewCards).toList();
+          if (preview.isEmpty) {
             return Center(
               child: Text(
-                '오늘 예정된 경기가 없습니다.',
+                '예정된 야구 경기가 없습니다.',
                 style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
                 textAlign: TextAlign.center,
               ),
@@ -222,13 +218,13 @@ class _TrendPageState extends ConsumerState<TrendPage> {
           return PageView.builder(
             controller: _baseballCardsPageController,
             padEnds: false,
-            itemCount: todayMatches.length,
+            itemCount: preview.length,
             itemBuilder: (context, index) {
               return Padding(
                 padding: const EdgeInsets.only(right: 10),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 380),
-                  child: _TrendBaseballCard(card: todayMatches[index]),
+                  child: _TrendBaseballCard(card: preview[index]),
                 ),
               );
             },

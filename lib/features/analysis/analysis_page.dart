@@ -89,7 +89,11 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
     if (sportParam == 'baseball' && _selectedSport != SportType.baseball) {
       setState(() => _selectedSport = SportType.baseball);
 
-      _resetBaseballToToday();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _resetBaseballToToday();
+        }
+      });
     }
   }
 

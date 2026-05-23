@@ -19,15 +19,27 @@ class FixtureService {
         '/api/odds-from-db',
         queryParameters: const <String, String>{
           'league': 'ALL',
-          'daysBack': '2',
+          'daysBack': '3',
           'daysAhead': '4',
         },
       );
       final matches = _parseFixtures(
         response.data,
         sport: 'soccer',
-        label: 'Soccer fixtures (daysBack=2, daysAhead=4)',
+        label: 'Soccer fixtures (daysBack=3, daysAhead=4)',
+        logSoccerFixtureStatusDebug: true,
       )..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
+
+      var nonStandardStatusLogs = 0;
+      for (final m in matches) {
+        if (m.status != 'scheduled' && m.status != 'finished') {
+          if (nonStandardStatusLogs >= 5) break;
+          print(
+            '[FIXTURE] Non-standard status: matchId=${m.matchId} ${m.homeTeam} vs ${m.awayTeam} rawStatus="${m.rawStatus}" normalizedStatus="${m.status}"',
+          );
+          nonStandardStatusLogs++;
+        }
+      }
 
       print('[FIXTURE] Soccer fixtures loaded: ${matches.length} matches');
       final dates = matches
@@ -143,12 +155,19 @@ class FixtureService {
     dynamic raw, {
     required String sport,
     required String label,
+    bool logSoccerFixtureStatusDebug = false,
   }) {
     final items = _extractItems(raw);
     _logFirstItemKeys(items, label);
 
-    return items
-        .map((json) => FixtureMatch.fromJson(json, sport: sport))
+    return [
+      for (var i = 0; i < items.length; i++)
+        FixtureMatch.fromJson(
+          items[i],
+          sport: sport,
+          statusDebugIndex: logSoccerFixtureStatusDebug ? i : null,
+        ),
+    ]
         .where((match) => match.matchId != 0 || match.homeTeam.isNotEmpty)
         .toList();
   }
