@@ -15,9 +15,14 @@ class ReasoningDisplayItem {
 }
 
 class ReasoningSection extends StatelessWidget {
-  const ReasoningSection({required this.items, super.key});
+  const ReasoningSection({
+    required this.items,
+    this.showTitle = true,
+    super.key,
+  });
 
   final List<ReasoningDisplayItem> items;
+  final bool showTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +31,13 @@ class ReasoningSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '분석 근거',
-          style: TsType.headingH2.copyWith(color: semantic.textPrimary),
-        ),
-        const SizedBox(height: TsSpacing.sm),
+        if (showTitle) ...[
+          Text(
+            '분석 근거',
+            style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+          ),
+          const SizedBox(height: TsSpacing.sm),
+        ],
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(TsSpacing.lg),

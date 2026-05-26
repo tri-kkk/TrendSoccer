@@ -35,6 +35,7 @@ class TeamAnalysisSection extends StatefulWidget {
     required this.marketCs,
     required this.marketFts,
     required this.teamInsights,
+    this.initialExpanded = false,
     super.key,
   });
 
@@ -61,13 +62,20 @@ class TeamAnalysisSection extends StatefulWidget {
   final String marketCs;
   final String marketFts;
   final List<String> teamInsights;
+  final bool initialExpanded;
 
   @override
   State<TeamAnalysisSection> createState() => _TeamAnalysisSectionState();
 }
 
 class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
-  bool _isExpanded = false;
+  late bool _isExpanded;
+
+  @override
+  void initState() {
+    super.initState();
+    _isExpanded = widget.initialExpanded;
+  }
 
   Widget _buildScoreBoxRow(TsSemanticColors semantic) {
     final meetings = widget.recentForm;
@@ -113,18 +121,21 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
             isExpanded: _isExpanded,
             onTap: () => setState(() => _isExpanded = !_isExpanded),
           ),
-          if (_isExpanded) ...[
-            const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: semantic.surfaceOverlay,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
+          AnimatedCrossFade(
+            firstChild: const SizedBox.shrink(),
+            secondChild: Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: semantic.surfaceOverlay,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
                   SizedBox(
                     width: double.infinity,
                     child: Text(
@@ -293,10 +304,16 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                   ),
                   const SizedBox(height: TsSpacing.lg),
                   InsightsCard(comments: w.teamInsights),
-                ],
-              ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+            crossFadeState: _isExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 200),
+          ),
         ],
       ),
     );

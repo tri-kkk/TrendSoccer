@@ -36,7 +36,6 @@ class BaseballTodayComboCard extends ConsumerWidget {
       comboCount: stats.displayComboCount,
       accuracy: stats.displayAccuracy,
       avgOdds: stats.displayAvgOdds,
-      leagues: stats.leagues.isNotEmpty ? stats.leagues : null,
       subtitle: stats.displaySubtitle,
       statusSummary: stats.resultStatusSummary,
       onCTATap: onCTATap ?? onDefaultCtaTap,

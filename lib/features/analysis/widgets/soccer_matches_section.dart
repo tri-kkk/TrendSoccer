@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
-import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -186,7 +185,6 @@ class _SoccerAnalysisCardItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final match = card.match;
     final leagueId = leagueIdForCard(match.league);
-    final planType = ref.watch(authProvider).planType;
 
     return AnalysisCard(
       leagueId: leagueId,
@@ -198,8 +196,7 @@ class _SoccerAnalysisCardItem extends ConsumerWidget {
       matchTime: match.matchTime,
       homeLogoUrl: match.homeTeam.logo,
       awayLogoUrl: match.awayTeam.logo,
-      matchTimestamp: match.matchTimestamp,
-      planType: planType,
+      alwaysActiveAnalyzeButton: true,
       isPremiumPick: false,
       pickDirection: null,
       winRate: null,

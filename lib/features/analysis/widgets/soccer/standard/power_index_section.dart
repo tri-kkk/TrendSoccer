@@ -11,12 +11,14 @@ class PowerIndexSection extends StatelessWidget {
     required this.homeRatio,
     required this.homePowerDisplay,
     required this.awayPowerDisplay,
+    this.showTitle = true,
     super.key,
   });
 
   final double homeRatio;
   final String homePowerDisplay;
   final String awayPowerDisplay;
+  final bool showTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -27,11 +29,13 @@ class PowerIndexSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '파워 인덱스',
-          style: TsType.headingH2.copyWith(color: semantic.textPrimary),
-        ),
-        const SizedBox(height: TsSpacing.sm),
+        if (showTitle) ...[
+          Text(
+            '파워 인덱스',
+            style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+          ),
+          const SizedBox(height: TsSpacing.sm),
+        ],
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(TsSpacing.lg),

@@ -137,17 +137,25 @@ class FixtureService {
     }
   }
 
-  Future<List<FixtureMatch>> getLiveMatches() async {
+  Future<Map<String, LiveMatchData>> getLiveMatches() async {
     try {
       final response = await _dio.get<dynamic>('/api/live-matches');
-      return _parseFixtures(
-        response.data,
-        sport: 'soccer',
-        label: 'Live matches',
-      );
+      final data = response.data;
+      final matches = data is Map ? (data['matches'] as List?) ?? [] : [];
+      final result = <String, LiveMatchData>{};
+      for (final item in matches) {
+        if (item is! Map) continue;
+        final map = Map<String, dynamic>.from(item);
+        final id = map['id']?.toString() ?? map['fixtureId']?.toString();
+        if (id != null && id.isNotEmpty) {
+          result[id] = LiveMatchData.fromJson(map);
+        }
+      }
+      print('[FIXTURE] Live matches: ${result.length} active');
+      return result;
     } catch (e) {
-      print('[FIXTURE] Live matches failed: $e');
-      return const [];
+      print('[FIXTURE] Live matches error: $e');
+      return {};
     }
   }
 

@@ -24,10 +24,12 @@ class ThreeMethodData {
 class ThreeMethodAnalysisSection extends StatelessWidget {
   const ThreeMethodAnalysisSection({
     required this.methods,
+    this.showTitle = true,
     super.key,
   });
 
   final List<ThreeMethodData> methods;
+  final bool showTitle;
 
   double _normalizedRate(double? value) {
     if (value == null) return 0;
@@ -147,11 +149,13 @@ class ThreeMethodAnalysisSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '3-Method 분석',
-          style: TsType.headingH2.copyWith(color: semantic.textPrimary),
-        ),
-        const SizedBox(height: TsSpacing.sm),
+        if (showTitle) ...[
+          Text(
+            '3-Method 분석',
+            style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+          ),
+          const SizedBox(height: TsSpacing.sm),
+        ],
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(TsSpacing.lg),

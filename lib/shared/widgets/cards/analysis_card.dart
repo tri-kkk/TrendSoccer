@@ -27,6 +27,7 @@ class AnalysisCard extends StatelessWidget {
     this.isPremiumPick = false,
     this.pickDirection,
     this.winRate,
+    this.alwaysActiveAnalyzeButton = false,
     super.key,
   });
 
@@ -45,6 +46,7 @@ class AnalysisCard extends StatelessWidget {
   final bool isPremiumPick;
   final PickDirection? pickDirection;
   final String? winRate;
+  final bool alwaysActiveAnalyzeButton;
 
   Widget _teamLogo(BuildContext context, String? url) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
@@ -80,6 +82,14 @@ class AnalysisCard extends StatelessWidget {
   }
 
   Widget _buildAnalyzeButton(TsSemanticColors semantic) {
+    if (alwaysActiveAnalyzeButton) {
+      return TsButton(
+        label: '분석보기',
+        variant: TsButtonVariant.primary,
+        onPressed: onAnalyze,
+      );
+    }
+
     final timestamp = matchTimestamp;
     final tier = planType;
     if (timestamp != null && tier != null) {

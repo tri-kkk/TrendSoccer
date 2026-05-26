@@ -7,27 +7,29 @@ import 'package:trendsoccer/core/providers/soccer_match_report_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/core/utils/access_gate.dart';
 import 'package:trendsoccer/features/analysis/models/soccer_premium_parser.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer/premium/premium_sections.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer/standard/soccer_standard_tab.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
-import 'package:trendsoccer/shared/widgets/premium/section_title.dart';
+import 'package:trendsoccer/shared/widgets/premium/score_box.dart';
 
 class SoccerPremiumTab extends ConsumerWidget {
   const SoccerPremiumTab({
     required this.params,
+    this.homeTeamLogo,
+    this.awayTeamLogo,
     super.key,
   });
 
   final SoccerAnalysisParams params;
+  final String? homeTeamLogo;
+  final String? awayTeamLogo;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final planType = ref.watch(authProvider).planType;
-    final canView = AccessGate.canViewPremiumContent(planType: planType);
+    final hasFullAccess = ref.watch(authProvider).hasFullAccess;
 
-    if (!canView) {
+    if (!hasFullAccess) {
       return const KeyedSubtree(
         key: ValueKey<Object>('soccer_report_premium_locked'),
         child: Padding(
@@ -57,12 +59,16 @@ class SoccerPremiumTab extends ConsumerWidget {
         ),
       ),
       data: (raw) {
-        final parsed = SoccerPremiumParsed.fromMap(raw);
+        final parsed = SoccerPremiumParsed.fromResponse(raw);
         return KeyedSubtree(
           key: const ValueKey<Object>('soccer_report_premium'),
           child: Padding(
             padding: const EdgeInsets.all(TsSpacing.lg),
-            child: _PremiumContent(parsed: parsed),
+            child: _PremiumContent(
+              parsed: parsed,
+              homeTeamLogo: homeTeamLogo,
+              awayTeamLogo: awayTeamLogo,
+            ),
           ),
         );
       },
@@ -117,7 +123,7 @@ class _PremiumTabLoading extends StatelessWidget {
           CircularProgressIndicator(color: semantic.interactivePrimary),
           const SizedBox(height: TsSpacing.lg),
           Text(
-            '프리미엄 분석 로딩 중...',
+            'H2H 분석 로딩 중...',
             style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             textAlign: TextAlign.center,
           ),
@@ -128,87 +134,101 @@ class _PremiumTabLoading extends StatelessWidget {
 }
 
 class _PremiumContent extends StatelessWidget {
-  const _PremiumContent({required this.parsed});
+  const _PremiumContent({
+    required this.parsed,
+    this.homeTeamLogo,
+    this.awayTeamLogo,
+  });
 
   final SoccerPremiumParsed parsed;
+  final String? homeTeamLogo;
+  final String? awayTeamLogo;
+
+  static const _h2hSectionTitle = 'H2H';
+  static const _homeSectionTitle = '홈';
+  static const _awaySectionTitle = '원정';
 
   @override
   Widget build(BuildContext context) {
-    final stats = parsed.h2hStats;
-    final home = parsed.homeAnalysis;
-    final away = parsed.awayAnalysis;
+    final overall = parsed.overall ?? H2HOverall.empty;
+    final patterns = parsed.scorePatterns ?? H2HScorePatterns.empty;
+    final h2hData = _mapH2HData(parsed, overall, patterns);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (parsed.h2h.isNotEmpty) ...[
-          _H2HRecordsSection(records: parsed.h2h),
-          const SizedBox(height: 16),
-        ],
         H2HSection(
-          totalMatches: stats.totalMatches,
-          homeWins: stats.homeWins,
-          draws: stats.draws,
-          awayWins: stats.awayWins,
-          recentMeetings: parsed.recentMeetings,
-          avgGoals: stats.avgGoals,
-          over25: stats.over25,
-          over25Highlight: stats.over25Highlight,
-          btts: stats.btts,
-          mostCommonScores: parsed.mostCommonScoresForSection,
-          insights: parsed.h2hInsights,
+          headerTitle: _h2hSectionTitle,
+          initialExpanded: true,
+          homeTeamLogo: homeTeamLogo,
+          awayTeamLogo: awayTeamLogo,
+          totalMatches: overall.totalMatches,
+          homeWins: overall.homeWins,
+          draws: overall.draws,
+          awayWins: overall.awayWins,
+          recentMeetings: h2hData.recentMeetings,
+          avgGoals: h2hData.avgGoals,
+          over25: h2hData.over25,
+          over25Highlight: h2hData.over25Highlight,
+          btts: h2hData.btts,
+          mostCommonScores: h2hData.mostCommonScores,
+          insights: h2hData.insights,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: TsSpacing.lg),
+        // TODO: Wire to team-specific stats API — need endpoint from backend developer
         TeamAnalysisSection(
-          title: home.title,
-          last10Label: home.last10Label,
-          wins: home.wins10,
-          draws: home.draws10,
-          losses: home.losses10,
-          recentForm: home.recentForm,
-          recordWins: home.recordWins,
-          recordDraws: home.recordDraws,
-          recordLosses: home.recordLosses,
-          winRate: home.winRate,
-          goalLineO15: home.goalLineO15,
-          goalLineO15Highlight: home.goalLineO15Highlight,
-          goalLineO25: home.goalLineO25,
-          goalLineO25Highlight: home.goalLineO25Highlight,
-          goalLineO35: home.goalLineO35,
-          goalLineO35Highlight: home.goalLineO35Highlight,
-          marketO25: home.marketO25,
-          marketO25Highlight: home.marketO25Highlight,
-          marketBtts: home.marketBtts,
-          marketBttsHighlight: home.marketBttsHighlight,
-          marketCs: home.marketCs,
-          marketFts: home.marketFts,
-          teamInsights: home.teamInsights,
+          title: _homeSectionTitle,
+          initialExpanded: false,
+          last10Label: '홈 성적 (최근 10경기)',
+          wins: 0,
+          draws: 0,
+          losses: 0,
+          recentForm: _placeholderForm(),
+          recordWins: '-',
+          recordDraws: '-',
+          recordLosses: '-',
+          winRate: '-',
+          goalLineO15: '-',
+          goalLineO15Highlight: false,
+          goalLineO25: '-',
+          goalLineO25Highlight: false,
+          goalLineO35: '-',
+          goalLineO35Highlight: false,
+          marketO25: '-',
+          marketO25Highlight: false,
+          marketBtts: '-',
+          marketBttsHighlight: false,
+          marketCs: '-',
+          marketFts: '-',
+          teamInsights: const ['-'],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: TsSpacing.lg),
+        // TODO: Wire to team-specific stats API — need endpoint from backend developer
         TeamAnalysisSection(
-          title: away.title,
-          last10Label: away.last10Label,
-          wins: away.wins10,
-          draws: away.draws10,
-          losses: away.losses10,
-          recentForm: away.recentForm,
-          recordWins: away.recordWins,
-          recordDraws: away.recordDraws,
-          recordLosses: away.recordLosses,
-          winRate: away.winRate,
-          goalLineO15: away.goalLineO15,
-          goalLineO15Highlight: away.goalLineO15Highlight,
-          goalLineO25: away.goalLineO25,
-          goalLineO25Highlight: away.goalLineO25Highlight,
-          goalLineO35: away.goalLineO35,
-          goalLineO35Highlight: away.goalLineO35Highlight,
-          marketO25: away.marketO25,
-          marketO25Highlight: away.marketO25Highlight,
-          marketBtts: away.marketBtts,
-          marketBttsHighlight: away.marketBttsHighlight,
-          marketCs: away.marketCs,
-          marketFts: away.marketFts,
-          teamInsights: away.teamInsights,
+          title: _awaySectionTitle,
+          initialExpanded: false,
+          last10Label: '원정 성적 (최근 10경기)',
+          wins: 0,
+          draws: 0,
+          losses: 0,
+          recentForm: _placeholderForm(),
+          recordWins: '-',
+          recordDraws: '-',
+          recordLosses: '-',
+          winRate: '-',
+          goalLineO15: '-',
+          goalLineO15Highlight: false,
+          goalLineO25: '-',
+          goalLineO25Highlight: false,
+          goalLineO35: '-',
+          goalLineO35Highlight: false,
+          marketO25: '-',
+          marketO25Highlight: false,
+          marketBtts: '-',
+          marketBttsHighlight: false,
+          marketCs: '-',
+          marketFts: '-',
+          teamInsights: const ['-'],
         ),
         const SizedBox(height: TsSpacing.xl),
       ],
@@ -216,104 +236,101 @@ class _PremiumContent extends StatelessWidget {
   }
 }
 
-class _H2HRecordsSection extends StatefulWidget {
-  const _H2HRecordsSection({required this.records});
-
-  final List<H2HMatchRecord> records;
-
-  @override
-  State<_H2HRecordsSection> createState() => _H2HRecordsSectionState();
-}
-
-class _H2HRecordsSectionState extends State<_H2HRecordsSection> {
-  bool _isExpanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: semantic.surfaceRaised,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          CardSectionTitle(
-            title: '맞대결 기록',
-            isExpanded: _isExpanded,
-            onTap: () => setState(() => _isExpanded = !_isExpanded),
-          ),
-          if (_isExpanded) ...[
-            const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: semantic.surfaceOverlay,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                children: [
-                  for (var i = 0; i < widget.records.length; i++) ...[
-                    if (i > 0) const SizedBox(height: 12),
-                    _H2HRecordRow(record: widget.records[i], semantic: semantic),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _H2HRecordRow extends StatelessWidget {
-  const _H2HRecordRow({
-    required this.record,
-    required this.semantic,
+class _H2HDisplayData {
+  const _H2HDisplayData({
+    required this.recentMeetings,
+    required this.avgGoals,
+    required this.over25,
+    required this.over25Highlight,
+    required this.btts,
+    required this.mostCommonScores,
+    required this.insights,
   });
 
-  final H2HMatchRecord record;
-  final TsSemanticColors semantic;
+  final List<H2HMeeting> recentMeetings;
+  final String avgGoals;
+  final String over25;
+  final bool over25Highlight;
+  final String btts;
+  final List<MostCommonScore> mostCommonScores;
+  final List<String> insights;
+}
 
-  @override
-  Widget build(BuildContext context) {
-    final dateLabel = record.date.isEmpty ? '-' : record.date;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          dateLabel,
-          style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
-        ),
-        const SizedBox(height: 4),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                record.homeTeam,
-                style: TsType.bodyMRegular.copyWith(color: semantic.textPrimary),
-              ),
-            ),
-            Text(
-              record.scoreDisplay,
-              style: TsType.bodyMBold.copyWith(color: semantic.interactivePrimary),
-            ),
-            Expanded(
-              child: Text(
-                record.awayTeam,
-                textAlign: TextAlign.end,
-                style: TsType.bodyMRegular.copyWith(color: semantic.textPrimary),
-              ),
-            ),
-          ],
-        ),
-      ],
+_H2HDisplayData _mapH2HData(
+  SoccerPremiumParsed parsed,
+  H2HOverall overall,
+  H2HScorePatterns patterns,
+) {
+  final recentMeetings = parsed.recentMatches
+      .take(5)
+      .map(_h2hMeetingFromMatch)
+      .toList(growable: true);
+  while (recentMeetings.length < 5) {
+    recentMeetings.add(
+      const H2HMeeting(score: '-', result: ScoreBoxResult.draw),
     );
   }
+
+  final avgGoalsSum = patterns.avgHomeGoals + patterns.avgAwayGoals;
+  final avgGoals =
+      avgGoalsSum > 0 ? avgGoalsSum.toStringAsFixed(1) : '-';
+
+  final over25Rate = patterns.over25Rate;
+  final bttsRate = patterns.bttsRate;
+
+  final mostCommon = <MostCommonScore>[];
+  for (final entry in patterns.mostCommon.take(3)) {
+    final score = entry['score']?.toString();
+    final count = _parseInt(entry['count']);
+    if (score != null && score.isNotEmpty && count != null && count > 0) {
+      mostCommon.add(MostCommonScore(count: count, score: score));
+    }
+  }
+  while (mostCommon.length < 3) {
+    mostCommon.add(const MostCommonScore(count: 0, score: '-'));
+  }
+
+  final insights = parsed.insights.isNotEmpty ? parsed.insights : const ['-'];
+
+  return _H2HDisplayData(
+    recentMeetings: recentMeetings,
+    avgGoals: avgGoals,
+    over25: over25Rate > 0 ? '$over25Rate%' : '-',
+    over25Highlight: over25Rate > 50,
+    btts: bttsRate > 0 ? '$bttsRate%' : '-',
+    mostCommonScores: mostCommon,
+    insights: insights,
+  );
+}
+
+H2HMeeting _h2hMeetingFromMatch(H2HMatch match) {
+  final score = match.homeScore >= 0 && match.awayScore >= 0
+      ? match.scoreDisplay
+      : '-';
+  return H2HMeeting(
+    score: score,
+    result: _scoreBoxResultFromCode(match.result),
+  );
+}
+
+ScoreBoxResult _scoreBoxResultFromCode(String code) {
+  return switch (code.toUpperCase()) {
+    'W' => ScoreBoxResult.win,
+    'L' => ScoreBoxResult.lose,
+    _ => ScoreBoxResult.draw,
+  };
+}
+
+List<H2HMeeting> _placeholderForm() {
+  return List.generate(
+    5,
+    (_) => const H2HMeeting(score: '-', result: ScoreBoxResult.draw),
+  );
+}
+
+int? _parseInt(Object? value) {
+  if (value is int) return value;
+  if (value is num) return value.round();
+  if (value is String) return int.tryParse(value);
+  return null;
 }

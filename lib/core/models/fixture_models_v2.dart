@@ -49,6 +49,29 @@ class FixtureMatch {
           ? leagueCode
           : (leagueName.isNotEmpty ? leagueName : 'unknown');
 
+  FixtureMatch copyWithLive(LiveMatchData live) {
+    final raw = live.status.trim().toUpperCase();
+    return FixtureMatch(
+      matchId: matchId,
+      apiMatchId: apiMatchId,
+      homeTeam: homeTeam,
+      awayTeam: awayTeam,
+      homeTeamLogo: homeTeamLogo,
+      awayTeamLogo: awayTeamLogo,
+      leagueCode: live.leagueCode?.isNotEmpty == true ? live.leagueCode! : leagueCode,
+      leagueName: leagueName,
+      leagueLogo: leagueLogo,
+      matchDate: matchDate,
+      matchTime: matchTime,
+      matchTimestamp: matchTimestamp,
+      status: normalizeMatchStatus(raw),
+      rawStatus: raw,
+      homeScore: live.homeScore,
+      awayScore: live.awayScore,
+      sport: sport,
+    );
+  }
+
   factory FixtureMatch.fromJson(
     Map<String, dynamic> json, {
     required String sport,
@@ -140,6 +163,48 @@ class FixtureMatch {
       sport: _readString(json, const ['sport']) ?? sport,
     );
   }
+}
+
+class LiveMatchData {
+  const LiveMatchData({
+    required this.matchId,
+    required this.status,
+    required this.statusLong,
+    required this.elapsed,
+    required this.homeScore,
+    required this.awayScore,
+    this.halftimeHomeScore,
+    this.halftimeAwayScore,
+    this.leagueCode,
+  });
+
+  final String matchId;
+  final String status;
+  final String statusLong;
+  final int elapsed;
+  final int homeScore;
+  final int awayScore;
+  final int? halftimeHomeScore;
+  final int? halftimeAwayScore;
+  final String? leagueCode;
+
+  factory LiveMatchData.fromJson(Map<String, dynamic> json) {
+    return LiveMatchData(
+      matchId: (json['id'] ?? json['fixtureId']).toString(),
+      status: json['status']?.toString() ?? '',
+      statusLong: json['statusLong']?.toString() ?? '',
+      elapsed: (json['elapsed'] as num?)?.toInt() ?? 0,
+      homeScore: (json['homeScore'] as num?)?.toInt() ?? 0,
+      awayScore: (json['awayScore'] as num?)?.toInt() ?? 0,
+      halftimeHomeScore: (json['halftimeHomeScore'] as num?)?.toInt(),
+      halftimeAwayScore: (json['halftimeAwayScore'] as num?)?.toInt(),
+      leagueCode: json['leagueCode']?.toString(),
+    );
+  }
+
+  bool get isLive => normalizeMatchStatus(status) == 'live';
+
+  bool get isFinished => normalizeMatchStatus(status) == 'finished';
 }
 
 class FixtureLeagueGroup {

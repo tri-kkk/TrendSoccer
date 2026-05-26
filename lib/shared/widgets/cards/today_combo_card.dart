@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/models/sport_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
@@ -15,7 +16,6 @@ class TodayComboCard extends StatelessWidget {
     this.comboCount = '-',
     this.accuracy = '-',
     this.avgOdds = '-',
-    this.leagues,
     this.subtitle,
     this.statusSummary,
     this.onCTATap,
@@ -25,10 +25,11 @@ class TodayComboCard extends StatelessWidget {
   final String comboCount;
   final String accuracy;
   final String avgOdds;
-  final List<String>? leagues;
   final String? subtitle;
   final String? statusSummary;
   final VoidCallback? onCTATap;
+
+  static const _fixedLeagues = ['KBO', 'MLB', 'NPB'];
 
   @override
   Widget build(BuildContext context) {
@@ -197,36 +198,10 @@ class TodayComboCard extends StatelessWidget {
   }
 
   List<Widget> _buildLeagueIcons() {
-    final leagueCodes = leagues?.where((league) => league.isNotEmpty).toList();
-    if (leagueCodes == null || leagueCodes.isEmpty) {
-      return const [
-        _LeagueIconBox(
-          bgColor: Color(0x0FEF4444),
-          borderColor: Color(0x1AEF4444),
-          leagueId: 'kbo',
-          leagueName: 'KBO',
-        ),
-        SizedBox(width: TsSpacing.md),
-        _LeagueIconBox(
-          bgColor: Color(0x0F00C2FF),
-          borderColor: Color(0x1A00C2FF),
-          leagueId: 'mlb',
-          leagueName: 'MLB',
-        ),
-        SizedBox(width: TsSpacing.md),
-        _LeagueIconBox(
-          bgColor: Color(0x0FF59E0B),
-          borderColor: Color(0x1AF59E0B),
-          leagueId: 'npb',
-          leagueName: 'NPB',
-        ),
-      ];
-    }
-
     return [
-      for (var i = 0; i < leagueCodes.length; i++) ...[
+      for (var i = 0; i < _fixedLeagues.length; i++) ...[
         if (i > 0) const SizedBox(width: TsSpacing.md),
-        _LeagueIconBox.fromLeagueCode(leagueCodes[i]),
+        _LeagueIconBox.fromLeagueCode(_fixedLeagues[i]),
       ],
     ];
   }
@@ -243,10 +218,11 @@ class _LeagueIconBox extends StatelessWidget {
   factory _LeagueIconBox.fromLeagueCode(String leagueCode) {
     final upper = leagueCode.trim().toUpperCase();
     final style = _leagueStyles[upper] ?? _defaultLeagueStyle;
+    final leagueId = TsAssets.leagueIconIdFromApiCode(upper) ?? style.leagueId;
     return _LeagueIconBox(
       bgColor: style.bgColor,
       borderColor: style.borderColor,
-      leagueId: style.leagueId,
+      leagueId: leagueId,
       leagueName: upper,
     );
   }
@@ -272,11 +248,6 @@ class _LeagueIconBox extends StatelessWidget {
       bgColor: Color(0x0FF59E0B),
       borderColor: Color(0x1AF59E0B),
       leagueId: 'npb',
-    ),
-    'CPBL': _LeagueStyle(
-      bgColor: Color(0x0F8B5CF6),
-      borderColor: Color(0x1A8B5CF6),
-      leagueId: 'cpbl',
     ),
   };
 

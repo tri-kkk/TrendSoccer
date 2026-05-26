@@ -26,9 +26,14 @@ class TeamStatItem {
 }
 
 class TeamStatisticsSection extends StatelessWidget {
-  const TeamStatisticsSection({required this.stats, super.key});
+  const TeamStatisticsSection({
+    required this.stats,
+    this.showTitle = true,
+    super.key,
+  });
 
   final List<TeamStatItem> stats;
+  final bool showTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -37,11 +42,13 @@ class TeamStatisticsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '팀 상세 통계',
-          style: TsType.headingH2.copyWith(color: semantic.textPrimary),
-        ),
-        const SizedBox(height: TsSpacing.sm),
+        if (showTitle) ...[
+          Text(
+            '팀 상세 통계',
+            style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+          ),
+          const SizedBox(height: TsSpacing.sm),
+        ],
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(TsSpacing.lg),

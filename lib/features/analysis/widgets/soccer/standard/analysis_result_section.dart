@@ -13,6 +13,7 @@ class AnalysisResultSection extends StatelessWidget {
     required this.gradeBadgeType,
     required this.analysisMatchCount,
     required this.patternMatchCount,
+    this.showTitle = true,
     super.key,
   });
 
@@ -22,6 +23,7 @@ class AnalysisResultSection extends StatelessWidget {
   final String gradeBadgeType;
   final String analysisMatchCount;
   final String patternMatchCount;
+  final bool showTitle;
 
   static TsBadgeType _badgeType(String raw) {
     return switch (raw) {
@@ -39,11 +41,13 @@ class AnalysisResultSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '분석 결과',
-          style: TsType.headingH2.copyWith(color: semantic.textPrimary),
-        ),
-        const SizedBox(height: TsSpacing.sm),
+        if (showTitle) ...[
+          Text(
+            '분석 결과',
+            style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+          ),
+          const SizedBox(height: TsSpacing.sm),
+        ],
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(TsSpacing.lg),

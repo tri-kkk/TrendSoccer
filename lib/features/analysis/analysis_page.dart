@@ -392,20 +392,6 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
   Widget _buildSoccerSection({required VoidCallback onPremiumCtaTap}) {
     final dates = ref.watch(soccerAnalysisDatesProvider);
 
-    ref.listen(soccerAnalysisDateProvider, (previous, next) {
-      if (_syncingSoccerPage) return;
-
-      final index = dates.indexOf(next);
-      if (index < 0 || !_soccerPageController.hasClients) return;
-
-      final currentPage =
-          _soccerPageController.page?.round() ??
-          _soccerPageController.initialPage;
-      if (currentPage != index) {
-        _jumpSoccerToPageIndex(index);
-      }
-    });
-
     return NestedScrollView(
       headerSliverBuilder: (context, innerBoxIsScrolled) {
         return [
@@ -455,22 +441,6 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
   Widget _buildBaseballSection() {
     final dates = ref.watch(baseballAnalysisDatesProvider);
 
-    ref.listen(baseballAnalysisDateProvider, (previous, next) {
-      if (_syncingBaseballPage) return;
-
-      final index = dates.indexOf(next);
-
-      if (index < 0 || !_baseballPageController.hasClients) return;
-
-      final currentPage =
-          _baseballPageController.page?.round() ??
-          _baseballPageController.initialPage;
-
-      if (currentPage != index) {
-        _jumpBaseballToPageIndex(index);
-      }
-    });
-
     return NestedScrollView(
       headerSliverBuilder: (context, innerBoxIsScrolled) {
         return [
@@ -519,6 +489,42 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
     final auth = ref.watch(authProvider);
+    final soccerDates = ref.watch(soccerAnalysisDatesProvider);
+    final baseballDates = ref.watch(baseballAnalysisDatesProvider);
+
+    ref.listen(soccerAnalysisDateProvider, (previous, next) {
+      if (previous == next || _syncingSoccerPage) return;
+
+      final index = soccerDates.indexOf(next);
+      if (index < 0 || !_soccerPageController.hasClients) return;
+
+      final currentPage =
+          _soccerPageController.page?.round() ??
+          _soccerPageController.initialPage;
+      if (currentPage == index) return;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _syncingSoccerPage) return;
+        _jumpSoccerToPageIndex(index);
+      });
+    });
+
+    ref.listen(baseballAnalysisDateProvider, (previous, next) {
+      if (previous == next || _syncingBaseballPage) return;
+
+      final index = baseballDates.indexOf(next);
+      if (index < 0 || !_baseballPageController.hasClients) return;
+
+      final currentPage =
+          _baseballPageController.page?.round() ??
+          _baseballPageController.initialPage;
+      if (currentPage == index) return;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _syncingBaseballPage) return;
+        _jumpBaseballToPageIndex(index);
+      });
+    });
 
     void onPremiumCtaTap({required SportType sport}) {
       if (auth.hasFullAccess) {

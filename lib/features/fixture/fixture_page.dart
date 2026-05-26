@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:trendsoccer/core/models/fixture_models_v2.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
+import 'package:trendsoccer/core/services/fixture_service.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/baseball_status.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
@@ -28,7 +31,8 @@ class FixturePage extends ConsumerStatefulWidget {
   ConsumerState<FixturePage> createState() => _FixturePageState();
 }
 
-class _FixturePageState extends ConsumerState<FixturePage> {
+class _FixturePageState extends ConsumerState<FixturePage>
+    with WidgetsBindingObserver {
   static final _md = DateFormat('M.dd');
   static const _weekdays = ['월', '화', '수', '목', '금', '토', '일'];
   static const _pageScrollPhysics = PageScrollPhysics(
@@ -46,21 +50,66 @@ class _FixturePageState extends ConsumerState<FixturePage> {
   late final PageController _pageController;
   final ScrollController _dateChipScrollController = ScrollController();
   bool _syncingPage = false;
+  Timer? _livePollingTimer;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _pageController = PageController(initialPage: _todayChipIndex());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollDateChipToIndex(_dateChipIndexForPage(_todayChipIndex()));
+      _startLivePolling();
     });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _stopLivePolling();
     _pageController.dispose();
     _dateChipScrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _startLivePolling();
+      return;
+    }
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      _stopLivePolling();
+    }
+  }
+
+  Future<void> _fetchLiveNow() async {
+    if (!mounted) return;
+    if (ref.read(fixtureSelectedSportProvider) != 'soccer') return;
+
+    final service = ref.read(fixtureServiceProvider);
+    final liveData = await service.getLiveMatches();
+    if (!mounted) return;
+
+    ref.read(liveMatchesProvider.notifier).state = liveData;
+  }
+
+  void _startLivePolling() {
+    if (!mounted) return;
+    if (ref.read(fixtureSelectedSportProvider) != 'soccer') return;
+
+    _stopLivePolling();
+    unawaited(_fetchLiveNow());
+    _livePollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      unawaited(_fetchLiveNow());
+    });
+  }
+
+  void _stopLivePolling() {
+    _livePollingTimer?.cancel();
+    _livePollingTimer = null;
   }
 
   int _dateChipIndexForPage(int pageIndex) => pageIndex + 1;
@@ -225,13 +274,23 @@ class _FixturePageState extends ConsumerState<FixturePage> {
     return score?.toString();
   }
 
-  String? _statusTimeText(FixtureMatch match, {required bool isBaseball}) {
+  String? _statusTimeText(
+    FixtureMatch match, {
+    required bool isBaseball,
+    LiveMatchData? live,
+  }) {
     if (isBaseball) {
       return _baseballStatusTimeText(match);
     }
+    if (live != null && live.isLive) {
+      return '${live.elapsed}분';
+    }
+    if (live != null && live.isFinished) {
+      return 'FT';
+    }
     switch (match.status) {
       case 'live':
-        return null;
+        return live != null && live.elapsed > 0 ? '${live.elapsed}분' : 'LIVE';
       case 'finished':
         return 'FT';
       default:
@@ -352,17 +411,42 @@ class _FixturePageState extends ConsumerState<FixturePage> {
     );
   }
 
+  Widget _buildMatchRow(
+    FixtureMatch match, {
+    required bool isBaseball,
+    LiveMatchData? live,
+  }) {
+    return FixtureMatchRow(
+      status: _toFixtureStatus(match, isBaseball: isBaseball),
+      timeText: _statusTimeText(match, isBaseball: isBaseball, live: live),
+      homeTeam: match.homeTeam,
+      awayTeam: match.awayTeam,
+      homeLogoUrl: match.homeTeamLogo,
+      awayLogoUrl: match.awayTeamLogo,
+      homeScore: _scoreText(match, isHome: true, isBaseball: isBaseball),
+      awayScore: _scoreText(match, isHome: false, isBaseball: isBaseball),
+      isNotificationOn: _notificationMatchIds.contains(match.matchId.toString()),
+      onNotificationTap: (match.status == 'scheduled' || match.status == 'live')
+          ? () {
+              setState(() {
+                final id = match.matchId.toString();
+                if (_notificationMatchIds.contains(id)) {
+                  _notificationMatchIds.remove(id);
+                } else {
+                  _notificationMatchIds.add(id);
+                  showAlarmSheet(context, _selectedSport(match.sport));
+                }
+              });
+            }
+          : null,
+    );
+  }
+
   List<Widget> _buildMatchWidgets(
     List<FixtureLeagueGroup> groups, {
     required bool isBaseball,
+    Map<String, LiveMatchData> liveMap = const {},
   }) {
-    for (final group in groups) {
-      print(
-        '[FIXTURE] League group: ${group.leagueCode} '
-        'name=${group.leagueName} logo=${group.leagueLogo ?? "NULL"}',
-      );
-    }
-
     return groups.asMap().entries.expand((entry) {
       final gi = entry.key;
       final group = entry.value;
@@ -377,34 +461,10 @@ class _FixturePageState extends ConsumerState<FixturePage> {
         FixtureMatchesCard(
           children: [
             for (final match in group.matches)
-              FixtureMatchRow(
-                status: _toFixtureStatus(match, isBaseball: isBaseball),
-                timeText: _statusTimeText(match, isBaseball: isBaseball),
-                homeTeam: match.homeTeam,
-                awayTeam: match.awayTeam,
-                homeLogoUrl: match.homeTeamLogo,
-                awayLogoUrl: match.awayTeamLogo,
-                homeScore: _scoreText(match, isHome: true, isBaseball: isBaseball),
-                awayScore: _scoreText(match, isHome: false, isBaseball: isBaseball),
-                isNotificationOn: _notificationMatchIds
-                    .contains(match.matchId.toString()),
-                onNotificationTap:
-                    (match.status == 'scheduled' || match.status == 'live')
-                        ? () {
-                            setState(() {
-                              final id = match.matchId.toString();
-                              if (_notificationMatchIds.contains(id)) {
-                                _notificationMatchIds.remove(id);
-                              } else {
-                                _notificationMatchIds.add(id);
-                                showAlarmSheet(
-                                  context,
-                                  _selectedSport(match.sport),
-                                );
-                              }
-                            });
-                          }
-                        : null,
+              _buildMatchRow(
+                match,
+                isBaseball: isBaseball,
+                live: liveMap[match.matchId.toString()],
               ),
           ],
         ),
@@ -460,12 +520,17 @@ class _FixturePageState extends ConsumerState<FixturePage> {
   Widget _buildMatchScrollView(
     List<FixtureLeagueGroup> groups, {
     required bool isBaseball,
+    Map<String, LiveMatchData> liveMap = const {},
   }) {
     if (groups.isEmpty) {
       return _buildEmptyDayState(isLiveFilter: false);
     }
 
-    final matchWidgets = _buildMatchWidgets(groups, isBaseball: isBaseball);
+    final matchWidgets = _buildMatchWidgets(
+      groups,
+      isBaseball: isBaseball,
+      liveMap: liveMap,
+    );
     return ListView(
       physics: _verticalScrollPhysics,
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -481,19 +546,25 @@ class _FixturePageState extends ConsumerState<FixturePage> {
     required List<FixtureMatch> matches,
     required String? selectedLeague,
     required bool isBaseball,
+    Map<String, LiveMatchData> liveMap = const {},
   }) {
     final groups = _groupsForDate(
       matches: matches,
       dateStr: dateStr,
       selectedLeague: selectedLeague,
     );
-    return _buildMatchScrollView(groups, isBaseball: isBaseball);
+    return _buildMatchScrollView(
+      groups,
+      isBaseball: isBaseball,
+      liveMap: liveMap,
+    );
   }
 
   Widget _buildLiveMatchArea({
     required AsyncValue<List<FixtureLeagueGroup>> groupsAsync,
     required bool isBaseball,
     required TsSemanticColors semantic,
+    Map<String, LiveMatchData> liveMap = const {},
   }) {
     return groupsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -519,7 +590,11 @@ class _FixturePageState extends ConsumerState<FixturePage> {
         if (groups.isEmpty) {
           return _buildEmptyDayState(isLiveFilter: true);
         }
-        return _buildMatchScrollView(groups, isBaseball: isBaseball);
+        return _buildMatchScrollView(
+          groups,
+          isBaseball: isBaseball,
+          liveMap: liveMap,
+        );
       },
     );
   }
@@ -529,6 +604,7 @@ class _FixturePageState extends ConsumerState<FixturePage> {
     required bool isBaseball,
     required String? selectedLeague,
     required List<DateTime> chipDates,
+    Map<String, LiveMatchData> liveMap = const {},
   }) {
     return PageView.builder(
       controller: _pageController,
@@ -542,6 +618,7 @@ class _FixturePageState extends ConsumerState<FixturePage> {
           matches: allMatches,
           selectedLeague: selectedLeague,
           isBaseball: isBaseball,
+          liveMap: liveMap,
         );
       },
     );
@@ -563,7 +640,8 @@ class _FixturePageState extends ConsumerState<FixturePage> {
     final selectedLeague = ref.watch(fixtureSelectedLeagueProvider);
     final leagues = ref.watch(fixtureAvailableLeaguesProvider);
     final groupsAsync = ref.watch(fixtureLeagueGroupsProvider);
-    final rawAsync = ref.watch(rawFixturesProvider);
+    final allMatchesAsync = ref.watch(allFixturesWithLiveProvider);
+    final liveMap = ref.watch(liveMatchesProvider);
     final chipDates = _chipDates();
 
     ref.listen(rawFixturesProvider, (previous, next) {
@@ -602,6 +680,11 @@ class _FixturePageState extends ConsumerState<FixturePage> {
                     ref.read(fixtureSelectedSportProvider.notifier).state =
                         sport == SportType.baseball ? 'baseball' : 'soccer';
                     _resetFixtureToTodayOnSportChange();
+                    if (sport == SportType.baseball) {
+                      _stopLivePolling();
+                    } else {
+                      _startLivePolling();
+                    }
                   },
                 ),
                 const SizedBox(height: 16),
@@ -617,8 +700,9 @@ class _FixturePageState extends ConsumerState<FixturePage> {
                     groupsAsync: groupsAsync,
                     isBaseball: isBaseball,
                     semantic: semantic,
+                    liveMap: liveMap,
                   )
-                : rawAsync.when(
+                : allMatchesAsync.when(
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
                     error: (error, stackTrace) => Center(
@@ -644,6 +728,7 @@ class _FixturePageState extends ConsumerState<FixturePage> {
                       isBaseball: isBaseball,
                       selectedLeague: selectedLeague,
                       chipDates: chipDates,
+                      liveMap: liveMap,
                     ),
                   ),
           ),

@@ -215,7 +215,24 @@ class SoccerService {
           'awayTeam': awayTeam,
         },
       );
-      return _adaptToMap(response.data);
+      final data = response.data;
+      print('[SOCCER] h2h-analysis response type: ${data.runtimeType}');
+      print(
+        '[SOCCER] h2h-analysis keys: ${data is Map ? data.keys.toList() : "not map"}',
+      );
+      if (data is Map) {
+        for (final key in data.keys) {
+          final val = data[key];
+          print('[SOCCER] h2h-analysis.$key type: ${val.runtimeType}');
+          if (val is Map) {
+            print('[SOCCER] h2h-analysis.$key keys: ${val.keys.toList()}');
+          }
+          if (val is List) {
+            print('[SOCCER] h2h-analysis.$key length: ${val.length}');
+          }
+        }
+      }
+      return _adaptToMap(data);
     } catch (e) {
       rethrow;
     }

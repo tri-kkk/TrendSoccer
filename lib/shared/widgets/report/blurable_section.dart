@@ -26,29 +26,23 @@ class BlurableSection extends StatelessWidget {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
     return Stack(
-      clipBehavior: Clip.none,
+      clipBehavior: Clip.hardEdge,
       children: [
-        child,
-        Positioned.fill(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-              child: const ColoredBox(color: Colors.transparent),
-            ),
-          ),
+        ImageFiltered(
+          imageFilter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+          child: child,
         ),
-        Center(
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: semantic.surfaceBase.withValues(alpha: 0.75),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              blurMessage ?? '',
-              style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
-              textAlign: TextAlign.center,
+        Positioned.fill(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(
+                blurMessage ?? '',
+                style: TsType.bodyMRegular.copyWith(
+                  color: semantic.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
         ),

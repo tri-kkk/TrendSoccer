@@ -49,6 +49,9 @@ final fixtureLiveFilterProvider = StateProvider<bool>((ref) => false);
 /// `null` = 전체.
 final fixtureSelectedLeagueProvider = StateProvider<String?>((ref) => null);
 
+final liveMatchesProvider =
+    StateProvider<Map<String, LiveMatchData>>((ref) => {});
+
 final soccerFixturesProvider =
     FutureProvider.autoDispose<List<FixtureMatch>>((ref) async {
   final service = ref.read(fixtureServiceProvider);
@@ -59,12 +62,6 @@ final baseballFixturesProvider =
     FutureProvider.autoDispose<List<FixtureMatch>>((ref) async {
   final service = ref.read(fixtureServiceProvider);
   return service.getBaseballFixturesRange();
-});
-
-final liveFixturesProvider =
-    FutureProvider.autoDispose<List<FixtureMatch>>((ref) async {
-  final service = ref.read(fixtureServiceProvider);
-  return service.getLiveMatches();
 });
 
 final rawFixturesProvider = Provider<AsyncValue<List<FixtureMatch>>>((ref) {
@@ -81,6 +78,7 @@ List<FixtureMatch> _scopeMatchesForFilters(
   required String selectedDate,
   required bool liveFilter,
   required String sport,
+  Map<String, LiveMatchData> liveMap = const {},
 }) {
   if (liveFilter) {
     if (sport == 'baseball') {
@@ -92,11 +90,53 @@ List<FixtureMatch> _scopeMatchesForFilters(
           )
           .toList();
     }
-    return matches.where((match) => match.status == 'live').toList();
+    return matches
+        .where((match) {
+          final live = liveMap[match.matchId.toString()];
+          return live != null && live.isLive;
+        })
+        .toList();
   }
   return matches
       .where((match) => matchIsOnDate(match, selectedDate))
       .toList();
+}
+
+List<FixtureMatch> _mergeFixturesWithLive(
+  List<FixtureMatch> matches,
+  Map<String, LiveMatchData> liveMap,
+) {
+  final merged = <FixtureMatch>[];
+  for (final match in matches) {
+    final live = liveMap[match.matchId.toString()];
+    merged.add(live != null ? match.copyWithLive(live) : match);
+  }
+  return merged;
+}
+
+List<FixtureMatch> _applyFixtureFilters({
+  required List<FixtureMatch> matches,
+  required String selectedDate,
+  required bool liveFilter,
+  required String sport,
+  required Map<String, LiveMatchData> liveMap,
+  String? selectedLeague,
+}) {
+  var filtered = _scopeMatchesForFilters(
+    matches,
+    selectedDate: selectedDate,
+    liveFilter: liveFilter,
+    sport: sport,
+    liveMap: liveMap,
+  );
+
+  if (selectedLeague != null && selectedLeague.isNotEmpty) {
+    filtered = filtered
+        .where((match) => match.leagueKey == selectedLeague)
+        .toList();
+  }
+
+  return _mergeFixturesWithLive(filtered, liveMap);
 }
 
 final fixtureAvailableLeaguesProvider =
@@ -104,14 +144,16 @@ final fixtureAvailableLeaguesProvider =
   final selectedDate = ref.watch(fixtureSelectedDateProvider);
   final liveFilter = ref.watch(fixtureLiveFilterProvider);
   final sport = ref.watch(fixtureSelectedSportProvider);
+  final liveMap = ref.watch(liveMatchesProvider);
 
   return ref.watch(rawFixturesProvider).maybeWhen(
         data: (matches) => _extractLeagueOptions(
-          _scopeMatchesForFilters(
-            matches,
+          _applyFixtureFilters(
+            matches: matches,
             selectedDate: selectedDate,
             liveFilter: liveFilter,
             sport: sport,
+            liveMap: liveMap,
           ),
         ),
         orElse: () => const [],
@@ -140,28 +182,35 @@ final filteredFixturesProvider =
   final selectedLeague = ref.watch(fixtureSelectedLeagueProvider);
   final liveFilter = ref.watch(fixtureLiveFilterProvider);
   final sport = ref.watch(fixtureSelectedSportProvider);
+  final liveMap = ref.watch(liveMatchesProvider);
 
   return rawAsync.whenData((matches) {
-    var filtered = _scopeMatchesForFilters(
-      matches,
+    return _applyFixtureFilters(
+      matches: matches,
       selectedDate: selectedDate,
       liveFilter: liveFilter,
       sport: sport,
+      liveMap: liveMap,
+      selectedLeague: selectedLeague,
     );
-
-    if (selectedLeague != null && selectedLeague.isNotEmpty) {
-      filtered = filtered
-          .where((match) => match.leagueKey == selectedLeague)
-          .toList();
-    }
-
-    return filtered;
   });
+});
+
+final fixturesWithLiveProvider = filteredFixturesProvider;
+
+final allFixturesWithLiveProvider =
+    Provider<AsyncValue<List<FixtureMatch>>>((ref) {
+  final rawAsync = ref.watch(rawFixturesProvider);
+  final liveMap = ref.watch(liveMatchesProvider);
+
+  return rawAsync.whenData(
+    (matches) => _mergeFixturesWithLive(matches, liveMap),
+  );
 });
 
 final fixtureLeagueGroupsProvider =
     Provider<AsyncValue<List<FixtureLeagueGroup>>>((ref) {
-  return ref.watch(filteredFixturesProvider).whenData(groupMatchesByLeague);
+  return ref.watch(fixturesWithLiveProvider).whenData(groupMatchesByLeague);
 });
 
 void invalidateFixtureData(WidgetRef ref) {

@@ -10,12 +10,14 @@ class FinalProbabilitySection extends StatelessWidget {
     required this.homeProb,
     required this.drawProb,
     required this.awayProb,
+    this.showTitle = true,
     super.key,
   });
 
   final double homeProb;
   final double drawProb;
   final double awayProb;
+  final bool showTitle;
 
   static int _flexFromPercent(int percent) => percent < 1 ? 1 : percent;
 
@@ -39,11 +41,13 @@ class FinalProbabilitySection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '최종 예측 확률',
-          style: TsType.headingH2.copyWith(color: semantic.textPrimary),
-        ),
-        const SizedBox(height: TsSpacing.sm),
+        if (showTitle) ...[
+          Text(
+            '최종 예측 확률',
+            style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+          ),
+          const SizedBox(height: TsSpacing.sm),
+        ],
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(TsSpacing.lg),

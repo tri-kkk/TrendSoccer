@@ -62,8 +62,12 @@ class _SoccerMatchReportPageState extends ConsumerState<SoccerMatchReportPage> {
     );
   }
 
-  Widget _buildPremiumTab(SoccerAnalysisParams params) {
-    return SoccerPremiumTab(params: params);
+  Widget _buildPremiumTab(SoccerAnalysisParams params, MatchHeaderData header) {
+    return SoccerPremiumTab(
+      params: params,
+      homeTeamLogo: header.homeTeamLogo,
+      awayTeamLogo: header.awayTeamLogo,
+    );
   }
 
   Widget _buildStandardTab(SoccerAnalysisParams params, MatchHeaderData header) {
@@ -157,7 +161,7 @@ class _SoccerMatchReportPageState extends ConsumerState<SoccerMatchReportPage> {
                   ? _buildMissingHeaderError()
                   : _selectedTab == ReportTab.standard
                       ? _buildStandardTab(params, header)
-                      : _buildPremiumTab(params),
+                      : _buildPremiumTab(params, header),
             ),
           ],
         ),

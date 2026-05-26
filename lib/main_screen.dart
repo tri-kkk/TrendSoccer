@@ -5,7 +5,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
+import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -238,6 +240,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           child: TsBottomNavigation(
             currentIndex: selectedIndex,
             onTap: (index) {
+              if (index == 1) {
+                ref.read(selectedLeagueProvider.notifier).state = null;
+                ref.read(selectedBaseballLeagueProvider.notifier).state = null;
+                ref.read(soccerAnalysisDateProvider.notifier).state =
+                    fixtureTodayDateString();
+                ref.read(baseballAnalysisDateProvider.notifier).state =
+                    baseballTodayDateString();
+              }
               if (index == 2) {
                 ref.read(fixtureSelectedDateProvider.notifier).state =
                     fixtureTodayDateString();

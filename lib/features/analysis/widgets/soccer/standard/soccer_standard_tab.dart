@@ -39,29 +39,52 @@ class SoccerStandardTab extends StatelessWidget {
             planType: planType,
           );
 
-    Widget gated(Widget child) {
-      return BlurableSection(
-        isBlurred: !canView,
-        blurMessage: lockMessage,
-        child: child,
+    Widget gatedSection({
+      required String title,
+      required Widget content,
+    }) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            title,
+            style: TsType.headingH2.copyWith(
+              color: Theme.of(context).extension<TsSemanticColors>()!.textPrimary,
+            ),
+          ),
+          const SizedBox(height: TsSpacing.sm),
+          BlurableSection(
+            isBlurred: !canView,
+            blurMessage: lockMessage,
+            child: content,
+          ),
+        ],
       );
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        gated(
-          AnalysisResultSection(
+        gatedSection(
+          title: '분석 결과',
+          content: AnalysisResultSection(
             prediction: parsed.prediction,
             winProbability: parsed.winProbability,
             powerDiff: parsed.powerDiff,
             gradeBadgeType: parsed.gradeBadge,
             analysisMatchCount: parsed.analysisMatchCount,
             patternMatchCount: parsed.patternMatchCount,
+            showTitle: false,
           ),
         ),
         const SizedBox(height: TsSpacing.xl),
-        gated(ReasoningSection(items: parsed.reasoningItems)),
+        gatedSection(
+          title: '분석 근거',
+          content: ReasoningSection(
+            items: parsed.reasoningItems,
+            showTitle: false,
+          ),
+        ),
         const SizedBox(height: TsSpacing.xl),
         OddsSection(
           homeOdds: parsed.homeOdds,
@@ -69,26 +92,40 @@ class SoccerStandardTab extends StatelessWidget {
           awayOdds: parsed.awayOdds,
         ),
         const SizedBox(height: TsSpacing.xl),
-        gated(
-          PowerIndexSection(
+        gatedSection(
+          title: '파워 인덱스',
+          content: PowerIndexSection(
             homeRatio: parsed.homePowerRatio,
             homePowerDisplay: parsed.homePowerDisplay,
             awayPowerDisplay: parsed.awayPowerDisplay,
+            showTitle: false,
           ),
         ),
         const SizedBox(height: TsSpacing.xl),
-        gated(
-          FinalProbabilitySection(
+        gatedSection(
+          title: '최종 예측 확률',
+          content: FinalProbabilitySection(
             homeProb: parsed.homeProb,
             drawProb: parsed.drawProb,
             awayProb: parsed.awayProb,
+            showTitle: false,
           ),
         ),
         const SizedBox(height: TsSpacing.xl),
-        gated(TeamStatisticsSection(stats: parsed.teamStats)),
+        gatedSection(
+          title: '팀 상세 통계',
+          content: TeamStatisticsSection(
+            stats: parsed.teamStats,
+            showTitle: false,
+          ),
+        ),
         const SizedBox(height: TsSpacing.xl),
-        gated(
-          ThreeMethodAnalysisSection(methods: parsed.threeMethods),
+        gatedSection(
+          title: '3-Method 분석',
+          content: ThreeMethodAnalysisSection(
+            methods: parsed.threeMethods,
+            showTitle: false,
+          ),
         ),
         const SizedBox(height: TsSpacing.xl),
       ],
