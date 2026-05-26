@@ -577,6 +577,70 @@ double? _parseDouble(Object? value) {
   return null;
 }
 
+/// Pitcher matchup text for Standard tab [PitcherAnalysisSection].
+List<String> extractStandardPitcherAnalysis(Map<String, dynamic> raw) {
+  final data = _unwrapAi(raw);
+
+  final listRaw = data['pitcherAnalysis'] ??
+      data['pitcher_analysis'] ??
+      data['pitcherMatchupAnalysis'] ??
+      data['pitcher_matchup_analysis'] ??
+      data['matchupAnalysis'] ??
+      data['matchup_analysis'] ??
+      data['paragraphs'];
+  if (listRaw is List) {
+    final paragraphs = listRaw
+        .map((item) {
+          if (item is String) return item.trim();
+          if (item is Map) {
+            return _readString(
+              Map<String, dynamic>.from(item),
+              const ['text', 'content', 'value', 'analysis'],
+            );
+          }
+          return item?.toString().trim();
+        })
+        .whereType<String>()
+        .where((item) => item.isNotEmpty)
+        .toList();
+    if (paragraphs.isNotEmpty) return paragraphs;
+  }
+
+  final single = _readString(data, const [
+    'pitcherAnalysis',
+    'pitcher_analysis',
+    'pitcherMatchupAnalysis',
+    'pitcher_matchup_analysis',
+    'matchupAnalysis',
+    'matchup_analysis',
+    'analysis',
+    'text',
+    'content',
+    'summary',
+    'aiSummary',
+    'ai_summary',
+  ]);
+  if (single != null && single.trim().isNotEmpty) {
+    return single
+        .split(RegExp(r'\n{2,}'))
+        .map((part) => part.trim())
+        .where((part) => part.isNotEmpty)
+        .toList();
+  }
+
+  final ouAnalysis = _parseOverUnder(data).analysis?.trim();
+  if (ouAnalysis != null && ouAnalysis.isNotEmpty) {
+    return [ouAnalysis];
+  }
+
+  final summary = _parseAiSummary(data)?.trim();
+  if (summary != null && summary.isNotEmpty) {
+    return [summary];
+  }
+
+  return const [];
+}
+
 int? _parseInt(Object? value) {
   if (value is int) return value;
   if (value is num) return value.toInt();

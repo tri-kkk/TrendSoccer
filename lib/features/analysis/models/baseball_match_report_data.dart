@@ -88,7 +88,6 @@ final BaseballMatchReportData baseballMatchReportDummy = BaseballMatchReportData
   awayPitcher: PitcherData(
     name: '김선수',
     pitcherType: '우완 투수',
-    photoUrl: null,
     era: '3.45',
     whip: '1.12',
     k9: '8.5',
@@ -104,7 +103,6 @@ final BaseballMatchReportData baseballMatchReportDummy = BaseballMatchReportData
   homePitcher: PitcherData(
     name: '이선수',
     pitcherType: '좌완 투수',
-    photoUrl: null,
     era: '2.89',
     whip: '0.98',
     k9: '9.2',

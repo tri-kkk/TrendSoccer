@@ -6,8 +6,9 @@ import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
 enum BaseballH2HWinner {
-  away,
   home,
+  away,
+  draw,
 }
 
 class BaseballH2HMatch {
@@ -27,15 +28,20 @@ class BaseballH2HMatch {
 
   bool get awayWon => winner == BaseballH2HWinner.away;
   bool get homeWon => winner == BaseballH2HWinner.home;
+  bool get isDraw => winner == BaseballH2HWinner.draw;
+
+  String get scoreDisplay => score;
 }
 
 class BaseballH2HSection extends StatelessWidget {
   const BaseballH2HSection({
     required this.matches,
+    this.isLoading = false,
     super.key,
   });
 
   final List<BaseballH2HMatch> matches;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +50,7 @@ class BaseballH2HSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '상대 전적',
+          'H2H',
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
         const SizedBox(height: TsSpacing.sm),
@@ -55,19 +61,33 @@ class BaseballH2HSection extends StatelessWidget {
             color: semantic.surfaceRaised,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (var i = 0; i < matches.length; i++) ...[
-                _H2HMatchRow(match: matches[i]),
-                if (i < matches.length - 1) ...[
-                  const SizedBox(height: 16),
-                  Container(height: 1, color: semantic.borderSubtle),
-                  const SizedBox(height: 16),
-                ],
-              ],
-            ],
-          ),
+          child: isLoading
+              ? Text(
+                  '상대 전적 데이터를 불러오는 중...',
+                  style: TsType.bodyMRegular.copyWith(
+                    color: semantic.textSecondary,
+                  ),
+                )
+              : matches.isEmpty
+              ? Text(
+                  '상대 전적 데이터가 없습니다.',
+                  style: TsType.bodyMRegular.copyWith(
+                    color: semantic.textSecondary,
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var i = 0; i < matches.length; i++) ...[
+                      _H2HMatchRow(match: matches[i]),
+                      if (i < matches.length - 1) ...[
+                        const SizedBox(height: TsSpacing.lg),
+                        Container(height: 1, color: semantic.borderSubtle),
+                        const SizedBox(height: TsSpacing.lg),
+                      ],
+                    ],
+                  ],
+                ),
         ),
       ],
     );
@@ -76,19 +96,21 @@ class BaseballH2HSection extends StatelessWidget {
 
 Widget _buildWinBadge(
   BuildContext context, {
-  required bool isHomeWin,
+  required bool isHomeWinner,
 }) {
   final semantic = Theme.of(context).extension<TsSemanticColors>()!;
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
     decoration: BoxDecoration(
-      color: isHomeWin ? const Color(0x1AEF4444) : const Color(0x3300DF81),
+      color: isHomeWinner ? const Color(0x3300DF81) : const Color(0x1AEF4444),
       borderRadius: BorderRadius.circular(4),
     ),
     child: Text(
       'W',
       style: TsType.labelSRegular.copyWith(
-        color: isHomeWin ? TsColors.systemError500 : semantic.interactivePrimary,
+        color: isHomeWinner
+            ? semantic.interactivePrimary
+            : TsColors.systemError500,
       ),
     ),
   );
@@ -106,78 +128,81 @@ class _H2HMatchRow extends StatelessWidget {
     final homeWon = match.homeWon;
     final labelStyle = TsType.labelSRegular.copyWith(color: semantic.textPrimary);
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: 40,
-          child: Text(
-            match.date,
-            style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 24),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 40,
+            child: Text(
+              match.date,
+              style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Align(
-            child: SizedBox(
-              width: 300,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (awayWon) ...[
-                          _buildWinBadge(context, isHomeWin: false),
-                          const SizedBox(width: 8),
-                        ],
-                        Expanded(
-                          child: Text(
-                            match.awayTeam,
-                            style: labelStyle,
-                            textAlign: TextAlign.right,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
+          const SizedBox(width: TsSpacing.sm),
+          Expanded(
+            child: Align(
+              child: SizedBox(
+                width: 300,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          if (homeWon) ...[
+                            _buildWinBadge(context, isHomeWinner: true),
+                            const SizedBox(width: TsSpacing.sm),
+                          ],
+                          Expanded(
+                            child: Text(
+                              match.homeTeam,
+                              style: labelStyle,
+                              textAlign: TextAlign.right,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    match.score,
-                    style: labelStyle,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            match.homeTeam,
-                            style: labelStyle,
-                            textAlign: TextAlign.left,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                        if (homeWon) ...[
-                          const SizedBox(width: 8),
-                          _buildWinBadge(context, isHomeWin: true),
                         ],
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: TsSpacing.sm),
+                    Text(
+                      match.scoreDisplay,
+                      style: labelStyle,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(width: TsSpacing.sm),
+                    Expanded(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              match.awayTeam,
+                              style: labelStyle,
+                              textAlign: TextAlign.left,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ),
+                          if (awayWon) ...[
+                            const SizedBox(width: TsSpacing.sm),
+                            _buildWinBadge(context, isHomeWinner: false),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

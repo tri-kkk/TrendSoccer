@@ -46,10 +46,11 @@ class BaseballStandardPitcher {
     return name.trim().isEmpty ? '-' : name.trim();
   }
 
-  PitcherData toPitcherData() {
+  PitcherData toPitcherData({String? teamLogoUrl}) {
     return PitcherData(
       name: displayName,
       pitcherType: pitcherType.isEmpty ? '투수' : pitcherType,
+      teamLogoUrl: teamLogoUrl,
       photoUrl: photoUrl,
       era: era,
       whip: whip,
@@ -70,6 +71,10 @@ class BaseballStandardParsed {
   const BaseballStandardParsed({
     required this.league,
     required this.leagueId,
+    required this.leagueCode,
+    this.apiSportsMatchId,
+    this.homeTeamId,
+    this.awayTeamId,
     required this.homeTeam,
     required this.awayTeam,
     this.homeLogoUrl,
@@ -89,10 +94,15 @@ class BaseballStandardParsed {
     this.homeWinProbRatio,
     this.awayWinProbRatio,
     required this.ouLines,
+    required this.currentSeason,
   });
 
   final String league;
   final String leagueId;
+  final String leagueCode;
+  final int? apiSportsMatchId;
+  final int? homeTeamId;
+  final int? awayTeamId;
   final String homeTeam;
   final String awayTeam;
   final String? homeLogoUrl;
@@ -112,6 +122,7 @@ class BaseballStandardParsed {
   final double? homeWinProbRatio;
   final double? awayWinProbRatio;
   final List<BaseballOULine> ouLines;
+  final String currentSeason;
 }
 
 class BaseballRelatedMatch {
@@ -183,48 +194,64 @@ BaseballStandardParsed parseBaseballStandardDetail(Map<String, dynamic> raw) {
 
   final homeLogoUrl = _nonEmptyOrNull(homeSide['logo']);
   final awayLogoUrl = _nonEmptyOrNull(awaySide['logo']);
+  final homeTeamId = _parseInt(homeSide['id'] ?? homeSide['teamId']);
+  final awayTeamId = _parseInt(awaySide['id'] ?? awaySide['teamId']);
 
   final homeScore = _formatNullableScore(homeSide['score']);
   final awayScore = _formatNullableScore(awaySide['score']);
 
   final league = _readString(match, const ['league', 'leagueName', 'league_name']) ??
       '';
+  final leagueCode = _normalizeLeagueCode(league);
+  final apiSportsMatchId = _parseInt(
+    match['matchId'] ??
+        match['match_id'] ??
+        match['apiMatchId'] ??
+        match['api_match_id'] ??
+        match['id'],
+  );
   final dateStr = _readString(match, const ['date', 'matchDate', 'match_date']) ?? '';
   final timeStr = _readString(match, const ['time', 'matchTime', 'match_time']) ?? '';
   final timestamp = _parseDateTime(
     match['timestamp'] ?? match['matchTimestamp'] ?? match['match_timestamp'],
   );
 
-  final homePitcher = _parsePitcherFromMatchRoot(
-    match,
-    side: 'home',
-    teamLogoUrl: homeLogoUrl,
-  );
-  final awayPitcher = _parsePitcherFromMatchRoot(
-    match,
-    side: 'away',
-    teamLogoUrl: awayLogoUrl,
-  );
+  final homePitcher = _parsePitcherFromMatchRoot(match, side: 'home');
+  final awayPitcher = _parsePitcherFromMatchRoot(match, side: 'away');
 
   print('[BASEBALL] Standard parse: home=$homeTeam, away=$awayTeam');
   print(
     '[BASEBALL] Standard parse: homePitcher=${homePitcher.displayName}, awayPitcher=${awayPitcher.displayName}',
   );
 
-  final oddsMap = _readMap(match, const ['odds']) ?? {};
+  final oddsMap = _mergeOddsMap(match);
+  print(
+    '[BASEBALL] Odds raw: homeWinOdds=${oddsMap['homeWinOdds']}, awayWinOdds=${oddsMap['awayWinOdds']}',
+  );
+  print(
+    '[BASEBALL] Odds raw: homeWinProb=${oddsMap['homeWinProb']}, awayWinProb=${oddsMap['awayWinProb']}',
+  );
+  print('[BASEBALL] Odds ouLines: ${oddsMap['ouLines'] ?? oddsMap['ou_lines']}');
   final odds = BaseballOdds.fromJson(oddsMap);
+  final homeMoneylineOdds = _readMoneylineOdds(oddsMap, isHome: true);
+  final awayMoneylineOdds = _readMoneylineOdds(oddsMap, isHome: false);
   final homeProbRatio = _normalizeProbRatio(odds.homeWinProb);
   final awayProbRatio = _normalizeProbRatio(odds.awayWinProb);
 
   print(
-    '[BASEBALL] Standard parse: odds homeProb=${odds.homeWinProb}, awayProb=${odds.awayWinProb}',
+    '[BASEBALL] Standard parse: moneyline home=${_formatMoneylineOdds(homeMoneylineOdds)}, away=${_formatMoneylineOdds(awayMoneylineOdds)}',
   );
 
   final cardFallback = BaseballAnalysisCard.fromJson(match);
+  final currentSeason = _parseMatchSeason(match);
 
   return BaseballStandardParsed(
     league: league.isEmpty ? '야구' : league,
     leagueId: baseballLeagueIconId(league),
+    leagueCode: leagueCode,
+    apiSportsMatchId: apiSportsMatchId,
+    homeTeamId: homeTeamId,
+    awayTeamId: awayTeamId,
     homeTeam: homeTeam,
     awayTeam: awayTeam,
     homeLogoUrl: homeLogoUrl,
@@ -247,11 +274,12 @@ BaseballStandardParsed parseBaseballStandardDetail(Map<String, dynamic> raw) {
     pitcherMatchupAnalysis: _parsePitcherMatchupAnalysis(match),
     h2hMatches: _parseH2HMatches(match, cardFallback),
     relatedMatches: _parseRelatedMatches(match['relatedMatches']),
-    homeWinOdds: _formatOddsValue(odds.homeWinOdds),
-    awayWinOdds: _formatOddsValue(odds.awayWinOdds),
+    homeWinOdds: _formatMoneylineOdds(homeMoneylineOdds),
+    awayWinOdds: _formatMoneylineOdds(awayMoneylineOdds),
     homeWinProbRatio: homeProbRatio,
     awayWinProbRatio: awayProbRatio,
-    ouLines: _parseOuLines(odds),
+    ouLines: _parseOuLines(odds, oddsMap),
+    currentSeason: currentSeason,
   );
 }
 
@@ -261,6 +289,7 @@ BaseballStandardParsed baseballStandardHeaderFallback(
   return BaseballStandardParsed(
     league: dummy.leagueId.toUpperCase(),
     leagueId: dummy.leagueId,
+    leagueCode: _normalizeLeagueCode(dummy.leagueId),
     homeTeam: dummy.homeTeam,
     awayTeam: dummy.awayTeam,
     homeLogoUrl: dummy.homeLogoUrl,
@@ -276,7 +305,18 @@ BaseballStandardParsed baseballStandardHeaderFallback(
     homeWinOdds: '-',
     awayWinOdds: '-',
     ouLines: const [],
+    currentSeason: DateTime.now().year.toString(),
   );
+}
+
+String _parseMatchSeason(Map<String, dynamic> match) {
+  final seasonRaw = match['season']?.toString().trim();
+  if (seasonRaw != null && seasonRaw.isNotEmpty) {
+    final parsed = int.tryParse(seasonRaw);
+    if (parsed != null) return parsed.toString();
+    return seasonRaw;
+  }
+  return DateTime.now().year.toString();
 }
 
 Map<String, dynamic> _unwrapDetail(Map<String, dynamic> raw) {
@@ -316,7 +356,6 @@ DateTime? _parseDateTime(Object? value) {
 BaseballStandardPitcher _parsePitcherFromMatchRoot(
   Map<String, dynamic> match, {
   required String side,
-  String? teamLogoUrl,
 }) {
   final prefix = side == 'home' ? 'home' : 'away';
   final name = _readString(match, ['${prefix}Pitcher', '${prefix}_pitcher']) ?? '';
@@ -324,18 +363,29 @@ BaseballStandardPitcher _parsePitcherFromMatchRoot(
     '${prefix}PitcherKo',
     '${prefix}_pitcher_ko',
   ]);
+  final kRaw = match['${prefix}PitcherK'] ?? match['${prefix}_pitcher_k'];
+  final ipRaw = match['${prefix}PitcherIp'] ?? match['${prefix}_pitcher_ip'];
+  final k9Raw = match['${prefix}PitcherK9'] ?? match['${prefix}_pitcher_k9'];
+  final pitcherPhotoUrl = _nonEmptyOrNull(
+    match['${prefix}PitcherPhoto'] ??
+        match['${prefix}_pitcher_photo'] ??
+        match['${prefix}PitcherImage'] ??
+        match['${prefix}_pitcher_image'] ??
+        match['${prefix}PitcherLogo'] ??
+        match['${prefix}_pitcher_logo'],
+  );
 
   return BaseballStandardPitcher(
     name: name.isEmpty ? '-' : name,
     nameKo: nameKo,
-    photoUrl: teamLogoUrl,
+    photoUrl: pitcherPhotoUrl,
     pitcherType: '투수',
     era: _formatDecimalStat(match['${prefix}PitcherEra']),
     whip: _formatDecimalStat(match['${prefix}PitcherWhip']),
-    k9: '-',
+    k9: _formatK9(k9Raw, kRaw, ipRaw),
     wl: '-',
-    ip: '-',
-    k: _formatStat(match['${prefix}PitcherK']),
+    ip: _formatStat(ipRaw),
+    k: _formatStat(kRaw),
     prevWl: '-',
     prevIp: '-',
     prevK: '-',
@@ -384,6 +434,26 @@ String _formatDecimalStat(Object? value) {
   if (value is num) return value.toStringAsFixed(2);
   final text = value.toString().trim();
   return text.isEmpty ? '-' : text;
+}
+
+String _formatK9(Object? k9Raw, Object? kRaw, Object? ipRaw) {
+  final explicit = _parseDouble(k9Raw);
+  if (explicit != null) return explicit.toStringAsFixed(2);
+
+  final k = _parseDouble(kRaw);
+  final ip = _parseDouble(ipRaw);
+  if (k != null && ip != null && ip > 0) {
+    return ((k / ip) * 9).toStringAsFixed(2);
+  }
+  return '-';
+}
+
+double? _parseDouble(Object? value) {
+  if (value == null) return null;
+  if (value is double) return value;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value.trim());
+  return null;
 }
 
 BaseballStandardPitcher _emptyPitcher() {
@@ -506,24 +576,23 @@ List<BaseballH2HMatch> _parseH2HMatches(
             ]) ??
             card.awayDisplayTeam;
 
-        final score = homeScore != null && awayScore != null
-            ? '$awayScore-$homeScore'
-            : _readString(map, const ['score', 'result']) ?? '-';
-
-        BaseballH2HWinner winner = BaseballH2HWinner.home;
+        BaseballH2HWinner winner = BaseballH2HWinner.draw;
         if (homeScore != null && awayScore != null) {
           if (awayScore > homeScore) {
             winner = BaseballH2HWinner.away;
           } else if (homeScore > awayScore) {
             winner = BaseballH2HWinner.home;
-          } else {
-            winner = BaseballH2HWinner.home;
           }
         } else {
           final winnerRaw =
               _readString(map, const ['winner', 'winnerSide', 'winner_side']);
-          if (winnerRaw?.toLowerCase().contains('away') == true) {
+          final normalized = winnerRaw?.toLowerCase().trim();
+          if (normalized == 'home' || normalized == 'h') {
+            winner = BaseballH2HWinner.home;
+          } else if (normalized == 'away' || normalized == 'a') {
             winner = BaseballH2HWinner.away;
+          } else if (normalized == 'draw' || normalized == 'd') {
+            winner = BaseballH2HWinner.draw;
           }
         }
 
@@ -533,40 +602,200 @@ List<BaseballH2HMatch> _parseH2HMatches(
           ),
           awayTeam: awayTeam,
           homeTeam: homeTeam,
-          score: score,
+          score: homeScore != null && awayScore != null
+              ? '$homeScore - $awayScore'
+              : _readString(map, const ['score', 'result']) ?? '-',
           winner: winner,
         );
       })
       .toList();
 }
 
-List<BaseballOULine> _parseOuLines(BaseballOdds odds) {
-  final lines = odds.ouLines;
-  if (lines != null && lines.isNotEmpty) {
-    return lines
+List<BaseballH2HMatch> parseBaseballH2HResponse(Map<String, dynamic> response) {
+  final matchesRaw = response['matches'] ?? response['data'] ?? response['items'];
+  if (matchesRaw is! List || matchesRaw.isEmpty) return const [];
+
+  return matchesRaw
+      .whereType<Map>()
+      .take(5)
+      .map((item) {
+        final map = Map<String, dynamic>.from(item);
+        final homeScore = _parseInt(map['homeScore'] ?? map['home_score']);
+        final awayScore = _parseInt(map['awayScore'] ?? map['away_score']);
+        final homeTeam = _readString(map, const [
+              'homeTeamKo',
+              'home_team_ko',
+              'homeTeam',
+              'home_team',
+            ]) ??
+            '-';
+        final awayTeam = _readString(map, const [
+              'awayTeamKo',
+              'away_team_ko',
+              'awayTeam',
+              'away_team',
+            ]) ??
+            '-';
+
+        final winnerRaw =
+            _readString(map, const ['winner', 'winnerSide', 'winner_side'])
+                ?.toLowerCase()
+                .trim();
+        var winner = BaseballH2HWinner.draw;
+        if (winnerRaw == 'home' || winnerRaw == 'h') {
+          winner = BaseballH2HWinner.home;
+        } else if (winnerRaw == 'away' || winnerRaw == 'a') {
+          winner = BaseballH2HWinner.away;
+        } else if (homeScore != null && awayScore != null) {
+          if (homeScore > awayScore) {
+            winner = BaseballH2HWinner.home;
+          } else if (awayScore > homeScore) {
+            winner = BaseballH2HWinner.away;
+          }
+        }
+
+        return BaseballH2HMatch(
+          date: _formatH2HDate(
+            _readString(map, const ['date', 'matchDate', 'match_date']),
+          ),
+          homeTeam: homeTeam,
+          awayTeam: awayTeam,
+          score: homeScore != null && awayScore != null
+              ? '$homeScore - $awayScore'
+              : _readString(map, const ['score', 'result']) ?? '-',
+          winner: winner,
+        );
+      })
+      .toList();
+}
+
+class PitcherPreviousSeasonDisplay {
+  const PitcherPreviousSeasonDisplay({
+    required this.seasonLabel,
+    required this.era,
+    required this.whip,
+    required this.strikeouts,
+  });
+
+  final String seasonLabel;
+  final String era;
+  final String whip;
+  final String strikeouts;
+
+  bool get hasData =>
+      era != '-' || whip != '-' || (strikeouts != '-' && strikeouts.isNotEmpty);
+}
+
+PitcherPreviousSeasonDisplay? parsePitcherPreviousSeason(
+  Map<String, dynamic>? source,
+) {
+  if (source == null) return null;
+
+  final era = _formatDecimalStat(source['era']);
+  final whipRaw = source['whip'];
+  final whip = whipRaw == null ? '-' : _formatDecimalStat(whipRaw);
+  final strikeouts = _formatStat(
+    source['strikeouts'] ?? source['k'] ?? source['strikeOuts'],
+  );
+  final season = source['season']?.toString().trim();
+
+  if (era == '-' && whip == '-' && strikeouts == '-') {
+    return null;
+  }
+
+  return PitcherPreviousSeasonDisplay(
+    seasonLabel: (season != null && season.isNotEmpty)
+        ? season
+        : (DateTime.now().year - 1).toString(),
+    era: era,
+    whip: whip,
+    strikeouts: strikeouts,
+  );
+}
+
+List<BaseballOULine> _parseOuLines(
+  BaseballOdds odds,
+  Map<String, dynamic> oddsMap,
+) {
+  final ouLinesRaw = oddsMap['ouLines'] ?? oddsMap['ou_lines'];
+  List<Map<String, dynamic>>? parsedOuLines;
+  if (ouLinesRaw is List && ouLinesRaw.isNotEmpty) {
+    parsedOuLines = ouLinesRaw
+        .map((entry) {
+          if (entry is Map) return Map<String, dynamic>.from(entry);
+          return <String, dynamic>{};
+        })
+        .where((map) => map.isNotEmpty)
+        .toList();
+  }
+  print('[BASEBALL] Parsed ouLines: ${parsedOuLines?.length ?? 'null'} lines');
+
+  final apiLines = odds.ouLines;
+  if (apiLines != null && apiLines.isNotEmpty) {
+    return apiLines
         .map(
           (line) => BaseballOULine(
-            line: _formatOddsValue(line.line),
+            line: _formatLineValue(line.line),
             over: _formatOddsValue(line.over),
             under: _formatOddsValue(line.under),
-            isBaseLine: odds.overUnderLine == line.line,
+            isBaseLine: _isSameOuLine(line.line, odds.overUnderLine),
           ),
         )
         .toList();
   }
 
-  if (odds.overUnderLine != null) {
-    return [
-      BaseballOULine(
-        line: _formatOddsValue(odds.overUnderLine!),
-        over: _formatOddsValue(odds.overOdds ?? 0),
-        under: _formatOddsValue(odds.underOdds ?? 0),
-        isBaseLine: true,
-      ),
-    ];
-  }
+  final mainLine = odds.overUnderLine;
+  if (mainLine == null) return const [];
 
-  return const [];
+  return _expandOuLinesAroundMain(
+    mainLine: mainLine,
+    over: odds.overOdds,
+    under: odds.underOdds,
+  );
+}
+
+List<BaseballOULine> _expandOuLinesAroundMain({
+  required double mainLine,
+  double? over,
+  double? under,
+}) {
+  return [
+    BaseballOULine(
+      line: _formatLineValue(mainLine - 0.5),
+      over: '-',
+      under: '-',
+      isBaseLine: false,
+    ),
+    BaseballOULine(
+      line: _formatLineValue(mainLine),
+      over: _formatOptionalOddsValue(over),
+      under: _formatOptionalOddsValue(under),
+      isBaseLine: true,
+    ),
+    BaseballOULine(
+      line: _formatLineValue(mainLine + 0.5),
+      over: '-',
+      under: '-',
+      isBaseLine: false,
+    ),
+  ];
+}
+
+bool _isSameOuLine(double line, double? baseline) {
+  if (baseline == null) return false;
+  return (line - baseline).abs() < 0.001;
+}
+
+String _formatLineValue(double value) {
+  if (value == value.roundToDouble()) {
+    return value.toStringAsFixed(0);
+  }
+  return value.toStringAsFixed(1);
+}
+
+String _formatOptionalOddsValue(double? value) {
+  if (value == null || value <= 0) return '-';
+  return _formatOddsValue(value);
 }
 
 String _formatMatchDateDisplay(
@@ -628,11 +857,66 @@ String _formatStat(Object? value) {
 String _formatOddsValue(Object? value) {
   if (value == null) return '-';
   if (value is num) {
-    if (value == value.roundToDouble()) return value.toStringAsFixed(0);
     return value.toStringAsFixed(2);
   }
   final text = value.toString().trim();
   return text.isEmpty ? '-' : text;
+}
+
+Map<String, dynamic> _mergeOddsMap(Map<String, dynamic> match) {
+  final nested = _readMap(match, const ['odds']) ?? {};
+  final merged = Map<String, dynamic>.from(nested);
+  for (final key in const [
+    'homeWinOdds',
+    'awayWinOdds',
+    'home_win_odds',
+    'away_win_odds',
+    'homeWinProb',
+    'awayWinProb',
+    'home_win_prob',
+    'away_win_prob',
+    'overUnderLine',
+    'over_under_line',
+    'overOdds',
+    'over_odds',
+    'underOdds',
+    'under_odds',
+    'ouLines',
+    'ou_lines',
+  ]) {
+    if (!merged.containsKey(key) && match.containsKey(key)) {
+      merged[key] = match[key];
+    }
+  }
+  return merged;
+}
+
+double? _readMoneylineOdds(Map<String, dynamic> oddsMap, {required bool isHome}) {
+  final keys = isHome
+      ? const ['homeWinOdds', 'home_win_odds']
+      : const ['awayWinOdds', 'away_win_odds'];
+  for (final key in keys) {
+    final value = oddsMap[key];
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      final parsed = double.tryParse(value.trim());
+      if (parsed != null) return parsed;
+    }
+  }
+  return null;
+}
+
+String _formatMoneylineOdds(double? value) {
+  if (value == null || value <= 0) return '-';
+  return value.toStringAsFixed(2);
+}
+
+String _normalizeLeagueCode(String league) {
+  final upper = league.trim().toUpperCase();
+  if (upper.contains('MLB') || upper.contains('MAJOR')) return 'MLB';
+  if (upper.contains('NPB')) return 'NPB';
+  if (upper.contains('KBO') || upper.contains('KOREA')) return 'KBO';
+  return upper.isEmpty ? 'MLB' : upper;
 }
 
 double? _normalizeProbRatio(double? value) {

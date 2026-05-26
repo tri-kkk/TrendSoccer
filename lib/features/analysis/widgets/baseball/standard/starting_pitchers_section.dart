@@ -1,10 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:trendsoccer/core/providers/baseball_match_report_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/baseball/pitcher_comment_chip.dart';
+import 'package:trendsoccer/features/analysis/models/baseball_standard_parser.dart';
 import 'package:trendsoccer/shared/widgets/baseball/position_chip.dart';
 import 'package:trendsoccer/shared/widgets/baseball/season_chip.dart';
 import 'package:trendsoccer/shared/widgets/report/info_cell.dart';
@@ -13,6 +15,7 @@ class PitcherData {
   const PitcherData({
     required this.name,
     required this.pitcherType,
+    this.teamLogoUrl,
     this.photoUrl,
     required this.era,
     required this.whip,
@@ -25,10 +28,13 @@ class PitcherData {
     required this.prevK,
     required this.strengths,
     required this.weaknesses,
+    this.currentSeasonYear,
+    this.previousSeasonYear,
   });
 
   final String name;
   final String pitcherType;
+  final String? teamLogoUrl;
   final String? photoUrl;
   final String era;
   final String whip;
@@ -41,21 +47,78 @@ class PitcherData {
   final String prevK;
   final List<String> strengths;
   final List<String> weaknesses;
+  final String? currentSeasonYear;
+  final String? previousSeasonYear;
 }
 
-class StartingPitchersSection extends StatelessWidget {
+class StartingPitchersSection extends ConsumerWidget {
   const StartingPitchersSection({
+    required this.leagueCode,
+    required this.currentSeason,
+    required this.homeTeam,
+    required this.awayTeam,
+    required this.homePitcherName,
+    required this.awayPitcherName,
     required this.awayPitcher,
     required this.homePitcher,
     super.key,
   });
 
+  final String leagueCode;
+  final String currentSeason;
+  final String homeTeam;
+  final String awayTeam;
+  final String homePitcherName;
+  final String awayPitcherName;
   final PitcherData awayPitcher;
   final PitcherData homePitcher;
 
+  bool get _isAsianLeague => leagueCode == 'KBO' || leagueCode == 'NPB';
+
+  static String previousSeasonYear(String currentSeason) {
+    final parsed = int.tryParse(currentSeason.trim());
+    if (parsed != null) return (parsed - 1).toString();
+    return (DateTime.now().year - 1).toString();
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+
+    PitcherPreviousSeasonDisplay? homePrev;
+    PitcherPreviousSeasonDisplay? awayPrev;
+
+    if (_isAsianLeague) {
+      final statsData = switch (
+        ref.watch(
+          baseballPitcherStatsProvider(
+            (
+              league: leagueCode.toLowerCase(),
+              homePitcher: homePitcherName,
+              awayPitcher: awayPitcherName,
+              homeTeam: homeTeam,
+              awayTeam: awayTeam,
+            ),
+          ),
+        )
+      ) {
+        AsyncData(:final value) => value,
+        _ => null,
+      };
+      if (statsData != null) {
+        final homeRaw = statsData['homePitcherPrev'];
+        final awayRaw = statsData['awayPitcherPrev'];
+        homePrev = parsePitcherPreviousSeason(
+          homeRaw is Map ? Map<String, dynamic>.from(homeRaw) : null,
+        );
+        awayPrev = parsePitcherPreviousSeason(
+          awayRaw is Map ? Map<String, dynamic>.from(awayRaw) : null,
+        );
+      }
+    }
+
+    final previousSeason = previousSeasonYear(currentSeason);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -76,10 +139,24 @@ class StartingPitchersSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(
-                  child: _PitcherColumn(pitcher: awayPitcher, isHome: false),
+                  child: _PitcherColumn(
+                    leagueCode: leagueCode,
+                    pitcher: homePitcher,
+                    isHome: true,
+                    currentSeason: currentSeason,
+                    previousSeason: previousSeason,
+                    previousSeasonStats: homePrev,
+                  ),
                 ),
                 Expanded(
-                  child: _PitcherColumn(pitcher: homePitcher, isHome: true),
+                  child: _PitcherColumn(
+                    leagueCode: leagueCode,
+                    pitcher: awayPitcher,
+                    isHome: false,
+                    currentSeason: currentSeason,
+                    previousSeason: previousSeason,
+                    previousSeasonStats: awayPrev,
+                  ),
                 ),
               ],
             ),
@@ -92,12 +169,24 @@ class StartingPitchersSection extends StatelessWidget {
 
 class _PitcherColumn extends StatelessWidget {
   const _PitcherColumn({
+    required this.leagueCode,
     required this.pitcher,
     required this.isHome,
+    required this.currentSeason,
+    required this.previousSeason,
+    this.previousSeasonStats,
   });
 
+  final String leagueCode;
   final PitcherData pitcher;
   final bool isHome;
+  final String currentSeason;
+  final String previousSeason;
+  final PitcherPreviousSeasonDisplay? previousSeasonStats;
+
+  static const _emblemSize = 48.0;
+
+  bool get _isMlb => leagueCode == 'MLB';
 
   static Widget _statsRowTriple({
     required String v1,
@@ -109,83 +198,120 @@ class _PitcherColumn extends StatelessWidget {
   }) {
     return Row(
       children: [
-        Expanded(
-          child: InfoCell(value: v1, label: l1, valueStyle: TsType.bodyLBold),
-        ),
+        Expanded(child: InfoCell(value: v1, label: l1)),
         const SizedBox(width: TsSpacing.sm),
-        Expanded(
-          child: InfoCell(value: v2, label: l2, valueStyle: TsType.bodyLBold),
-        ),
+        Expanded(child: InfoCell(value: v2, label: l2)),
         const SizedBox(width: TsSpacing.sm),
-        Expanded(
-          child: InfoCell(value: v3, label: l3, valueStyle: TsType.bodyLBold),
-        ),
+        Expanded(child: InfoCell(value: v3, label: l3)),
       ],
     );
   }
 
-  Widget _photo(BuildContext context, TsSemanticColors semantic) {
-    Widget placeholder() {
-      return Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: semantic.surfaceContainer,
-          shape: BoxShape.circle,
-        ),
-      );
-    }
+  Widget _avatarPlaceholder(TsSemanticColors semantic) {
+    return Container(
+      width: _emblemSize,
+      height: _emblemSize,
+      decoration: BoxDecoration(
+        color: semantic.surfaceContainer,
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: Icon(
+        Icons.person,
+        size: 28,
+        color: semantic.textTertiary,
+      ),
+    );
+  }
 
-    final url = pitcher.photoUrl;
-    if (url == null || url.isEmpty) {
-      return placeholder();
-    }
+  Widget _networkEmblem(String url, TsSemanticColors semantic) {
     return ClipOval(
       child: SizedBox(
-        width: 48,
-        height: 48,
+        width: _emblemSize,
+        height: _emblemSize,
         child: CachedNetworkImage(
           imageUrl: url,
           fit: BoxFit.cover,
-          placeholder: (context, _) => placeholder(),
-          errorWidget: (context, url, error) => placeholder(),
+          placeholder: (context, _) => _avatarPlaceholder(semantic),
+          errorWidget: (context, url, error) => _avatarPlaceholder(semantic),
         ),
       ),
     );
   }
 
-  bool get _hasExtendedStats =>
-      pitcher.k9 != '-' ||
-      pitcher.wl != '-' ||
-      pitcher.ip != '-' ||
-      pitcher.prevWl != '-' ||
-      pitcher.prevIp != '-' ||
-      pitcher.prevK != '-' ||
-      pitcher.strengths.isNotEmpty ||
-      pitcher.weaknesses.isNotEmpty;
+  Widget _pitcherEmblem(TsSemanticColors semantic) {
+    if (!_isMlb) {
+      return _avatarPlaceholder(semantic);
+    }
 
-  List<Widget> _commentChipChildren() {
-    final out = <Widget>[];
-    for (var i = 0; i < pitcher.strengths.length; i++) {
-      out.add(PitcherCommentChip(text: pitcher.strengths[i], isStrength: true));
-      final hasMoreStrengths = i < pitcher.strengths.length - 1;
-      final hasWeaknesses = pitcher.weaknesses.isNotEmpty;
-      if (hasMoreStrengths || hasWeaknesses) {
-        out.add(const SizedBox(height: TsSpacing.sm));
-      }
+    final photoUrl = pitcher.photoUrl?.trim();
+    final teamLogoUrl = pitcher.teamLogoUrl?.trim();
+
+    if (photoUrl != null && photoUrl.isNotEmpty) {
+      return _networkEmblem(photoUrl, semantic);
     }
-    for (var j = 0; j < pitcher.weaknesses.length; j++) {
-      out.add(PitcherCommentChip(text: pitcher.weaknesses[j], isStrength: false));
-      if (j < pitcher.weaknesses.length - 1) {
-        out.add(const SizedBox(height: TsSpacing.sm));
-      }
+    if (teamLogoUrl != null && teamLogoUrl.isNotEmpty) {
+      return _networkEmblem(teamLogoUrl, semantic);
     }
-    return out;
+    return _avatarPlaceholder(semantic);
+  }
+
+  Widget? _buildPreviousSeasonSection(TsSemanticColors semantic) {
+    if (_isMlb) {
+      return Column(
+        children: [
+          Container(
+            height: 1,
+            width: double.infinity,
+            color: semantic.borderSubtle,
+          ),
+          const SizedBox(height: TsSpacing.md),
+          // TODO: Wire previous season pitcher stats — need statsapi.mlb.com integration
+          SeasonChip(isCurrent: false, label: previousSeason),
+          const SizedBox(height: TsSpacing.md),
+          _statsRowTriple(
+            v1: pitcher.prevWl,
+            l1: 'W-L',
+            v2: pitcher.prevIp,
+            l2: 'IP',
+            v3: pitcher.prevK,
+            l3: 'K',
+          ),
+        ],
+      );
+    }
+
+    final prev = previousSeasonStats;
+    if (prev == null || !prev.hasData) return null;
+
+    return Column(
+      children: [
+        Container(
+          height: 1,
+          width: double.infinity,
+          color: semantic.borderSubtle,
+        ),
+        const SizedBox(height: TsSpacing.md),
+        SeasonChip(isCurrent: false, label: previousSeason),
+        const SizedBox(height: TsSpacing.md),
+        _statsRowTriple(
+          v1: prev.era,
+          l1: 'ERA',
+          v2: prev.whip,
+          l2: 'WHIP',
+          v3: prev.strikeouts,
+          l3: 'K',
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final thirdStatValue = _isMlb ? pitcher.k9 : pitcher.k;
+    final thirdStatLabel = _isMlb ? 'K/9' : 'K';
+    final previousSeasonSection = _buildPreviousSeasonSection(semantic);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
@@ -193,51 +319,51 @@ class _PitcherColumn extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           PositionChip(isHome: isHome),
-          const SizedBox(height: 12),
-          _photo(context, semantic),
-          const SizedBox(height: 12),
+          const SizedBox(height: TsSpacing.md),
+          _pitcherEmblem(semantic),
+          const SizedBox(height: TsSpacing.md),
           Text(
             pitcher.name,
             style: TsType.headingH3.copyWith(color: semantic.textPrimary),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 12),
-          Container(height: 1, color: semantic.borderSubtle),
-          const SizedBox(height: 12),
+          const SizedBox(height: TsSpacing.xs),
+          Text(
+            '-',
+            style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: TsSpacing.md),
+          SeasonChip(isCurrent: true, label: currentSeason),
+          const SizedBox(height: TsSpacing.md),
+          Container(
+            height: 1,
+            width: double.infinity,
+            color: semantic.borderSubtle,
+          ),
+          const SizedBox(height: TsSpacing.md),
           _statsRowTriple(
             v1: pitcher.era,
             l1: 'ERA',
             v2: pitcher.whip,
             l2: 'WHIP',
-            v3: pitcher.k,
-            l3: 'K',
+            v3: thirdStatValue,
+            l3: thirdStatLabel,
           ),
-          if (_hasExtendedStats) ...[
-            const SizedBox(height: 8),
+          if (_isMlb) ...[
+            const SizedBox(height: TsSpacing.sm),
             _statsRowTriple(
               v1: pitcher.wl,
               l1: 'W-L',
               v2: pitcher.ip,
               l2: 'IP',
-              v3: pitcher.k9,
-              l3: 'K/9',
-            ),
-            const SizedBox(height: 12),
-            ..._commentChipChildren(),
-            const SizedBox(height: 12),
-            const Spacer(),
-            Container(height: 1, color: semantic.borderSubtle),
-            const SizedBox(height: 12),
-            const SeasonChip(isCurrent: false),
-            const SizedBox(height: 12),
-            _statsRowTriple(
-              v1: pitcher.prevWl,
-              l1: 'W-L',
-              v2: pitcher.prevIp,
-              l2: 'IP',
-              v3: pitcher.prevK,
+              v3: pitcher.k,
               l3: 'K',
             ),
+          ],
+          if (previousSeasonSection != null) ...[
+            const SizedBox(height: TsSpacing.md),
+            previousSeasonSection,
           ],
         ],
       ),

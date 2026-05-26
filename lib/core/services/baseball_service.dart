@@ -13,7 +13,50 @@ class BaseballService {
 
   final Dio _dio;
 
-  static const _analysisTimeout = Duration(seconds: 20);
+  Future<Map<String, dynamic>> getPitcherAnalysis({
+    required int matchId,
+    required String homeTeam,
+    required String awayTeam,
+    String? homePitcher,
+    String? awayPitcher,
+    Map<String, dynamic>? homeStats,
+    Map<String, dynamic>? awayStats,
+    required String league,
+    String language = 'ko',
+  }) async {
+    try {
+      final body = <String, dynamic>{
+        'matchId': matchId,
+        'homeTeam': homeTeam,
+        'awayTeam': awayTeam,
+        'homePitcher': homePitcher,
+        'awayPitcher': awayPitcher,
+        'homeStats': homeStats ?? <String, dynamic>{},
+        'awayStats': awayStats ?? <String, dynamic>{},
+        'league': league,
+        'language': language,
+      };
+      print(
+        '[BASEBALL] POST /api/baseball/pitcher-analysis matchId=$matchId, league=$league',
+      );
+      final response = await _dio.post<dynamic>(
+        '/api/baseball/pitcher-analysis',
+        data: body,
+        options: Options(
+          sendTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+        ),
+      );
+      final data = response.data;
+      print('[BASEBALL] Pitcher analysis success: cached=${data?['cached']}');
+      if (data is Map<String, dynamic>) return data;
+      if (data is Map) return Map<String, dynamic>.from(data);
+      return {};
+    } catch (e) {
+      print('[BASEBALL] Pitcher analysis error: $e');
+      return {};
+    }
+  }
 
   Future<List<BaseballAnalysisCard>> getMatches({
     required String date,
@@ -56,20 +99,58 @@ class BaseballService {
     }
   }
 
-  Future<Map<String, dynamic>> getAiAnalysis({required int matchId}) async {
-    print('[BASEBALL] AI analysis request: matchId=$matchId');
+  Future<Map<String, dynamic>> getH2H({
+    required int homeTeamId,
+    required int awayTeamId,
+  }) async {
     try {
       final response = await _dio.get<dynamic>(
-        '/api/baseball/pitcher-analysis',
-        queryParameters: <String, dynamic>{'matchId': matchId},
-        options: Options(receiveTimeout: _analysisTimeout),
+        '/api/baseball/h2h',
+        queryParameters: <String, dynamic>{
+          'homeTeamId': homeTeamId,
+          'awayTeamId': awayTeamId,
+        },
       );
-      final data = _adaptToMap(response.data);
-      print('[BASEBALL] AI analysis for $matchId loaded');
-      return data;
+      print(
+        '[BASEBALL] H2H for $homeTeamId vs $awayTeamId: ${response.data?['count']} matches',
+      );
+      final data = response.data;
+      if (data is Map<String, dynamic>) return data;
+      if (data is Map) return Map<String, dynamic>.from(data);
+      return {};
     } catch (e) {
-      print('[BASEBALL] AI analysis for $matchId failed: $e');
-      rethrow;
+      print('[BASEBALL] H2H error: $e');
+      return {};
+    }
+  }
+
+  Future<Map<String, dynamic>> getKboPitcherStats({
+    required String league,
+    required String homePitcher,
+    required String awayPitcher,
+    required String homeTeam,
+    required String awayTeam,
+  }) async {
+    try {
+      final response = await _dio.get<dynamic>(
+        '/api/baseball/kbo-pitcher-stats',
+        queryParameters: <String, String>{
+          'league': league.toLowerCase(),
+          'season': '2026',
+          'homePitcher': homePitcher,
+          'awayPitcher': awayPitcher,
+          'homeTeam': homeTeam,
+          'awayTeam': awayTeam,
+        },
+      );
+      print('[BASEBALL] KBO/NPB pitcher stats: ${response.data?.keys}');
+      final data = response.data;
+      if (data is Map<String, dynamic>) return data;
+      if (data is Map) return Map<String, dynamic>.from(data);
+      return {};
+    } catch (e) {
+      print('[BASEBALL] KBO/NPB pitcher stats error: $e');
+      return {};
     }
   }
 

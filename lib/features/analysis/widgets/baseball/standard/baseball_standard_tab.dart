@@ -44,7 +44,10 @@ class BaseballStandardTab extends ConsumerWidget {
           key: const ValueKey<Object>('baseball_report_standard'),
           child: Padding(
             padding: const EdgeInsets.all(TsSpacing.lg),
-            child: _BaseballStandardContent(parsed: parsed),
+            child: _BaseballStandardContent(
+              matchId: matchId,
+              parsed: parsed,
+            ),
           ),
         );
       },
@@ -52,43 +55,87 @@ class BaseballStandardTab extends ConsumerWidget {
   }
 }
 
-class _BaseballStandardContent extends StatelessWidget {
-  const _BaseballStandardContent({required this.parsed});
+String _pitcherApiName(BaseballStandardPitcher pitcher) {
+  final ko = pitcher.nameKo?.trim();
+  if (ko != null && ko.isNotEmpty) return ko;
+  final name = pitcher.name.trim();
+  return name.isEmpty ? '-' : name;
+}
 
+Widget _buildH2HSection(WidgetRef ref, BaseballStandardParsed parsed) {
+  final homeTeamId = parsed.homeTeamId;
+  final awayTeamId = parsed.awayTeamId;
+
+  if (homeTeamId == null || awayTeamId == null) {
+    return const BaseballH2HSection(matches: []);
+  }
+
+  final h2hAsync = ref.watch(
+    baseballH2HProvider(
+      (homeTeamId: homeTeamId, awayTeamId: awayTeamId),
+    ),
+  );
+
+  return h2hAsync.when(
+    loading: () => const BaseballH2HSection(isLoading: true, matches: []),
+    error: (error, stackTrace) => const BaseballH2HSection(matches: []),
+    data: (response) => BaseballH2HSection(
+      matches: parseBaseballH2HResponse(response),
+    ),
+  );
+}
+
+class _BaseballStandardContent extends ConsumerWidget {
+  const _BaseballStandardContent({
+    required this.matchId,
+    required this.parsed,
+  });
+
+  final int matchId;
   final BaseballStandardParsed parsed;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final analysisAsync = ref.watch(baseballPitcherAnalysisProvider(matchId));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         StartingPitchersSection(
-          awayPitcher: parsed.awayPitcher.toPitcherData(),
-          homePitcher: parsed.homePitcher.toPitcherData(),
+          leagueCode: parsed.leagueCode,
+          currentSeason: parsed.currentSeason,
+          homeTeam: parsed.homeTeam,
+          awayTeam: parsed.awayTeam,
+          homePitcherName: _pitcherApiName(parsed.homePitcher),
+          awayPitcherName: _pitcherApiName(parsed.awayPitcher),
+          awayPitcher: parsed.awayPitcher.toPitcherData(
+            teamLogoUrl: parsed.awayLogoUrl,
+          ),
+          homePitcher: parsed.homePitcher.toPitcherData(
+            teamLogoUrl: parsed.homeLogoUrl,
+          ),
         ),
-        const SizedBox(height: TsSpacing.xl),
+        const SizedBox(height: TsSpacing.lg),
+        analysisAsync.when(
+          loading: () => const PitcherAnalysisSection(isLoading: true),
+          error: (error, stackTrace) => const PitcherAnalysisSection(),
+          data: (response) {
+            final analysis = response['analysis'];
+            if (analysis is! String || analysis.trim().isEmpty) {
+              return const PitcherAnalysisSection();
+            }
+            return PitcherAnalysisSection(analysisText: analysis);
+          },
+        ),
+        const SizedBox(height: TsSpacing.lg),
+        _buildH2HSection(ref, parsed),
+        const SizedBox(height: TsSpacing.lg),
         BaseballOddsSection(
           awayOdds: parsed.awayWinOdds,
           homeOdds: parsed.homeWinOdds,
-          awayTeam: parsed.awayTeam,
-          homeTeam: parsed.homeTeam,
           overUnderLines: parsed.ouLines,
-          homeWinProbRatio: parsed.homeWinProbRatio,
-          awayWinProbRatio: parsed.awayWinProbRatio,
         ),
-        if (parsed.relatedMatches.isNotEmpty) ...[
-          const SizedBox(height: TsSpacing.xl),
-          BaseballRelatedMatchesSection(matches: parsed.relatedMatches),
-        ],
-        if (parsed.pitcherMatchupAnalysis.isNotEmpty) ...[
-          const SizedBox(height: TsSpacing.xl),
-          PitcherAnalysisSection(paragraphs: parsed.pitcherMatchupAnalysis),
-        ],
-        if (parsed.h2hMatches.isNotEmpty) ...[
-          const SizedBox(height: TsSpacing.xl),
-          BaseballH2HSection(matches: parsed.h2hMatches),
-        ],
-        const SizedBox(height: TsSpacing.xl),
+        const SizedBox(height: TsSpacing.lg),
       ],
     );
   }
