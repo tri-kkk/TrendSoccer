@@ -72,7 +72,8 @@ class BaseballStandardParsed {
     required this.league,
     required this.leagueId,
     required this.leagueCode,
-    this.apiSportsMatchId,
+    this.apiMatchId,
+    this.dbId,
     this.homeTeamId,
     this.awayTeamId,
     required this.homeTeam,
@@ -100,7 +101,8 @@ class BaseballStandardParsed {
   final String league;
   final String leagueId;
   final String leagueCode;
-  final int? apiSportsMatchId;
+  final int? apiMatchId; // api_match_id — primary identifier (match['id'])
+  final int? dbId; // legacy internal DB id
   final int? homeTeamId;
   final int? awayTeamId;
   final String homeTeam;
@@ -203,13 +205,8 @@ BaseballStandardParsed parseBaseballStandardDetail(Map<String, dynamic> raw) {
   final league = _readString(match, const ['league', 'leagueName', 'league_name']) ??
       '';
   final leagueCode = _normalizeLeagueCode(league);
-  final apiSportsMatchId = _parseInt(
-    match['matchId'] ??
-        match['match_id'] ??
-        match['apiMatchId'] ??
-        match['api_match_id'] ??
-        match['id'],
-  );
+  final apiMatchId = _parseInt(match['id']);
+  final dbId = _parseInt(match['dbId'] ?? match['db_id']);
   final dateStr = _readString(match, const ['date', 'matchDate', 'match_date']) ?? '';
   final timeStr = _readString(match, const ['time', 'matchTime', 'match_time']) ?? '';
   final timestamp = _parseDateTime(
@@ -249,7 +246,8 @@ BaseballStandardParsed parseBaseballStandardDetail(Map<String, dynamic> raw) {
     league: league.isEmpty ? '야구' : league,
     leagueId: baseballLeagueIconId(league),
     leagueCode: leagueCode,
-    apiSportsMatchId: apiSportsMatchId,
+    apiMatchId: apiMatchId,
+    dbId: dbId,
     homeTeamId: homeTeamId,
     awayTeamId: awayTeamId,
     homeTeam: homeTeam,
@@ -559,23 +557,6 @@ List<BaseballH2HMatch> _parseH2HMatches(
               map['away_goals'],
         );
 
-        final homeTeam = _readString(map, const [
-              'homeTeamKo',
-              'home_team_ko',
-              'homeTeam',
-              'home_team',
-              'home',
-            ]) ??
-            card.homeDisplayTeam;
-        final awayTeam = _readString(map, const [
-              'awayTeamKo',
-              'away_team_ko',
-              'awayTeam',
-              'away_team',
-              'away',
-            ]) ??
-            card.awayDisplayTeam;
-
         BaseballH2HWinner winner = BaseballH2HWinner.draw;
         if (homeScore != null && awayScore != null) {
           if (awayScore > homeScore) {
@@ -596,15 +577,15 @@ List<BaseballH2HMatch> _parseH2HMatches(
           }
         }
 
-        return BaseballH2HMatch(
+        return _buildH2HMatch(
+          map: map,
           date: _formatH2HDate(
             _readString(map, const ['date', 'matchDate', 'match_date']),
           ),
-          awayTeam: awayTeam,
-          homeTeam: homeTeam,
-          score: homeScore != null && awayScore != null
-              ? '$homeScore - $awayScore'
-              : _readString(map, const ['score', 'result']) ?? '-',
+          homeScore: homeScore,
+          awayScore: awayScore,
+          homeTeamFallback: card.homeTeam,
+          awayTeamFallback: card.awayTeam,
           winner: winner,
         );
       })
@@ -612,30 +593,20 @@ List<BaseballH2HMatch> _parseH2HMatches(
 }
 
 List<BaseballH2HMatch> parseBaseballH2HResponse(Map<String, dynamic> response) {
-  final matchesRaw = response['matches'] ?? response['data'] ?? response['items'];
-  if (matchesRaw is! List || matchesRaw.isEmpty) return const [];
+  final rawMatches = response['matches'] as List? ??
+      response['data'] as List? ??
+      response['items'] as List?;
+  _logRawH2BMatches(rawMatches);
 
-  return matchesRaw
+  if (rawMatches == null || rawMatches.isEmpty) return const [];
+
+  return rawMatches
       .whereType<Map>()
       .take(5)
       .map((item) {
         final map = Map<String, dynamic>.from(item);
         final homeScore = _parseInt(map['homeScore'] ?? map['home_score']);
         final awayScore = _parseInt(map['awayScore'] ?? map['away_score']);
-        final homeTeam = _readString(map, const [
-              'homeTeamKo',
-              'home_team_ko',
-              'homeTeam',
-              'home_team',
-            ]) ??
-            '-';
-        final awayTeam = _readString(map, const [
-              'awayTeamKo',
-              'away_team_ko',
-              'awayTeam',
-              'away_team',
-            ]) ??
-            '-';
 
         final winnerRaw =
             _readString(map, const ['winner', 'winnerSide', 'winner_side'])
@@ -654,19 +625,104 @@ List<BaseballH2HMatch> parseBaseballH2HResponse(Map<String, dynamic> response) {
           }
         }
 
-        return BaseballH2HMatch(
+        return _buildH2HMatch(
+          map: map,
           date: _formatH2HDate(
             _readString(map, const ['date', 'matchDate', 'match_date']),
           ),
-          homeTeam: homeTeam,
-          awayTeam: awayTeam,
-          score: homeScore != null && awayScore != null
-              ? '$homeScore - $awayScore'
-              : _readString(map, const ['score', 'result']) ?? '-',
+          homeScore: homeScore,
+          awayScore: awayScore,
           winner: winner,
         );
       })
       .toList();
+}
+
+void _logRawH2BMatches(List? rawMatches) {
+  if (rawMatches == null) return;
+  for (var i = 0; i < rawMatches.length && i < 10; i++) {
+    final item = rawMatches[i];
+    if (item is! Map) continue;
+    final m = Map<String, dynamic>.from(item);
+    print(
+      '[BASEBALL] H2H raw[$i]: date=${m['date']}, homeTeamKo=${m['homeTeamKo']}, awayTeamKo=${m['awayTeamKo']}, homeTeam=${m['homeTeam']}, awayTeam=${m['awayTeam']}',
+    );
+  }
+}
+
+String? _extractH2HTeamKo(Map<String, dynamic> map, {required bool isHome}) {
+  final prefix = isHome ? 'home' : 'away';
+  final flatKo = map['${prefix}TeamKo'];
+  if (flatKo is String && flatKo.trim().isNotEmpty) {
+    return flatKo.trim();
+  }
+
+  final side = map[prefix];
+  if (side is Map) {
+    final nested = side['teamKo'] ?? side['team_ko'];
+    if (nested is String && nested.trim().isNotEmpty) {
+      return nested.trim();
+    }
+  }
+
+  return null;
+}
+
+String _extractH2HTeamEn(
+  Map<String, dynamic> map, {
+  required bool isHome,
+  String fallback = '-',
+}) {
+  final prefix = isHome ? 'home' : 'away';
+  final flatEn = map['${prefix}Team'] ?? map['${prefix}_team'];
+  if (flatEn is String && flatEn.trim().isNotEmpty) {
+    return flatEn.trim();
+  }
+
+  final side = map[prefix];
+  if (side is Map) {
+    final nested = side['team'] ?? side['name'];
+    if (nested is String && nested.trim().isNotEmpty) {
+      return nested.trim();
+    }
+  }
+
+  return fallback;
+}
+
+BaseballH2HMatch _buildH2HMatch({
+  required Map<String, dynamic> map,
+  required String date,
+  required int? homeScore,
+  required int? awayScore,
+  required BaseballH2HWinner winner,
+  String homeTeamFallback = '-',
+  String awayTeamFallback = '-',
+}) {
+  final homeTeamKo = _extractH2HTeamKo(map, isHome: true);
+  final awayTeamKo = _extractH2HTeamKo(map, isHome: false);
+  final homeTeam = _extractH2HTeamEn(
+    map,
+    isHome: true,
+    fallback: homeTeamFallback,
+  );
+  final awayTeam = _extractH2HTeamEn(
+    map,
+    isHome: false,
+    fallback: awayTeamFallback,
+  );
+
+  return BaseballH2HMatch.fromParsed(
+    date: date,
+    homeTeam: homeTeam,
+    awayTeam: awayTeam,
+    homeTeamKo: homeTeamKo,
+    awayTeamKo: awayTeamKo,
+    score: homeScore != null && awayScore != null
+        ? '$homeScore - $awayScore'
+        : _readString(map, const ['score', 'result']) ?? '-',
+    winner: winner,
+  );
 }
 
 class PitcherPreviousSeasonDisplay {

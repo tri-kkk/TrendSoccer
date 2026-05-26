@@ -9,7 +9,7 @@ import 'package:trendsoccer/core/providers/baseball_match_report_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/analysis/models/baseball_standard_parser.dart';
-import 'package:trendsoccer/features/analysis/widgets/baseball/premium/baseball_ai_tab.dart';
+import 'package:trendsoccer/features/analysis/widgets/baseball/premium/baseball_premium_tab.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/standard/baseball_standard_tab.dart';
 import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
 import 'package:trendsoccer/shared/widgets/report/match_header.dart';
@@ -37,11 +37,11 @@ class _BaseballMatchReportPageState
 
   int? get _numericMatchId => int.tryParse(widget.matchId);
 
-  /// Route [matchId] is the DB internal id ([BaseballAnalysisCard.dbId]) when available.
-  int? get _detailMatchId => _numericMatchId;
+  int? get _apiMatchId => _numericMatchId;
 
+  /// Route [matchId] is the api_match_id ([BaseballAnalysisCard.matchId]).
   MatchHeaderData _resolveHeader() {
-    final matchId = _detailMatchId;
+    final matchId = _apiMatchId;
     final base = widget.initialHeader ??
         (matchId != null
             ? MatchHeaderData.placeholder(matchId: matchId)
@@ -61,7 +61,7 @@ class _BaseballMatchReportPageState
   }
 
   Widget _buildStandardTab() {
-    final matchId = _detailMatchId;
+    final matchId = _apiMatchId;
     if (matchId == null) {
       return Padding(
         padding: const EdgeInsets.all(TsSpacing.lg),
@@ -71,19 +71,20 @@ class _BaseballMatchReportPageState
     return BaseballStandardTab(matchId: matchId);
   }
 
-  Widget _buildAiTab() {
-    final matchId = _detailMatchId;
+  Widget _buildPremiumTab() {
+    final matchId = _apiMatchId;
     if (matchId == null) {
       return Padding(
         padding: const EdgeInsets.all(TsSpacing.lg),
-        child: BaseballAiTabError(onRetry: () {}),
+        child: BaseballPremiumTabError(onRetry: () {}),
       );
     }
-    return BaseballAiTab(matchId: matchId);
+    return BaseballPremiumTab(matchId: matchId);
   }
 
   @override
   Widget build(BuildContext context) {
+    print('[BASEBALL] Match report page: api_match_id=${widget.matchId}');
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final header = _resolveHeader();
 
@@ -127,7 +128,7 @@ class _BaseballMatchReportPageState
               switchOutCurve: Curves.easeInOut,
               child: _selectedTab == ReportTab.standard
                   ? _buildStandardTab()
-                  : _buildAiTab(),
+                  : _buildPremiumTab(),
             ),
           ],
         ),

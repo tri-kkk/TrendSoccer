@@ -31,7 +31,7 @@ class HomeAwayRecordSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              '홈/원정 기록',
+              '홈/원정 성적',
               style: TsType.headingH2.copyWith(color: semantic.textPrimary),
             ),
             Text(
@@ -51,18 +51,16 @@ class HomeAwayRecordSection extends StatelessWidget {
             children: [
               Expanded(
                 child: BaseballInfoBox(
-                  label: '원정 기록',
+                  label: '원정',
                   value: awayRecord,
-                  teamName: awayTeam,
                   valueColor: TsColors.systemError500,
                 ),
               ),
               const SizedBox(width: TsSpacing.sm),
               Expanded(
                 child: BaseballInfoBox(
-                  label: '홈 기록',
+                  label: '홈',
                   value: homeRecord,
-                  teamName: homeTeam,
                   valueColor: semantic.interactivePrimary,
                 ),
               ),

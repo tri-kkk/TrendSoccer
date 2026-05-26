@@ -18,13 +18,69 @@ class BaseballH2HMatch {
     required this.homeTeam,
     required this.score,
     required this.winner,
+    this.awayTeamKo,
+    this.homeTeamKo,
   });
 
   final String date;
   final String awayTeam;
   final String homeTeam;
+  final String? awayTeamKo;
+  final String? homeTeamKo;
   final String score;
   final BaseballH2HWinner winner;
+
+  String get homeDisplayName {
+    final ko = homeTeamKo?.trim();
+    if (ko != null && ko.isNotEmpty) return ko;
+    return homeTeam;
+  }
+
+  String get awayDisplayName {
+    final ko = awayTeamKo?.trim();
+    if (ko != null && ko.isNotEmpty) return ko;
+    return awayTeam;
+  }
+
+  factory BaseballH2HMatch.fromParsed({
+    required String date,
+    required String homeTeam,
+    required String awayTeam,
+    required String score,
+    required BaseballH2HWinner winner,
+    String? homeTeamKo,
+    String? awayTeamKo,
+  }) {
+    final homeKo = _normalizeOptionalKo(homeTeamKo);
+    final awayKo = _normalizeOptionalKo(awayTeamKo);
+
+    if ((homeKo == null || homeKo.isEmpty) && homeTeam.isNotEmpty) {
+      print(
+        '[BASEBALL] H2H WARNING: missing Ko for home "$homeTeam" on $date',
+      );
+    }
+    if ((awayKo == null || awayKo.isEmpty) && awayTeam.isNotEmpty) {
+      print(
+        '[BASEBALL] H2H WARNING: missing Ko for away "$awayTeam" on $date',
+      );
+    }
+
+    return BaseballH2HMatch(
+      date: date,
+      homeTeam: homeTeam,
+      awayTeam: awayTeam,
+      homeTeamKo: homeKo,
+      awayTeamKo: awayKo,
+      score: score,
+      winner: winner,
+    );
+  }
+
+  static String? _normalizeOptionalKo(String? value) {
+    final trimmed = value?.trim();
+    if (trimmed == null || trimmed.isEmpty) return null;
+    return trimmed;
+  }
 
   bool get awayWon => winner == BaseballH2HWinner.away;
   bool get homeWon => winner == BaseballH2HWinner.home;
@@ -159,7 +215,7 @@ class _H2HMatchRow extends StatelessWidget {
                           ],
                           Expanded(
                             child: Text(
-                              match.homeTeam,
+                              match.homeDisplayName,
                               style: labelStyle,
                               textAlign: TextAlign.right,
                               overflow: TextOverflow.ellipsis,
@@ -182,7 +238,7 @@ class _H2HMatchRow extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              match.awayTeam,
+                              match.awayDisplayName,
                               style: labelStyle,
                               textAlign: TextAlign.left,
                               overflow: TextOverflow.ellipsis,

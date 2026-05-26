@@ -25,8 +25,8 @@ class BaseballAnalysisCard {
     this.odds,
   });
 
-  final int matchId;
-  final int? dbId;
+  final int matchId; // api_match_id from list/detail API (primary ID for all API calls)
+  final int? dbId; // legacy internal DB id — kept for backward compatibility only
   final String league;
   final String homeTeam;
   final String? homeTeamKo;
@@ -67,8 +67,8 @@ class BaseballAnalysisCard {
     return awayPitcher?.trim() ?? '';
   }
 
-  /// DB internal ID for match detail / AI analysis API calls.
-  int get detailMatchId => dbId ?? matchId;
+  /// Primary match id for detail / analysis API routes — same as [matchId] (api_match_id).
+  int get detailMatchId => matchId;
 
   factory BaseballAnalysisCard.fromJson(Map<String, dynamic> json) {
     final timestamp = _parseTimestamp(json) ??
@@ -80,8 +80,7 @@ class BaseballAnalysisCard {
 
     return BaseballAnalysisCard(
       matchId: _parseInt(json['id'] ?? json['matchId'] ?? json['match_id']) ?? 0,
-      dbId: (json['dbId'] as num?)?.toInt() ??
-          _parseInt(json['db_id']),
+      dbId: (json['dbId'] as num?)?.toInt() ?? _parseInt(json['db_id']),
       league: _readString(json, const ['league', 'leagueCode', 'league_code']) ??
           '',
       homeTeam:

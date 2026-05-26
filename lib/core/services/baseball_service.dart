@@ -37,7 +37,7 @@ class BaseballService {
         'language': language,
       };
       print(
-        '[BASEBALL] POST /api/baseball/pitcher-analysis matchId=$matchId, league=$league',
+        '[BASEBALL] POST pitcher-analysis: api_match_id=$matchId, league=$league',
       );
       final response = await _dio.post<dynamic>(
         '/api/baseball/pitcher-analysis',
@@ -87,7 +87,7 @@ class BaseballService {
   }
 
   Future<Map<String, dynamic>> getMatchDetail({required int matchId}) async {
-    print('[BASEBALL] Match detail request: dbId=$matchId');
+    print('[BASEBALL] Match detail request: api_match_id=$matchId');
     try {
       final response = await _dio.get<dynamic>('/api/baseball/matches/$matchId');
       final data = _adaptToMap(response.data);
@@ -120,6 +120,62 @@ class BaseballService {
       return {};
     } catch (e) {
       print('[BASEBALL] H2H error: $e');
+      return {};
+    }
+  }
+
+  Future<Map<String, dynamic>> getBaseballPredict({
+    required int matchId,
+    required String homeTeam,
+    required String awayTeam,
+    bool quick = false,
+  }) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        '/api/baseball/predict',
+        data: <String, dynamic>{
+          'matchId': matchId,
+          'homeTeam': homeTeam,
+          'awayTeam': awayTeam,
+          'quick': quick,
+        },
+        options: Options(
+          sendTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+        ),
+      );
+      print('[BASEBALL] predict response: success=${response.data?['success']}');
+      final data = response.data;
+      if (data is Map<String, dynamic>) return data;
+      if (data is Map) return Map<String, dynamic>.from(data);
+      return {};
+    } catch (e) {
+      print('[BASEBALL] predict error: $e');
+      return {};
+    }
+  }
+
+  Future<Map<String, dynamic>> getBaseballTeamStats({
+    required int teamId,
+    required String league,
+  }) async {
+    try {
+      final response = await _dio.get<dynamic>(
+        '/api/baseball/team-stats',
+        queryParameters: <String, dynamic>{
+          'teamId': teamId,
+          'league': league,
+        },
+      );
+      print(
+        '[BASEBALL] team-stats for teamId=$teamId: ${response.data?['success']}',
+      );
+      final data = response.data;
+      if (data is Map<String, dynamic>) return data;
+      if (data is Map) return Map<String, dynamic>.from(data);
+      return {};
+    } catch (e) {
+      print('[BASEBALL] team-stats error: $e');
       return {};
     }
   }

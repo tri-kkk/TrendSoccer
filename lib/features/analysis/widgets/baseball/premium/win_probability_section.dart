@@ -48,18 +48,16 @@ class WinProbabilitySection extends StatelessWidget {
                 children: [
                   Expanded(
                     child: BaseballInfoBox(
-                      label: '승리 확률',
+                      label: '원정',
                       value: awayProb,
-                      teamName: awayTeam,
                       valueColor: TsColors.systemError500,
                     ),
                   ),
                   const SizedBox(width: TsSpacing.sm),
                   Expanded(
                     child: BaseballInfoBox(
-                      label: '승리 확률',
+                      label: '홈',
                       value: homeProb,
-                      teamName: homeTeam,
                       valueColor: semantic.interactivePrimary,
                     ),
                   ),

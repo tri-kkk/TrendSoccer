@@ -12,12 +12,16 @@ class WinRateSection extends StatelessWidget {
     required this.awayWinRate,
     required this.homeWinRate,
     required this.confidence,
+    this.awayTeam,
+    this.homeTeam,
     super.key,
   });
 
   final String awayWinRate;
   final String homeWinRate;
   final ConfidenceLevel confidence;
+  final String? awayTeam;
+  final String? homeTeam;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +34,7 @@ class WinRateSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              '승리 확률',
+              '최근 10경기 승률',
               style: TsType.headingH2.copyWith(color: semantic.textPrimary),
             ),
             Text(
@@ -54,16 +58,18 @@ class WinRateSection extends StatelessWidget {
                 children: [
                   Expanded(
                     child: BaseballInfoBox(
-                      label: '승률',
+                      label: '원정',
                       value: awayWinRate,
+                      teamName: awayTeam,
                       valueColor: TsColors.systemError500,
                     ),
                   ),
                   const SizedBox(width: TsSpacing.sm),
                   Expanded(
                     child: BaseballInfoBox(
-                      label: '승률',
+                      label: '홈',
                       value: homeWinRate,
+                      teamName: homeTeam,
                       valueColor: semantic.interactivePrimary,
                     ),
                   ),
