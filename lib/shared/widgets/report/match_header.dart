@@ -114,25 +114,10 @@ class MatchHeader extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TsLeagueIcon(
-                leagueId: leagueId,
-                size: 24,
-                logoUrl: leagueLogoUrl,
-              ),
-              if (leagueName != null && leagueName!.trim().isNotEmpty) ...[
-                const SizedBox(width: TsSpacing.sm),
-                Text(
-                  leagueName!,
-                  style: TsType.labelSRegular.copyWith(
-                    color: semantic.textTertiary,
-                  ),
-                ),
-              ],
-            ],
+          TsLeagueIcon(
+            leagueId: leagueId,
+            size: 24,
+            logoUrl: leagueLogoUrl,
           ),
           const SizedBox(height: TsSpacing.lg),
           Text(

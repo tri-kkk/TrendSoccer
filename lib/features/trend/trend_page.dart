@@ -317,7 +317,7 @@ class _TrendBaseballCard extends StatelessWidget {
       pickDirection: null,
       winRate: null,
       onAnalyze: () => context.push(
-        '/analysis/baseball/match-report/${card.matchId}',
+        '/analysis/baseball/match-report/${card.detailMatchId}',
         extra: MatchHeaderData.fromBaseballCard(card),
       ),
     );

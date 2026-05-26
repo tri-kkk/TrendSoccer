@@ -66,14 +66,6 @@ class _BaseballStandardContent extends StatelessWidget {
           awayPitcher: parsed.awayPitcher.toPitcherData(),
           homePitcher: parsed.homePitcher.toPitcherData(),
         ),
-        if (parsed.pitcherMatchupAnalysis.isNotEmpty) ...[
-          const SizedBox(height: TsSpacing.xl),
-          PitcherAnalysisSection(paragraphs: parsed.pitcherMatchupAnalysis),
-        ],
-        if (parsed.h2hMatches.isNotEmpty) ...[
-          const SizedBox(height: TsSpacing.xl),
-          BaseballH2HSection(matches: parsed.h2hMatches),
-        ],
         const SizedBox(height: TsSpacing.xl),
         BaseballOddsSection(
           awayOdds: parsed.awayWinOdds,
@@ -84,6 +76,18 @@ class _BaseballStandardContent extends StatelessWidget {
           homeWinProbRatio: parsed.homeWinProbRatio,
           awayWinProbRatio: parsed.awayWinProbRatio,
         ),
+        if (parsed.relatedMatches.isNotEmpty) ...[
+          const SizedBox(height: TsSpacing.xl),
+          BaseballRelatedMatchesSection(matches: parsed.relatedMatches),
+        ],
+        if (parsed.pitcherMatchupAnalysis.isNotEmpty) ...[
+          const SizedBox(height: TsSpacing.xl),
+          PitcherAnalysisSection(paragraphs: parsed.pitcherMatchupAnalysis),
+        ],
+        if (parsed.h2hMatches.isNotEmpty) ...[
+          const SizedBox(height: TsSpacing.xl),
+          BaseballH2HSection(matches: parsed.h2hMatches),
+        ],
         const SizedBox(height: TsSpacing.xl),
       ],
     );

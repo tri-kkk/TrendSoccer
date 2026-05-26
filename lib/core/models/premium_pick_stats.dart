@@ -57,10 +57,6 @@ class PremiumPickStatsView {
         map['today_picks'] ??
         map['picksToday'];
 
-    print(
-      '[SOCCER] PremiumPickStats parsed: winRate=$winRate, streak=$streak, total=$total',
-    );
-
     return PremiumPickStatsView(
       winRate: _formatWinRate(winRate),
       countdown: formatCountdown(nextKstUpdateRemaining()),
@@ -179,13 +175,12 @@ Duration nextKstUpdateRemaining() {
   return nextUpdateUtc.difference(now);
 }
 
-/// Formats a countdown duration as HH:MM:SS.
+/// Formats a countdown duration as HH:MM.
 String formatCountdown(Duration duration) {
-  if (duration.isNegative) return '00:00:00';
+  if (duration.isNegative) return '00:00';
   final hours = duration.inHours.toString().padLeft(2, '0');
   final minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
-  final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
-  return '$hours:$minutes:$seconds';
+  return '$hours:$minutes';
 }
 
 String _formatPickCount(Object? value) {

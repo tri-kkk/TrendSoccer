@@ -137,8 +137,8 @@ class _WinProbabilityBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final homePercent = (homeRatio * 100).round();
-    final awayPercent = (awayRatio * 100).round();
+    final homePercent = (homeRatio * 100).toStringAsFixed(1);
+    final awayPercent = (awayRatio * 100).toStringAsFixed(1);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

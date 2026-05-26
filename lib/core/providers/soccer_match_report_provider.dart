@@ -14,6 +14,7 @@ class SoccerAnalysisParams {
     this.homeOdds,
     this.drawOdds,
     this.awayOdds,
+    this.commenceTime,
   });
 
   final int matchId;
@@ -25,6 +26,7 @@ class SoccerAnalysisParams {
   final double? homeOdds;
   final double? drawOdds;
   final double? awayOdds;
+  final String? commenceTime;
 
   factory SoccerAnalysisParams.fromHeader(MatchHeaderData header) {
     return SoccerAnalysisParams(
@@ -37,6 +39,7 @@ class SoccerAnalysisParams {
       homeOdds: header.homeOdds,
       drawOdds: header.drawOdds,
       awayOdds: header.awayOdds,
+      commenceTime: header.commenceTime,
     );
   }
 
@@ -52,7 +55,8 @@ class SoccerAnalysisParams {
             awayTeamId == other.awayTeamId &&
             homeOdds == other.homeOdds &&
             drawOdds == other.drawOdds &&
-            awayOdds == other.awayOdds;
+            awayOdds == other.awayOdds &&
+            commenceTime == other.commenceTime;
   }
 
   @override
@@ -66,6 +70,7 @@ class SoccerAnalysisParams {
         homeOdds,
         drawOdds,
         awayOdds,
+        commenceTime,
       );
 }
 
@@ -96,6 +101,8 @@ final soccerPredictionProvider =
         homeOdds: homeOdds,
         drawOdds: drawOdds,
         awayOdds: awayOdds,
+        matchId: params.matchId,
+        commenceTime: params.commenceTime,
       );
 });
 
@@ -119,5 +126,33 @@ final soccerH2HAnalysisProvider =
   return ref.read(soccerServiceProvider).getMatchH2HAnalysis(
         homeTeam: params.homeTeam,
         awayTeam: params.awayTeam,
+      );
+});
+
+final homeTeamStatsProvider =
+    FutureProvider.family<Map<String, dynamic>, SoccerAnalysisParams>(
+        (ref, params) async {
+  final teamId = params.homeTeamId;
+  if (teamId == null || params.leagueCode.isEmpty) {
+    return {};
+  }
+  return ref.read(soccerServiceProvider).getTeamStats(
+        teamName: params.homeTeam,
+        leagueCode: params.leagueCode,
+        teamId: teamId,
+      );
+});
+
+final awayTeamStatsProvider =
+    FutureProvider.family<Map<String, dynamic>, SoccerAnalysisParams>(
+        (ref, params) async {
+  final teamId = params.awayTeamId;
+  if (teamId == null || params.leagueCode.isEmpty) {
+    return {};
+  }
+  return ref.read(soccerServiceProvider).getTeamStats(
+        teamName: params.awayTeam,
+        leagueCode: params.leagueCode,
+        teamId: teamId,
       );
 });

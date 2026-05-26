@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:trendsoccer/core/models/premium_pick_stats.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_card.dart';
 
@@ -26,20 +27,30 @@ class PremiumPickStatsCard extends ConsumerStatefulWidget {
 
 class _PremiumPickStatsCardState extends ConsumerState<PremiumPickStatsCard> {
   Timer? _countdownTimer;
+  Timer? _blinkTimer;
+  bool _colonVisible = true;
   late String _countdown;
 
   @override
   void initState() {
     super.initState();
     _countdown = _formatLiveCountdown();
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 60), (_) {
       _tickCountdown();
+    });
+    _blinkTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
+      if (mounted) {
+        setState(() {
+          _colonVisible = !_colonVisible;
+        });
+      }
     });
   }
 
   @override
   void dispose() {
     _countdownTimer?.cancel();
+    _blinkTimer?.cancel();
     super.dispose();
   }
 
@@ -54,6 +65,52 @@ class _PremiumPickStatsCardState extends ConsumerState<PremiumPickStatsCard> {
       return '업데이트 중...';
     }
     return formatCountdown(remaining);
+  }
+
+  bool _isHhMmCountdown(String value) {
+    final parts = value.split(':');
+    return parts.length == 2 &&
+        parts[0].length == 2 &&
+        parts[1].length == 2 &&
+        int.tryParse(parts[0]) != null &&
+        int.tryParse(parts[1]) != null;
+  }
+
+  Widget _buildCountdownValue(TsSemanticColors semantic) {
+    final countdownStyle = TsType.headingH1.copyWith(
+      color: semantic.textPrimary,
+    );
+
+    if (!_isHhMmCountdown(_countdown)) {
+      return Text(
+        _countdown,
+        style: countdownStyle,
+        textAlign: TextAlign.center,
+      );
+    }
+
+    final parts = _countdown.split(':');
+    final hours = parts[0];
+    final minutes = parts[1];
+
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(text: hours),
+          TextSpan(
+            text: ':',
+            style: countdownStyle.copyWith(
+              color: _colonVisible
+                  ? countdownStyle.color
+                  : Colors.transparent,
+            ),
+          ),
+          TextSpan(text: minutes),
+        ],
+        style: countdownStyle,
+      ),
+      textAlign: TextAlign.center,
+    );
   }
 
   @override
@@ -95,6 +152,7 @@ class _PremiumPickStatsCardState extends ConsumerState<PremiumPickStatsCard> {
       showCTA: widget.showCTA,
       winRate: stats.winRate,
       countdown: _countdown,
+      countdownValue: _buildCountdownValue(semantic),
       streak: stats.streak,
       recentWins: stats.recentWins,
       teamLogoMap: teamLogoMap,

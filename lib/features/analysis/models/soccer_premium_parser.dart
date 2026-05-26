@@ -6,10 +6,39 @@ class SoccerPremiumParsed {
     this.scorePatterns,
     this.recentMatches = const [],
     this.insights = const [],
+    this.calcAvgTotalGoals = '-',
+    this.calcOver25Rate = 0,
+    this.calcBttsRate = 0,
   });
 
   factory SoccerPremiumParsed.fromResponse(Map<String, dynamic> response) {
     final data = _readMap(response, const ['data']) ?? response;
+    final recentMatches = _parseRecentMatches(data['recentMatches']);
+    final n = recentMatches.length;
+
+    var calcAvgTotalGoals = '-';
+    var calcOver25Rate = 0;
+    var calcBttsRate = 0;
+    if (n > 0) {
+      final totalGoals = recentMatches.fold<int>(
+        0,
+        (sum, match) => sum + match.homeScore + match.awayScore,
+      );
+      calcAvgTotalGoals = (totalGoals / n).toStringAsFixed(1);
+      calcOver25Rate = (recentMatches
+                  .where((match) => (match.homeScore + match.awayScore) > 2.5)
+                  .length /
+              n *
+              100)
+          .round();
+      calcBttsRate = (recentMatches
+                  .where((match) => match.homeScore > 0 && match.awayScore > 0)
+                  .length /
+              n *
+              100)
+          .round();
+    }
+
     return SoccerPremiumParsed(
       overall: H2HOverall.fromJson(_readMap(data, const ['overall'])),
       recent5: H2HRecent5.fromJson(_readMap(data, const ['recent5'])),
@@ -19,8 +48,11 @@ class SoccerPremiumParsed {
       scorePatterns: H2HScorePatterns.fromJson(
         _readMap(data, const ['scorePatterns', 'score_patterns']),
       ),
-      recentMatches: _parseRecentMatches(data['recentMatches']),
+      recentMatches: recentMatches,
       insights: _parseStringList(data['insights']),
+      calcAvgTotalGoals: calcAvgTotalGoals,
+      calcOver25Rate: calcOver25Rate,
+      calcBttsRate: calcBttsRate,
     );
   }
 
@@ -30,6 +62,9 @@ class SoccerPremiumParsed {
   final H2HScorePatterns? scorePatterns;
   final List<H2HMatch> recentMatches;
   final List<String> insights;
+  final String calcAvgTotalGoals;
+  final int calcOver25Rate;
+  final int calcBttsRate;
 }
 
 class H2HOverall {

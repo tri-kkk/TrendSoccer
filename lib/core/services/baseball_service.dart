@@ -44,6 +44,7 @@ class BaseballService {
   }
 
   Future<Map<String, dynamic>> getMatchDetail({required int matchId}) async {
+    print('[BASEBALL] Match detail request: dbId=$matchId');
     try {
       final response = await _dio.get<dynamic>('/api/baseball/matches/$matchId');
       final data = _adaptToMap(response.data);
@@ -56,6 +57,7 @@ class BaseballService {
   }
 
   Future<Map<String, dynamic>> getAiAnalysis({required int matchId}) async {
+    print('[BASEBALL] AI analysis request: matchId=$matchId');
     try {
       final response = await _dio.get<dynamic>(
         '/api/baseball/pitcher-analysis',

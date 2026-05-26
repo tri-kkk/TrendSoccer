@@ -67,6 +67,9 @@ class BaseballAnalysisCard {
     return awayPitcher?.trim() ?? '';
   }
 
+  /// DB internal ID for match detail / AI analysis API calls.
+  int get detailMatchId => dbId ?? matchId;
+
   factory BaseballAnalysisCard.fromJson(Map<String, dynamic> json) {
     final timestamp = _parseTimestamp(json) ??
         DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
@@ -77,7 +80,8 @@ class BaseballAnalysisCard {
 
     return BaseballAnalysisCard(
       matchId: _parseInt(json['id'] ?? json['matchId'] ?? json['match_id']) ?? 0,
-      dbId: _parseInt(json['dbId'] ?? json['db_id']),
+      dbId: (json['dbId'] as num?)?.toInt() ??
+          _parseInt(json['db_id']),
       league: _readString(json, const ['league', 'leagueCode', 'league_code']) ??
           '',
       homeTeam:

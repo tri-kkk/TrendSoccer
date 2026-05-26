@@ -127,8 +127,8 @@ class _PitcherColumn extends StatelessWidget {
   Widget _photo(BuildContext context, TsSemanticColors semantic) {
     Widget placeholder() {
       return Container(
-        width: 80,
-        height: 80,
+        width: 48,
+        height: 48,
         decoration: BoxDecoration(
           color: semantic.surfaceContainer,
           shape: BoxShape.circle,
@@ -142,8 +142,8 @@ class _PitcherColumn extends StatelessWidget {
     }
     return ClipOval(
       child: SizedBox(
-        width: 80,
-        height: 80,
+        width: 48,
+        height: 48,
         child: CachedNetworkImage(
           imageUrl: url,
           fit: BoxFit.cover,
@@ -153,6 +153,16 @@ class _PitcherColumn extends StatelessWidget {
       ),
     );
   }
+
+  bool get _hasExtendedStats =>
+      pitcher.k9 != '-' ||
+      pitcher.wl != '-' ||
+      pitcher.ip != '-' ||
+      pitcher.prevWl != '-' ||
+      pitcher.prevIp != '-' ||
+      pitcher.prevK != '-' ||
+      pitcher.strengths.isNotEmpty ||
+      pitcher.weaknesses.isNotEmpty;
 
   List<Widget> _commentChipChildren() {
     final out = <Widget>[];
@@ -192,21 +202,6 @@ class _PitcherColumn extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
-          Text(
-            pitcher.pitcherType,
-            style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SeasonChip(isCurrent: true),
-              const SizedBox(width: 4),
-              const SeasonChip(isCurrent: false),
-            ],
-          ),
-          const SizedBox(height: 12),
           Container(height: 1, color: semantic.borderSubtle),
           const SizedBox(height: 12),
           _statsRowTriple(
@@ -214,34 +209,36 @@ class _PitcherColumn extends StatelessWidget {
             l1: 'ERA',
             v2: pitcher.whip,
             l2: 'WHIP',
-            v3: pitcher.k9,
-            l3: 'K/9',
-          ),
-          const SizedBox(height: 8),
-          _statsRowTriple(
-            v1: pitcher.wl,
-            l1: 'W-L',
-            v2: pitcher.ip,
-            l2: 'IP',
             v3: pitcher.k,
             l3: 'K',
           ),
-          const SizedBox(height: 12),
-          ..._commentChipChildren(),
-          const SizedBox(height: 12),
-          const Spacer(),
-          Container(height: 1, color: semantic.borderSubtle),
-          const SizedBox(height: 12),
-          const SeasonChip(isCurrent: false),
-          const SizedBox(height: 12),
-          _statsRowTriple(
-            v1: pitcher.prevWl,
-            l1: 'W-L',
-            v2: pitcher.prevIp,
-            l2: 'IP',
-            v3: pitcher.prevK,
-            l3: 'K',
-          ),
+          if (_hasExtendedStats) ...[
+            const SizedBox(height: 8),
+            _statsRowTriple(
+              v1: pitcher.wl,
+              l1: 'W-L',
+              v2: pitcher.ip,
+              l2: 'IP',
+              v3: pitcher.k9,
+              l3: 'K/9',
+            ),
+            const SizedBox(height: 12),
+            ..._commentChipChildren(),
+            const SizedBox(height: 12),
+            const Spacer(),
+            Container(height: 1, color: semantic.borderSubtle),
+            const SizedBox(height: 12),
+            const SeasonChip(isCurrent: false),
+            const SizedBox(height: 12),
+            _statsRowTriple(
+              v1: pitcher.prevWl,
+              l1: 'W-L',
+              v2: pitcher.prevIp,
+              l2: 'IP',
+              v3: pitcher.prevK,
+              l3: 'K',
+            ),
+          ],
         ],
       ),
     );

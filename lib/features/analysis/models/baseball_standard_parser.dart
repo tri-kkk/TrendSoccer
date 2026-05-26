@@ -83,6 +83,7 @@ class BaseballStandardParsed {
     required this.awayPitcher,
     required this.pitcherMatchupAnalysis,
     required this.h2hMatches,
+    required this.relatedMatches,
     required this.homeWinOdds,
     required this.awayWinOdds,
     this.homeWinProbRatio,
@@ -105,11 +106,55 @@ class BaseballStandardParsed {
   final BaseballStandardPitcher awayPitcher;
   final List<String> pitcherMatchupAnalysis;
   final List<BaseballH2HMatch> h2hMatches;
+  final List<BaseballRelatedMatch> relatedMatches;
   final String homeWinOdds;
   final String awayWinOdds;
   final double? homeWinProbRatio;
   final double? awayWinProbRatio;
   final List<BaseballOULine> ouLines;
+}
+
+class BaseballRelatedMatch {
+  const BaseballRelatedMatch({
+    required this.date,
+    required this.time,
+    required this.homeTeam,
+    required this.awayTeam,
+    this.homeLogoUrl,
+    this.awayLogoUrl,
+    this.homeScore,
+    this.awayScore,
+    required this.status,
+  });
+
+  final String date;
+  final String time;
+  final String homeTeam;
+  final String awayTeam;
+  final String? homeLogoUrl;
+  final String? awayLogoUrl;
+  final String? homeScore;
+  final String? awayScore;
+  final String status;
+
+  String get dateDisplay {
+    if (date.isEmpty) return '-';
+    if (RegExp(r'^\d{4}-\d{2}-\d{2}').hasMatch(date)) {
+      final parts = date.split('-');
+      if (parts.length >= 3) return '${parts[1]}.${parts[2]}';
+    }
+    return date;
+  }
+
+  String get scoreDisplay {
+    if (homeScore != null &&
+        awayScore != null &&
+        homeScore!.isNotEmpty &&
+        awayScore!.isNotEmpty) {
+      return '$awayScore-$homeScore';
+    }
+    return 'vs';
+  }
 }
 
 bool _loggedDetailKeys = false;
@@ -120,64 +165,88 @@ BaseballStandardParsed parseBaseballStandardDetail(Map<String, dynamic> raw) {
     print('[BASEBALL] Match detail keys: ${raw.keys.toList()}');
   }
 
-  final data = _unwrapDetail(raw);
-  if (data.isNotEmpty && data != raw) {
-    print('[BASEBALL] Match detail data keys: ${data.keys.toList()}');
+  final match = _unwrapDetail(raw);
+  if (match.isNotEmpty && match != raw) {
+    print('[BASEBALL] Match detail data keys: ${match.keys.toList()}');
   }
 
-  final card = BaseballAnalysisCard.fromJson(data);
-  final league = card.league.trim();
-  final leagueUpper = league.toUpperCase();
-  final isMlb = leagueUpper == 'MLB';
+  final homeSide = _readMap(match, const ['home']) ?? {};
+  final awaySide = _readMap(match, const ['away']) ?? {};
 
-  final homePitcherRoot = _readPitcherRoot(
-    data,
+  final homeTeamKo = _readString(homeSide, const ['teamKo', 'team_ko']);
+  final homeTeamEn = _readString(homeSide, const ['team', 'name']) ?? '';
+  final awayTeamKo = _readString(awaySide, const ['teamKo', 'team_ko']);
+  final awayTeamEn = _readString(awaySide, const ['team', 'name']) ?? '';
+
+  final homeTeam = _preferKo(homeTeamKo, homeTeamEn);
+  final awayTeam = _preferKo(awayTeamKo, awayTeamEn);
+
+  final homeLogoUrl = _nonEmptyOrNull(homeSide['logo']);
+  final awayLogoUrl = _nonEmptyOrNull(awaySide['logo']);
+
+  final homeScore = _formatNullableScore(homeSide['score']);
+  final awayScore = _formatNullableScore(awaySide['score']);
+
+  final league = _readString(match, const ['league', 'leagueName', 'league_name']) ??
+      '';
+  final dateStr = _readString(match, const ['date', 'matchDate', 'match_date']) ?? '';
+  final timeStr = _readString(match, const ['time', 'matchTime', 'match_time']) ?? '';
+  final timestamp = _parseDateTime(
+    match['timestamp'] ?? match['matchTimestamp'] ?? match['match_timestamp'],
+  );
+
+  final homePitcher = _parsePitcherFromMatchRoot(
+    match,
     side: 'home',
-    fallbackName: card.homePitcher,
-    fallbackNameKo: card.homePitcherKo,
+    teamLogoUrl: homeLogoUrl,
   );
-  final awayPitcherRoot = _readPitcherRoot(
-    data,
+  final awayPitcher = _parsePitcherFromMatchRoot(
+    match,
     side: 'away',
-    fallbackName: card.awayPitcher,
-    fallbackNameKo: card.awayPitcherKo,
+    teamLogoUrl: awayLogoUrl,
   );
 
-  final homePitcher = _parsePitcher(
-    homePitcherRoot,
-    teamLogoUrl: card.homeTeamLogo,
-    useTeamLogoFallback: !isMlb,
-  );
-  final awayPitcher = _parsePitcher(
-    awayPitcherRoot,
-    teamLogoUrl: card.awayTeamLogo,
-    useTeamLogoFallback: !isMlb,
+  print('[BASEBALL] Standard parse: home=$homeTeam, away=$awayTeam');
+  print(
+    '[BASEBALL] Standard parse: homePitcher=${homePitcher.displayName}, awayPitcher=${awayPitcher.displayName}',
   );
 
-  final odds = card.odds ?? BaseballOdds.fromJson(_readMap(data, const ['odds']));
+  final oddsMap = _readMap(match, const ['odds']) ?? {};
+  final odds = BaseballOdds.fromJson(oddsMap);
   final homeProbRatio = _normalizeProbRatio(odds.homeWinProb);
   final awayProbRatio = _normalizeProbRatio(odds.awayWinProb);
+
+  print(
+    '[BASEBALL] Standard parse: odds homeProb=${odds.homeWinProb}, awayProb=${odds.awayWinProb}',
+  );
+
+  final cardFallback = BaseballAnalysisCard.fromJson(match);
 
   return BaseballStandardParsed(
     league: league.isEmpty ? '야구' : league,
     leagueId: baseballLeagueIconId(league),
-    homeTeam: card.homeDisplayTeam,
-    awayTeam: card.awayDisplayTeam,
-    homeLogoUrl: card.homeTeamLogo,
-    awayLogoUrl: card.awayTeamLogo,
+    homeTeam: homeTeam,
+    awayTeam: awayTeam,
+    homeLogoUrl: homeLogoUrl,
+    awayLogoUrl: awayLogoUrl,
     matchDateDisplay: _formatMatchDateDisplay(
-      card.matchTimestamp,
-      card.matchDate,
-      card.matchTime,
+      timestamp ?? cardFallback.matchTimestamp,
+      dateStr,
+      timeStr,
     ),
-    matchTimeDisplay: _formatMatchTimeDisplay(card.matchTimestamp, card.matchTime),
-    status: card.status,
-    homeScore: card.homeScore?.toString(),
-    awayScore: card.awayScore?.toString(),
+    matchTimeDisplay: _formatMatchTimeDisplay(
+      timestamp ?? cardFallback.matchTimestamp,
+      timeStr,
+    ),
+    status: _readString(match, const ['status', 'matchStatus', 'match_status']) ??
+        cardFallback.status,
+    homeScore: homeScore,
+    awayScore: awayScore,
     homePitcher: homePitcher,
     awayPitcher: awayPitcher,
-    pitcherMatchupAnalysis: _parsePitcherMatchupAnalysis(data),
-    h2hMatches: _parseH2HMatches(data, card),
+    pitcherMatchupAnalysis: _parsePitcherMatchupAnalysis(match),
+    h2hMatches: _parseH2HMatches(match, cardFallback),
+    relatedMatches: _parseRelatedMatches(match['relatedMatches']),
     homeWinOdds: _formatOddsValue(odds.homeWinOdds),
     awayWinOdds: _formatOddsValue(odds.awayWinOdds),
     homeWinProbRatio: homeProbRatio,
@@ -203,6 +272,7 @@ BaseballStandardParsed baseballStandardHeaderFallback(
     awayPitcher: _emptyPitcher(),
     pitcherMatchupAnalysis: const [],
     h2hMatches: const [],
+    relatedMatches: const [],
     homeWinOdds: '-',
     awayWinOdds: '-',
     ouLines: const [],
@@ -210,139 +280,110 @@ BaseballStandardParsed baseballStandardHeaderFallback(
 }
 
 Map<String, dynamic> _unwrapDetail(Map<String, dynamic> raw) {
+  final match = raw['match'];
+  if (match is Map<String, dynamic>) return match;
+  if (match is Map) return Map<String, dynamic>.from(match);
+
   if (raw['success'] == true) {
     final data = raw['data'];
     if (data is Map<String, dynamic>) return data;
     if (data is Map) return Map<String, dynamic>.from(data);
   }
-  final nested = _readMap(raw, const ['data', 'match', 'result']);
+
+  final nested = _readMap(raw, const ['data', 'result']);
   return nested ?? raw;
 }
 
-Map<String, dynamic>? _readPitcherRoot(
-  Map<String, dynamic> data, {
-  required String side,
-  String? fallbackName,
-  String? fallbackNameKo,
-}) {
-  final sideKeys = side == 'home'
-      ? const ['homePitcher', 'home_pitcher', 'homePitcherStats', 'home_pitcher_stats']
-      : const ['awayPitcher', 'away_pitcher', 'awayPitcherStats', 'away_pitcher_stats'];
-
-  for (final key in sideKeys) {
-    final value = data[key];
-    if (value is String && value.trim().isNotEmpty) {
-      final koKey = side == 'home' ? 'homePitcherKo' : 'awayPitcherKo';
-      final koAltKey = side == 'home' ? 'home_pitcher_ko' : 'away_pitcher_ko';
-      return {
-        'name': value.trim(),
-        'nameKo': data[koKey] ?? data[koAltKey] ?? fallbackNameKo,
-      };
-    }
-  }
-
-  final direct = _readMap(data, sideKeys);
-  if (direct != null) return direct;
-
-  final pitchers = _readMap(data, const ['pitchers', 'startingPitchers', 'starting_pitchers']);
-  if (pitchers != null) {
-    final nested = _readMap(pitchers, side == 'home' ? const ['home'] : const ['away']);
-    if (nested != null) return nested;
-  }
-
-  if (fallbackName != null && fallbackName.trim().isNotEmpty) {
-    return {
-      'name': fallbackName,
-      'nameKo': fallbackNameKo,
-    };
-  }
-  return null;
+String _preferKo(String? ko, String fallback) {
+  final trimmedKo = ko?.trim();
+  if (trimmedKo != null && trimmedKo.isNotEmpty) return trimmedKo;
+  final trimmedFallback = fallback.trim();
+  return trimmedFallback.isEmpty ? '-' : trimmedFallback;
 }
 
-BaseballStandardPitcher _parsePitcher(
-  Map<String, dynamic>? root, {
+String? _formatNullableScore(Object? value) {
+  if (value == null) return null;
+  final text = value.toString().trim();
+  return text.isEmpty ? null : text;
+}
+
+DateTime? _parseDateTime(Object? value) {
+  if (value == null) return null;
+  if (value is DateTime) return value.isUtc ? value : value.toUtc();
+  return DateTime.tryParse(value.toString());
+}
+
+BaseballStandardPitcher _parsePitcherFromMatchRoot(
+  Map<String, dynamic> match, {
+  required String side,
   String? teamLogoUrl,
-  required bool useTeamLogoFallback,
 }) {
-  if (root == null) return _emptyPitcher();
-
-  final name = _readString(root, const ['name', 'fullName', 'full_name', 'playerName']) ?? '';
-  final nameKo = _readString(root, const [
-    'nameKo',
-    'name_ko',
-    'nameKorean',
-    'name_korean',
-    'koreanName',
-    'korean_name',
+  final prefix = side == 'home' ? 'home' : 'away';
+  final name = _readString(match, ['${prefix}Pitcher', '${prefix}_pitcher']) ?? '';
+  final nameKo = _readString(match, [
+    '${prefix}PitcherKo',
+    '${prefix}_pitcher_ko',
   ]);
-
-  final stats = _readMap(root, const [
-        'stats',
-        'seasonStats',
-        'season_stats',
-        'currentSeason',
-        'current_season',
-        'statistics',
-      ]) ??
-      root;
-  final prevStats = _readMap(root, const [
-    'previousSeason',
-    'previous_season',
-    'prevSeason',
-    'prev_season',
-    'lastSeason',
-    'last_season',
-    'priorSeason',
-    'prior_season',
-  ]);
-
-  var photoUrl = _nonEmptyOrNull(
-    root['photoUrl'] ??
-        root['photo'] ??
-        root['photoURL'] ??
-        root['imageUrl'] ??
-        root['image_url'] ??
-        root['headshot'] ??
-        root['headshotUrl'] ??
-        root['headshot_url'] ??
-        root['playerPhoto'] ??
-        root['player_photo'],
-  );
-  if (photoUrl == null && useTeamLogoFallback) {
-    photoUrl = teamLogoUrl;
-  }
 
   return BaseballStandardPitcher(
-    name: name,
+    name: name.isEmpty ? '-' : name,
     nameKo: nameKo,
-    photoUrl: photoUrl,
-    pitcherType: _formatPitcherType(root),
-    era: _formatStat(stats['era'] ?? stats['ERA']),
-    whip: _formatStat(stats['whip'] ?? stats['WHIP']),
-    k9: _formatStat(
-      stats['k9'] ?? stats['k/9'] ?? stats['K9'] ?? stats['strikeoutsPer9'],
-    ),
-    wl: _formatWl(
-      stats['wins'] ?? stats['win'] ?? stats['W'],
-      stats['losses'] ?? stats['loss'] ?? stats['L'],
-      stats['wl'] ?? stats['w-l'] ?? stats['record'],
-    ),
-    ip: _formatStat(stats['ip'] ?? stats['IP'] ?? stats['inningsPitched']),
-    k: _formatStat(stats['k'] ?? stats['K'] ?? stats['strikeouts'] ?? stats['so']),
-    prevWl: _formatWl(
-      prevStats?['wins'] ?? prevStats?['win'],
-      prevStats?['losses'] ?? prevStats?['loss'],
-      prevStats?['wl'] ?? prevStats?['w-l'] ?? prevStats?['record'],
-    ),
-    prevIp: _formatStat(prevStats?['ip'] ?? prevStats?['IP']),
-    prevK: _formatStat(prevStats?['k'] ?? prevStats?['K'] ?? prevStats?['strikeouts']),
-    strengths: _parseStringList(
-      root['strengths'] ?? root['pros'] ?? root['advantages'],
-    ),
-    weaknesses: _parseStringList(
-      root['weaknesses'] ?? root['cons'] ?? root['disadvantages'],
-    ),
+    photoUrl: teamLogoUrl,
+    pitcherType: '투수',
+    era: _formatDecimalStat(match['${prefix}PitcherEra']),
+    whip: _formatDecimalStat(match['${prefix}PitcherWhip']),
+    k9: '-',
+    wl: '-',
+    ip: '-',
+    k: _formatStat(match['${prefix}PitcherK']),
+    prevWl: '-',
+    prevIp: '-',
+    prevK: '-',
+    strengths: const [],
+    weaknesses: const [],
   );
+}
+
+List<BaseballRelatedMatch> _parseRelatedMatches(Object? value) {
+  if (value is! List) return const [];
+
+  return value.whereType<Map>().map((item) {
+    final map = Map<String, dynamic>.from(item);
+    return BaseballRelatedMatch(
+      date: _readString(map, const ['date', 'matchDate', 'match_date']) ?? '',
+      time: _readString(map, const ['time', 'matchTime', 'match_time']) ?? '',
+      homeTeam: _readString(map, const [
+            'homeTeamKo',
+            'home_team_ko',
+            'homeTeam',
+            'home_team',
+          ]) ??
+          '-',
+      awayTeam: _readString(map, const [
+            'awayTeamKo',
+            'away_team_ko',
+            'awayTeam',
+            'away_team',
+          ]) ??
+          '-',
+      homeLogoUrl: _nonEmptyOrNull(
+        map['homeLogo'] ?? map['home_logo'] ?? map['homeTeamLogo'],
+      ),
+      awayLogoUrl: _nonEmptyOrNull(
+        map['awayLogo'] ?? map['away_logo'] ?? map['awayTeamLogo'],
+      ),
+      homeScore: _formatNullableScore(map['homeScore'] ?? map['home_score']),
+      awayScore: _formatNullableScore(map['awayScore'] ?? map['away_score']),
+      status: _readString(map, const ['status', 'matchStatus']) ?? '',
+    );
+  }).toList();
+}
+
+String _formatDecimalStat(Object? value) {
+  if (value == null) return '-';
+  if (value is num) return value.toStringAsFixed(2);
+  final text = value.toString().trim();
+  return text.isEmpty ? '-' : text;
 }
 
 BaseballStandardPitcher _emptyPitcher() {
@@ -578,36 +619,10 @@ String _formatH2HDate(String? raw) {
   return raw;
 }
 
-String _formatPitcherType(Map<String, dynamic> root) {
-  final raw = _readString(root, const [
-    'pitcherType',
-    'pitcher_type',
-    'position',
-    'throws',
-    'throwHand',
-    'throw_hand',
-    'hand',
-  ]);
-  if (raw == null || raw.isEmpty) return '투수';
-
-  final value = raw.toUpperCase();
-  if (value.contains('L') || value.contains('좌')) return '좌완 투수';
-  if (value.contains('R') || value.contains('우')) return '우완 투수';
-  return raw;
-}
-
 String _formatStat(Object? value) {
   if (value == null) return '-';
   final text = value.toString().trim();
   return text.isEmpty ? '-' : text;
-}
-
-String _formatWl(Object? wins, Object? losses, Object? combined) {
-  if (combined is String && combined.trim().isNotEmpty) return combined.trim();
-  final w = _parseInt(wins);
-  final l = _parseInt(losses);
-  if (w != null && l != null) return '$w-$l';
-  return '-';
 }
 
 String _formatOddsValue(Object? value) {

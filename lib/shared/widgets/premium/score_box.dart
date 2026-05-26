@@ -15,6 +15,7 @@ class ScoreBox extends StatelessWidget {
     required this.result,
     this.homeTeamLogo,
     this.awayTeamLogo,
+    this.loseEmblemInitial,
     super.key,
   });
 
@@ -22,6 +23,7 @@ class ScoreBox extends StatelessWidget {
   final ScoreBoxResult result;
   final String? homeTeamLogo;
   final String? awayTeamLogo;
+  final String? loseEmblemInitial;
 
   Color _scoreBackground(TsSemanticColors semantic) {
     switch (result) {
@@ -64,6 +66,25 @@ class ScoreBox extends StatelessWidget {
     );
   }
 
+  Widget _initialCircle(String initial, TsSemanticColors semantic) {
+    final display =
+        initial.isNotEmpty ? initial.characters.first.toUpperCase() : '?';
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: semantic.surfaceContainer,
+        border: Border.all(color: semantic.borderSubtle, width: 1),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        display,
+        style: TsType.labelSRegular.copyWith(color: semantic.textSecondary),
+      ),
+    );
+  }
+
   Widget _buildEmblem(TsSemanticColors semantic, Brightness brightness) {
     switch (result) {
       case ScoreBoxResult.draw:
@@ -75,6 +96,9 @@ class ScoreBox extends StatelessWidget {
       case ScoreBoxResult.win:
         return _networkLogo(homeTeamLogo, semantic);
       case ScoreBoxResult.lose:
+        if (loseEmblemInitial != null && loseEmblemInitial!.isNotEmpty) {
+          return _initialCircle(loseEmblemInitial!, semantic);
+        }
         return _networkLogo(awayTeamLogo, semantic);
     }
   }

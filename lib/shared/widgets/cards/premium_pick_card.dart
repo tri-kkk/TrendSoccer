@@ -33,6 +33,7 @@ class PremiumPickCard extends StatefulWidget {
     required this.countdown,
     required this.streak,
     required this.recentWins,
+    this.countdownValue,
     this.teamLogoMap = const {},
     this.onCTATap,
     this.winRateLabel,
@@ -43,6 +44,7 @@ class PremiumPickCard extends StatefulWidget {
   final bool showCTA;
   final String winRate;
   final String countdown;
+  final Widget? countdownValue;
   final String streak;
   final List<RecentWinData> recentWins;
   final Map<String, String> teamLogoMap;
@@ -362,7 +364,8 @@ class _PremiumPickCardState extends State<PremiumPickCard>
               Expanded(
                 child: _StatCell(
                   value: widget.countdown,
-                  label: widget.countdownLabel ?? '다음 업데이트',
+                  valueWidget: widget.countdownValue,
+                  label: widget.countdownLabel ?? '다음 업데이트까지',
                   valueColor: semantic.textPrimary,
                   semantic: semantic,
                 ),
@@ -405,13 +408,15 @@ class _PremiumPickCardState extends State<PremiumPickCard>
 
 class _StatCell extends StatelessWidget {
   const _StatCell({
-    required this.value,
     required this.label,
     required this.valueColor,
     required this.semantic,
-  });
+    this.value,
+    this.valueWidget,
+  }) : assert(value != null || valueWidget != null);
 
-  final String value;
+  final String? value;
+  final Widget? valueWidget;
   final String label;
   final Color valueColor;
   final TsSemanticColors semantic;
@@ -423,11 +428,12 @@ class _StatCell extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          value,
-          style: TsType.headingH1.copyWith(color: valueColor),
-          textAlign: TextAlign.center,
-        ),
+        valueWidget ??
+            Text(
+              value!,
+              style: TsType.headingH1.copyWith(color: valueColor),
+              textAlign: TextAlign.center,
+            ),
         const SizedBox(height: TsSpacing.xs),
         Text(
           label,

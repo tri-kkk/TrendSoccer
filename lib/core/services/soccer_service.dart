@@ -115,24 +115,34 @@ class SoccerService {
     required double homeOdds,
     required double drawOdds,
     required double awayOdds,
+    int? matchId,
+    String? commenceTime,
   }) async {
     print('[SOCCER] POST /api/predict-v2 for $homeTeam vs $awayTeam');
     final normalizedCode = leagueCode.trim().toUpperCase();
+    print(
+      '[SOCCER] predict-v2 request body: matchId=$matchId, leagueCode=$normalizedCode, odds={home:$homeOdds, draw:$drawOdds, away:$awayOdds}',
+    );
     try {
+      final body = <String, dynamic>{
+        'homeTeam': homeTeam,
+        'awayTeam': awayTeam,
+        'homeTeamId': homeTeamId,
+        'awayTeamId': awayTeamId,
+        'leagueId': leagueIdMap[normalizedCode] ?? 39,
+        'leagueCode': normalizedCode,
+        'season': '2025',
+        'homeOdds': homeOdds,
+        'drawOdds': drawOdds,
+        'awayOdds': awayOdds,
+        if (matchId != null) 'matchId': matchId,
+        if (commenceTime != null && commenceTime.isNotEmpty)
+          'commenceTime': commenceTime,
+      };
+
       final response = await _dio.post<dynamic>(
         '/api/predict-v2',
-        data: <String, dynamic>{
-          'homeTeam': homeTeam,
-          'awayTeam': awayTeam,
-          'homeTeamId': homeTeamId,
-          'awayTeamId': awayTeamId,
-          'leagueId': leagueIdMap[normalizedCode] ?? 39,
-          'leagueCode': normalizedCode,
-          'season': '2025',
-          'homeOdds': homeOdds,
-          'drawOdds': drawOdds,
-          'awayOdds': awayOdds,
-        },
+        data: body,
         options: Options(
           receiveTimeout: _analysisTimeout,
           sendTimeout: _analysisTimeout,
@@ -238,6 +248,33 @@ class SoccerService {
     }
   }
 
+  Future<Map<String, dynamic>> getTeamStats({
+    required String teamName,
+    required String leagueCode,
+    required int teamId,
+  }) async {
+    try {
+      final response = await _dio.get<dynamic>(
+        '/api/team-stats',
+        queryParameters: <String, dynamic>{
+          'team': teamName,
+          'league': leagueCode,
+          'teamId': teamId,
+        },
+      );
+      final data = response.data;
+      print(
+        '[SOCCER] team-stats for $teamName ($teamId): source=${data is Map ? data['source'] : null}',
+      );
+      if (data is Map<String, dynamic>) return data;
+      if (data is Map) return Map<String, dynamic>.from(data);
+      return {};
+    } catch (e) {
+      print('[SOCCER] team-stats error for $teamName: $e');
+      return {};
+    }
+  }
+
   // TODO: Replace with /api/v1/mobile/soccer/premium-picks when available
   Future<List<SoccerAnalysisCard>> getPremiumPicks({
     required String date,
@@ -291,10 +328,6 @@ class SoccerService {
           : raw is Map
               ? Map<String, dynamic>.from(raw)
               : <String, dynamic>{};
-      final picks = _extractHistoryPicks(history);
-      if (picks.isNotEmpty) {
-        print('[SOCCER] History pick fields: ${picks.first.keys.toList()}');
-      }
       return history;
     } catch (e) {
       return {};
@@ -373,46 +406,154 @@ class SoccerService {
   ) {
     final logos = <String, String>{};
     for (final pick in picks) {
-      _addHistoryPickTeamLogo(logos, pick, isHome: true);
-      _addHistoryPickTeamLogo(logos, pick, isHome: false);
+      _registerHistoryPickTeamLogo(logos, pick, isHome: true);
+      _registerHistoryPickTeamLogo(logos, pick, isHome: false);
     }
     return logos;
   }
 
-  void _addHistoryPickTeamLogo(
+  void _registerHistoryPickTeamLogo(
     Map<String, String> logos,
     Map<String, dynamic> pick, {
     required bool isHome,
   }) {
-    final name = _readHistoryPickString(
+    final teamId = _readHistoryPickTeamId(
       pick,
       isHome
-          ? const ['homeTeam', 'home_team', 'home', 'homeTeamName']
-          : const ['awayTeam', 'away_team', 'away', 'awayTeamName'],
+          ? const ['home_team_id', 'homeTeamId']
+          : const ['away_team_id', 'awayTeamId'],
     );
-    final logo = _readHistoryPickString(
-      pick,
-      isHome
-          ? const [
-              'home_team_logo',
-              'homeTeamLogo',
-              'homeLogo',
-              'home_logo',
-              'home_crest',
-              'homeCrest',
-            ]
-          : const [
-              'away_team_logo',
-              'awayTeamLogo',
-              'awayLogo',
-              'away_logo',
-              'away_crest',
-              'awayCrest',
-            ],
-    );
-    if (name != null && logo != null) {
-      logos[name] = logo;
+    if (teamId == null) return;
+
+    final logoUrl = 'https://media.api-sports.io/football/teams/$teamId.png';
+    final names = _historyPickTeamNames(pick, isHome: isHome);
+    for (final name in names) {
+      _addTeamLogoNameVariants(logos, name, logoUrl);
     }
+  }
+
+  Set<String> _historyPickTeamNames(
+    Map<String, dynamic> pick, {
+    required bool isHome,
+  }) {
+    final names = <String>{};
+    final nameKeys = isHome
+        ? const ['home_team', 'homeTeam', 'home']
+        : const ['away_team', 'awayTeam', 'away'];
+
+    for (final key in nameKeys) {
+      final value = pick[key];
+      if (value != null && value.toString().trim().isNotEmpty) {
+        names.add(value.toString().trim());
+      }
+    }
+
+    final matchRaw = pick['match'];
+    if (matchRaw is String && matchRaw.contains(' vs ')) {
+      final parts = matchRaw.split(RegExp(r'\s+vs\s+', caseSensitive: false));
+      if (parts.length >= 2) {
+        names.add(
+          isHome
+              ? parts.first.trim()
+              : parts.sublist(1).join(' vs ').trim(),
+        );
+      }
+    }
+
+    return names;
+  }
+
+  int? _readHistoryPickTeamId(
+    Map<String, dynamic> pick,
+    List<String> keys,
+  ) {
+    for (final key in keys) {
+      final value = pick[key];
+      if (value == null) continue;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      if (value is String) {
+        final parsed = int.tryParse(value.trim());
+        if (parsed != null) return parsed;
+      }
+    }
+    return null;
+  }
+
+  String? _footballTeamLogoUrl(Object? teamId) {
+    if (teamId == null) return null;
+    final int? id;
+    if (teamId is int) {
+      id = teamId;
+    } else if (teamId is num) {
+      id = teamId.toInt();
+    } else if (teamId is String) {
+      id = int.tryParse(teamId.trim());
+    } else {
+      id = null;
+    }
+    if (id == null || id <= 0) return null;
+    return 'https://media.api-sports.io/football/teams/$id.png';
+  }
+
+  void _addTeamLogoNameVariants(
+    Map<String, String> logos,
+    String name,
+    String logoUrl,
+  ) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+
+    logos[trimmed] = logoUrl;
+
+    final lowered = trimmed.toLowerCase();
+    logos[lowered] = logoUrl;
+
+    final stripped = _stripDiacriticsForLogo(lowered);
+    if (stripped != lowered) {
+      logos[stripped] = logoUrl;
+    }
+
+    logos[_normalizeTeamNameForLogo(trimmed)] = logoUrl;
+  }
+
+  String _normalizeTeamNameForLogo(String input) {
+    var normalized = input.toLowerCase().trim();
+    normalized = _stripDiacriticsForLogo(normalized);
+    normalized = normalized.replaceAll(RegExp(r'[^\w\s]'), ' ');
+    normalized = normalized.replaceAll(RegExp(r'\s+'), ' ').trim();
+    return normalized;
+  }
+
+  String _stripDiacriticsForLogo(String input) {
+    const diacriticMap = {
+      'ä': 'a',
+      'ö': 'o',
+      'ü': 'u',
+      'ß': 'ss',
+      'é': 'e',
+      'è': 'e',
+      'ê': 'e',
+      'ë': 'e',
+      'á': 'a',
+      'à': 'a',
+      'â': 'a',
+      'ã': 'a',
+      'í': 'i',
+      'ì': 'i',
+      'î': 'i',
+      'ï': 'i',
+      'ó': 'o',
+      'ò': 'o',
+      'ô': 'o',
+      'õ': 'o',
+      'ú': 'u',
+      'ù': 'u',
+      'û': 'u',
+      'ñ': 'n',
+      'ç': 'c',
+    };
+    return input.split('').map((c) => diacriticMap[c] ?? c).join();
   }
 
   String? _readHistoryPickString(
@@ -483,6 +624,21 @@ class SoccerService {
   }
 
   Map<String, dynamic> _toRecentResultEntry(Map<String, dynamic> pick) {
+    final homeLogo = _footballTeamLogoUrl(
+          pick['home_team_id'] ?? pick['homeTeamId'],
+        ) ??
+        _readHistoryPickString(
+          pick,
+          const ['home_team_logo', 'homeTeamLogo', 'homeLogo', 'home_logo'],
+        );
+    final awayLogo = _footballTeamLogoUrl(
+          pick['away_team_id'] ?? pick['awayTeamId'],
+        ) ??
+        _readHistoryPickString(
+          pick,
+          const ['away_team_logo', 'awayTeamLogo', 'awayLogo', 'away_logo'],
+        );
+
     final match = pick['match'];
     if (match is String && match.isNotEmpty) {
       return {
@@ -494,6 +650,8 @@ class SoccerService {
         'score': pick['score'],
         'result': pick['result'],
         'date': pick['date'] ?? pick['commence_time'] ?? pick['commenceTime'],
+        if (homeLogo != null) 'homeTeamLogo': homeLogo,
+        if (awayLogo != null) 'awayTeamLogo': awayLogo,
       };
     }
 
@@ -505,6 +663,8 @@ class SoccerService {
       if (matchLabel.isNotEmpty) 'match': matchLabel,
       if (home is String && home.isNotEmpty) 'homeTeam': home,
       if (away is String && away.isNotEmpty) 'awayTeam': away,
+      if (homeLogo != null) 'homeTeamLogo': homeLogo,
+      if (awayLogo != null) 'awayTeamLogo': awayLogo,
       'predicted': pick['predicted'] ??
           pick['prediction'] ??
           pick['pick'] ??

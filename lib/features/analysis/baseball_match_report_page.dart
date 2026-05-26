@@ -37,8 +37,11 @@ class _BaseballMatchReportPageState
 
   int? get _numericMatchId => int.tryParse(widget.matchId);
 
+  /// Route [matchId] is the DB internal id ([BaseballAnalysisCard.dbId]) when available.
+  int? get _detailMatchId => _numericMatchId;
+
   MatchHeaderData _resolveHeader() {
-    final matchId = _numericMatchId;
+    final matchId = _detailMatchId;
     final base = widget.initialHeader ??
         (matchId != null
             ? MatchHeaderData.placeholder(matchId: matchId)
@@ -58,7 +61,7 @@ class _BaseballMatchReportPageState
   }
 
   Widget _buildStandardTab() {
-    final matchId = _numericMatchId;
+    final matchId = _detailMatchId;
     if (matchId == null) {
       return Padding(
         padding: const EdgeInsets.all(TsSpacing.lg),
@@ -69,7 +72,7 @@ class _BaseballMatchReportPageState
   }
 
   Widget _buildAiTab() {
-    final matchId = _numericMatchId;
+    final matchId = _detailMatchId;
     if (matchId == null) {
       return Padding(
         padding: const EdgeInsets.all(TsSpacing.lg),

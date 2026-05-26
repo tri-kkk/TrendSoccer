@@ -4,10 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_match_report_provider.dart';
+import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/analysis/models/soccer_premium_parser.dart';
+import 'package:trendsoccer/features/analysis/models/soccer_team_stats_parser.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer/premium/premium_sections.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer/standard/soccer_standard_tab.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
@@ -65,6 +67,7 @@ class SoccerPremiumTab extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.all(TsSpacing.lg),
             child: _PremiumContent(
+              params: params,
               parsed: parsed,
               homeTeamLogo: homeTeamLogo,
               awayTeamLogo: awayTeamLogo,
@@ -133,13 +136,15 @@ class _PremiumTabLoading extends StatelessWidget {
   }
 }
 
-class _PremiumContent extends StatelessWidget {
+class _PremiumContent extends ConsumerWidget {
   const _PremiumContent({
+    required this.params,
     required this.parsed,
     this.homeTeamLogo,
     this.awayTeamLogo,
   });
 
+  final SoccerAnalysisParams params;
   final SoccerPremiumParsed parsed;
   final String? homeTeamLogo;
   final String? awayTeamLogo;
@@ -149,10 +154,10 @@ class _PremiumContent extends StatelessWidget {
   static const _awaySectionTitle = '원정';
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final overall = parsed.overall ?? H2HOverall.empty;
     final patterns = parsed.scorePatterns ?? H2HScorePatterns.empty;
-    final h2hData = _mapH2HData(parsed, overall, patterns);
+    final h2hData = _mapH2HData(parsed, patterns);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -175,60 +180,20 @@ class _PremiumContent extends StatelessWidget {
           insights: h2hData.insights,
         ),
         const SizedBox(height: TsSpacing.lg),
-        // TODO: Wire to team-specific stats API — need endpoint from backend developer
-        TeamAnalysisSection(
+        _TeamStatsSectionHost(
+          params: params,
+          isHome: true,
           title: _homeSectionTitle,
-          initialExpanded: false,
-          last10Label: '홈 성적 (최근 10경기)',
-          wins: 0,
-          draws: 0,
-          losses: 0,
-          recentForm: _placeholderForm(),
-          recordWins: '-',
-          recordDraws: '-',
-          recordLosses: '-',
-          winRate: '-',
-          goalLineO15: '-',
-          goalLineO15Highlight: false,
-          goalLineO25: '-',
-          goalLineO25Highlight: false,
-          goalLineO35: '-',
-          goalLineO35Highlight: false,
-          marketO25: '-',
-          marketO25Highlight: false,
-          marketBtts: '-',
-          marketBttsHighlight: false,
-          marketCs: '-',
-          marketFts: '-',
-          teamInsights: const ['-'],
+          last10Label: '시즌 홈 성적',
+          teamLogo: homeTeamLogo,
         ),
         const SizedBox(height: TsSpacing.lg),
-        // TODO: Wire to team-specific stats API — need endpoint from backend developer
-        TeamAnalysisSection(
+        _TeamStatsSectionHost(
+          params: params,
+          isHome: false,
           title: _awaySectionTitle,
-          initialExpanded: false,
-          last10Label: '원정 성적 (최근 10경기)',
-          wins: 0,
-          draws: 0,
-          losses: 0,
-          recentForm: _placeholderForm(),
-          recordWins: '-',
-          recordDraws: '-',
-          recordLosses: '-',
-          winRate: '-',
-          goalLineO15: '-',
-          goalLineO15Highlight: false,
-          goalLineO25: '-',
-          goalLineO25Highlight: false,
-          goalLineO35: '-',
-          goalLineO35Highlight: false,
-          marketO25: '-',
-          marketO25Highlight: false,
-          marketBtts: '-',
-          marketBttsHighlight: false,
-          marketCs: '-',
-          marketFts: '-',
-          teamInsights: const ['-'],
+          last10Label: '시즌 원정 성적',
+          teamLogo: awayTeamLogo,
         ),
         const SizedBox(height: TsSpacing.xl),
       ],
@@ -258,7 +223,6 @@ class _H2HDisplayData {
 
 _H2HDisplayData _mapH2HData(
   SoccerPremiumParsed parsed,
-  H2HOverall overall,
   H2HScorePatterns patterns,
 ) {
   final recentMeetings = parsed.recentMatches
@@ -271,12 +235,10 @@ _H2HDisplayData _mapH2HData(
     );
   }
 
-  final avgGoalsSum = patterns.avgHomeGoals + patterns.avgAwayGoals;
-  final avgGoals =
-      avgGoalsSum > 0 ? avgGoalsSum.toStringAsFixed(1) : '-';
-
-  final over25Rate = patterns.over25Rate;
-  final bttsRate = patterns.bttsRate;
+  final hasMatches = parsed.recentMatches.isNotEmpty;
+  final avgGoals = parsed.calcAvgTotalGoals;
+  final over25Rate = parsed.calcOver25Rate;
+  final bttsRate = parsed.calcBttsRate;
 
   final mostCommon = <MostCommonScore>[];
   for (final entry in patterns.mostCommon.take(3)) {
@@ -295,9 +257,9 @@ _H2HDisplayData _mapH2HData(
   return _H2HDisplayData(
     recentMeetings: recentMeetings,
     avgGoals: avgGoals,
-    over25: over25Rate > 0 ? '$over25Rate%' : '-',
-    over25Highlight: over25Rate > 50,
-    btts: bttsRate > 0 ? '$bttsRate%' : '-',
+    over25: hasMatches ? '$over25Rate%' : '-',
+    over25Highlight: over25Rate >= 60,
+    btts: hasMatches ? '$bttsRate%' : '-',
     mostCommonScores: mostCommon,
     insights: insights,
   );
@@ -327,6 +289,279 @@ List<H2HMeeting> _placeholderForm() {
     (_) => const H2HMeeting(score: '-', result: ScoreBoxResult.draw),
   );
 }
+
+class _TeamStatsSectionHost extends ConsumerWidget {
+  const _TeamStatsSectionHost({
+    required this.params,
+    required this.isHome,
+    required this.title,
+    required this.last10Label,
+    this.teamLogo,
+  });
+
+  final SoccerAnalysisParams params;
+  final bool isHome;
+  final String title;
+  final String last10Label;
+  final String? teamLogo;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final teamLogoMap = ref.watch(teamLogoMapProvider);
+    final statsAsync = ref.watch(
+      isHome ? homeTeamStatsProvider(params) : awayTeamStatsProvider(params),
+    );
+
+    return statsAsync.when(
+      loading: () => TeamAnalysisSection(
+        title: title,
+        initialExpanded: false,
+        last10Label: last10Label,
+        isLoading: true,
+        teamLogo: teamLogo,
+        teamLogoMap: teamLogoMap,
+        wins: 0,
+        draws: 0,
+        losses: 0,
+        recentForm: _placeholderForm(),
+        recordWins: '-',
+        recordDraws: '-',
+        recordLosses: '-',
+        winRate: '-',
+        goalLineO15: '-',
+        goalLineO15Highlight: false,
+        goalLineO25: '-',
+        goalLineO25Highlight: false,
+        goalLineO35: '-',
+        marketO25: '-',
+        marketO25Highlight: false,
+        marketBtts: '-',
+        marketBttsHighlight: false,
+        marketCs: '-',
+        marketFts: '-',
+        teamInsights: const ['-'],
+      ),
+      error: (error, stackTrace) => _buildSection(
+        ref,
+        TeamStatsParsed.empty,
+        hasError: true,
+        teamLogoMap: teamLogoMap,
+      ),
+      data: (raw) {
+        final stats = TeamStatsParsed.fromResponse(raw, isHome: isHome);
+        if (!stats.hasData) {
+          return _buildSection(
+            ref,
+            TeamStatsParsed.empty,
+            hasError: true,
+            teamLogoMap: teamLogoMap,
+          );
+        }
+        return _buildSection(
+          ref,
+          stats,
+          hasError: false,
+          teamLogoMap: teamLogoMap,
+        );
+      },
+    );
+  }
+
+  Widget _buildSection(
+    WidgetRef ref,
+    TeamStatsParsed stats, {
+    required bool hasError,
+    required Map<String, String> teamLogoMap,
+  }) {
+    final display = hasError
+        ? _TeamStatsDisplay.empty
+        : _TeamStatsDisplay.from(stats, teamLogo: teamLogo);
+
+    return TeamAnalysisSection(
+      title: title,
+      initialExpanded: false,
+      last10Label: last10Label,
+      teamLogo: teamLogo,
+      teamLogoMap: teamLogoMap,
+      wins: display.wins,
+      draws: display.draws,
+      losses: display.losses,
+      recentForm: hasError ? _placeholderForm() : display.recentForm,
+      recordWins: display.recordWins,
+      recordDraws: display.recordDraws,
+      recordLosses: display.recordLosses,
+      winRate: display.winRate,
+      goalLineO15: display.goalLineO15,
+      goalLineO15Highlight: display.goalLineO15Highlight,
+      goalLineO25: display.goalLineO25,
+      goalLineO25Highlight: display.goalLineO25Highlight,
+      goalLineO35: display.goalLineO35,
+      goalLineO35Highlight: display.goalLineO35Highlight,
+      marketO25: display.marketO25,
+      marketO25Highlight: display.marketO25Highlight,
+      marketBtts: display.marketBtts,
+      marketBttsHighlight: display.marketBttsHighlight,
+      marketCs: display.marketCs,
+      marketFts: display.marketFts,
+      teamInsights: display.teamInsights,
+      onRetry: hasError
+          ? () => ref.invalidate(
+                isHome
+                    ? homeTeamStatsProvider(params)
+                    : awayTeamStatsProvider(params),
+              )
+          : null,
+    );
+  }
+}
+
+class _TeamStatsDisplay {
+  const _TeamStatsDisplay({
+    required this.wins,
+    required this.draws,
+    required this.losses,
+    required this.recentForm,
+    required this.recordWins,
+    required this.recordDraws,
+    required this.recordLosses,
+    required this.winRate,
+    required this.goalLineO15,
+    required this.goalLineO15Highlight,
+    required this.goalLineO25,
+    required this.goalLineO25Highlight,
+    required this.goalLineO35,
+    required this.goalLineO35Highlight,
+    required this.marketO25,
+    required this.marketO25Highlight,
+    required this.marketBtts,
+    required this.marketBttsHighlight,
+    required this.marketCs,
+    required this.marketFts,
+    required this.teamInsights,
+  });
+
+  static const empty = _TeamStatsDisplay(
+    wins: 0,
+    draws: 0,
+    losses: 0,
+    recentForm: [],
+    recordWins: '-',
+    recordDraws: '-',
+    recordLosses: '-',
+    winRate: '-',
+    goalLineO15: '-',
+    goalLineO15Highlight: false,
+    goalLineO25: '-',
+    goalLineO25Highlight: false,
+    goalLineO35: '-',
+    goalLineO35Highlight: false,
+    marketO25: '-',
+    marketO25Highlight: false,
+    marketBtts: '-',
+    marketBttsHighlight: false,
+    marketCs: '-',
+    marketFts: '-',
+    teamInsights: ['-'],
+  );
+
+  factory _TeamStatsDisplay.from(TeamStatsParsed stats, {String? teamLogo}) {
+    return _TeamStatsDisplay(
+      wins: stats.last10Wins,
+      draws: stats.last10Draws,
+      losses: stats.last10Losses,
+      recentForm: _recentFormFromStats(stats, teamLogo),
+      recordWins: '${stats.recordWins}',
+      recordDraws: '${stats.recordDraws}',
+      recordLosses: '${stats.recordLosses}',
+      winRate: _formatPercent(stats.recordWinRate),
+      goalLineO15: _formatPercent(stats.over15Rate),
+      goalLineO15Highlight: _shouldHighlight(stats.over15Rate),
+      goalLineO25: _formatPercent(stats.over25Rate),
+      goalLineO25Highlight: _shouldHighlight(stats.over25Rate),
+      goalLineO35: _formatPercent(stats.over35Rate),
+      goalLineO35Highlight: _shouldHighlight(stats.over35Rate),
+      marketO25: _formatPercent(stats.over25Rate),
+      marketO25Highlight: _shouldHighlight(stats.over25Rate),
+      marketBtts: _formatPercent(stats.bttsRate),
+      marketBttsHighlight: _shouldHighlight(stats.bttsRate),
+      marketCs: _formatPercent(stats.cleanSheetRate),
+      marketFts: _formatPercent(stats.scorelessRate),
+      teamInsights: stats.teamInsights,
+    );
+  }
+
+  final int wins;
+  final int draws;
+  final int losses;
+  final List<H2HMeeting> recentForm;
+  final String recordWins;
+  final String recordDraws;
+  final String recordLosses;
+  final String winRate;
+  final String goalLineO15;
+  final bool goalLineO15Highlight;
+  final String goalLineO25;
+  final bool goalLineO25Highlight;
+  final String goalLineO35;
+  final bool goalLineO35Highlight;
+  final String marketO25;
+  final bool marketO25Highlight;
+  final String marketBtts;
+  final bool marketBttsHighlight;
+  final String marketCs;
+  final String marketFts;
+  final List<String> teamInsights;
+}
+
+List<H2HMeeting> _recentFormFromStats(
+  TeamStatsParsed stats,
+  String? teamLogo,
+) {
+  final form = <H2HMeeting>[];
+  for (var i = 0; i < 5; i++) {
+    if (i < stats.recentMatches.length) {
+      final match = stats.recentMatches[i];
+      form.add(
+        H2HMeeting(
+          score: match.scoreDisplay,
+          result: _scoreBoxResultFromCode(match.result),
+          winTeamLogo: teamLogo,
+          loseEmblemInitial: _opponentInitial(match),
+          opponent: match.opponent,
+          opponentKo: match.opponentKo,
+          opponentLogo: match.opponentLogo,
+        ),
+      );
+    } else if (i < stats.last5Results.length) {
+      form.add(
+        H2HMeeting(
+          score: '-',
+          result: _scoreBoxResultFromCode(stats.last5Results[i]),
+          winTeamLogo: teamLogo,
+        ),
+      );
+    } else {
+      form.add(H2HMeeting(
+        score: '-',
+        result: ScoreBoxResult.draw,
+        winTeamLogo: teamLogo,
+      ));
+    }
+  }
+  return form;
+}
+
+String _opponentInitial(TeamRecentMatch match) {
+  final name = match.opponentKo.trim().isNotEmpty
+      ? match.opponentKo.trim()
+      : match.opponent.trim();
+  if (name.isEmpty) return '?';
+  return name.characters.first;
+}
+
+String _formatPercent(int rate) => rate > 0 ? '$rate%' : '-';
+
+bool _shouldHighlight(int rate) => rate >= 60;
 
 int? _parseInt(Object? value) {
   if (value is int) return value;

@@ -25,6 +25,7 @@ class MatchHeaderData {
     this.homeOdds,
     this.drawOdds,
     this.awayOdds,
+    this.commenceTime,
   });
 
   final int matchId;
@@ -45,6 +46,7 @@ class MatchHeaderData {
   final double? homeOdds;
   final double? drawOdds;
   final double? awayOdds;
+  final String? commenceTime;
 
   factory MatchHeaderData.fromSoccerCard(SoccerAnalysisCard card) {
     final match = card.match;
@@ -68,12 +70,13 @@ class MatchHeaderData {
       homeOdds: odds?.home,
       drawOdds: odds?.draw,
       awayOdds: odds?.away,
+      commenceTime: match.matchTimestamp?.toUtc().toIso8601String(),
     );
   }
 
   factory MatchHeaderData.fromBaseballCard(BaseballAnalysisCard card) {
     return MatchHeaderData(
-      matchId: card.matchId,
+      matchId: card.detailMatchId,
       homeTeam: card.homeDisplayTeam,
       awayTeam: card.awayDisplayTeam,
       homeTeamLogo: card.homeTeamLogo,
@@ -226,6 +229,7 @@ class MatchHeaderData {
       homeOdds: other.homeOdds ?? homeOdds,
       drawOdds: other.drawOdds ?? drawOdds,
       awayOdds: other.awayOdds ?? awayOdds,
+      commenceTime: other.commenceTime ?? commenceTime,
     );
   }
 

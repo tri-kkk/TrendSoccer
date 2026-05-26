@@ -13,10 +13,20 @@ class H2HMeeting {
   const H2HMeeting({
     required this.score,
     required this.result,
+    this.winTeamLogo,
+    this.loseEmblemInitial,
+    this.opponent,
+    this.opponentKo,
+    this.opponentLogo,
   });
 
   final String score;
   final ScoreBoxResult result;
+  final String? winTeamLogo;
+  final String? loseEmblemInitial;
+  final String? opponent;
+  final String? opponentKo;
+  final String? opponentLogo;
 }
 
 class MostCommonScore {

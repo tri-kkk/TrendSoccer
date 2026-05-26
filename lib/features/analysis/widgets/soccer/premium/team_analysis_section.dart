@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -36,6 +37,10 @@ class TeamAnalysisSection extends StatefulWidget {
     required this.marketFts,
     required this.teamInsights,
     this.initialExpanded = false,
+    this.isLoading = false,
+    this.teamLogo,
+    this.teamLogoMap = const {},
+    this.onRetry,
     super.key,
   });
 
@@ -63,6 +68,10 @@ class TeamAnalysisSection extends StatefulWidget {
   final String marketFts;
   final List<String> teamInsights;
   final bool initialExpanded;
+  final bool isLoading;
+  final String? teamLogo;
+  final Map<String, String> teamLogoMap;
+  final VoidCallback? onRetry;
 
   @override
   State<TeamAnalysisSection> createState() => _TeamAnalysisSectionState();
@@ -79,13 +88,36 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
 
   Widget _buildScoreBoxRow(TsSemanticColors semantic) {
     final meetings = widget.recentForm;
+    final teamLogoMap = widget.teamLogoMap;
+
     return Row(
       children: [
         for (var i = 0; i < meetings.length; i++) ...[
           Expanded(
-            child: ScoreBox(
-              score: meetings[i].score,
-              result: meetings[i].result,
+            child: Builder(
+              builder: (context) {
+                final meeting = meetings[i];
+                String? opponentLogo;
+                if (meeting.result == ScoreBoxResult.lose) {
+                  opponentLogo = meeting.opponentLogo;
+                  if (opponentLogo == null && teamLogoMap.isNotEmpty) {
+                    final opponent = meeting.opponent ?? '';
+                    final opponentKo = meeting.opponentKo ?? '';
+                    opponentLogo = findTeamLogo(teamLogoMap, opponent);
+                    if (opponentLogo == null && opponentKo.isNotEmpty) {
+                      opponentLogo = findTeamLogo(teamLogoMap, opponentKo);
+                    }
+                  }
+                }
+                return ScoreBox(
+                  score: meeting.score,
+                  result: meeting.result,
+                  homeTeamLogo: meeting.winTeamLogo ?? widget.teamLogo,
+                  awayTeamLogo: opponentLogo,
+                  loseEmblemInitial:
+                      opponentLogo == null ? meeting.loseEmblemInitial : null,
+                );
+              },
             ),
           ),
           if (i < meetings.length - 1)
@@ -98,6 +130,35 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
               ),
             ),
         ],
+      ],
+    );
+  }
+
+  Widget _buildLoadingPlaceholder(TsSemanticColors semantic) {
+    return Column(
+      children: [
+        for (var i = 0; i < 4; i++) ...[
+          if (i > 0) const SizedBox(height: TsSpacing.lg),
+          Container(
+            width: double.infinity,
+            height: 56,
+            decoration: BoxDecoration(
+              color: semantic.surfaceContainer,
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ],
+        const SizedBox(height: TsSpacing.lg),
+        Center(
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: semantic.interactivePrimary,
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -136,6 +197,9 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                  if (w.isLoading)
+                    _buildLoadingPlaceholder(semantic)
+                  else ...[
                   SizedBox(
                     width: double.infinity,
                     child: Text(
@@ -304,6 +368,19 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                   ),
                   const SizedBox(height: TsSpacing.lg),
                   InsightsCard(comments: w.teamInsights),
+                  if (w.onRetry != null) ...[
+                    const SizedBox(height: TsSpacing.md),
+                    TextButton(
+                      onPressed: w.onRetry,
+                      child: Text(
+                        '다시 시도',
+                        style: TsType.labelSRegular.copyWith(
+                          color: semantic.interactivePrimary,
+                        ),
+                      ),
+                    ),
+                  ],
+                  ],
                     ],
                   ),
                 ),
