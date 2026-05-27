@@ -1,6 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:trendsoccer/core/services/baseball_combo_service.dart';
+import 'package:trendsoccer/core/services/baseball_service.dart';
+
+final baseballComboPicksProvider =
+    FutureProvider<Map<String, dynamic>>((ref) async {
+  final service = ref.read(baseballServiceProvider);
+  return service.getBaseballComboPicks(days: 30);
+});
+
+void invalidateBaseballComboPicks(WidgetRef ref) {
+  print('[BASEBALL] combo-picks provider invalidated — fetching fresh data');
+  ref.invalidate(baseballComboPicksProvider);
+}
 
 class BaseballComboStatsView {
   const BaseballComboStatsView({

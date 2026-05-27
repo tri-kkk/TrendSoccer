@@ -1,11 +1,24 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_match_row.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_status_badge.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_type_badge.dart';
+
+class ComboAiSection {
+  const ComboAiSection({
+    required this.label,
+    required this.content,
+    required this.type,
+  });
+
+  final String label;
+  final String content;
+  final String type;
+}
 
 class ComboMatchRowData {
   const ComboMatchRowData({
@@ -35,8 +48,8 @@ class ComboMatchRowData {
   final double winRateRatio;
   final String comment;
   final ComboStatus? matchResult;
-  final String? homeScore;
-  final String? awayScore;
+  final int? homeScore;
+  final int? awayScore;
 }
 
 class ComboCard extends StatelessWidget {
@@ -46,7 +59,7 @@ class ComboCard extends StatelessWidget {
     required this.comboType,
     required this.status,
     required this.matches,
-    required this.aiReport,
+    required this.aiSections,
     required this.totalOdds,
     required this.confidence,
     super.key,
@@ -57,21 +70,108 @@ class ComboCard extends StatelessWidget {
   final ComboType comboType;
   final ComboStatus status;
   final List<ComboMatchRowData> matches;
-  final String aiReport;
+  final List<ComboAiSection> aiSections;
   final String totalOdds;
   final String confidence;
 
-  static const Color _aiBg = Color(0x1A00DF81);
-  static const Color _aiBorder = Color(0x4D00DF81);
+  Widget _divider(TsSemanticColors semantic) {
+    return Container(
+      height: 1,
+      color: semantic.borderSubtle,
+    );
+  }
+
+  Widget _footerColumn({
+    required TsSemanticColors semantic,
+    required String label,
+    required String value,
+    required Color valueColor,
+  }) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: Text(
+              label,
+              style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: TsSpacing.xxs),
+          SizedBox(
+            width: double.infinity,
+            child: Text(
+              value,
+              style: TsType.bodyLBold.copyWith(color: valueColor),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAiSectionBox(ComboAiSection section, TsSemanticColors colors) {
+    late final Color bgColor;
+    Color? borderColor;
+    late final Color labelColor;
+
+    switch (section.type) {
+      case 'summary':
+        bgColor = const Color(0x1A00DF81);
+        borderColor = const Color(0x4D00DF81);
+        labelColor = colors.interactivePrimary;
+      case 'warning':
+        bgColor = const Color(0x1AF59E0B);
+        borderColor = const Color(0x26F59E0B);
+        labelColor = TsColors.systemWarning500;
+      default:
+        bgColor = colors.surfaceContainer;
+        borderColor = null;
+        labelColor = colors.textSecondary;
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(TsSpacing.md),
+      decoration: BoxDecoration(
+        color: bgColor,
+        border: borderColor != null
+            ? Border.all(color: borderColor, width: 1)
+            : null,
+        borderRadius: BorderRadius.circular(TsSpacing.sm),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '[${section.label}]',
+            style: TsType.bodyMBold.copyWith(color: labelColor),
+          ),
+          const SizedBox(height: TsSpacing.xs),
+          Text(
+            section.content,
+            style: TsType.bodyMRegular.copyWith(
+              color: colors.textPrimary,
+              height: 18 / 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+
     return Container(
       padding: const EdgeInsets.all(TsSpacing.lg),
       decoration: BoxDecoration(
         color: semantic.surfaceRaised,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(TsSpacing.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -83,21 +183,28 @@ class ComboCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: TsSpacing.sm,
+                        vertical: TsSpacing.xs,
+                      ),
                       decoration: BoxDecoration(
                         color: semantic.surfaceContainer,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(TsSpacing.sm),
                       ),
                       child: Text(
                         leagueId.toUpperCase(),
-                        style: TsType.labelSBold.copyWith(color: semantic.textSecondary),
+                        style: TsType.labelSBold.copyWith(
+                          color: semantic.textSecondary,
+                        ),
                       ),
                     ),
                     const SizedBox(width: TsSpacing.sm),
                     Flexible(
                       child: Text(
                         '$comboCount COMBO',
-                        style: TsType.bodyMBold.copyWith(color: semantic.textPrimary),
+                        style: TsType.bodyMBold.copyWith(
+                          color: semantic.textPrimary,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -110,7 +217,7 @@ class ComboCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: TsSpacing.lg),
-          Divider(height: 1, thickness: 1, color: semantic.borderSubtle),
+          _divider(semantic),
           const SizedBox(height: TsSpacing.lg),
           for (var i = 0; i < matches.length; i++) ...[
             if (i > 0) const SizedBox(height: TsSpacing.sm),
@@ -131,58 +238,35 @@ class ComboCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: TsSpacing.lg),
-          Divider(height: 1, thickness: 1, color: semantic.borderSubtle),
-          const SizedBox(height: TsSpacing.lg),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(TsSpacing.md),
-            decoration: BoxDecoration(
-              color: _aiBg,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: _aiBorder, width: 1),
+          _divider(semantic),
+          if (aiSections.isNotEmpty) ...[
+            const SizedBox(height: TsSpacing.lg),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < aiSections.length; i++) ...[
+                  if (i > 0) const SizedBox(height: TsSpacing.sm),
+                  _buildAiSectionBox(aiSections[i], semantic),
+                ],
+              ],
             ),
-            child: Text(
-              aiReport,
-              style: TsType.bodyMRegular.copyWith(color: semantic.textPrimary),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: TsSpacing.lg),
-          Divider(height: 1, thickness: 1, color: semantic.borderSubtle),
+            const SizedBox(height: TsSpacing.lg),
+            _divider(semantic),
+          ],
           const SizedBox(height: TsSpacing.lg),
           Row(
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      '총 배당',
-                      style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      totalOdds,
-                      style: TsType.bodyLBold.copyWith(color: semantic.interactivePrimary),
-                    ),
-                  ],
-                ),
+              _footerColumn(
+                semantic: semantic,
+                label: '총 배당',
+                value: totalOdds,
+                valueColor: semantic.interactivePrimary,
               ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      '신뢰도',
-                      style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      confidence,
-                      style: TsType.bodyLBold.copyWith(color: semantic.textPrimary),
-                    ),
-                  ],
-                ),
+              _footerColumn(
+                semantic: semantic,
+                label: '신뢰도',
+                value: confidence,
+                valueColor: semantic.textPrimary,
               ),
             ],
           ),

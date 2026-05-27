@@ -18,7 +18,7 @@ class SubscribeSheet extends ConsumerWidget {
 
     final description = sport == SportType.soccer
         ? 'H2H 상대전적, 팀 심층 분석 등 프리미엄 혜택을 이용해보세요.'
-        : '승리 확률, 오버/언더, 시즌 통계 등 AI 분석 데이터를 이용해보세요.';
+        : '승리 확률, 오버&언더, 시즌 통계 등 AI 분석 데이터를 이용해보세요.';
 
     return Container(
       decoration: BoxDecoration(
@@ -59,7 +59,7 @@ class SubscribeSheet extends ConsumerWidget {
           SizedBox(
             width: double.infinity,
             child: TsButton(
-              label: '지금 구독하기 →',
+              label: '지금 구독하기',
               variant: TsButtonVariant.primary,
               onPressed: () {
                 Navigator.of(context).pop();

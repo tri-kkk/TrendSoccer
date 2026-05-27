@@ -300,6 +300,33 @@ class BaseballService {
     }
   }
 
+  Future<Map<String, dynamic>> getBaseballComboPicks({
+    String? date,
+    int days = 7,
+  }) async {
+    try {
+      final params = <String, dynamic>{
+        'days': days,
+      };
+      if (date != null) params['date'] = date;
+      final response = await _dio.get<dynamic>(
+        '/api/baseball/combo-picks',
+        queryParameters: params,
+      );
+      print(
+        '[BASEBALL] combo-picks: success=${response.data?['success']}, '
+        'picks=${(response.data?['picks'] as List?)?.length}',
+      );
+      final data = response.data;
+      if (data is Map<String, dynamic>) return data;
+      if (data is Map) return Map<String, dynamic>.from(data);
+      return {};
+    } catch (e) {
+      print('[BASEBALL] combo-picks error: $e');
+      return {};
+    }
+  }
+
   Future<List<BaseballAnalysisCard>> getUpcomingMatches() async {
     final today = DateTime.now();
     final todayDay = DateTime(today.year, today.month, today.day);

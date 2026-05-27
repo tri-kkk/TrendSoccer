@@ -7,12 +7,13 @@ import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/providers/baseball_combo_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/utils/access_gate.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/features/premium/premium_dummy_data.dart';
+import 'package:trendsoccer/features/premium/combo/combo_parser.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
@@ -34,6 +35,16 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
   int _selectedComboDateIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_selectedSport == SportType.baseball) {
+        invalidateBaseballComboPicks(ref);
+      }
+    });
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final sportParam = GoRouterState.of(context).uri.queryParameters['sport'];
@@ -42,6 +53,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
         _selectedSport = SportType.baseball;
         _selectedComboDateIndex = 0;
       });
+      invalidateBaseballComboPicks(ref);
     }
   }
 
@@ -137,55 +149,86 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
   }
 
   Widget _buildBaseballSection() {
-    final dayData = _selectedComboDateIndex < comboDaysDummy.length
-        ? comboDaysDummy[_selectedComboDateIndex]
-        : null;
+    final comboAsync = ref.watch(baseballComboPicksProvider);
 
-    final hasData = dayData != null && dayData.combos.isNotEmpty;
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        children: [
-          ComboDashboard(
-            dateTitle: dayData?.dateTitle ?? '',
-            comboCountText: dayData?.comboCountText ?? '',
-            dateTabs: comboDateLabels,
-            selectedDateIndex: _selectedComboDateIndex,
-            onDateSelected: (i) => setState(() => _selectedComboDateIndex = i),
-            comboCount: dayData?.comboCount ?? 0,
-            accuracy: dayData?.accuracy ?? '0%',
-            avgOdds: dayData?.avgOdds ?? '0.00',
-            safeHitRate: dayData?.safeHitRate ?? '0%',
-            safeHitDetail: dayData?.safeHitDetail ?? '(0/0)',
-            highOddsHitRate: dayData?.highOddsHitRate ?? '0%',
-            highOddsHitDetail: dayData?.highOddsHitDetail ?? '(0/0)',
-          ),
-          const SizedBox(height: 16),
-          if (hasData)
-            ...dayData.combos.asMap().entries.map((entry) {
-              final combo = entry.value;
-              return Padding(
-                padding: EdgeInsets.only(
-                  bottom: entry.key < dayData.combos.length - 1 ? 12 : 0,
-                ),
-                child: ComboCard(
-                  leagueId: combo.leagueId,
-                  comboCount: combo.comboCount,
-                  comboType: combo.comboType,
-                  status: combo.status,
-                  matches: combo.matches,
-                  aiReport: combo.aiReport,
-                  totalOdds: combo.totalOdds,
-                  confidence: combo.confidence,
-                ),
-              );
-            })
-          else
-            const TsEmptyState(type: TsEmptyStateType.defaultState),
-          const SizedBox(height: 24),
-        ],
+    return comboAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '야구 AI 조합을 불러오지 못했습니다.',
+              style: TsType.bodyLRegular.copyWith(
+                color: Theme.of(context)
+                    .extension<TsSemanticColors>()!
+                    .textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            TsButton(
+              label: '다시 시도',
+              variant: TsButtonVariant.primary,
+              size: TsButtonSize.small,
+              onPressed: () => ref.invalidate(baseballComboPicksProvider),
+            ),
+          ],
+        ),
       ),
+      data: (rawData) {
+        final dashboard =
+            ComboParser.parseDashboard(rawData, _selectedComboDateIndex);
+        final selectedDate = ComboParser.dateValueAt(_selectedComboDateIndex);
+        final comboCards = ComboParser.parseComboCards(rawData, selectedDate);
+        final hasData = comboCards.isNotEmpty;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              ComboDashboard(
+                dateTitle: dashboard.dateTitle,
+                comboCountText: dashboard.subtitle,
+                dateTabs: dashboard.dateChips,
+                selectedDateIndex: dashboard.selectedDateIndex,
+                onDateSelected: (i) => setState(() => _selectedComboDateIndex = i),
+                comboCount: dashboard.comboCount,
+                accuracy: dashboard.accuracy,
+                avgOdds: dashboard.avgOdds,
+                safeHitRate: dashboard.safeRate,
+                safeHitDetail: dashboard.safeRecord,
+                highOddsHitRate: dashboard.highRate,
+                highOddsHitDetail: dashboard.highRecord,
+              ),
+              const SizedBox(height: 16),
+              if (hasData)
+                ...comboCards.asMap().entries.map((entry) {
+                  final combo = entry.value;
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: entry.key < comboCards.length - 1 ? 12 : 0,
+                    ),
+                    child: ComboCard(
+                      leagueId: combo.league.toLowerCase(),
+                      comboCount:
+                          ComboUiMapper.comboCountFromLabel(combo.comboCount),
+                      comboType: ComboUiMapper.typeFromComboType(combo.comboType),
+                      status: ComboUiMapper.statusFromType(combo.statusType),
+                      matches: combo.matches.map(ComboUiMapper.toMatchRow).toList(),
+                      aiSections: combo.aiSections,
+                      totalOdds: combo.totalOdd.toStringAsFixed(2),
+                      confidence: combo.reliability,
+                    ),
+                  );
+                })
+              else
+                const TsEmptyState(type: TsEmptyStateType.defaultState),
+              const SizedBox(height: 24),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -293,7 +336,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                         SizedBox(
                           width: double.infinity,
                           child: TsButton(
-                            label: '지금 구독하기 →',
+                            label: '지금 구독하기',
                             variant: TsButtonVariant.primary,
                             onPressed: () => navigateToSubscribe(context, ref),
                           ),
@@ -318,10 +361,15 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
             child: SportsToggle(
               selectedSport: _selectedSport,
-              onChanged: (sport) => setState(() {
-                _selectedSport = sport;
-                _selectedComboDateIndex = 0;
-              }),
+              onChanged: (sport) {
+                setState(() {
+                  _selectedSport = sport;
+                  _selectedComboDateIndex = 0;
+                });
+                if (sport == SportType.baseball) {
+                  invalidateBaseballComboPicks(ref);
+                }
+              },
             ),
           ),
           // Matches [AnalysisPage]: SizedBox below SportsToggle before first body block.

@@ -35,10 +35,40 @@ class ComboMatchRow extends StatelessWidget {
   final double winRateRatio;
   final String comment;
   final ComboStatus? matchResult;
-  final String? homeScore;
-  final String? awayScore;
+  final int? homeScore;
+  final int? awayScore;
 
   bool get _homePredicted => predictDirection == '홈';
+
+  bool get _isFinished =>
+      matchResult == ComboStatus.hit || matchResult == ComboStatus.miss;
+
+  Widget _scoreCell(
+    TsSemanticColors semantic, {
+    required int? score,
+    required bool? isWinner,
+  }) {
+    final text = score?.toString() ?? '-';
+    final Color color;
+    if (!_isFinished || score == null) {
+      color = semantic.textTertiary;
+    } else if (isWinner == true) {
+      color = semantic.textPrimary;
+    } else if (isWinner == false) {
+      color = semantic.textDisabled;
+    } else {
+      color = semantic.textPrimary;
+    }
+
+    return SizedBox(
+      width: 24,
+      child: Text(
+        text,
+        style: TsType.bodyMBold.copyWith(color: color),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
 
   Widget _avatar(
     TsSemanticColors semantic, {
@@ -82,6 +112,18 @@ class ComboMatchRow extends StatelessWidget {
     final homeFaded = !_homePredicted;
     final awayFaded = _homePredicted;
 
+    bool? homeWinner;
+    bool? awayWinner;
+    if (_isFinished && homeScore != null && awayScore != null) {
+      if (homeScore! > awayScore!) {
+        homeWinner = true;
+        awayWinner = false;
+      } else if (awayScore! > homeScore!) {
+        homeWinner = false;
+        awayWinner = true;
+      }
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
@@ -118,16 +160,13 @@ class ComboMatchRow extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              if (homeScore != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(left: TsSpacing.xs),
-                                  child: Text(
-                                    homeScore!,
-                                    style: TsType.bodyMBold.copyWith(color: semantic.textPrimary),
-                                  ),
-                                ),
                             ],
                           ),
+                        ),
+                        _scoreCell(
+                          semantic,
+                          score: homeScore,
+                          isWinner: homeWinner,
                         ),
                       ],
                     ),
@@ -145,27 +184,18 @@ class ComboMatchRow extends StatelessWidget {
                         _avatar(semantic, url: awayLogoUrl, faded: awayFaded),
                         const SizedBox(width: TsSpacing.xs),
                         Expanded(
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  awayTeam,
-                                  style: TsType.bodyMBold.copyWith(
-                                    color: awayFaded ? semantic.textDisabled : semantic.textPrimary,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (awayScore != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(left: TsSpacing.xs),
-                                  child: Text(
-                                    awayScore!,
-                                    style: TsType.bodyMBold.copyWith(color: semantic.textPrimary),
-                                  ),
-                                ),
-                            ],
+                          child: Text(
+                            awayTeam,
+                            style: TsType.bodyMBold.copyWith(
+                              color: awayFaded ? semantic.textDisabled : semantic.textPrimary,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
+                        ),
+                        _scoreCell(
+                          semantic,
+                          score: awayScore,
+                          isWinner: awayWinner,
                         ),
                       ],
                     ),
