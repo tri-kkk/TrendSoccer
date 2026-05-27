@@ -1,152 +1,416 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
+import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/providers/blog_provider.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/features/report/report_dummy_data.dart';
+import 'package:trendsoccer/features/report/blog_parser.dart';
 import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
+import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 
-class SoccerReportDetailPage extends StatelessWidget {
+class SoccerReportDetailPage extends ConsumerWidget {
   const SoccerReportDetailPage({
-    required this.reportId,
+    required this.slug,
     super.key,
   });
 
-  final String reportId;
+  final String slug;
 
-  SoccerReportData? _findReport() {
-    for (final r in soccerReportsDummy) {
-      if (r.id == reportId) {
-        return r;
+  static String extractMatchupTitle(String content, String titleKrFallback) {
+    final lines = content.split('\n');
+    for (final line in lines) {
+      final trimmed = line.trimLeft();
+      if (trimmed.startsWith('# ')) {
+        final h1Text = trimmed.substring(2).trim();
+        if (h1Text.contains(':')) {
+          return h1Text.split(':').first.trim();
+        }
+        return h1Text;
       }
     }
-    return null;
+    if (titleKrFallback.contains('|')) {
+      return titleKrFallback.split('|').first.trim();
+    }
+    return titleKrFallback;
+  }
+
+  static String removeFirstH1(String content) {
+    final lines = content.split('\n');
+    if (lines.isNotEmpty && lines.first.trimLeft().startsWith('# ')) {
+      var startIndex = 1;
+      while (startIndex < lines.length && lines[startIndex].trim().isEmpty) {
+        startIndex++;
+      }
+      return lines.sublist(startIndex).join('\n');
+    }
+    return content;
+  }
+
+  static String cleanMarkdownContent(String content) {
+    content = removeFirstH1(content);
+    content = content.replaceAll(RegExp(r'[█░]+\s*'), '');
+    return content;
+  }
+
+  static (String body, String? analysis) splitAnalysisSection(String cleanContent) {
+    const analysisSplit = '## TrendSoccer 분석';
+    final splitIndex = cleanContent.indexOf(analysisSplit);
+    if (splitIndex >= 0) {
+      return (
+        cleanContent.substring(0, splitIndex).trim(),
+        cleanContent.substring(splitIndex).trim(),
+      );
+    }
+    return (cleanContent, null);
+  }
+
+  Widget _markdownBody(String data, TsSemanticColors semantic) {
+    return SizedBox(
+      width: double.infinity,
+      child: MarkdownBody(
+        data: data,
+        styleSheet: _markdownStyle(semantic),
+        selectable: true,
+        shrinkWrap: true,
+        fitContent: false,
+      ),
+    );
+  }
+
+  Widget _buildBlurredAnalysis(
+    BuildContext context,
+    WidgetRef ref,
+    String analysisContent,
+    TsSemanticColors colors,
+  ) {
+    return Stack(
+      clipBehavior: Clip.hardEdge,
+      children: [
+        ClipRect(
+          child: ImageFiltered(
+            imageFilter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+            child: IgnorePointer(
+              child: MarkdownBody(
+                data: analysisContent,
+                styleSheet: _markdownStyle(colors),
+                shrinkWrap: true,
+                fitContent: false,
+              ),
+            ),
+          ),
+        ),
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  colors.surfaceBase.withValues(alpha: 0.3),
+                  colors.surfaceBase.withValues(alpha: 0.95),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Positioned.fill(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: TsSpacing.xl),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.lock_outline,
+                    color: colors.textTertiary,
+                    size: 32,
+                  ),
+                  const SizedBox(height: TsSpacing.sm),
+                  Text(
+                    '프리미엄 구독 회원 전용 콘텐츠입니다',
+                    style: TsType.bodyLBold.copyWith(color: colors.textPrimary),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: TsSpacing.xs),
+                  Text(
+                    'AI 분석 결과를 확인하려면 구독이 필요합니다',
+                    style: TsType.bodyMRegular.copyWith(color: colors.textTertiary),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: TsSpacing.lg),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => navigateToSubscribe(context, ref),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.interactivePrimary,
+                        foregroundColor: colors.interactiveOnPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: TsSpacing.md),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(TsSpacing.sm),
+                        ),
+                      ),
+                      child: Text(
+                        '지금 구독하기',
+                        style: TsType.bodyLBold.copyWith(
+                          color: colors.interactiveOnPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  MarkdownStyleSheet _markdownStyle(TsSemanticColors semantic) {
+    return MarkdownStyleSheet(
+      h1: TsType.headingH1.copyWith(color: semantic.textPrimary),
+      h1Padding: const EdgeInsets.only(
+        top: TsSpacing.xl,
+        bottom: TsSpacing.sm,
+      ),
+      h2: TsType.headingH2.copyWith(color: semantic.textPrimary),
+      h2Padding: const EdgeInsets.only(
+        top: TsSpacing.xl,
+        bottom: TsSpacing.sm,
+      ),
+      h3: TsType.headingH3.copyWith(color: semantic.textPrimary),
+      h3Padding: const EdgeInsets.only(
+        top: TsSpacing.lg,
+        bottom: TsSpacing.sm,
+      ),
+      p: TsType.bodyLRegular.copyWith(
+        color: semantic.textSecondary,
+        height: 21 / 14,
+      ),
+      pPadding: const EdgeInsets.only(bottom: TsSpacing.sm),
+      strong: TsType.bodyLBold.copyWith(color: semantic.textPrimary),
+      listBullet: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+      a: TsType.bodyLRegular.copyWith(
+        color: semantic.interactivePrimary,
+        decoration: TextDecoration.underline,
+      ),
+      tableHead: TsType.bodyMBold.copyWith(color: semantic.textPrimary),
+      tableBody: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
+      tableBorder: TableBorder.all(color: semantic.borderSubtle, width: 1),
+      tableCellsPadding: const EdgeInsets.symmetric(
+        horizontal: TsSpacing.sm,
+        vertical: TsSpacing.xs,
+      ),
+      tableCellsDecoration: BoxDecoration(color: semantic.surfaceContainer),
+      tableColumnWidth: const FlexColumnWidth(),
+      tableHeadAlign: TextAlign.left,
+      blockquote: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
+      blockquoteDecoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(color: semantic.interactivePrimary, width: 3),
+        ),
+      ),
+      blockquotePadding: const EdgeInsets.only(
+        left: TsSpacing.md,
+        top: TsSpacing.xs,
+        bottom: TsSpacing.xs,
+      ),
+      horizontalRuleDecoration: BoxDecoration(
+        border: Border(top: BorderSide(color: semantic.borderSubtle, width: 1)),
+      ),
+    );
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final brightness = Theme.of(context).brightness;
-    final report = _findReport();
-    final bottomPadding = 16 + MediaQuery.paddingOf(context).bottom;
-
-    if (report == null) {
-      return Scaffold(
-        backgroundColor: semantic.surfaceBase,
-        appBar: TsAppBar.preferred(
-          context,
-          location: TsAppBarLocation.backTitle,
-          title: '매치 프리뷰',
-          onBack: () => context.pop(),
-        ),
-        body: Padding(
-          padding: EdgeInsets.only(bottom: bottomPadding),
-          child: const TsEmptyState(
-            title: '리포트를 찾을 수 없습니다.',
-            subtitle: '목록에서 다시 선택해 주세요.',
-          ),
-        ),
-      );
-    }
+    final auth = ref.watch(authProvider);
+    final hasFullAccess = auth.hasFullAccess || auth.isTrial;
+    final postAsync = ref.watch(blogPostDetailProvider(slug));
+    final bottomPadding = TsSpacing.lg + MediaQuery.paddingOf(context).bottom;
+    final appBarTitle = postAsync.when(
+      data: (response) {
+        final post = BlogParser.parsePostDetail(response);
+        if (post != null) {
+          return extractMatchupTitle(post.content, post.title);
+        }
+        return '매치 프리뷰';
+      },
+      loading: () => '매치 프리뷰',
+      error: (error, stackTrace) => '매치 프리뷰',
+    );
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
       appBar: TsAppBar.preferred(
         context,
         location: TsAppBarLocation.backTitle,
-        title: '매치 프리뷰',
+        title: appBarTitle,
         onBack: () => context.pop(),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 16,
-          bottom: bottomPadding,
+      body: postAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '매치 프리뷰를 불러오지 못했습니다.',
+                style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: TsSpacing.lg),
+              TsButton(
+                label: '다시 시도',
+                variant: TsButtonVariant.primary,
+                size: TsButtonSize.small,
+                onPressed: () => ref.invalidate(blogPostDetailProvider(slug)),
+              ),
+            ],
+          ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: double.infinity,
-              constraints: const BoxConstraints(minHeight: 232),
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: semantic.surfaceContainer,
-                borderRadius: BorderRadius.circular(8),
+        data: (response) {
+          final post = BlogParser.parsePostDetail(response);
+          if (post == null) {
+            return Padding(
+              padding: EdgeInsets.only(bottom: bottomPadding),
+              child: const TsEmptyState(
+                title: '리포트를 찾을 수 없습니다.',
+                subtitle: '목록에서 다시 선택해 주세요.',
               ),
-              alignment: Alignment.center,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.image_outlined, size: 40, color: semantic.textTertiary),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Report Banner',
-                    style: TsType.bodyMBold.copyWith(color: semantic.textTertiary),
-                  ),
-                ],
-              ),
+            );
+          }
+
+          final leagueLogoId = TsAssets.leagueLogoIdFromBlogTags(post.tags);
+          final cleanContent = cleanMarkdownContent(post.content);
+          final (bodyContent, analysisContent) = splitAnalysisSection(cleanContent);
+
+          return SingleChildScrollView(
+            padding: EdgeInsets.only(
+              left: TsSpacing.lg,
+              right: TsSpacing.lg,
+              top: TsSpacing.lg,
+              bottom: bottomPadding,
             ),
-            const SizedBox(height: 16),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SvgPicture.asset(
-                  TsAssets.logoEditor(brightness),
-                  width: 40,
-                  height: 40,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        report.author,
-                        style: TsType.bodyLRegular.copyWith(color: semantic.textPrimary),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '축구 데이터 분석가',
-                        style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
-                      ),
-                    ],
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(TsSpacing.sm),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 232),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 232,
+                      child: post.thumbnailUrl.isNotEmpty
+                          ? Image.network(
+                              post.thumbnailUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  _bannerFallback(semantic),
+                            )
+                          : _bannerFallback(semantic),
+                    ),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                SvgPicture.asset(
-                  TsAssets.leagueLogo(report.leagueId, brightness),
-                  height: 24,
+                const SizedBox(height: TsSpacing.lg),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SvgPicture.asset(
+                      TsAssets.logoEditor(brightness),
+                      width: 40,
+                      height: 40,
+                    ),
+                    const SizedBox(width: TsSpacing.sm),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'TrendSoccer',
+                            style: TsType.bodyLRegular.copyWith(
+                              color: semantic.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: TsSpacing.xs),
+                          Text(
+                            '축구 데이터 분석가',
+                            style: TsType.labelSRegular.copyWith(
+                              color: semantic.textTertiary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: TsSpacing.lg),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (leagueLogoId != null)
+                      SvgPicture.asset(
+                        TsAssets.leagueLogo(leagueLogoId, brightness),
+                        height: 24,
+                        fit: BoxFit.contain,
+                      )
+                    else
+                      const SizedBox.shrink(),
+                    Text(
+                      post.date,
+                      style: TsType.labelSRegular.copyWith(
+                        color: semantic.textTertiary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: TsSpacing.lg),
                 Text(
-                  report.date,
-                  style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+                  post.title,
+                  style: TsType.headingH1.copyWith(color: semantic.textPrimary),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
+                const SizedBox(height: TsSpacing.lg),
+                if (bodyContent.isNotEmpty) _markdownBody(bodyContent, semantic),
+                if (analysisContent != null) ...[
+                  const SizedBox(height: TsSpacing.lg),
+                  if (hasFullAccess)
+                    _markdownBody(analysisContent, semantic)
+                  else
+                    _buildBlurredAnalysis(
+                      context,
+                      ref,
+                      analysisContent,
+                      semantic,
+                    ),
+                ],
               ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              report.title,
-              style: TsType.headingH1.copyWith(color: semantic.textPrimary),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              report.content,
-              style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
-            ),
-          ],
-        ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _bannerFallback(TsSemanticColors semantic) {
+    return ColoredBox(
+      color: semantic.surfaceContainer,
+      child: Center(
+        child: Icon(Icons.image_outlined, size: 40, color: semantic.textTertiary),
       ),
     );
   }

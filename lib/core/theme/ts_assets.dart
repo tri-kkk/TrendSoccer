@@ -60,6 +60,39 @@ abstract final class TsAssets {
     'CPBL': 'cpbl',
   };
 
+  static const _blogTagToLeagueLogoId = <String, String>{
+    'EPL': 'premier_league',
+    'PremierLeague': 'premier_league',
+    'Premier League': 'premier_league',
+    'LaLiga': 'laliga',
+    '라리가': 'laliga',
+    'Bundesliga': 'bundesliga',
+    '분데스리가': 'bundesliga',
+    'SerieA': 'serie_a',
+    '세리에A': 'serie_a',
+    'Ligue1': 'ligue_1',
+    '리그1': 'ligue_1',
+    'MLS': 'mls',
+    'KLeague': 'k_league',
+    'K리그': 'k_league',
+    'JLeague': 'j1_league',
+    'J리그': 'j1_league',
+    'UCL': 'champions_league',
+    'ChampionsLeague': 'champions_league',
+    'UEL': 'europa_league',
+    'EuropaLeague': 'europa_league',
+    'Eredivisie': 'eredivisie',
+    '에레디비시': 'eredivisie',
+  };
+
+  static String? leagueLogoIdFromBlogTags(List<String> tags) {
+    for (final tag in tags) {
+      final leagueId = _blogTagToLeagueLogoId[tag];
+      if (leagueId != null) return leagueId;
+    }
+    return null;
+  }
+
   static const socialGoogle = 'assets/images/social/google.svg';
   static const socialNaver = 'assets/images/social/naver.svg';
 

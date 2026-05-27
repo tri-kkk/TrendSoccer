@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:trendsoccer/core/providers/blog_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
-import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/features/report/report_dummy_data.dart';
+import 'package:trendsoccer/features/report/blog_parser.dart';
 import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
+import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
+import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 
-class SoccerReportListPage extends StatelessWidget {
+class SoccerReportListPage extends ConsumerWidget {
   const SoccerReportListPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final postsAsync = ref.watch(blogPostsProvider);
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
@@ -23,24 +26,56 @@ class SoccerReportListPage extends StatelessWidget {
         title: '매치 프리뷰',
         onBack: () => context.pop(),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 16,
-          bottom: 16 + MediaQuery.paddingOf(context).bottom,
-        ),
-        child: Column(
-          children: [
-            for (var i = 0; i < soccerReportsDummy.length; i++) ...[
-              if (i > 0) const SizedBox(height: 16),
-              _ReportCard(
-                report: soccerReportsDummy[i],
-                onTap: () => context.push('/menu/reports/soccer/${soccerReportsDummy[i].id}'),
+      body: postsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '매치 프리뷰 목록을 불러오지 못했습니다.',
+                style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              TsButton(
+                label: '다시 시도',
+                variant: TsButtonVariant.primary,
+                size: TsButtonSize.small,
+                onPressed: () => ref.invalidate(blogPostsProvider),
               ),
             ],
-          ],
+          ),
         ),
+        data: (response) {
+          final posts = BlogParser.parsePostsList(response);
+          if (posts.isEmpty) {
+            return const TsEmptyState(
+              title: '등록된 매치 프리뷰가 없습니다.',
+              subtitle: '새 프리뷰가 등록되면 여기에 표시됩니다.',
+            );
+          }
+
+          return SingleChildScrollView(
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 16,
+              bottom: 16 + MediaQuery.paddingOf(context).bottom,
+            ),
+            child: Column(
+              children: [
+                for (var i = 0; i < posts.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 16),
+                  _ReportCard(
+                    post: posts[i],
+                    onTap: () => context.push('/menu/reports/soccer/${posts[i].slug}'),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -48,11 +83,11 @@ class SoccerReportListPage extends StatelessWidget {
 
 class _ReportCard extends StatelessWidget {
   const _ReportCard({
-    required this.report,
+    required this.post,
     required this.onTap,
   });
 
-  final SoccerReportData report;
+  final BlogPostListItem post;
   final VoidCallback onTap;
 
   @override
@@ -72,22 +107,19 @@ class _ReportCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                color: semantic.surfaceContainer,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              alignment: Alignment.center,
-              child: SvgPicture.asset(
-                TsAssets.iconBlog,
-                width: 32,
-                height: 32,
-                colorFilter: ColorFilter.mode(
-                  semantic.textTertiary,
-                  BlendMode.srcIn,
-                ),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: SizedBox(
+                width: 128,
+                height: 96,
+                child: post.thumbnailUrl.isNotEmpty
+                    ? Image.network(
+                        post.thumbnailUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            _thumbnailFallback(semantic),
+                      )
+                    : _thumbnailFallback(semantic),
               ),
             ),
             const SizedBox(width: 16),
@@ -96,19 +128,19 @@ class _ReportCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    report.date,
+                    post.date,
                     style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    report.title,
+                    post.title,
                     style: TsType.bodyLBold.copyWith(color: semantic.textPrimary),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    report.description,
+                    post.description,
                     style: TsType.labelSRegular.copyWith(color: semantic.textSecondary),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -118,6 +150,15 @@ class _ReportCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _thumbnailFallback(TsSemanticColors semantic) {
+    return ColoredBox(
+      color: semantic.surfaceContainer,
+      child: Center(
+        child: Icon(Icons.image, color: semantic.textTertiary),
       ),
     );
   }

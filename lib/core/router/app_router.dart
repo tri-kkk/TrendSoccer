@@ -183,9 +183,9 @@ abstract final class AppRouter {
                 builder: (context, state) => const SoccerReportListPage(),
               ),
               GoRoute(
-                path: 'reports/soccer/:id',
+                path: 'reports/soccer/:slug',
                 builder: (context, state) => SoccerReportDetailPage(
-                  reportId: state.pathParameters['id'] ?? '',
+                  slug: state.pathParameters['slug'] ?? '',
                 ),
               ),
             ],
