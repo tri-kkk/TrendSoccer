@@ -20,6 +20,21 @@ void logBaseballPremiumPredict(Map<String, dynamic> predictData) {
   print('[BASEBALL] Premium TEAM FORM: ${insights?['teamForm']}');
   print('[BASEBALL] Premium TEAM SEASON: ${insights?['teamSeason']}');
   print('[BASEBALL] Premium DATA QUALITY: $dataQuality');
+  print('[BASEBALL] Premium using predict for sections 3-7');
+}
+
+void logBaseballPremiumDetail(Map<String, dynamic> detail) {
+  final match = _unwrapMatch(detail);
+  final aiPred = match['aiPrediction'] as Map?;
+  print(
+    '[BASEBALL] Premium using aiPrediction: homeWinProb=${aiPred?['homeWinProb']}, grade=${match['aiPick']}',
+  );
+  final odds = match['odds'] as Map?;
+  final (overProb, underProb) = _impliedOverUnderProbs(
+    _parseDouble(odds?['overOdds']),
+    _parseDouble(odds?['underOdds']),
+  );
+  print('[BASEBALL] Premium O/U implied: over=$overProb%, under=$underProb%');
 }
 
 class PremiumGaugeItem {
@@ -44,10 +59,11 @@ class BaseballPremiumParsed {
     required this.awayTeam,
     required this.awayWinProb,
     required this.homeWinProb,
+    required this.grade,
     required this.summary,
     required this.overUnderLine,
-    required this.overOdds,
-    required this.underOdds,
+    required this.overProb,
+    required this.underProb,
     required this.highlightUnder,
     required this.homeAdvantageRecord,
     required this.awayAdvantageRecord,
@@ -73,10 +89,11 @@ class BaseballPremiumParsed {
   final String awayTeam;
   final String awayWinProb;
   final String homeWinProb;
+  final String grade;
   final String summary;
   final String overUnderLine;
-  final String overOdds;
-  final String underOdds;
+  final int overProb;
+  final int underProb;
   final bool highlightUnder;
   final String homeAdvantageRecord;
   final String awayAdvantageRecord;
@@ -96,6 +113,16 @@ class BaseballPremiumParsed {
   final double? awayEra;
   final double? homeWhip;
   final double? awayWhip;
+
+  factory BaseballPremiumParsed.fromResponses({
+    required Map<String, dynamic> matchData,
+    Map<String, dynamic>? predictData,
+  }) {
+    return parseBaseballPremium(
+      detail: matchData,
+      predict: predictData ?? {},
+    );
+  }
 }
 
 BaseballPremiumParsed parseBaseballPremium({
@@ -105,24 +132,44 @@ BaseballPremiumParsed parseBaseballPremium({
   final match = _unwrapMatch(detail);
   final homeSide = _readMap(match, const ['home']) ?? {};
   final awaySide = _readMap(match, const ['away']) ?? {};
-  final homeTeamEn = _readString(homeSide, const ['team', 'name']);
-  final awayTeamEn = _readString(awaySide, const ['team', 'name']);
+  final homeTeamKoFlat = _readString(match, const ['homeTeamKo', 'home_team_ko']);
+  final homeTeamEnFlat = _readString(match, const ['homeTeam', 'home_team']);
+  final awayTeamKoFlat = _readString(match, const ['awayTeamKo', 'away_team_ko']);
+  final awayTeamEnFlat = _readString(match, const ['awayTeam', 'away_team']);
+  final homeTeamEn =
+      _readString(homeSide, const ['team', 'name']) ?? homeTeamEnFlat;
+  final awayTeamEn =
+      _readString(awaySide, const ['team', 'name']) ?? awayTeamEnFlat;
   final homeTeam = _preferKo(
-    _readString(homeSide, const ['teamKo', 'team_ko']),
+    _readString(homeSide, const ['teamKo', 'team_ko']) ?? homeTeamKoFlat,
     homeTeamEn ?? '홈',
   );
   final awayTeam = _preferKo(
-    _readString(awaySide, const ['teamKo', 'team_ko']),
+    _readString(awaySide, const ['teamKo', 'team_ko']) ?? awayTeamKoFlat,
     awayTeamEn ?? '원정',
   );
 
   final oddsMap = _mergeOddsMap(match);
   final odds = BaseballOdds.fromJson(oddsMap);
+  final aiPred = _readMap(match, const ['aiPrediction', 'ai_prediction']);
   final prediction = _readMap(predict, const ['prediction']) ?? {};
   final insights = _readMap(predict, const ['insights']) ?? {};
 
-  final homeWinProb = _formatWinProb(prediction['homeWinProb']);
-  final awayWinProb = _formatWinProb(prediction['awayWinProb']);
+  final homeWinProbInt = _resolveWinProbPercent(
+    aiPred?['homeWinProb'] ?? oddsMap['homeWinProb'],
+  );
+  final awayWinProbInt = _resolveWinProbPercent(
+    aiPred?['awayWinProb'] ?? oddsMap['awayWinProb'],
+  );
+  final homeWinProb = '$homeWinProbInt%';
+  final awayWinProb = '$awayWinProbInt%';
+
+  final gradeRaw =
+      match['aiPick'] ?? aiPred?['grade'] ?? prediction['grade'];
+  final gradeText = gradeRaw?.toString().trim();
+  final grade = (gradeText != null && gradeText.isNotEmpty)
+      ? gradeText.toUpperCase()
+      : 'PASS';
 
   final summaryRaw = _readString(insights, const ['summary']) ?? 'AI 분석 데이터';
   final summary = _localizeTeamNamesInSummary(
@@ -133,9 +180,14 @@ BaseballPremiumParsed parseBaseballPremium({
     awayTeamKo: awayTeam,
   );
 
-  final overProb = _parseDouble(prediction['overProb']);
-  final underProb = _parseDouble(prediction['underProb']);
-  final highlightUnder = (underProb ?? 0) > (overProb ?? 0);
+  var overProb = _parseProbPercentInt(prediction['overProb']);
+  var underProb = _parseProbPercentInt(prediction['underProb']);
+  if (overProb == 0 && underProb == 0) {
+    final implied = _impliedOverUnderProbs(odds.overOdds, odds.underOdds);
+    overProb = implied.$1;
+    underProb = implied.$2;
+  }
+  final highlightUnder = underProb > overProb;
 
   final recentForm = _readMap(insights, const ['recentForm', 'recent_form']) ?? {};
   final homeAdvantage =
@@ -154,7 +206,8 @@ BaseballPremiumParsed parseBaseballPremium({
   final awayRecentWinRate = _formatRecentForm(recentForm['away']);
 
   final confidence = _confidenceFromString(
-    _readString(prediction, const ['confidence']),
+    _readString(prediction, const ['confidence']) ??
+        _readString(match, const ['aiPickConfidence', 'ai_pick_confidence']),
   );
 
   final teamForm = _readMap(insights, const ['teamForm', 'team_form']) ?? {};
@@ -255,10 +308,11 @@ BaseballPremiumParsed parseBaseballPremium({
     awayTeam: awayTeam,
     awayWinProb: awayWinProb,
     homeWinProb: homeWinProb,
+    grade: grade,
     summary: summary,
     overUnderLine: _formatLine(odds.overUnderLine),
-    overOdds: _formatOdds(odds.overOdds),
-    underOdds: _formatOdds(odds.underOdds),
+    overProb: overProb,
+    underProb: underProb,
     highlightUnder: highlightUnder,
     homeAdvantageRecord: homeAdvantageRecord,
     awayAdvantageRecord: awayAdvantageRecord,
@@ -393,14 +447,31 @@ ConfidenceLevel _confidenceFromString(String? value) {
   }
 }
 
-String _formatWinProb(Object? value) {
-  if (value == null) return '-';
+int _parseProbPercentInt(Object? value) {
   final parsed = _parseDouble(value);
-  if (parsed == null) return '-';
-  if (parsed == parsed.roundToDouble()) {
-    return '${parsed.round()}%';
+  if (parsed == null) return 0;
+  if (parsed > 0 && parsed <= 1) return (parsed * 100).round();
+  return parsed.round();
+}
+
+int _resolveWinProbPercent(Object? value) {
+  final parsed = _parseProbPercentInt(value);
+  return parsed > 0 ? parsed : 50;
+}
+
+(int, int) _impliedOverUnderProbs(double? overOdds, double? underOdds) {
+  final overVal = overOdds ?? 2.0;
+  final underVal = underOdds ?? 2.0;
+  if (overVal <= 0 || underVal <= 0) return (50, 50);
+
+  var overProb = (100 / overVal).round();
+  var underProb = (100 / underVal).round();
+  final totalProb = overProb + underProb;
+  if (totalProb > 0) {
+    overProb = (overProb * 100 / totalProb).round();
+    underProb = 100 - overProb;
   }
-  return '${parsed.toStringAsFixed(1)}%';
+  return (overProb, underProb);
 }
 
 String _formatRecentForm(Object? value) {
@@ -426,6 +497,13 @@ Map<String, dynamic> _unwrapMatch(Map<String, dynamic> detail) {
   final match = detail['match'];
   if (match is Map<String, dynamic>) return match;
   if (match is Map) return Map<String, dynamic>.from(match);
+
+  if (detail['matches'] is List && (detail['matches'] as List).isNotEmpty) {
+    final first = (detail['matches'] as List).first;
+    if (first is Map<String, dynamic>) return first;
+    if (first is Map) return Map<String, dynamic>.from(first);
+  }
+
   return detail;
 }
 
@@ -434,11 +512,6 @@ Map<String, dynamic> _mergeOddsMap(Map<String, dynamic> match) {
   if (odds is Map<String, dynamic>) return odds;
   if (odds is Map) return Map<String, dynamic>.from(odds);
   return match;
-}
-
-String _formatOdds(double? value) {
-  if (value == null) return '-';
-  return value.toStringAsFixed(2);
 }
 
 String _formatLine(double? value) {

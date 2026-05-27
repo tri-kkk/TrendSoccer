@@ -28,6 +28,7 @@ class BaseballPremiumTab extends ConsumerStatefulWidget {
 
 class _BaseballPremiumTabState extends ConsumerState<BaseballPremiumTab> {
   bool _subscribeSheetShown = false;
+  int? _loggedDetailMatchId;
   int? _loggedPredictMatchId;
 
   @override
@@ -51,9 +52,7 @@ class _BaseballPremiumTabState extends ConsumerState<BaseballPremiumTab> {
     final detailAsync = ref.watch(baseballMatchDetailProvider(widget.matchId));
     final predictAsync = ref.watch(baseballPredictProvider(widget.matchId));
 
-    final isLoading = detailAsync.isLoading || predictAsync.isLoading;
-
-    if (detailAsync.hasError || predictAsync.hasError) {
+    if (detailAsync.hasError) {
       return KeyedSubtree(
         key: const ValueKey<Object>('baseball_report_premium_error'),
         child: Padding(
@@ -68,7 +67,7 @@ class _BaseballPremiumTabState extends ConsumerState<BaseballPremiumTab> {
       );
     }
 
-    if (isLoading) {
+    if (detailAsync.isLoading) {
       return const KeyedSubtree(
         key: ValueKey<Object>('baseball_report_premium_loading'),
         child: Padding(
@@ -78,15 +77,22 @@ class _BaseballPremiumTabState extends ConsumerState<BaseballPremiumTab> {
       );
     }
 
-    final predictData = predictAsync.value;
+    final detailData = detailAsync.value ?? {};
+    if (_loggedDetailMatchId != widget.matchId) {
+      _loggedDetailMatchId = widget.matchId;
+      logBaseballPremiumDetail(detailData);
+    }
+
+    final predictData =
+        predictAsync.hasValue ? predictAsync.value : null;
     if (predictData != null && _loggedPredictMatchId != widget.matchId) {
       _loggedPredictMatchId = widget.matchId;
       logBaseballPremiumPredict(predictData);
     }
 
-    final parsed = parseBaseballPremium(
-      detail: detailAsync.value ?? {},
-      predict: predictData ?? {},
+    final parsed = BaseballPremiumParsed.fromResponses(
+      matchData: detailData,
+      predictData: predictData,
     );
 
     return KeyedSubtree(
@@ -96,6 +102,8 @@ class _BaseballPremiumTabState extends ConsumerState<BaseballPremiumTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            _AiAnalysisSection(parsed: parsed),
+            const SizedBox(height: TsSpacing.lg),
             _WinProbabilitySection(parsed: parsed),
             const SizedBox(height: TsSpacing.lg),
             _OverUnderSection(parsed: parsed),
@@ -196,6 +204,53 @@ class BaseballPremiumTabError extends StatelessWidget {
   }
 }
 
+class _AiAnalysisSection extends StatelessWidget {
+  const _AiAnalysisSection({required this.parsed});
+
+  final BaseballPremiumParsed parsed;
+
+  @override
+  Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'AI 경기 분석',
+          style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: TsSpacing.sm,
+            vertical: TsSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: _gradeBackgroundColor(parsed.grade),
+            borderRadius: BorderRadius.circular(TsSpacing.md),
+          ),
+          child: Text(
+            parsed.grade,
+            style: TsType.bodyMBold.copyWith(color: semantic.textPrimary),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+Color _gradeBackgroundColor(String grade) {
+  switch (grade.toUpperCase()) {
+    case 'PICK':
+      return TsColors.analysisPick500;
+    case 'GOOD':
+      return TsColors.analysisGood500;
+    case 'PASS':
+    default:
+      return TsColors.analysisPass500;
+  }
+}
+
 class _WinProbabilitySection extends StatelessWidget {
   const _WinProbabilitySection({required this.parsed});
 
@@ -204,6 +259,11 @@ class _WinProbabilitySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final summaryLines = parsed.summary
+        .split('\n\n')
+        .map((line) => line.trim())
+        .where((line) => line.isNotEmpty)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,28 +287,39 @@ class _WinProbabilitySection extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _InfoBox(
-                      label: '홈',
+                      label: parsed.homeTeam,
                       value: parsed.homeWinProb,
-                      teamName: parsed.homeTeam,
                       valueColor: semantic.interactivePrimary,
                     ),
                   ),
                   const SizedBox(width: TsSpacing.sm),
                   Expanded(
                     child: _InfoBox(
-                      label: '원정',
+                      label: parsed.awayTeam,
                       value: parsed.awayWinProb,
-                      teamName: parsed.awayTeam,
-                      valueColor: TsColors.systemError500,
+                      valueColor: TsColors.error500,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: TsSpacing.lg),
-              Text(
-                parsed.summary,
-                style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
-                textAlign: TextAlign.center,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  for (var i = 0; i < summaryLines.length; i++) ...[
+                    if (i > 0) const SizedBox(height: TsSpacing.sm),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        summaryLines[i],
+                        style: TsType.bodyMRegular.copyWith(
+                          color: semantic.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ],
           ),
@@ -307,7 +378,7 @@ class _OverUnderSection extends StatelessWidget {
                   Expanded(
                     child: _UOBox(
                       label: '오버',
-                      value: parsed.overOdds,
+                      value: '${parsed.overProb}%',
                       isHighlighted: !highlightUnder,
                     ),
                   ),
@@ -315,7 +386,7 @@ class _OverUnderSection extends StatelessWidget {
                   Expanded(
                     child: _UOBox(
                       label: '언더',
-                      value: parsed.underOdds,
+                      value: '${parsed.underProb}%',
                       isHighlighted: highlightUnder,
                     ),
                   ),
@@ -727,13 +798,11 @@ class _InfoBox extends StatelessWidget {
     required this.label,
     required this.value,
     required this.valueColor,
-    this.teamName,
   });
 
   final String label;
   final String value;
   final Color valueColor;
-  final String? teamName;
 
   @override
   Widget build(BuildContext context) {
@@ -759,16 +828,6 @@ class _InfoBox extends StatelessWidget {
             style: TsType.headingH1.copyWith(color: valueColor),
             textAlign: TextAlign.center,
           ),
-          if (teamName != null) ...[
-            const SizedBox(height: TsSpacing.sm),
-            Text(
-              teamName!,
-              style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
         ],
       ),
     );
@@ -886,8 +945,8 @@ class _ProductionGaugeCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('홈 ${item.homeStatLabel}', style: tertiaryStyle),
-              Text('원정 ${item.awayStatLabel}', style: tertiaryStyle),
+              Text(item.homeStatLabel, style: tertiaryStyle),
+              Text(item.awayStatLabel, style: tertiaryStyle),
             ],
           ),
         ],

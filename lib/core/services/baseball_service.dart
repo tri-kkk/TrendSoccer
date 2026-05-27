@@ -89,10 +89,35 @@ class BaseballService {
   Future<Map<String, dynamic>> getMatchDetail({required int matchId}) async {
     print('[BASEBALL] Match detail request: api_match_id=$matchId');
     try {
-      final response = await _dio.get<dynamic>('/api/baseball/matches/$matchId');
-      final data = _adaptToMap(response.data);
-      print('[BASEBALL] Match detail for $matchId loaded');
-      return data;
+      final response = await _dio.get<dynamic>(
+        '/api/baseball/matches',
+        queryParameters: <String, dynamic>{
+          'id': matchId,
+          'skipML': true,
+        },
+      );
+      final responseData = _adaptToMap(response.data);
+      Map<String, dynamic>? match;
+      if (responseData['match'] != null) {
+        match = _adaptToMap(responseData['match']);
+      } else if (responseData['matches'] is List &&
+          (responseData['matches'] as List).isNotEmpty) {
+        match = _adaptToMap((responseData['matches'] as List).first);
+      }
+
+      print(
+        '[BASEBALL] Match detail via query: id=$matchId, keys=${match?.keys}',
+      );
+      print('[BASEBALL] aiPrediction: ${match?['aiPrediction']}');
+      print(
+        '[BASEBALL] aiPick: ${match?['aiPick']}, confidence: ${match?['aiPickConfidence']}',
+      );
+
+      if (match != null) {
+        return {'match': match};
+      }
+      print('[BASEBALL] Match detail for $matchId: no match in response');
+      return responseData;
     } catch (e) {
       print('[BASEBALL] Match detail for $matchId failed: $e');
       rethrow;
@@ -157,20 +182,19 @@ class BaseballService {
 
   Future<Map<String, dynamic>> getBaseballTeamStats({
     required int teamId,
-    required String league,
   }) async {
     try {
+      print('[BASEBALL] team-stats request: teamId=$teamId');
       final response = await _dio.get<dynamic>(
         '/api/baseball/team-stats',
         queryParameters: <String, dynamic>{
           'teamId': teamId,
-          'league': league,
         },
       );
-      print(
-        '[BASEBALL] team-stats for teamId=$teamId: ${response.data?['success']}',
-      );
       final data = response.data;
+      print(
+        '[BASEBALL] team-stats response: success=${data?['success']}, games=${data?['stats']?['games']}',
+      );
       if (data is Map<String, dynamic>) return data;
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};

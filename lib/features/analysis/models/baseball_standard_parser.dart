@@ -189,18 +189,32 @@ BaseballStandardParsed parseBaseballStandardDetail(Map<String, dynamic> raw) {
   final homeSide = _readMap(match, const ['home']) ?? {};
   final awaySide = _readMap(match, const ['away']) ?? {};
 
-  final homeTeamKo = _readString(homeSide, const ['teamKo', 'team_ko']);
-  final homeTeamEn = _readString(homeSide, const ['team', 'name']) ?? '';
-  final awayTeamKo = _readString(awaySide, const ['teamKo', 'team_ko']);
-  final awayTeamEn = _readString(awaySide, const ['team', 'name']) ?? '';
+  final homeTeamKo = _readString(match, const ['homeTeamKo', 'home_team_ko']) ??
+      _readString(homeSide, const ['teamKo', 'team_ko']);
+  final homeTeamEn = _readString(match, const ['homeTeam', 'home_team']) ??
+      _readString(homeSide, const ['team', 'name']) ??
+      '';
+  final awayTeamKo = _readString(match, const ['awayTeamKo', 'away_team_ko']) ??
+      _readString(awaySide, const ['teamKo', 'team_ko']);
+  final awayTeamEn = _readString(match, const ['awayTeam', 'away_team']) ??
+      _readString(awaySide, const ['team', 'name']) ??
+      '';
 
   final homeTeam = _preferKo(homeTeamKo, homeTeamEn);
   final awayTeam = _preferKo(awayTeamKo, awayTeamEn);
 
-  final homeLogoUrl = _nonEmptyOrNull(homeSide['logo']);
-  final awayLogoUrl = _nonEmptyOrNull(awaySide['logo']);
-  final homeTeamId = _parseInt(homeSide['id'] ?? homeSide['teamId']);
-  final awayTeamId = _parseInt(awaySide['id'] ?? awaySide['teamId']);
+  final homeLogoUrl = _nonEmptyOrNull(
+    match['homeLogo'] ?? match['home_logo'] ?? homeSide['logo'],
+  );
+  final awayLogoUrl = _nonEmptyOrNull(
+    match['awayLogo'] ?? match['away_logo'] ?? awaySide['logo'],
+  );
+  final homeTeamId = _parseInt(
+    match['homeTeamId'] ?? homeSide['id'] ?? homeSide['teamId'],
+  );
+  final awayTeamId = _parseInt(
+    match['awayTeamId'] ?? awaySide['id'] ?? awaySide['teamId'],
+  );
 
   final homeScore = _formatNullableScore(homeSide['score']);
   final awayScore = _formatNullableScore(awaySide['score']);
@@ -324,6 +338,12 @@ Map<String, dynamic> _unwrapDetail(Map<String, dynamic> raw) {
   final match = raw['match'];
   if (match is Map<String, dynamic>) return match;
   if (match is Map) return Map<String, dynamic>.from(match);
+
+  if (raw['matches'] is List && (raw['matches'] as List).isNotEmpty) {
+    final first = (raw['matches'] as List).first;
+    if (first is Map<String, dynamic>) return first;
+    if (first is Map) return Map<String, dynamic>.from(first);
+  }
 
   if (raw['success'] == true) {
     final data = raw['data'];
