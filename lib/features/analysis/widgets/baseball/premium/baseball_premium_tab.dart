@@ -227,17 +227,19 @@ class _WinProbabilitySection extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _InfoBox(
-                      label: '원정',
-                      value: parsed.awayWinProb,
-                      valueColor: TsColors.systemError500,
+                      label: '홈',
+                      value: parsed.homeWinProb,
+                      teamName: parsed.homeTeam,
+                      valueColor: semantic.interactivePrimary,
                     ),
                   ),
                   const SizedBox(width: TsSpacing.sm),
                   Expanded(
                     child: _InfoBox(
-                      label: '홈',
-                      value: parsed.homeWinProb,
-                      valueColor: semantic.interactivePrimary,
+                      label: '원정',
+                      value: parsed.awayWinProb,
+                      teamName: parsed.awayTeam,
+                      valueColor: TsColors.systemError500,
                     ),
                   ),
                 ],
@@ -358,23 +360,23 @@ class _HomeAwayRecordSection extends StatelessWidget {
           padding: const EdgeInsets.all(TsSpacing.lg),
           decoration: BoxDecoration(
             color: semantic.surfaceRaised,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(TsSpacing.sm),
           ),
           child: Row(
             children: [
               Expanded(
-                child: _InfoBox(
-                  label: '원정',
-                  value: parsed.awayRecentForm,
-                  valueColor: TsColors.systemError500,
+                child: _HomeAwayAdvantageBox(
+                  teamName: parsed.homeTeam,
+                  recordRaw: parsed.homeAdvantageRecord,
+                  isHome: true,
                 ),
               ),
               const SizedBox(width: TsSpacing.sm),
               Expanded(
-                child: _InfoBox(
-                  label: '홈',
-                  value: parsed.homeRecentForm,
-                  valueColor: semantic.interactivePrimary,
+                child: _HomeAwayAdvantageBox(
+                  teamName: parsed.awayTeam,
+                  recordRaw: parsed.awayAdvantageRecord,
+                  isHome: false,
                 ),
               ),
             ],
@@ -417,7 +419,7 @@ class _WinRateSection extends StatelessWidget {
           padding: const EdgeInsets.all(TsSpacing.lg),
           decoration: BoxDecoration(
             color: semantic.surfaceRaised,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(TsSpacing.sm),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -425,20 +427,18 @@ class _WinRateSection extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: _InfoBox(
-                      label: '원정',
-                      value: parsed.awayRecentForm,
-                      teamName: parsed.awayTeam,
-                      valueColor: TsColors.systemError500,
+                    child: _RecentWinRateBox(
+                      teamName: parsed.homeTeam,
+                      winRate: parsed.homeRecentWinRate,
+                      isHome: true,
                     ),
                   ),
                   const SizedBox(width: TsSpacing.sm),
                   Expanded(
-                    child: _InfoBox(
-                      label: '홈',
-                      value: parsed.homeRecentForm,
-                      teamName: parsed.homeTeam,
-                      valueColor: semantic.interactivePrimary,
+                    child: _RecentWinRateBox(
+                      teamName: parsed.awayTeam,
+                      winRate: parsed.awayRecentWinRate,
+                      isHome: false,
                     ),
                   ),
                 ],
@@ -496,7 +496,7 @@ class _TeamProductionSection extends StatelessWidget {
           padding: const EdgeInsets.all(TsSpacing.lg),
           decoration: BoxDecoration(
             color: semantic.surfaceRaised,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(TsSpacing.sm),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -506,20 +506,26 @@ class _TeamProductionSection extends StatelessWidget {
                 _ProductionGaugeCard(item: parsed.teamProduction[i]),
               ],
               const SizedBox(height: TsSpacing.lg),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: semantic.surfaceContainer,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  parsed.teamProductionDescription,
-                  style: TsType.bodyMRegular.copyWith(
-                    color: semantic.interactivePrimary,
+              Column(
+                children: [
+                  Text(
+                    parsed.teamProductionLine1,
+                    style: TsType.bodyMRegular.copyWith(
+                      color: semantic.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
+                  if (parsed.teamProductionLine2.isNotEmpty) ...[
+                    const SizedBox(height: TsSpacing.sm),
+                    Text(
+                      parsed.teamProductionLine2,
+                      style: TsType.bodyMRegular.copyWith(
+                        color: semantic.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ],
               ),
             ],
           ),
@@ -601,6 +607,119 @@ class _SeasonTeamStatsSection extends StatelessWidget {
       ],
     );
   }
+}
+
+class _HomeAwayAdvantageBox extends StatelessWidget {
+  const _HomeAwayAdvantageBox({
+    required this.teamName,
+    required this.recordRaw,
+    required this.isHome,
+  });
+
+  final String teamName;
+  final String recordRaw;
+  final bool isHome;
+
+  @override
+  Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final isNa = recordRaw.toUpperCase() == 'N/A';
+    final percentage = isNa ? '-' : _extractPercentage(recordRaw);
+    final winLoss = isNa ? '' : _extractWinLoss(recordRaw);
+    final valueColor =
+        isHome ? semantic.interactivePrimary : TsColors.error500;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: semantic.surfaceContainer,
+        borderRadius: BorderRadius.circular(TsSpacing.sm),
+      ),
+      padding: const EdgeInsets.all(TsSpacing.lg),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            teamName,
+            style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: TsSpacing.sm),
+          Text(
+            percentage,
+            style: TsType.headingH1.copyWith(color: valueColor),
+            textAlign: TextAlign.center,
+          ),
+          if (winLoss.isNotEmpty) ...[
+            const SizedBox(height: TsSpacing.sm),
+            Text(
+              winLoss,
+              style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _RecentWinRateBox extends StatelessWidget {
+  const _RecentWinRateBox({
+    required this.teamName,
+    required this.winRate,
+    required this.isHome,
+  });
+
+  final String teamName;
+  final String winRate;
+  final bool isHome;
+
+  @override
+  Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final valueColor =
+        isHome ? semantic.interactivePrimary : TsColors.error500;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: semantic.surfaceContainer,
+        borderRadius: BorderRadius.circular(TsSpacing.sm),
+      ),
+      padding: const EdgeInsets.all(TsSpacing.lg),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            teamName,
+            style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: TsSpacing.sm),
+          Text(
+            winRate,
+            style: TsType.headingH1.copyWith(color: valueColor),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _extractPercentage(String record) {
+  final idx = record.indexOf(' (');
+  return idx > 0 ? record.substring(0, idx) : record;
+}
+
+String _extractWinLoss(String record) {
+  final match = RegExp(r'\((.+)\)').firstMatch(record);
+  final raw = match?.group(1) ?? '';
+  if (raw.isEmpty) return '';
+  return raw.replaceAll('-', ' - ');
 }
 
 class _InfoBox extends StatelessWidget {
@@ -731,10 +850,10 @@ class _ProductionGaugeCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(TsSpacing.xs),
       decoration: BoxDecoration(
         color: semantic.surfaceContainer,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(TsSpacing.sm),
       ),
       child: Column(
         children: [
@@ -744,11 +863,11 @@ class _ProductionGaugeCard extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: TsSpacing.sm),
-          SizedBox(
-            width: double.infinity,
-            height: 8,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(TsSpacing.sm),
+            child: SizedBox(
+              height: 8,
+              width: double.infinity,
               child: Row(
                 children: [
                   Expanded(
@@ -757,22 +876,19 @@ class _ProductionGaugeCard extends StatelessWidget {
                   ),
                   Expanded(
                     flex: awayFlex,
-                    child: Container(color: TsColors.systemError500),
+                    child: Container(color: TsColors.error500),
                   ),
                 ],
               ),
             ),
           ),
           const SizedBox(height: TsSpacing.sm),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(item.homeStatLabel, style: tertiaryStyle),
-                Text(item.awayStatLabel, style: tertiaryStyle),
-              ],
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('홈 ${item.homeStatLabel}', style: tertiaryStyle),
+              Text('원정 ${item.awayStatLabel}', style: tertiaryStyle),
+            ],
           ),
         ],
       ),

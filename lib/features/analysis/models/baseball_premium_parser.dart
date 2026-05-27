@@ -49,11 +49,14 @@ class BaseballPremiumParsed {
     required this.overOdds,
     required this.underOdds,
     required this.highlightUnder,
-    required this.awayRecentForm,
-    required this.homeRecentForm,
+    required this.homeAdvantageRecord,
+    required this.awayAdvantageRecord,
+    required this.homeRecentWinRate,
+    required this.awayRecentWinRate,
     required this.confidence,
     required this.teamProduction,
-    required this.teamProductionDescription,
+    required this.teamProductionLine1,
+    required this.teamProductionLine2,
     required this.seasonTeamStats,
     required this.hasTeamSeason,
     this.homeAvg,
@@ -75,11 +78,14 @@ class BaseballPremiumParsed {
   final String overOdds;
   final String underOdds;
   final bool highlightUnder;
-  final String awayRecentForm;
-  final String homeRecentForm;
+  final String homeAdvantageRecord;
+  final String awayAdvantageRecord;
+  final String homeRecentWinRate;
+  final String awayRecentWinRate;
   final ConfidenceLevel confidence;
   final List<PremiumGaugeItem> teamProduction;
-  final String teamProductionDescription;
+  final String teamProductionLine1;
+  final String teamProductionLine2;
   final List<PremiumGaugeItem> seasonTeamStats;
   final bool hasTeamSeason;
   final double? homeAvg;
@@ -99,13 +105,15 @@ BaseballPremiumParsed parseBaseballPremium({
   final match = _unwrapMatch(detail);
   final homeSide = _readMap(match, const ['home']) ?? {};
   final awaySide = _readMap(match, const ['away']) ?? {};
+  final homeTeamEn = _readString(homeSide, const ['team', 'name']);
+  final awayTeamEn = _readString(awaySide, const ['team', 'name']);
   final homeTeam = _preferKo(
     _readString(homeSide, const ['teamKo', 'team_ko']),
-    _readString(homeSide, const ['team', 'name']) ?? '홈',
+    homeTeamEn ?? '홈',
   );
   final awayTeam = _preferKo(
     _readString(awaySide, const ['teamKo', 'team_ko']),
-    _readString(awaySide, const ['team', 'name']) ?? '원정',
+    awayTeamEn ?? '원정',
   );
 
   final oddsMap = _mergeOddsMap(match);
@@ -116,7 +124,14 @@ BaseballPremiumParsed parseBaseballPremium({
   final homeWinProb = _formatWinProb(prediction['homeWinProb']);
   final awayWinProb = _formatWinProb(prediction['awayWinProb']);
 
-  final summary = _readString(insights, const ['summary']) ?? 'AI 분석 데이터';
+  final summaryRaw = _readString(insights, const ['summary']) ?? 'AI 분석 데이터';
+  final summary = _localizeTeamNamesInSummary(
+    _formatPremiumSummary(summaryRaw),
+    homeTeamEn: homeTeamEn,
+    awayTeamEn: awayTeamEn,
+    homeTeamKo: homeTeam,
+    awayTeamKo: awayTeam,
+  );
 
   final overProb = _parseDouble(prediction['overProb']);
   final underProb = _parseDouble(prediction['underProb']);
@@ -125,14 +140,18 @@ BaseballPremiumParsed parseBaseballPremium({
   final recentForm = _readMap(insights, const ['recentForm', 'recent_form']) ?? {};
   final homeAdvantage =
       _readMap(insights, const ['homeAdvantage', 'home_advantage']) ?? {};
-  final awayRecentForm = _formatRecentFormWithRecord(
-    recentForm['away'],
-    homeAdvantage['awayRecord'] ?? homeAdvantage['away_record'],
-  );
-  final homeRecentForm = _formatRecentFormWithRecord(
-    recentForm['home'],
-    homeAdvantage['homeRecord'] ?? homeAdvantage['home_record'],
-  );
+  final homeAdvantageRecord =
+      (homeAdvantage['homeRecord'] ?? homeAdvantage['home_record'])
+              ?.toString()
+              .trim() ??
+          'N/A';
+  final awayAdvantageRecord =
+      (homeAdvantage['awayRecord'] ?? homeAdvantage['away_record'])
+              ?.toString()
+              .trim() ??
+          'N/A';
+  final homeRecentWinRate = _formatRecentForm(recentForm['home']);
+  final awayRecentWinRate = _formatRecentForm(recentForm['away']);
 
   final confidence = _confidenceFromString(
     _readString(prediction, const ['confidence']),
@@ -144,6 +163,8 @@ BaseballPremiumParsed parseBaseballPremium({
 
   final homeScored = _parseDouble(homeForm['scored']) ?? 0;
   final awayScored = _parseDouble(awayForm['scored']) ?? 0;
+  final homeConceded = _parseDouble(homeForm['conceded']) ?? 0;
+  final awayConceded = _parseDouble(awayForm['conceded']) ?? 0;
 
   final teamProduction = [
     _gaugeFromTeamForm(
@@ -169,12 +190,13 @@ BaseballPremiumParsed parseBaseballPremium({
     ),
   ];
 
-  final teamProductionDescription = _buildProductionDescription(
-    summary: summary,
+  final (teamProductionLine1, teamProductionLine2) = _buildProductionLines(
     homeTeam: homeTeam,
     awayTeam: awayTeam,
     homeScored: homeScored,
     awayScored: awayScored,
+    homeConceded: homeConceded,
+    awayConceded: awayConceded,
     hasTeamFormData: _hasTeamFormData(homeForm, awayForm),
   );
 
@@ -238,11 +260,14 @@ BaseballPremiumParsed parseBaseballPremium({
     overOdds: _formatOdds(odds.overOdds),
     underOdds: _formatOdds(odds.underOdds),
     highlightUnder: highlightUnder,
-    awayRecentForm: awayRecentForm,
-    homeRecentForm: homeRecentForm,
+    homeAdvantageRecord: homeAdvantageRecord,
+    awayAdvantageRecord: awayAdvantageRecord,
+    homeRecentWinRate: homeRecentWinRate,
+    awayRecentWinRate: awayRecentWinRate,
     confidence: confidence,
     teamProduction: teamProduction,
-    teamProductionDescription: teamProductionDescription,
+    teamProductionLine1: teamProductionLine1,
+    teamProductionLine2: teamProductionLine2,
     seasonTeamStats: seasonTeamStats,
     hasTeamSeason: hasTeamSeason,
     homeAvg: homeAvg,
@@ -265,26 +290,32 @@ bool _hasTeamFormData(Map<String, dynamic> homeForm, Map<String, dynamic> awayFo
   return false;
 }
 
-String _buildProductionDescription({
-  required String summary,
+(String, String) _buildProductionLines({
   required String homeTeam,
   required String awayTeam,
   required double homeScored,
   required double awayScored,
+  required double homeConceded,
+  required double awayConceded,
   required bool hasTeamFormData,
 }) {
-  if (hasTeamFormData) {
-    if (summary.trim().isNotEmpty && summary != 'AI 분석 데이터') {
-      return summary;
-    }
-    if (homeScored > awayScored) {
-      return '$homeTeam 타선 우세 (${homeScored.toStringAsFixed(1)}점/경기)';
-    }
-    if (awayScored > homeScored) {
-      return '$awayTeam 타선 우세 (${awayScored.toStringAsFixed(1)}점/경기)';
-    }
+  if (!hasTeamFormData) {
+    return ('최근 10경기 팀 공격 생산성 지표입니다.', '');
   }
-  return '최근 10경기 팀 공격 생산성 지표입니다.';
+
+  final homeScoredMore = homeScored >= awayScored;
+  final batterTeam = homeScoredMore ? homeTeam : awayTeam;
+  final batterValue = homeScoredMore ? homeScored : awayScored;
+  final line1 =
+      '$batterTeam 타선 우세 (${batterValue.toStringAsFixed(1)}점/경기)';
+
+  final homeBetterDefense = homeConceded <= awayConceded;
+  final defenseTeam = homeBetterDefense ? homeTeam : awayTeam;
+  final defenseValue = homeBetterDefense ? homeConceded : awayConceded;
+  final line2 =
+      '$defenseTeam 수비 우세 (${defenseValue.toStringAsFixed(1)}실점/경기)';
+
+  return (line1, line2);
 }
 
 PremiumGaugeItem _gaugeFromTeamForm(
@@ -362,17 +393,6 @@ ConfidenceLevel _confidenceFromString(String? value) {
   }
 }
 
-String _formatRecentFormWithRecord(Object? percent, Object? record) {
-  final pct = _formatRecentForm(percent);
-  final recordText = record?.toString().trim();
-  if (recordText == null ||
-      recordText.isEmpty ||
-      recordText.toUpperCase() == 'N/A') {
-    return pct;
-  }
-  return '$pct ($recordText)';
-}
-
 String _formatWinProb(Object? value) {
   if (value == null) return '-';
   final parsed = _parseDouble(value);
@@ -425,6 +445,42 @@ String _formatLine(double? value) {
   if (value == null) return '-';
   if (value == value.roundToDouble()) return value.toStringAsFixed(0);
   return value.toStringAsFixed(1);
+}
+
+String _formatPremiumSummary(String text) {
+  if (text.isEmpty) return text;
+
+  text = text.replaceAll(r'\n', '\n');
+
+  if (text.contains('\n') &&
+      text.split('\n').where((segment) => segment.trim().isNotEmpty).length >
+          1) {
+    return text.trim();
+  }
+
+  return text
+      .replaceAllMapped(
+        RegExp(r'(\.\s)(?=\S)'),
+        (match) => '.\n\n',
+      )
+      .trim();
+}
+
+String _localizeTeamNamesInSummary(
+  String summary, {
+  String? homeTeamEn,
+  String? awayTeamEn,
+  required String homeTeamKo,
+  required String awayTeamKo,
+}) {
+  var localized = summary;
+  if (homeTeamEn != null && homeTeamEn.isNotEmpty) {
+    localized = localized.replaceAll(homeTeamEn, homeTeamKo);
+  }
+  if (awayTeamEn != null && awayTeamEn.isNotEmpty) {
+    localized = localized.replaceAll(awayTeamEn, awayTeamKo);
+  }
+  return localized;
 }
 
 String _preferKo(String? ko, String fallback) {

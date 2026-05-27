@@ -29,12 +29,10 @@ final baseballPitcherAnalysisProvider =
   final awaySide = match['away'] is Map
       ? Map<String, dynamic>.from(match['away'] as Map)
       : <String, dynamic>{};
-  final homeTeamKo = (homeSide['teamKo'] as String?) ??
-      (homeSide['team'] as String?) ??
-      '';
-  final awayTeamKo = (awaySide['teamKo'] as String?) ??
-      (awaySide['team'] as String?) ??
-      '';
+  final homeTeam = _baseballTeamEnglish(homeSide);
+  final awayTeam = _baseballTeamEnglish(awaySide);
+  final homeTeamKo = _baseballTeamKorean(homeSide);
+  final awayTeamKo = _baseballTeamKorean(awaySide);
   final homePitcherName =
       (match['homePitcherKo'] as String?) ?? (match['homePitcher'] as String?);
   final awayPitcherName =
@@ -106,8 +104,9 @@ final baseballPitcherAnalysisProvider =
     'strikeouts': match['awayPitcherK'],
   };
 
-  // MLB pitcher names are often English in match detail; Korean text may mix
-  // languages when language=ko (same as web — e.g. "콜로라도의 Kyle Freeland는").
+  print(
+    '[BASEBALL] pitcher-analysis POST: homeTeam=$homeTeam, awayTeam=$awayTeam',
+  );
   print(
     '[BASEBALL] Pitcher analysis language: ko, '
     'homePitcher=$homePitcherName, awayPitcher=$awayPitcherName',
@@ -115,8 +114,8 @@ final baseballPitcherAnalysisProvider =
 
   return service.getPitcherAnalysis(
     matchId: apiMatchId,
-    homeTeam: homeTeamKo,
-    awayTeam: awayTeamKo,
+    homeTeam: homeTeam,
+    awayTeam: awayTeam,
     homePitcher: homePitcherName,
     awayPitcher: awayPitcherName,
     homeStats: homeStats,
@@ -134,7 +133,7 @@ Map<String, dynamic> _unwrapBaseballMatch(Map<String, dynamic> detail) {
   return detail;
 }
 
-({String homeTeamKo, String awayTeamKo, int apiMatchId, String league, int? homeTeamId, int? awayTeamId})
+({String homeTeam, String awayTeam, String homeTeamKo, String awayTeamKo, int apiMatchId, String league, int? homeTeamId, int? awayTeamId})
     _baseballMatchContext(Map<String, dynamic> detail, int matchId) {
   final match = _unwrapBaseballMatch(detail);
   final homeSide = match['home'] is Map
@@ -143,12 +142,10 @@ Map<String, dynamic> _unwrapBaseballMatch(Map<String, dynamic> detail) {
   final awaySide = match['away'] is Map
       ? Map<String, dynamic>.from(match['away'] as Map)
       : <String, dynamic>{};
-  final homeTeamKo = (homeSide['teamKo'] as String?) ??
-      (homeSide['team'] as String?) ??
-      '';
-  final awayTeamKo = (awaySide['teamKo'] as String?) ??
-      (awaySide['team'] as String?) ??
-      '';
+  final homeTeam = _baseballTeamEnglish(homeSide);
+  final awayTeam = _baseballTeamEnglish(awaySide);
+  final homeTeamKo = _baseballTeamKorean(homeSide);
+  final awayTeamKo = _baseballTeamKorean(awaySide);
   final apiMatchId = (match['id'] as num?)?.toInt() ?? matchId;
   final league = (match['league'] as String?) ??
       (match['leagueName'] as String?) ??
@@ -157,6 +154,8 @@ Map<String, dynamic> _unwrapBaseballMatch(Map<String, dynamic> detail) {
   final homeTeamId = (homeSide['id'] as num?)?.toInt();
   final awayTeamId = (awaySide['id'] as num?)?.toInt();
   return (
+    homeTeam: homeTeam,
+    awayTeam: awayTeam,
     homeTeamKo: homeTeamKo,
     awayTeamKo: awayTeamKo,
     apiMatchId: apiMatchId,
@@ -172,10 +171,13 @@ final baseballPredictProvider =
   if (detail.isEmpty) return {};
   final ctx = _baseballMatchContext(detail, matchId);
   final service = ref.read(baseballServiceProvider);
+  print(
+    '[BASEBALL] predict POST: homeTeam=${ctx.homeTeam}, awayTeam=${ctx.awayTeam}',
+  );
   return service.getBaseballPredict(
     matchId: ctx.apiMatchId,
-    homeTeam: ctx.homeTeamKo,
-    awayTeam: ctx.awayTeamKo,
+    homeTeam: ctx.homeTeam,
+    awayTeam: ctx.awayTeam,
   );
 });
 
@@ -315,5 +317,13 @@ String _normalizeLeagueCode(String league) {
   if (upper.contains('NPB')) return 'NPB';
   if (upper.contains('MLB')) return 'MLB';
   return upper;
+}
+
+String _baseballTeamEnglish(Map<String, dynamic> side) {
+  return (side['team'] as String?) ?? (side['teamKo'] as String?) ?? '';
+}
+
+String _baseballTeamKorean(Map<String, dynamic> side) {
+  return (side['teamKo'] as String?) ?? (side['team'] as String?) ?? '';
 }
 
