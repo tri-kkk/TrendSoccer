@@ -180,6 +180,58 @@ class BaseballService {
     }
   }
 
+  Future<Map<String, dynamic>> getMlbPitcherStats({
+    required int matchId,
+    int? homePitcherId,
+    int? awayPitcherId,
+  }) async {
+    try {
+      final params = <String, dynamic>{};
+      if (homePitcherId != null) params['homePitcherId'] = homePitcherId;
+      if (awayPitcherId != null) params['awayPitcherId'] = awayPitcherId;
+      print(
+        '[BASEBALL] MLB pitcher-stats request: homePitcherId=$homePitcherId, awayPitcherId=$awayPitcherId',
+      );
+      final response = await _dio.get<dynamic>(
+        '/api/baseball/pitcher-stats',
+        queryParameters: params,
+      );
+      print('[BASEBALL] MLB pitcher-stats: success=${response.data?['success']}');
+      final data = response.data;
+      if (data is Map<String, dynamic>) return data;
+      if (data is Map) return Map<String, dynamic>.from(data);
+      return {};
+    } catch (e) {
+      print('[BASEBALL] MLB pitcher-stats error: $e');
+      return {};
+    }
+  }
+
+  Future<Map<String, dynamic>> getMlbPitcherStatsPrevSeason({
+    int? homePitcherId,
+    int? awayPitcherId,
+  }) async {
+    try {
+      final params = <String, dynamic>{'season': '2025'};
+      if (homePitcherId != null) params['homePitcherId'] = homePitcherId;
+      if (awayPitcherId != null) params['awayPitcherId'] = awayPitcherId;
+      final response = await _dio.get<dynamic>(
+        '/api/baseball/pitcher-stats',
+        queryParameters: params,
+      );
+      print(
+        '[BASEBALL] MLB pitcher-stats prev season: success=${response.data?['success']}',
+      );
+      final data = response.data;
+      if (data is Map<String, dynamic>) return data;
+      if (data is Map) return Map<String, dynamic>.from(data);
+      return {};
+    } catch (e) {
+      print('[BASEBALL] MLB pitcher-stats prev season error: $e');
+      return {};
+    }
+  }
+
   Future<Map<String, dynamic>> getKboPitcherStats({
     required String league,
     required String homePitcher,

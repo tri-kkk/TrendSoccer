@@ -34,11 +34,13 @@ List<String> _splitAnalysisParagraphs(String text) {
 class PitcherAnalysisSection extends StatelessWidget {
   const PitcherAnalysisSection({
     this.analysisText,
+    this.contextNote,
     this.isLoading = false,
     super.key,
   });
 
   final String? analysisText;
+  final String? contextNote;
   final bool isLoading;
 
   @override
@@ -49,6 +51,8 @@ class PitcherAnalysisSection extends StatelessWidget {
         ? const <String>[]
         : _splitAnalysisParagraphs(analysisText!);
     final hasContent = paragraphs.isNotEmpty;
+    final note = contextNote?.trim();
+    final hasNote = note != null && note.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,10 +71,17 @@ class PitcherAnalysisSection extends StatelessWidget {
           ),
           child: isLoading
               ? _LoadingPlaceholder(semantic: semantic)
-              : hasContent
+              : hasContent || hasNote
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (hasNote) ...[
+                          Text(
+                            note,
+                            style: bodyStyle,
+                          ),
+                          if (hasContent) const SizedBox(height: TsSpacing.md),
+                        ],
                         for (var i = 0; i < paragraphs.length; i++) ...[
                           if (i > 0) const SizedBox(height: TsSpacing.md),
                           Text(

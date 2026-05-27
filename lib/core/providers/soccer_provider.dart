@@ -464,13 +464,11 @@ String? findTeamLogo(Map<String, String> logoMap, String teamName) {
 
 bool _isUpcomingMatch(SoccerAnalysisCard card) {
   if (card.match.status == 'finished') return false;
+  if (card.match.status == 'live') return true;
 
   final timestamp = card.match.matchTimestamp;
   if (timestamp != null) {
-    final cutoff = DateTime.now().toUtc().subtract(const Duration(hours: 2));
-    if (timestamp.toUtc().isBefore(cutoff) && card.match.status != 'live') {
-      return false;
-    }
+    return timestamp.toLocal().isAfter(DateTime.now());
   }
 
   return true;

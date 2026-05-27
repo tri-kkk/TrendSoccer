@@ -103,6 +103,7 @@ final baseballAnalysisMatchesProvider =
     for (final match in dayMatches) {
       if (match.matchId == 0) continue;
       if (_isFinishedBaseballStatus(match.status)) continue;
+      if (!baseballMatchHasNotStarted(match)) continue;
       byId[match.matchId] = match;
     }
   }
@@ -120,6 +121,12 @@ bool _isFinishedBaseballStatus(String status) {
       normalized == 'FINISH';
 }
 
+/// Hides cards whose scheduled start time has passed (still NS / not finished).
+bool baseballMatchHasNotStarted(BaseballAnalysisCard card) {
+  if (_isFinishedBaseballStatus(card.status)) return false;
+  return card.matchTimestamp.toLocal().isAfter(DateTime.now());
+}
+
 final filteredBaseballAnalysisProvider =
     Provider<AsyncValue<List<BaseballAnalysisCard>>>((ref) {
   final matchesAsync = ref.watch(baseballAnalysisMatchesProvider);
@@ -127,8 +134,10 @@ final filteredBaseballAnalysisProvider =
   final selectedDate = ref.watch(baseballAnalysisDateProvider);
 
   return matchesAsync.whenData((matches) {
-    var filtered =
-        matches.where((match) => baseballMatchIsOnDate(match, selectedDate)).toList();
+    var filtered = matches
+        .where(baseballMatchHasNotStarted)
+        .where((match) => baseballMatchIsOnDate(match, selectedDate))
+        .toList();
     if (selectedLeague != null && selectedLeague.isNotEmpty) {
       final code = selectedLeague.toUpperCase();
       filtered =
@@ -143,8 +152,10 @@ List<BaseballAnalysisCard> filterBaseballAnalysisMatches({
   required String dateStr,
   String? selectedLeague,
 }) {
-  var filtered =
-      matches.where((match) => baseballMatchIsOnDate(match, dateStr)).toList();
+  var filtered = matches
+      .where(baseballMatchHasNotStarted)
+      .where((match) => baseballMatchIsOnDate(match, dateStr))
+      .toList();
   if (selectedLeague != null && selectedLeague.isNotEmpty) {
     final code = selectedLeague.toUpperCase();
     filtered =

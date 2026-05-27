@@ -43,12 +43,12 @@ final baseballPitcherAnalysisProvider =
 
   if (homePitcherName == null && awayPitcherName == null) return {};
 
+  final service = ref.read(baseballServiceProvider);
   Map<String, dynamic>? homeStats;
   Map<String, dynamic>? awayStats;
 
   if (league == 'KBO' || league == 'NPB') {
     try {
-      final service = ref.read(baseballServiceProvider);
       final statsResponse = await service.getKboPitcherStats(
         league: league.toLowerCase(),
         homePitcher: homePitcherName ?? '',
@@ -72,16 +72,27 @@ final baseballPitcherAnalysisProvider =
   }
 
   if (league == 'MLB') {
-    homeStats = {
-      'era': match['homePitcherEra'],
-      'whip': match['homePitcherWhip'],
-      'strikeouts': match['homePitcherK'],
-    };
-    awayStats = {
-      'era': match['awayPitcherEra'],
-      'whip': match['awayPitcherWhip'],
-      'strikeouts': match['awayPitcherK'],
-    };
+    try {
+      final homePitcherId = (match['homePitcherId'] as num?)?.toInt();
+      final awayPitcherId = (match['awayPitcherId'] as num?)?.toInt();
+      if (homePitcherId != null || awayPitcherId != null) {
+        final mlbStats = await service.getMlbPitcherStats(
+          matchId: apiMatchId,
+          homePitcherId: homePitcherId,
+          awayPitcherId: awayPitcherId,
+        );
+        final homeRaw = mlbStats['homePitcher'];
+        final awayRaw = mlbStats['awayPitcher'];
+        if (homeRaw is Map) {
+          homeStats = Map<String, dynamic>.from(homeRaw);
+        }
+        if (awayRaw is Map) {
+          awayStats = Map<String, dynamic>.from(awayRaw);
+        }
+      }
+    } catch (e) {
+      print('[BASEBALL] Failed to get MLB pitcher stats for analysis: $e');
+    }
   }
 
   homeStats ??= {
@@ -95,7 +106,6 @@ final baseballPitcherAnalysisProvider =
     'strikeouts': match['awayPitcherK'],
   };
 
-  final service = ref.read(baseballServiceProvider);
   return service.getPitcherAnalysis(
     matchId: apiMatchId,
     homeTeam: homeTeamKo,
@@ -222,6 +232,60 @@ final baseballPitcherStatsProvider =
     );
   },
 );
+
+final mlbPitcherStatsProvider =
+    FutureProvider.family<Map<String, dynamic>, int>((ref, matchId) async {
+  final detailAsync = ref.watch(baseballMatchDetailProvider(matchId));
+  final detail = detailAsync.hasValue ? detailAsync.value! : null;
+  if (detail == null || detail.isEmpty) return {};
+
+  final match = _unwrapBaseballMatch(detail);
+  final league = _normalizeLeagueCode(
+    (match['league'] as String?) ??
+        (match['leagueName'] as String?) ??
+        (match['league_name'] as String?) ??
+        '',
+  );
+  if (league != 'MLB') return {};
+
+  final homePitcherId = (match['homePitcherId'] as num?)?.toInt();
+  final awayPitcherId = (match['awayPitcherId'] as num?)?.toInt();
+  if (homePitcherId == null && awayPitcherId == null) return {};
+
+  final apiMatchId = (match['id'] as num?)?.toInt() ?? matchId;
+  final service = ref.read(baseballServiceProvider);
+  return service.getMlbPitcherStats(
+    matchId: apiMatchId,
+    homePitcherId: homePitcherId,
+    awayPitcherId: awayPitcherId,
+  );
+});
+
+final mlbPitcherStatsPrevProvider =
+    FutureProvider.family<Map<String, dynamic>, int>((ref, matchId) async {
+  final detailAsync = ref.watch(baseballMatchDetailProvider(matchId));
+  final detail = detailAsync.hasValue ? detailAsync.value! : null;
+  if (detail == null || detail.isEmpty) return {};
+
+  final match = _unwrapBaseballMatch(detail);
+  final league = _normalizeLeagueCode(
+    (match['league'] as String?) ??
+        (match['leagueName'] as String?) ??
+        (match['league_name'] as String?) ??
+        '',
+  );
+  if (league != 'MLB') return {};
+
+  final homePitcherId = (match['homePitcherId'] as num?)?.toInt();
+  final awayPitcherId = (match['awayPitcherId'] as num?)?.toInt();
+  if (homePitcherId == null && awayPitcherId == null) return {};
+
+  final service = ref.read(baseballServiceProvider);
+  return service.getMlbPitcherStatsPrevSeason(
+    homePitcherId: homePitcherId,
+    awayPitcherId: awayPitcherId,
+  );
+});
 
 String _normalizeLeagueCode(String league) {
   final upper = league.trim().toUpperCase();

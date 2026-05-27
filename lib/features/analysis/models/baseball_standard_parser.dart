@@ -9,6 +9,7 @@ class BaseballStandardPitcher {
   const BaseballStandardPitcher({
     required this.name,
     this.nameKo,
+    this.pitcherId,
     this.photoUrl,
     required this.pitcherType,
     required this.era,
@@ -26,6 +27,7 @@ class BaseballStandardPitcher {
 
   final String name;
   final String? nameKo;
+  final int? pitcherId;
   final String? photoUrl;
   final String pitcherType;
   final String era;
@@ -51,6 +53,7 @@ class BaseballStandardPitcher {
       name: displayName,
       pitcherType: pitcherType.isEmpty ? '투수' : pitcherType,
       teamLogoUrl: teamLogoUrl,
+      pitcherId: pitcherId,
       photoUrl: photoUrl,
       era: era,
       whip: whip,
@@ -373,9 +376,12 @@ BaseballStandardPitcher _parsePitcherFromMatchRoot(
         match['${prefix}_pitcher_logo'],
   );
 
+  final pitcherId = (match['${prefix}PitcherId'] as num?)?.toInt();
+
   return BaseballStandardPitcher(
     name: name.isEmpty ? '-' : name,
     nameKo: nameKo,
+    pitcherId: pitcherId,
     photoUrl: pitcherPhotoUrl,
     pitcherType: '투수',
     era: _formatDecimalStat(match['${prefix}PitcherEra']),
