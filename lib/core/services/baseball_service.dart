@@ -207,28 +207,42 @@ class BaseballService {
     }
   }
 
-  Future<Map<String, dynamic>> getMlbPitcherStatsPrevSeason({
-    int? homePitcherId,
-    int? awayPitcherId,
-  }) async {
+  Future<Map<String, dynamic>?> fetchMlbSeasonStats(
+    int pitcherId,
+    int season,
+  ) async {
     try {
-      final params = <String, dynamic>{'season': '2025'};
-      if (homePitcherId != null) params['homePitcherId'] = homePitcherId;
-      if (awayPitcherId != null) params['awayPitcherId'] = awayPitcherId;
-      final response = await _dio.get<dynamic>(
-        '/api/baseball/pitcher-stats',
-        queryParameters: params,
-      );
-      print(
-        '[BASEBALL] MLB pitcher-stats prev season: success=${response.data?['success']}',
+      final url =
+          'https://statsapi.mlb.com/api/v1/people/$pitcherId?hydrate=stats(group=[pitching],type=[season],season=$season)';
+      print('[BASEBALL] MLB Stats API request: pitcherId=$pitcherId, season=$season');
+      final response = await Dio().get<dynamic>(
+        url,
+        options: Options(
+          receiveTimeout: const Duration(seconds: 5),
+          sendTimeout: const Duration(seconds: 5),
+        ),
       );
       final data = response.data;
-      if (data is Map<String, dynamic>) return data;
-      if (data is Map) return Map<String, dynamic>.from(data);
-      return {};
+      final people = data is Map ? data['people'] : null;
+      final firstPerson = people is List && people.isNotEmpty ? people[0] : null;
+      final stats = firstPerson is Map ? firstPerson['stats'] : null;
+      final firstStat = stats is List && stats.isNotEmpty ? stats[0] : null;
+      final splits = firstStat is Map ? firstStat['splits'] : null;
+      final firstSplit = splits is List && splits.isNotEmpty ? splits[0] : null;
+      final stat = firstSplit is Map ? firstSplit['stat'] : null;
+      if (stat is Map) {
+        print(
+          '[BASEBALL] MLB Stats API success: pitcherId=$pitcherId, season=$season, era=${stat['era']}',
+        );
+        return Map<String, dynamic>.from(stat);
+      }
+      print(
+        '[BASEBALL] MLB Stats API: no stats for pitcherId=$pitcherId, season=$season',
+      );
+      return null;
     } catch (e) {
-      print('[BASEBALL] MLB pitcher-stats prev season error: $e');
-      return {};
+      print('[BASEBALL] MLB Stats API error: $e');
+      return null;
     }
   }
 

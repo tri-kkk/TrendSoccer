@@ -100,18 +100,6 @@ class _BaseballStandardContent extends ConsumerWidget {
     final homePitcherName = _pitcherApiName(parsed.homePitcher);
     final awayPitcherName = _pitcherApiName(parsed.awayPitcher);
 
-    String? rawMatchupNote;
-    if (parsed.leagueCode == 'MLB') {
-      rawMatchupNote = switch (ref.watch(mlbPitcherStatsProvider(matchId))) {
-        AsyncData(:final value) => value['matchupNote']?.toString().trim(),
-        _ => null,
-      };
-      if (rawMatchupNote != null && rawMatchupNote.isEmpty) {
-        rawMatchupNote = null;
-      }
-    }
-    final mlbMatchupNote = rawMatchupNote;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -137,13 +125,7 @@ class _BaseballStandardContent extends ConsumerWidget {
           data: (response) {
             final analysis = response['analysis'];
             if (analysis is String && analysis.trim().isNotEmpty) {
-              return PitcherAnalysisSection(
-                analysisText: analysis,
-                contextNote: mlbMatchupNote,
-              );
-            }
-            if (mlbMatchupNote != null) {
-              return PitcherAnalysisSection(contextNote: mlbMatchupNote);
+              return PitcherAnalysisSection(analysisText: analysis);
             }
             return const PitcherAnalysisSection();
           },

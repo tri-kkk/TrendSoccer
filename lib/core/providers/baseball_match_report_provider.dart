@@ -106,6 +106,13 @@ final baseballPitcherAnalysisProvider =
     'strikeouts': match['awayPitcherK'],
   };
 
+  // MLB pitcher names are often English in match detail; Korean text may mix
+  // languages when language=ko (same as web — e.g. "콜로라도의 Kyle Freeland는").
+  print(
+    '[BASEBALL] Pitcher analysis language: ko, '
+    'homePitcher=$homePitcherName, awayPitcher=$awayPitcherName',
+  );
+
   return service.getPitcherAnalysis(
     matchId: apiMatchId,
     homeTeam: homeTeamKo,
@@ -281,10 +288,25 @@ final mlbPitcherStatsPrevProvider =
   if (homePitcherId == null && awayPitcherId == null) return {};
 
   final service = ref.read(baseballServiceProvider);
-  return service.getMlbPitcherStatsPrevSeason(
-    homePitcherId: homePitcherId,
-    awayPitcherId: awayPitcherId,
-  );
+  final prevYear = DateTime.now().year - 1;
+
+  final homeFuture = homePitcherId != null
+      ? service.fetchMlbSeasonStats(homePitcherId, prevYear)
+      : Future<Map<String, dynamic>?>.value(null);
+  final awayFuture = awayPitcherId != null
+      ? service.fetchMlbSeasonStats(awayPitcherId, prevYear)
+      : Future<Map<String, dynamic>?>.value(null);
+
+  final results = await Future.wait<Map<String, dynamic>?>([
+    homeFuture,
+    awayFuture,
+  ]);
+
+  return {
+    'season': prevYear,
+    'homePitcher': results[0],
+    'awayPitcher': results[1],
+  };
 });
 
 String _normalizeLeagueCode(String league) {

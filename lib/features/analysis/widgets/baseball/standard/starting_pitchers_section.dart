@@ -123,13 +123,19 @@ class StartingPitchersSection extends ConsumerWidget {
         _ => null,
       };
       if (prevData != null) {
+        final seasonLabel =
+            (prevData['season'] as num?)?.toInt() ?? DateTime.now().year - 1;
         final homePrevRaw = prevData['homePitcher'];
         final awayPrevRaw = prevData['awayPitcher'];
-        homePrev = parsePitcherPreviousSeason(
-          homePrevRaw is Map ? Map<String, dynamic>.from(homePrevRaw) : null,
+        homePrev = parseMlbPitcherPreviousSeason(
+          pitcherRaw:
+              homePrevRaw is Map ? Map<String, dynamic>.from(homePrevRaw) : null,
+          seasonLabel: seasonLabel,
         );
-        awayPrev = parsePitcherPreviousSeason(
-          awayPrevRaw is Map ? Map<String, dynamic>.from(awayPrevRaw) : null,
+        awayPrev = parseMlbPitcherPreviousSeason(
+          pitcherRaw:
+              awayPrevRaw is Map ? Map<String, dynamic>.from(awayPrevRaw) : null,
+          seasonLabel: seasonLabel,
         );
       }
     } else if (_isAsianLeague) {
@@ -161,7 +167,8 @@ class StartingPitchersSection extends ConsumerWidget {
       }
     }
 
-    final previousSeason = _isMlb ? '2025' : previousSeasonYear(currentSeason);
+    final previousSeason =
+        _isMlb ? (DateTime.now().year - 1).toString() : previousSeasonYear(currentSeason);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -283,60 +290,48 @@ class _PitcherColumn extends StatelessWidget {
     );
   }
 
-  Widget _photoEmblem(String photoUrl, TsSemanticColors semantic) {
+  Widget _mlbPitcherPhotoEmblem(String imageUrl, TsSemanticColors semantic) {
     final teamLogoUrl = pitcher.teamLogoUrl?.trim();
 
-    return ClipOval(
-      child: SizedBox(
+    return Container(
+      width: _emblemSize,
+      height: _emblemSize,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: semantic.surfaceContainer,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: CachedNetworkImage(
+        imageUrl: imageUrl,
         width: _emblemSize,
         height: _emblemSize,
-        child: CachedNetworkImage(
-          imageUrl: photoUrl,
-          fit: BoxFit.cover,
-          placeholder: (context, _) => _avatarPlaceholder(semantic),
-          errorWidget: (context, url, error) {
-            if (teamLogoUrl != null && teamLogoUrl.isNotEmpty) {
-              return CachedNetworkImage(
-                imageUrl: teamLogoUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, _) => _avatarPlaceholder(semantic),
-                errorWidget: (context, url, error) =>
-                    _avatarPlaceholder(semantic),
-              );
-            }
-            return _avatarPlaceholder(semantic);
-          },
-        ),
+        fit: BoxFit.cover,
+        alignment: Alignment.center,
+        placeholder: (context, _) => _avatarPlaceholder(semantic),
+        errorWidget: (context, url, error) {
+          if (teamLogoUrl != null && teamLogoUrl.isNotEmpty) {
+            return CachedNetworkImage(
+              imageUrl: teamLogoUrl,
+              fit: BoxFit.cover,
+              width: _emblemSize,
+              height: _emblemSize,
+              placeholder: (context, _) => _avatarPlaceholder(semantic),
+              errorWidget: (context, url, error) =>
+                  _avatarPlaceholder(semantic),
+            );
+          }
+          return _avatarPlaceholder(semantic);
+        },
       ),
     );
   }
 
-  Widget _mlbHeadshotEmblem(int pitcherId, TsSemanticColors semantic) {
-    final teamLogoUrl = pitcher.teamLogoUrl?.trim();
+  Widget _photoEmblem(String photoUrl, TsSemanticColors semantic) {
+    return _mlbPitcherPhotoEmblem(photoUrl, semantic);
+  }
 
-    return ClipOval(
-      child: SizedBox(
-        width: _emblemSize,
-        height: _emblemSize,
-        child: CachedNetworkImage(
-          imageUrl: mlbPitcherPhotoUrl(pitcherId),
-          fit: BoxFit.cover,
-          placeholder: (context, _) => _avatarPlaceholder(semantic),
-          errorWidget: (context, url, error) {
-            if (teamLogoUrl != null && teamLogoUrl.isNotEmpty) {
-              return CachedNetworkImage(
-                imageUrl: teamLogoUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, _) => _avatarPlaceholder(semantic),
-                errorWidget: (context, url, error) =>
-                    _avatarPlaceholder(semantic),
-              );
-            }
-            return _avatarPlaceholder(semantic);
-          },
-        ),
-      ),
-    );
+  Widget _mlbHeadshotEmblem(int pitcherId, TsSemanticColors semantic) {
+    return _mlbPitcherPhotoEmblem(mlbPitcherPhotoUrl(pitcherId), semantic);
   }
 
   Widget _pitcherEmblem(TsSemanticColors semantic) {
@@ -346,7 +341,7 @@ class _PitcherColumn extends StatelessWidget {
 
     final photoUrl = pitcher.photoUrl?.trim();
     if (photoUrl != null && photoUrl.isNotEmpty) {
-      return _photoEmblem(photoUrl, semantic);
+      return _photoEmblem(optimizeMlbPhotoUrl(photoUrl), semantic);
     }
 
     final pitcherId = pitcher.pitcherId;
@@ -365,9 +360,9 @@ class _PitcherColumn extends StatelessWidget {
     if (!_isMlb) return null;
 
     final displayStrengths =
-        pitcher.strengths.map(stripParenthetical).take(3).toList();
+        pitcher.strengths.map(stripParenthetical).toList();
     final displayWeaknesses =
-        pitcher.weaknesses.map(stripParenthetical).take(3).toList();
+        pitcher.weaknesses.map(stripParenthetical).toList();
     if (displayStrengths.isEmpty && displayWeaknesses.isEmpty) return null;
 
     return Column(
@@ -390,7 +385,7 @@ class _PitcherColumn extends StatelessWidget {
   Widget? _buildPreviousSeasonSection(TsSemanticColors semantic) {
     if (_isMlb) {
       final prev = previousSeasonStats;
-      if (prev == null || !prev.hasData) return null;
+      if (prev == null) return null;
 
       return Column(
         children: [
@@ -519,8 +514,12 @@ String stripParenthetical(String text) {
   return text;
 }
 
+String optimizeMlbPhotoUrl(String url) {
+  return url.replaceFirst('w_213', 'w_120');
+}
+
 String mlbPitcherPhotoUrl(int pitcherId) {
-  return 'https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/$pitcherId/headshot/67/current';
+  return 'https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_120,q_auto:best/v1/people/$pitcherId/headshot/67/current';
 }
 
 String _mlbThrowingHandLabel(Object? hand) {
@@ -561,13 +560,16 @@ PitcherData _mergeMlbPitcherStats(
   final summary = (stats['summary'] as String?)?.trim();
   final photo = (stats['photo'] as String?)?.trim();
   final playerId = (stats['playerId'] as num?)?.toInt();
+  final resolvedPhoto = photo != null && photo.isNotEmpty
+      ? optimizeMlbPhotoUrl(photo)
+      : base.photoUrl;
 
   return PitcherData(
     name: name != null && name.isNotEmpty ? name : base.name,
     pitcherType: _mlbThrowingHandLabel(stats['throwingHand']),
     teamLogoUrl: base.teamLogoUrl,
     pitcherId: playerId ?? base.pitcherId,
-    photoUrl: photo != null && photo.isNotEmpty ? photo : base.photoUrl,
+    photoUrl: resolvedPhoto,
     era: _formatMlbStat(stats['era'], decimals: 2),
     whip: _formatMlbStat(stats['whip'], decimals: 2),
     k9: _formatMlbStat(stats['strikeoutsPer9Inn'], decimals: 1),
@@ -597,4 +599,33 @@ String _formatMlbK(Object? value) {
   if (value is num) return value.toInt().toString();
   final text = value.toString().trim();
   return text.isEmpty ? '-' : text;
+}
+
+String _mlbSafeStatString(dynamic value) {
+  if (value == null) return '-';
+  if (value is num) return value.toStringAsFixed(2);
+  final text = value.toString().trim();
+  return text.isEmpty ? '-' : text;
+}
+
+PitcherPreviousSeasonDisplay? parseMlbPitcherPreviousSeason({
+  Map<String, dynamic>? pitcherRaw,
+  required int seasonLabel,
+}) {
+  if (pitcherRaw == null || pitcherRaw.isEmpty) return null;
+
+  final era = _mlbSafeStatString(pitcherRaw['era']);
+  final whip = _mlbSafeStatString(pitcherRaw['whip']);
+  final strikeouts = _formatMlbK(pitcherRaw['strikeOuts']);
+
+  if (era == '-' && whip == '-' && strikeouts == '-') {
+    return null;
+  }
+
+  return PitcherPreviousSeasonDisplay(
+    seasonLabel: seasonLabel.toString(),
+    era: era,
+    whip: whip,
+    strikeouts: strikeouts,
+  );
 }
