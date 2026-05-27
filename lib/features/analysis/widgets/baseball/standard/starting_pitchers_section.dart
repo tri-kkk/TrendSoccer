@@ -156,6 +156,27 @@ class StartingPitchersSection extends ConsumerWidget {
         _ => null,
       };
       if (statsData != null) {
+        final homeCurrentRaw = statsData['homePitcher'];
+        final awayCurrentRaw = statsData['awayPitcher'];
+        homeDisplay = _mergeKboPitcherStats(
+          homeDisplay,
+          homeCurrentRaw is Map
+              ? Map<String, dynamic>.from(homeCurrentRaw)
+              : null,
+        );
+        awayDisplay = _mergeKboPitcherStats(
+          awayDisplay,
+          awayCurrentRaw is Map
+              ? Map<String, dynamic>.from(awayCurrentRaw)
+              : null,
+        );
+        print(
+          '[BASEBALL] KBO pitcher chips: home strengths=${homeDisplay.strengths.length}, weakness=${homeDisplay.weaknesses.length}',
+        );
+        print(
+          '[BASEBALL] KBO pitcher chips: away strengths=${awayDisplay.strengths.length}, weakness=${awayDisplay.weaknesses.length}',
+        );
+
         final homeRaw = statsData['homePitcherPrev'];
         final awayRaw = statsData['awayPitcherPrev'];
         homePrev = parsePitcherPreviousSeason(
@@ -238,6 +259,10 @@ class _PitcherColumn extends StatelessWidget {
   static const _emblemSize = 80.0;
 
   bool get _isMlb => leagueCode == 'MLB';
+
+  bool get _isAsianLeague => leagueCode == 'KBO' || leagueCode == 'NPB';
+
+  bool get _showCommentChips => _isMlb || _isAsianLeague;
 
   static Widget _statsRowTriple({
     required String v1,
@@ -357,7 +382,7 @@ class _PitcherColumn extends StatelessWidget {
   }
 
   Widget? _buildCommentChips() {
-    if (!_isMlb) return null;
+    if (!_showCommentChips) return null;
 
     final displayStrengths =
         pitcher.strengths.map(stripParenthetical).toList();
@@ -546,6 +571,54 @@ List<String> _mlbStringList(Object? raw) {
       .map((item) => item.toString().trim())
       .where((item) => item.isNotEmpty)
       .toList();
+}
+
+PitcherData _mergeKboPitcherStats(
+  PitcherData base,
+  Map<String, dynamic>? stats,
+) {
+  if (stats == null || stats.isEmpty) return base;
+
+  final strengths = _mlbStringList(stats['strengths']);
+  final weaknesses = _mlbStringList(stats['weakness'] ?? stats['weaknesses']);
+  final name = (stats['name'] as String?)?.trim();
+  final summary = (stats['summary'] as String?)?.trim();
+  final wins = (stats['wins'] as num?)?.toInt();
+  final losses = (stats['losses'] as num?)?.toInt();
+
+  return PitcherData(
+    name: name != null && name.isNotEmpty ? name : base.name,
+    pitcherType: base.pitcherType,
+    teamLogoUrl: base.teamLogoUrl,
+    pitcherId: base.pitcherId,
+    photoUrl: base.photoUrl,
+    era: stats.containsKey('era')
+        ? _formatMlbStat(stats['era'], decimals: 2)
+        : base.era,
+    whip: stats.containsKey('whip')
+        ? _formatMlbStat(stats['whip'], decimals: 2)
+        : base.whip,
+    k9: stats.containsKey('strikeoutsPer9Inn')
+        ? _formatMlbStat(stats['strikeoutsPer9Inn'], decimals: 1)
+        : base.k9,
+    wl: wins != null || losses != null
+        ? '${wins ?? 0}-${losses ?? 0}'
+        : base.wl,
+    ip: stats.containsKey('inningsPitched')
+        ? _formatMlbIp(stats['inningsPitched'])
+        : base.ip,
+    k: stats.containsKey('strikeouts')
+        ? _formatMlbK(stats['strikeouts'])
+        : base.k,
+    prevWl: base.prevWl,
+    prevIp: base.prevIp,
+    prevK: base.prevK,
+    strengths: strengths.isNotEmpty ? strengths : base.strengths,
+    weaknesses: weaknesses.isNotEmpty ? weaknesses : base.weaknesses,
+    summary: summary?.isNotEmpty == true ? summary : base.summary,
+    currentSeasonYear: base.currentSeasonYear,
+    previousSeasonYear: base.previousSeasonYear,
+  );
 }
 
 PitcherData _mergeMlbPitcherStats(

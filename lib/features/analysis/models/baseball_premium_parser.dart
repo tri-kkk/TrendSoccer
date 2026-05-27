@@ -73,6 +73,7 @@ class BaseballPremiumParsed {
     required this.teamProduction,
     required this.teamProductionLine1,
     required this.teamProductionLine2,
+    required this.league,
     required this.seasonTeamStats,
     required this.hasTeamSeason,
     this.homeAvg,
@@ -103,6 +104,7 @@ class BaseballPremiumParsed {
   final List<PremiumGaugeItem> teamProduction;
   final String teamProductionLine1;
   final String teamProductionLine2;
+  final String league;
   final List<PremiumGaugeItem> seasonTeamStats;
   final bool hasTeamSeason;
   final double? homeAvg;
@@ -120,14 +122,14 @@ class BaseballPremiumParsed {
   }) {
     return parseBaseballPremium(
       detail: matchData,
-      predict: predictData ?? {},
+      predict: predictData,
     );
   }
 }
 
 BaseballPremiumParsed parseBaseballPremium({
   required Map<String, dynamic> detail,
-  required Map<String, dynamic> predict,
+  Map<String, dynamic>? predict,
 }) {
   final match = _unwrapMatch(detail);
   final homeSide = _readMap(match, const ['home']) ?? {};
@@ -149,11 +151,20 @@ BaseballPremiumParsed parseBaseballPremium({
     awayTeamEn ?? '원정',
   );
 
+  final leagueRaw = _readString(match, const ['league', 'leagueName', 'league_name']) ??
+      _readString(detail, const ['league']) ??
+      'MLB';
+  final league = _normalizePremiumLeagueCode(leagueRaw);
+
   final oddsMap = _mergeOddsMap(match);
   final odds = BaseballOdds.fromJson(oddsMap);
   final aiPred = _readMap(match, const ['aiPrediction', 'ai_prediction']);
-  final prediction = _readMap(predict, const ['prediction']) ?? {};
-  final insights = _readMap(predict, const ['insights']) ?? {};
+  final prediction = predict != null
+      ? (_readMap(predict, const ['prediction']) ?? {})
+      : <String, dynamic>{};
+  final insights = predict != null
+      ? (_readMap(predict, const ['insights']) ?? {})
+      : <String, dynamic>{};
 
   final homeWinProbInt = _resolveWinProbPercent(
     aiPred?['homeWinProb'] ?? oddsMap['homeWinProb'],
@@ -180,14 +191,22 @@ BaseballPremiumParsed parseBaseballPremium({
     awayTeamKo: awayTeam,
   );
 
-  var overProb = _parseProbPercentInt(prediction['overProb']);
-  var underProb = _parseProbPercentInt(prediction['underProb']);
-  if (overProb == 0 && underProb == 0) {
-    final implied = _impliedOverUnderProbs(odds.overOdds, odds.underOdds);
-    overProb = implied.$1;
-    underProb = implied.$2;
+  int overProb;
+  int underProb;
+  if (predict == null) {
+    overProb = -1;
+    underProb = -1;
+  } else {
+    overProb = _parseProbPercentInt(prediction['overProb']);
+    underProb = _parseProbPercentInt(prediction['underProb']);
+    if (overProb == 0 && underProb == 0) {
+      final implied = _impliedOverUnderProbs(odds.overOdds, odds.underOdds);
+      overProb = implied.$1;
+      underProb = implied.$2;
+    }
   }
-  final highlightUnder = underProb > overProb;
+  final highlightUnder =
+      overProb > 0 && underProb > 0 && underProb > overProb;
 
   final recentForm = _readMap(insights, const ['recentForm', 'recent_form']) ?? {};
   final homeAdvantage =
@@ -322,6 +341,7 @@ BaseballPremiumParsed parseBaseballPremium({
     teamProduction: teamProduction,
     teamProductionLine1: teamProductionLine1,
     teamProductionLine2: teamProductionLine2,
+    league: league,
     seasonTeamStats: seasonTeamStats,
     hasTeamSeason: hasTeamSeason,
     homeAvg: homeAvg,
@@ -586,4 +606,13 @@ double? _parseDouble(Object? value) {
   if (value is num) return value.toDouble();
   if (value is String) return double.tryParse(value);
   return null;
+}
+
+String _normalizePremiumLeagueCode(String league) {
+  final upper = league.trim().toUpperCase();
+  if (upper.contains('MLB') || upper.contains('MAJOR')) return 'MLB';
+  if (upper.contains('NPB')) return 'NPB';
+  if (upper.contains('KBO') || upper.contains('KOREA')) return 'KBO';
+  if (upper.contains('CPBL')) return 'CPBL';
+  return upper.isEmpty ? 'MLB' : upper;
 }

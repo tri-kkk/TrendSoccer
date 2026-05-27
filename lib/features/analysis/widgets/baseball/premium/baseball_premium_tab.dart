@@ -113,8 +113,10 @@ class _BaseballPremiumTabState extends ConsumerState<BaseballPremiumTab> {
             _WinRateSection(parsed: parsed),
             const SizedBox(height: TsSpacing.lg),
             _TeamProductionSection(parsed: parsed),
-            const SizedBox(height: TsSpacing.lg),
-            _SeasonTeamStatsSection(parsed: parsed),
+            if (parsed.league != 'NPB' && parsed.league != 'CPBL') ...[
+              const SizedBox(height: TsSpacing.lg),
+              _SeasonTeamStatsSection(parsed: parsed),
+            ],
           ],
         ),
       ),
@@ -334,10 +336,24 @@ class _OverUnderSection extends StatelessWidget {
 
   final BaseballPremiumParsed parsed;
 
+  static String _formatOverUnderLineLabel(String line) {
+    if (line == '-' || line == '0' || line.isEmpty) {
+      return '기준선 -';
+    }
+    return '기준선 $line';
+  }
+
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final highlightUnder = parsed.highlightUnder;
+    final hasOuData = parsed.overProb >= 0 && parsed.underProb >= 0;
+    final highlightUnder = hasOuData &&
+        parsed.underProb > 0 &&
+        parsed.overProb > 0 &&
+        parsed.underProb > parsed.overProb;
+    final overText = hasOuData ? '${parsed.overProb}%' : '-';
+    final underText = hasOuData ? '${parsed.underProb}%' : '-';
+    final lineLabel = _formatOverUnderLineLabel(parsed.overUnderLine);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -365,7 +381,7 @@ class _OverUnderSection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    '기준선 ${parsed.overUnderLine}',
+                    lineLabel,
                     style: TsType.bodyLRegular.copyWith(
                       color: TsColors.systemWarning500,
                     ),
@@ -378,16 +394,16 @@ class _OverUnderSection extends StatelessWidget {
                   Expanded(
                     child: _UOBox(
                       label: '오버',
-                      value: '${parsed.overProb}%',
-                      isHighlighted: !highlightUnder,
+                      value: overText,
+                      isHighlighted: hasOuData && !highlightUnder,
                     ),
                   ),
                   const SizedBox(width: TsSpacing.sm),
                   Expanded(
                     child: _UOBox(
                       label: '언더',
-                      value: '${parsed.underProb}%',
-                      isHighlighted: highlightUnder,
+                      value: underText,
+                      isHighlighted: hasOuData && highlightUnder,
                     ),
                   ),
                 ],
@@ -614,6 +630,11 @@ class _SeasonTeamStatsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final isKBO = parsed.league == 'KBO';
+    final avgLabel = isKBO ? '팀 타율' : 'AVG';
+    final opsLabel = isKBO ? '팀 OPS' : 'OPS';
+    final eraLabel = isKBO ? '팀 방어율' : 'ERA';
+    final whipLabel = isKBO ? '팀 WHIP' : 'WHIP';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -638,13 +659,19 @@ class _SeasonTeamStatsSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: TeamStatGaugeCard(
-                            data: _toGaugeData(parsed.seasonTeamStats[0]),
+                            data: _toGaugeData(
+                              parsed.seasonTeamStats[0],
+                              label: avgLabel,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: TeamStatGaugeCard(
-                            data: _toGaugeData(parsed.seasonTeamStats[1]),
+                            data: _toGaugeData(
+                              parsed.seasonTeamStats[1],
+                              label: opsLabel,
+                            ),
                           ),
                         ),
                       ],
@@ -654,13 +681,19 @@ class _SeasonTeamStatsSection extends StatelessWidget {
                       children: [
                         Expanded(
                           child: TeamStatGaugeCard(
-                            data: _toGaugeData(parsed.seasonTeamStats[2]),
+                            data: _toGaugeData(
+                              parsed.seasonTeamStats[2],
+                              label: eraLabel,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: TeamStatGaugeCard(
-                            data: _toGaugeData(parsed.seasonTeamStats[3]),
+                            data: _toGaugeData(
+                              parsed.seasonTeamStats[3],
+                              label: whipLabel,
+                            ),
                           ),
                         ),
                       ],
@@ -884,9 +917,9 @@ class _UOBox extends StatelessWidget {
   }
 }
 
-GaugeData _toGaugeData(PremiumGaugeItem item) {
+GaugeData _toGaugeData(PremiumGaugeItem item, {String? label}) {
   return GaugeData(
-    label: item.label,
+    label: label ?? item.label,
     homeValue: item.homeStatLabel,
     awayValue: item.awayStatLabel,
     homeRatio: item.homeRatio,
