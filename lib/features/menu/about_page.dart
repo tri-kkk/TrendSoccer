@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -17,14 +15,15 @@ class AboutPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
       appBar: AppBar(
-        backgroundColor: semantic.surfaceBase,
-        elevation: 0,
-        leading: TsBackButton(onPressed: () => context.pop()),
         title: Text(
           'About',
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
         ),
+        backgroundColor: semantic.surfaceBase,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         centerTitle: true,
+        iconTheme: IconThemeData(color: semantic.textPrimary),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(2),
           child: Container(height: 2, color: semantic.textDisabled),

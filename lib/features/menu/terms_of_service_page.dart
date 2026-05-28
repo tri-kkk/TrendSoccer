@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:trendsoccer/core/providers/blog_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
@@ -54,6 +56,14 @@ class TermsOfServicePage extends ConsumerWidget {
             selectable: true,
             shrinkWrap: true,
             fitContent: false,
+            onTapLink: (text, href, title) {
+              if (href == null) return;
+              if (href.startsWith('mailto:')) {
+                context.go('/menu/help');
+              } else if (href.startsWith('http')) {
+                launchUrl(Uri.parse(href), mode: LaunchMode.externalApplication);
+              }
+            },
           ),
         ),
       ),
@@ -89,9 +99,10 @@ class TermsOfServicePage extends ConsumerWidget {
       pPadding: const EdgeInsets.only(bottom: TsSpacing.sm),
       strong: TsType.bodyMBold.copyWith(color: semantic.textPrimary),
       listBullet: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
-      a: TsType.bodyMRegular.copyWith(
+      a: TsType.bodyLRegular.copyWith(
         color: semantic.interactivePrimary,
         decoration: TextDecoration.underline,
+        decorationColor: semantic.interactivePrimary,
       ),
       tableHead: TsType.bodyMBold.copyWith(color: semantic.textPrimary),
       tableBody: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),

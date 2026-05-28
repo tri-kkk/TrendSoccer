@@ -8,7 +8,6 @@ import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 
@@ -88,7 +87,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       appBar: AppBar(
         backgroundColor: semantic.surfaceBase,
         elevation: 0,
-        leading: TsBackButton(onPressed: () => context.pop()),
+        scrolledUnderElevation: 0,
+        iconTheme: IconThemeData(color: semantic.textPrimary),
         title: Text(
           '로그인',
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),

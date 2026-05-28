@@ -74,6 +74,15 @@ String extractLegalContent(String html) {
   content = content.replaceAll(RegExp(r'← 홈으로'), '');
   content = content.replaceAll(RegExp(r'홈으로 돌아가기.*', multiLine: true), '');
 
+  content = content.replaceAll(
+    'trendsoccer.com',
+    '[trendsoccer.com](https://trendsoccer.com)',
+  );
+  content = content.replaceAll(
+    'trikilab2025@gmail.com',
+    '[trikilab2025@gmail.com](mailto:trikilab2025@gmail.com)',
+  );
+
   return content.trim();
 }
 
