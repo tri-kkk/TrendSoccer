@@ -102,18 +102,6 @@ abstract final class AppRouter {
         builder: (context, state) => const AboutPage(),
       ),
       GoRoute(
-        path: '/menu/privacy',
-        builder: (context, state) => const PrivacyPolicyPage(),
-      ),
-      GoRoute(
-        path: '/menu/terms',
-        builder: (context, state) => const TermsOfServicePage(),
-      ),
-      GoRoute(
-        path: '/menu/help',
-        builder: (context, state) => const HelpCenterPage(),
-      ),
-      GoRoute(
         path: '/analysis/soccer/match-report/:matchId',
         builder: (context, state) {
           final matchId = state.pathParameters['matchId'] ?? '';
@@ -187,6 +175,18 @@ abstract final class AppRouter {
                 builder: (context, state) => SoccerReportDetailPage(
                   slug: state.pathParameters['slug'] ?? '',
                 ),
+              ),
+              GoRoute(
+                path: 'privacy',
+                builder: (context, state) => const PrivacyPolicyPage(),
+              ),
+              GoRoute(
+                path: 'terms',
+                builder: (context, state) => const TermsOfServicePage(),
+              ),
+              GoRoute(
+                path: 'help',
+                builder: (context, state) => const HelpCenterPage(),
               ),
             ],
           ),

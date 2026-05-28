@@ -446,19 +446,19 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                   MenuListItem(
                     iconAsset: TsAssets.iconPrivacyTip,
                     label: '개인정보처리방침',
-                    onTap: () => context.push('/menu/privacy'),
+                    onTap: () => context.go('/menu/privacy'),
                   ),
                   const SizedBox(height: 8),
                   MenuListItem(
                     iconAsset: TsAssets.iconInfo,
                     label: '이용약관',
-                    onTap: () => context.push('/menu/terms'),
+                    onTap: () => context.go('/menu/terms'),
                   ),
                   const SizedBox(height: 8),
                   MenuListItem(
                     iconAsset: TsAssets.iconHelp,
                     label: '문의하기',
-                    onTap: () => context.push('/menu/help'),
+                    onTap: () => context.go('/menu/help'),
                   ),
                   const SizedBox(height: 8),
                   const MenuListItem(

@@ -55,4 +55,47 @@ class BlogService {
       return {};
     }
   }
+
+  Future<String> fetchLegalContent(String type) async {
+    try {
+      final response = await _dio.get<dynamic>(
+        '/ko/$type',
+        options: Options(responseType: ResponseType.plain),
+      );
+      final html = response.data?.toString() ?? '';
+      print('[LEGAL] Fetched $type: ${html.length} chars');
+      return html;
+    } catch (e) {
+      print('[LEGAL] Error fetching $type: $e');
+      return '';
+    }
+  }
+
+  Future<Map<String, dynamic>> sendContactForm({
+    required String name,
+    required String email,
+    required String subject,
+    required String message,
+  }) async {
+    try {
+      print('[CONTACT] Sending: name=$name, email=$email, subject=$subject');
+      final response = await _dio.post<dynamic>(
+        '/api/contact',
+        data: <String, String>{
+          'name': name,
+          'email': email,
+          'subject': subject,
+          'message': message,
+        },
+      );
+      print('[CONTACT] Response: ${response.data}');
+      final data = response.data;
+      if (data is Map<String, dynamic>) return data;
+      if (data is Map) return Map<String, dynamic>.from(data);
+      return {'success': false};
+    } catch (e) {
+      print('[CONTACT] Error: $e');
+      return {'success': false, 'error': e.toString()};
+    }
+  }
 }
