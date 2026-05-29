@@ -6,7 +6,6 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 class SubscribeFailPage extends StatelessWidget {
@@ -16,23 +15,34 @@ class SubscribeFailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
-    return Scaffold(
-      backgroundColor: semantic.surfaceBase,
-      appBar: AppBar(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        context.go('/menu/subscribe');
+      },
+      child: Scaffold(
         backgroundColor: semantic.surfaceBase,
-        elevation: 0,
-        leading: TsBackButton(onPressed: () => context.pop()),
-        title: Text(
-          '결제 실패',
-          style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+        appBar: AppBar(
+          backgroundColor: semantic.surfaceBase,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          iconTheme: IconThemeData(color: semantic.textPrimary),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
+            onPressed: () => context.go('/menu/subscribe'),
+          ),
+          title: Text(
+            '결제 실패',
+            style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+          ),
+          centerTitle: true,
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(2),
+            child: Container(height: 2, color: semantic.textDisabled),
+          ),
         ),
-        centerTitle: true,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(2),
-          child: Container(height: 2, color: semantic.textDisabled),
-        ),
-      ),
-      body: LayoutBuilder(
+        body: LayoutBuilder(
         builder: (context, constraints) {
           final bottom = MediaQuery.paddingOf(context).bottom;
           return SingleChildScrollView(
@@ -131,6 +141,7 @@ class SubscribeFailPage extends StatelessWidget {
             ),
           );
         },
+        ),
       ),
     );
   }

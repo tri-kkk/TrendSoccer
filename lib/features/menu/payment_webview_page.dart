@@ -26,6 +26,23 @@ class _PaymentWebViewPageState extends State<PaymentWebViewPage> {
   bool _isLoading = true;
   bool _resultHandled = false;
 
+  static const _gatewayCandidateKeys = [
+    'payUrl',
+    'actionUrl',
+    'gatewayUrl',
+    'paymentUrl',
+    'requestUrl',
+    'submitUrl',
+    'pay_url',
+  ];
+
+  static const _sensitiveFormKeys = {
+    'hashString',
+    'hash',
+    'sign',
+    'signature',
+  };
+
   String get _gatewayUrl {
     final data = widget.formData;
     for (final key in ['payUrl', 'actionUrl', 'gatewayUrl', 'pay_url']) {
@@ -51,6 +68,42 @@ class _PaymentWebViewPageState extends State<PaymentWebViewPage> {
         .replaceAll('"', '&quot;')
         .replaceAll('<', '&lt;')
         .replaceAll('>', '&gt;');
+  }
+
+  String _maskFormValue(String key, dynamic value) {
+    if (value == null) return 'null';
+    final str = value.toString();
+    final lowerKey = key.toLowerCase();
+    final isSensitive = _sensitiveFormKeys.contains(key) ||
+        lowerKey.contains('hash') ||
+        lowerKey.contains('sign');
+    if (!isSensitive) return str;
+    if (str.length <= 10) return str;
+    return '${str.substring(0, 10)}...';
+  }
+
+  void _logPaymentDiagnostics() {
+    final formData = widget.formData;
+    final gatewayUrl = _gatewayUrl;
+
+    final maskedFormData = {
+      for (final entry in formData.entries)
+        entry.key: _maskFormValue(entry.key, entry.value),
+    };
+    print('[PAYMENT] formData: $maskedFormData');
+    print('[PAYMENT] Gateway URL being used: $gatewayUrl');
+    print('[PAYMENT] returnUrl: ${formData['returnUrl']}');
+
+    for (final key in _gatewayCandidateKeys) {
+      if (formData.containsKey(key)) {
+        print('[PAYMENT] formData gateway candidate "$key": ${formData[key]}');
+      }
+    }
+
+    final returnUrlAlt = formData['return_url'];
+    if (returnUrlAlt != null) {
+      print('[PAYMENT] return_url: $returnUrlAlt');
+    }
   }
 
   String _buildPaymentHtml() {
@@ -158,7 +211,11 @@ $inputs
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    _logPaymentDiagnostics();
+    final gatewayUrl = _gatewayUrl;
     final html = _buildPaymentHtml();
+    print('[PAYMENT] HTML form action: $gatewayUrl');
+    print('[PAYMENT] HTML length: ${html.length}');
 
     return PopScope(
       canPop: false,
