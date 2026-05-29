@@ -34,6 +34,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
   /// 0 = quarterly (3개월), 1 = monthly (1개월)
   int _selectedPlanIndex = 0;
   bool _isLoading = false;
+  bool _isProcessing = false;
   String? _loadingMessage;
 
   String get _selectedPlan => _selectedPlanIndex == 0 ? 'quarterly' : 'monthly';
@@ -73,6 +74,8 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
   }
 
   Future<void> _startPremium() async {
+    if (_isProcessing) return;
+
     if (!ref.read(authProvider).isLoggedIn) {
       context.push('/login');
       return;
@@ -84,6 +87,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
       return;
     }
 
+    _isProcessing = true;
     print('[PAYMENT] Starting payment: plan=$_selectedPlan');
 
     setState(() {
@@ -168,6 +172,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
         const SnackBar(content: Text('결제 초기화에 실패했습니다. 다시 시도해주세요.')),
       );
     } finally {
+      _isProcessing = false;
       if (mounted) {
         setState(() {
           _isLoading = false;
