@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,6 +25,17 @@ Future<void> main() async {
     url: AppConfig.supabaseUrl,
     anonKey: AppConfig.supabaseAnonKey,
   );
+  // v2.1.1: initSdk is native-only (MethodChannel); not exposed on FlutterNaverLogin class.
+  await FlutterNaverLogin.channel.invokeMethod<void>(
+    'initSdk',
+    <String, String>{
+      'clientId': '4vRIttCnY29H4SdYztZU',
+      'clientSecret': 'MaqnBYPgKh',
+      'clientName': 'TrendSoccer',
+    },
+  );
+  // ignore: avoid_print
+  print('[AUTH] Naver SDK initialized');
   final prefs = await SharedPreferences.getInstance();
 
   runApp(

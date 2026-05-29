@@ -24,17 +24,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Future<void> _onNaverLoginTap() async {
     setState(() => _isLoading = true);
     try {
-      await ref.read(authProvider).loginWithNaver();
+      final result = await ref.read(authProvider).loginWithNaver();
       if (!mounted) return;
       setState(() => _isLoading = false);
 
-      if (!ref.read(authProvider).isLoggedIn) return;
+      if (result['cancelled'] == true) return;
 
-      final auth = ref.read(authProvider);
-      if (auth.needsConsent) {
-        context.push('/signup/terms');
+      if (result['isNewUser'] == true || result['requiresConsent'] == true) {
+        context.go('/signup/terms');
       } else {
-        TsToast.success(context, '로그인 성공');
         context.go('/trend');
       }
     } on ApiException catch (e) {
@@ -43,12 +41,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (e.code == 'ACCOUNT_DELETED') {
         TsToast.error(context, e.message);
       } else {
-        TsToast.error(context, '로그인에 실패했습니다. 다시 시도해주세요.');
+        TsToast.error(context, '네이버 로그인에 실패했습니다. 다시 시도해주세요.');
       }
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      TsToast.error(context, '로그인에 실패했습니다. 다시 시도해주세요.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('네이버 로그인에 실패했습니다.')),
+      );
     }
   }
 

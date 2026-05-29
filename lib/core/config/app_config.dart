@@ -17,6 +17,9 @@ abstract final class AppConfig {
 
   static String get naverClientSecret => dotenv.env['NAVER_CLIENT_SECRET'] ?? '';
 
+  static String get naverClientName =>
+      dotenv.env['NAVER_CLIENT_NAME'] ?? 'TrendSoccer';
+
   static SupabaseClient get supabaseClient => Supabase.instance.client;
 
   static Dio? _dio;

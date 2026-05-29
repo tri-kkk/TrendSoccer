@@ -23,19 +23,14 @@ tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
 
-subprojects {
-    plugins.withType<com.android.build.gradle.LibraryPlugin> {
-        val android = extensions.getByType<com.android.build.gradle.LibraryExtension>()
-        if (android.namespace.isNullOrEmpty()) {
-            android.namespace = project.group.toString()
-        }
-        android.compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_11
-            targetCompatibility = JavaVersion.VERSION_11
-        }
+gradle.projectsEvaluated {
+    project(":flutter_naver_login").tasks.withType<JavaCompile> {
+        sourceCompatibility = "17"
+        targetCompatibility = "17"
     }
-    tasks.withType<JavaCompile>().configureEach {
-        sourceCompatibility = JavaVersion.VERSION_11.toString()
-        targetCompatibility = JavaVersion.VERSION_11.toString()
+    project(":flutter_naver_login").tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
     }
 }

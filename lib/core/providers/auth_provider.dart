@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -7,10 +8,12 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:flutter_naver_login/interface/types/naver_login_status.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:trendsoccer/core/config/app_config.dart';
 import 'package:trendsoccer/core/models/api_response.dart';
 import 'package:trendsoccer/core/models/auth_state.dart';
+import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
 import 'package:trendsoccer/core/services/auth_service.dart';
 import 'package:trendsoccer/core/services/fcm_service.dart';
 import 'package:trendsoccer/core/services/token_service.dart';
@@ -23,6 +26,10 @@ class SupabaseAuthProvider extends ChangeNotifier {
   SupabaseAuthProvider(this._ref);
 
   final Ref _ref;
+
+  static const _authJwtKey = 'auth_jwt';
+  static const _authProviderKey = 'auth_provider';
+  static const _authExpiresAtKey = 'auth_expires_at';
 
   AuthState _state = const AuthState();
   UserProfile? userProfile;
@@ -73,6 +80,9 @@ class SupabaseAuthProvider extends ChangeNotifier {
     if (effectiveTier == 'premium') {
       return PlanType.premium;
     }
+    if (effectiveTier == 'trial') {
+      return PlanType.trial;
+    }
     if (expiresAt != null && expiresAt.isAfter(DateTime.now())) {
       return PlanType.premium;
     }
@@ -120,6 +130,12 @@ class SupabaseAuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> _persistNaverAuthSession(String jwt) async {
+    final prefs = _ref.read(sharedPreferencesProvider);
+    await prefs.setString(_authJwtKey, jwt);
+    await prefs.setString(_authProviderKey, 'naver');
+  }
+
   ApiException _mapAuthException(ApiException e) {
     if (e.code == 'COOLDOWN_ACTIVE') {
       final daysLeft = _daysLeftFromMessage(e.message);
@@ -165,18 +181,37 @@ class SupabaseAuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _clearNaverAuthPrefs(SharedPreferences prefs) async {
+    await prefs.remove(_authJwtKey);
+    await prefs.remove(_authProviderKey);
+    await prefs.remove(_authExpiresAtKey);
+  }
+
   Future<void> initFromStoredToken() async {
+    final prefs = _ref.read(sharedPreferencesProvider);
+    final storedJwt = prefs.getString(_authJwtKey);
+    final provider = prefs.getString(_authProviderKey);
+
+    if (storedJwt != null && storedJwt.isNotEmpty) {
+      await _ref.read(tokenServiceProvider).saveToken(storedJwt);
+    }
+
     final hasToken = await _ref.read(tokenServiceProvider).hasToken();
     if (!hasToken) {
       _resetToGuest();
       return;
     }
 
-    _state = _state.copyWith(status: AuthStatus.loggedIn);
+    _state = _state.copyWith(
+      status: AuthStatus.loggedIn,
+      loginMethod:
+          provider == 'naver' ? LoginMethod.naver : LoginMethod.google,
+    );
     notifyListeners();
     await loadProfile();
 
     if (!await _ref.read(tokenServiceProvider).hasToken()) {
+      await _clearNaverAuthPrefs(prefs);
       _resetToGuest();
       return;
     }
@@ -202,12 +237,23 @@ class SupabaseAuthProvider extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
+    if (_state.loginMethod == LoginMethod.naver) {
+      try {
+        await FlutterNaverLogin.logOut();
+      } catch (e) {
+        debugPrint('[Auth] Naver logout failed: $e');
+      }
+    }
+    final prefs = _ref.read(sharedPreferencesProvider);
+    await _clearNaverAuthPrefs(prefs);
     await _ref.read(tokenServiceProvider).deleteToken();
     _resetToGuest();
   }
 
   Future<void> withdraw() async {
     await _ref.read(authServiceProvider).withdraw();
+    final prefs = _ref.read(sharedPreferencesProvider);
+    await _clearNaverAuthPrefs(prefs);
     await _ref.read(tokenServiceProvider).deleteToken();
     _resetToGuest();
   }
@@ -257,39 +303,70 @@ class SupabaseAuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> loginWithNaver() async {
-    final result = await FlutterNaverLogin.logIn();
-    switch (result.status) {
-      case NaverLoginStatus.loggedOut:
-        return;
-      case NaverLoginStatus.error:
-        throw Exception(
-          (result.errorMessage?.isNotEmpty ?? false)
-              ? result.errorMessage!
-              : 'Naver sign-in failed',
-        );
-      case NaverLoginStatus.loggedIn:
-        break;
-    }
-
-    final loginToken = result.accessToken;
-    String naverAccessToken;
-    if (loginToken != null && loginToken.accessToken.isNotEmpty) {
-      naverAccessToken = loginToken.accessToken;
-    } else {
-      final currentToken = await FlutterNaverLogin.getCurrentAccessToken();
-      if (currentToken.accessToken.isEmpty) {
-        throw Exception('Naver sign-in failed: access token is missing');
-      }
-      naverAccessToken = currentToken.accessToken;
-    }
-
+  Future<Map<String, dynamic>> loginWithNaver() async {
     try {
-      final response =
-          await _ref.read(authServiceProvider).naverAuth(naverAccessToken);
-      await _applyLoginResponse(response, LoginMethod.naver);
-    } on ApiException catch (e) {
-      throw _mapAuthException(e);
+      print('[AUTH] Naver login: calling FlutterNaverLogin.logIn()');
+      final result = await FlutterNaverLogin.logIn();
+
+      if (result.status == NaverLoginStatus.loggedOut) {
+        print('[AUTH] Naver login cancelled by user');
+        return {'cancelled': true};
+      }
+
+      if (result.status == NaverLoginStatus.error) {
+        print('[AUTH] Naver SDK error: ${result.errorMessage}');
+        throw Exception('Naver login failed: ${result.errorMessage}');
+      }
+
+      final loginToken = result.accessToken;
+      final String naverAccessToken;
+      if (loginToken != null && loginToken.accessToken.isNotEmpty) {
+        naverAccessToken = loginToken.accessToken;
+      } else {
+        final tokenResult = await FlutterNaverLogin.getCurrentAccessToken();
+        naverAccessToken = tokenResult.accessToken;
+      }
+
+      final previewLength =
+          math.min(10, naverAccessToken.length);
+      print(
+        '[AUTH] Naver accessToken obtained: ${naverAccessToken.substring(0, previewLength)}...',
+      );
+
+      if (naverAccessToken.isEmpty) {
+        throw Exception('Naver access token is empty');
+      }
+
+      print('[AUTH] Posting to /api/v1/mobile/auth/naver');
+      try {
+        final response =
+            await _ref.read(authServiceProvider).naverAuth(naverAccessToken);
+        print(
+          '[AUTH] Backend response: isNewUser=${response.user.isNewUser}, tier=${response.user.tier}',
+        );
+
+        await _persistNaverAuthSession(response.session.accessToken);
+        await _applyLoginResponse(response, LoginMethod.naver);
+
+        final user = response.user;
+        print(
+          '[AUTH] Naver login success: email=${user.email}, tier=${user.tier}, isNewUser=${user.isNewUser}',
+        );
+
+        return {
+          'isNewUser': user.isNewUser,
+          'requiresConsent': user.requiresConsent,
+          'user': user,
+        };
+      } on ApiException catch (e) {
+        throw _mapAuthException(e);
+      }
+    } catch (e) {
+      print('[AUTH] Naver login error: $e');
+      if (e.toString().contains('cancelled')) {
+        return {'cancelled': true};
+      }
+      rethrow;
     }
   }
 

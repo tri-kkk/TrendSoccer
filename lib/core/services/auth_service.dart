@@ -12,8 +12,7 @@ class AuthService {
 
   final ApiService _api;
 
-  // TODO: Set useNaverStub = false when backend endpoint is live
-  static const bool useNaverStub = true;
+  static const bool useNaverStub = false;
 
   static const _mePath = '/api/v1/mobile/me';
   static const _withdrawPath = '/api/v1/mobile/me/withdraw';
@@ -70,6 +69,7 @@ class AuthService {
       return _naverAuthStubResponse();
     }
 
+    print('[AUTH] Naver login: sending accessToken to backend');
     return _api.post<LoginResponse>(
       _naverAuthPath,
       data: <String, dynamic>{

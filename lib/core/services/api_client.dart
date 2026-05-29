@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:trendsoccer/core/config/app_config.dart';
 import 'package:trendsoccer/core/services/token_service.dart';
@@ -40,9 +42,21 @@ class _AuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final token = await _tokenService.getToken();
-    if (token != null && token.isNotEmpty) {
-      options.headers['Authorization'] = 'Bearer $token';
+    final supabaseSession = Supabase.instance.client.auth.currentSession;
+    if (supabaseSession != null) {
+      options.headers['Authorization'] =
+          'Bearer ${supabaseSession.accessToken}';
+    } else {
+      final token = await _tokenService.getToken();
+      if (token != null && token.isNotEmpty) {
+        options.headers['Authorization'] = 'Bearer $token';
+      } else {
+        final prefs = await SharedPreferences.getInstance();
+        final storedJwt = prefs.getString('auth_jwt');
+        if (storedJwt != null && storedJwt.isNotEmpty) {
+          options.headers['Authorization'] = 'Bearer $storedJwt';
+        }
+      }
     }
     handler.next(options);
   }
@@ -54,6 +68,10 @@ class _AuthInterceptor extends Interceptor {
   ) async {
     if (err.response?.statusCode == 401) {
       await _tokenService.deleteToken();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('auth_jwt');
+      await prefs.remove('auth_provider');
+      await prefs.remove('auth_expires_at');
     }
     handler.next(err);
   }
