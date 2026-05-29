@@ -237,7 +237,7 @@ class SoccerReportDetailPage extends ConsumerWidget {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final brightness = Theme.of(context).brightness;
     final auth = ref.watch(authProvider);
-    final hasFullAccess = auth.hasFullAccess || auth.isTrial;
+    final hasFullAccess = auth.hasFullAccess;
     final postAsync = ref.watch(blogPostDetailProvider(slug));
     final bottomPadding = TsSpacing.lg + MediaQuery.paddingOf(context).bottom;
     final appBarTitle = postAsync.when(

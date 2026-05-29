@@ -103,7 +103,14 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
   bool get isTrial => _state.isTrial;
 
-  bool get hasFullAccess => _state.planType == PlanType.premium;
+  bool get hasFullAccess {
+    final result = _state.planType == PlanType.premium ||
+        _state.planType == PlanType.trial;
+    print(
+      '[AUTH] hasFullAccess: planType=${_state.planType}, result=$result',
+    );
+    return result;
+  }
 
   PlanType get planType => _state.planType;
 
