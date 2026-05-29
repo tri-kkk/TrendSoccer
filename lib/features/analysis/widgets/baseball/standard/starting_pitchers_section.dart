@@ -6,7 +6,6 @@ import 'package:trendsoccer/core/providers/baseball_match_report_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/features/analysis/models/baseball_standard_parser.dart';
 import 'package:trendsoccer/shared/widgets/baseball/pitcher_comment_chip.dart';
 import 'package:trendsoccer/shared/widgets/baseball/position_chip.dart';
 import 'package:trendsoccer/shared/widgets/baseball/season_chip.dart';
@@ -31,8 +30,8 @@ class PitcherData {
     required this.strengths,
     required this.weaknesses,
     this.summary,
-    this.currentSeasonYear,
-    this.previousSeasonYear,
+    this.season,
+    this.prevSeason,
   });
 
   final String name;
@@ -52,8 +51,8 @@ class PitcherData {
   final List<String> strengths;
   final List<String> weaknesses;
   final String? summary;
-  final String? currentSeasonYear;
-  final String? previousSeasonYear;
+  final String? season;
+  final String? prevSeason;
 }
 
 class StartingPitchersSection extends ConsumerWidget {
@@ -94,11 +93,20 @@ class StartingPitchersSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
-    var homeDisplay = homePitcher;
-    var awayDisplay = awayPitcher;
+    final defaultPrevSeason = previousSeasonYear(currentSeason);
+    var homeDisplay = _withSeasonLabels(
+      homePitcher,
+      season: homePitcher.season ?? currentSeason,
+      prevSeason: homePitcher.prevSeason ?? defaultPrevSeason,
+    );
+    var awayDisplay = _withSeasonLabels(
+      awayPitcher,
+      season: awayPitcher.season ?? currentSeason,
+      prevSeason: awayPitcher.prevSeason ?? defaultPrevSeason,
+    );
 
-    PitcherPreviousSeasonDisplay? homePrev;
-    PitcherPreviousSeasonDisplay? awayPrev;
+    Map<String, dynamic>? homePrevRaw;
+    Map<String, dynamic>? awayPrevRaw;
 
     if (_isMlb) {
       final statsData = switch (ref.watch(mlbPitcherStatsProvider(matchId))) {
@@ -116,6 +124,11 @@ class StartingPitchersSection extends ConsumerWidget {
           awayDisplay,
           awayRaw is Map ? Map<String, dynamic>.from(awayRaw) : null,
         );
+        final rootSeason = _readSeasonField(statsData['season']);
+        if (rootSeason != null) {
+          homeDisplay = _withSeasonLabels(homeDisplay, season: rootSeason);
+          awayDisplay = _withSeasonLabels(awayDisplay, season: rootSeason);
+        }
       }
 
       final prevData = switch (ref.watch(mlbPitcherStatsPrevProvider(matchId))) {
@@ -123,19 +136,23 @@ class StartingPitchersSection extends ConsumerWidget {
         _ => null,
       };
       if (prevData != null) {
-        final seasonLabel =
-            (prevData['season'] as num?)?.toInt() ?? DateTime.now().year - 1;
-        final homePrevRaw = prevData['homePitcher'];
-        final awayPrevRaw = prevData['awayPitcher'];
-        homePrev = parseMlbPitcherPreviousSeason(
-          pitcherRaw:
-              homePrevRaw is Map ? Map<String, dynamic>.from(homePrevRaw) : null,
-          seasonLabel: seasonLabel,
+        final homeRaw = prevData['homePitcher'];
+        final awayRaw = prevData['awayPitcher'];
+        homePrevRaw = homeRaw is Map
+            ? Map<String, dynamic>.from(homeRaw)
+            : null;
+        awayPrevRaw = awayRaw is Map
+            ? Map<String, dynamic>.from(awayRaw)
+            : null;
+        final prevSeasonLabel = _readSeasonField(prevData['season']) ??
+            previousSeasonYear(currentSeason);
+        homeDisplay = _withSeasonLabels(
+          homeDisplay,
+          prevSeason: _readSeasonField(homePrevRaw?['season']) ?? prevSeasonLabel,
         );
-        awayPrev = parseMlbPitcherPreviousSeason(
-          pitcherRaw:
-              awayPrevRaw is Map ? Map<String, dynamic>.from(awayPrevRaw) : null,
-          seasonLabel: seasonLabel,
+        awayDisplay = _withSeasonLabels(
+          awayDisplay,
+          prevSeason: _readSeasonField(awayPrevRaw?['season']) ?? prevSeasonLabel,
         );
       }
     } else if (_isAsianLeague) {
@@ -179,17 +196,30 @@ class StartingPitchersSection extends ConsumerWidget {
 
         final homeRaw = statsData['homePitcherPrev'];
         final awayRaw = statsData['awayPitcherPrev'];
-        homePrev = parsePitcherPreviousSeason(
-          homeRaw is Map ? Map<String, dynamic>.from(homeRaw) : null,
+        homePrevRaw = homeRaw is Map
+            ? Map<String, dynamic>.from(homeRaw)
+            : null;
+        awayPrevRaw = awayRaw is Map
+            ? Map<String, dynamic>.from(awayRaw)
+            : null;
+
+        final rootSeason = _readSeasonField(statsData['season']);
+        if (rootSeason != null) {
+          homeDisplay = _withSeasonLabels(homeDisplay, season: rootSeason);
+          awayDisplay = _withSeasonLabels(awayDisplay, season: rootSeason);
+        }
+        homeDisplay = _withSeasonLabels(
+          homeDisplay,
+          prevSeason:
+              _readSeasonField(homePrevRaw?['season']) ?? homeDisplay.prevSeason,
         );
-        awayPrev = parsePitcherPreviousSeason(
-          awayRaw is Map ? Map<String, dynamic>.from(awayRaw) : null,
+        awayDisplay = _withSeasonLabels(
+          awayDisplay,
+          prevSeason:
+              _readSeasonField(awayPrevRaw?['season']) ?? awayDisplay.prevSeason,
         );
       }
     }
-
-    final previousSeason =
-        _isMlb ? (DateTime.now().year - 1).toString() : previousSeasonYear(currentSeason);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,9 +245,7 @@ class StartingPitchersSection extends ConsumerWidget {
                     leagueCode: leagueCode,
                     pitcher: homeDisplay,
                     isHome: true,
-                    currentSeason: currentSeason,
-                    previousSeason: previousSeason,
-                    previousSeasonStats: homePrev,
+                    previousSeasonStatsRaw: homePrevRaw,
                   ),
                 ),
                 Expanded(
@@ -225,9 +253,7 @@ class StartingPitchersSection extends ConsumerWidget {
                     leagueCode: leagueCode,
                     pitcher: awayDisplay,
                     isHome: false,
-                    currentSeason: currentSeason,
-                    previousSeason: previousSeason,
-                    previousSeasonStats: awayPrev,
+                    previousSeasonStatsRaw: awayPrevRaw,
                   ),
                 ),
               ],
@@ -244,17 +270,19 @@ class _PitcherColumn extends StatelessWidget {
     required this.leagueCode,
     required this.pitcher,
     required this.isHome,
-    required this.currentSeason,
-    required this.previousSeason,
-    this.previousSeasonStats,
+    this.previousSeasonStatsRaw,
   });
 
   final String leagueCode;
   final PitcherData pitcher;
   final bool isHome;
-  final String currentSeason;
-  final String previousSeason;
-  final PitcherPreviousSeasonDisplay? previousSeasonStats;
+  final Map<String, dynamic>? previousSeasonStatsRaw;
+
+  String get _currentSeasonLabel =>
+      pitcher.season ?? '${DateTime.now().year}';
+
+  String get _previousSeasonLabel =>
+      pitcher.prevSeason ?? '${DateTime.now().year - 1}';
 
   static const _emblemSize = 80.0;
 
@@ -407,37 +435,44 @@ class _PitcherColumn extends StatelessWidget {
     );
   }
 
-  Widget? _buildPreviousSeasonSection(TsSemanticColors semantic) {
-    if (_isMlb) {
-      final prev = previousSeasonStats;
-      if (prev == null) return null;
+  Widget _buildPrevSeasonStats(
+    Map<String, dynamic>? prevStats,
+    TsSemanticColors semantic,
+  ) {
+    final prevEra = _formatPrevEra(prevStats);
+    final prevWhip = _formatPrevWhip(prevStats);
+    final prevK = _formatPrevK(prevStats);
 
-      return Column(
-        children: [
-          Container(
-            height: 1,
-            width: double.infinity,
-            color: semantic.borderSubtle,
-          ),
-          const SizedBox(height: TsSpacing.md),
-          SeasonChip(isCurrent: false, label: previousSeason),
-          const SizedBox(height: TsSpacing.md),
-          _statsRowTriple(
-            v1: prev.era,
-            l1: 'ERA',
-            v2: prev.whip,
-            l2: 'WHIP',
-            v3: prev.strikeouts,
-            l3: 'K',
-          ),
-        ],
-      );
-    }
+    return _statsRowTriple(
+      v1: prevEra,
+      l1: 'ERA',
+      v2: prevWhip,
+      l2: 'WHIP',
+      v3: prevK,
+      l3: 'K',
+    );
+  }
 
-    final prev = previousSeasonStats;
-    if (prev == null || !prev.hasData) return null;
+  String _formatPrevEra(Map<String, dynamic>? prevStats) {
+    if (prevStats == null) return '-';
+    return _formatMlbStat(prevStats['era'], decimals: 2);
+  }
 
+  String _formatPrevWhip(Map<String, dynamic>? prevStats) {
+    if (prevStats == null) return '-';
+    return _formatMlbStat(prevStats['whip'], decimals: 2);
+  }
+
+  String _formatPrevK(Map<String, dynamic>? prevStats) {
+    if (prevStats == null) return '-';
+    final k =
+        prevStats['strikeOuts'] ?? prevStats['strikeouts'] ?? prevStats['k'];
+    return _formatMlbK(k);
+  }
+
+  Widget _buildPreviousSeasonSection(TsSemanticColors semantic) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
           height: 1,
@@ -445,16 +480,11 @@ class _PitcherColumn extends StatelessWidget {
           color: semantic.borderSubtle,
         ),
         const SizedBox(height: TsSpacing.md),
-        SeasonChip(isCurrent: false, label: previousSeason),
-        const SizedBox(height: TsSpacing.md),
-        _statsRowTriple(
-          v1: prev.era,
-          l1: 'ERA',
-          v2: prev.whip,
-          l2: 'WHIP',
-          v3: prev.strikeouts,
-          l3: 'K',
+        Center(
+          child: SeasonChip(isCurrent: false, label: _previousSeasonLabel),
         ),
+        const SizedBox(height: TsSpacing.md),
+        _buildPrevSeasonStats(previousSeasonStatsRaw, semantic),
       ],
     );
   }
@@ -464,7 +494,6 @@ class _PitcherColumn extends StatelessWidget {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final thirdStatValue = _isMlb ? pitcher.k9 : pitcher.k;
     final thirdStatLabel = _isMlb ? 'K/9' : 'K';
-    final previousSeasonSection = _buildPreviousSeasonSection(semantic);
     final commentChips = _buildCommentChips();
 
     return Padding(
@@ -491,7 +520,7 @@ class _PitcherColumn extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: TsSpacing.md),
-          SeasonChip(isCurrent: true, label: currentSeason),
+          SeasonChip(isCurrent: true, label: _currentSeasonLabel),
           const SizedBox(height: TsSpacing.md),
           Container(
             height: 1,
@@ -522,11 +551,9 @@ class _PitcherColumn extends StatelessWidget {
             const SizedBox(height: TsSpacing.md),
             commentChips,
           ],
-          if (previousSeasonSection != null) ...[
-            const Spacer(),
-            const SizedBox(height: TsSpacing.md),
-            previousSeasonSection,
-          ],
+          const Spacer(),
+          const SizedBox(height: TsSpacing.md),
+          _buildPreviousSeasonSection(semantic),
         ],
       ),
     );
@@ -616,8 +643,8 @@ PitcherData _mergeKboPitcherStats(
     strengths: strengths.isNotEmpty ? strengths : base.strengths,
     weaknesses: weaknesses.isNotEmpty ? weaknesses : base.weaknesses,
     summary: summary?.isNotEmpty == true ? summary : base.summary,
-    currentSeasonYear: base.currentSeasonYear,
-    previousSeasonYear: base.previousSeasonYear,
+    season: base.season,
+    prevSeason: base.prevSeason,
   );
 }
 
@@ -656,8 +683,42 @@ PitcherData _mergeMlbPitcherStats(
     strengths: strengths.isNotEmpty ? strengths : base.strengths,
     weaknesses: weaknesses.isNotEmpty ? weaknesses : base.weaknesses,
     summary: summary?.isNotEmpty == true ? summary : base.summary,
-    currentSeasonYear: base.currentSeasonYear,
-    previousSeasonYear: base.previousSeasonYear,
+    season: base.season,
+    prevSeason: base.prevSeason,
+  );
+}
+
+String? _readSeasonField(Object? raw) {
+  final text = raw?.toString().trim();
+  if (text == null || text.isEmpty) return null;
+  return text;
+}
+
+PitcherData _withSeasonLabels(
+  PitcherData base, {
+  String? season,
+  String? prevSeason,
+}) {
+  return PitcherData(
+    name: base.name,
+    pitcherType: base.pitcherType,
+    teamLogoUrl: base.teamLogoUrl,
+    pitcherId: base.pitcherId,
+    photoUrl: base.photoUrl,
+    era: base.era,
+    whip: base.whip,
+    k9: base.k9,
+    wl: base.wl,
+    ip: base.ip,
+    k: base.k,
+    prevWl: base.prevWl,
+    prevIp: base.prevIp,
+    prevK: base.prevK,
+    strengths: base.strengths,
+    weaknesses: base.weaknesses,
+    summary: base.summary,
+    season: season ?? base.season,
+    prevSeason: prevSeason ?? base.prevSeason,
   );
 }
 
@@ -672,33 +733,4 @@ String _formatMlbK(Object? value) {
   if (value is num) return value.toInt().toString();
   final text = value.toString().trim();
   return text.isEmpty ? '-' : text;
-}
-
-String _mlbSafeStatString(dynamic value) {
-  if (value == null) return '-';
-  if (value is num) return value.toStringAsFixed(2);
-  final text = value.toString().trim();
-  return text.isEmpty ? '-' : text;
-}
-
-PitcherPreviousSeasonDisplay? parseMlbPitcherPreviousSeason({
-  Map<String, dynamic>? pitcherRaw,
-  required int seasonLabel,
-}) {
-  if (pitcherRaw == null || pitcherRaw.isEmpty) return null;
-
-  final era = _mlbSafeStatString(pitcherRaw['era']);
-  final whip = _mlbSafeStatString(pitcherRaw['whip']);
-  final strikeouts = _formatMlbK(pitcherRaw['strikeOuts']);
-
-  if (era == '-' && whip == '-' && strikeouts == '-') {
-    return null;
-  }
-
-  return PitcherPreviousSeasonDisplay(
-    seasonLabel: seasonLabel.toString(),
-    era: era,
-    whip: whip,
-    strikeouts: strikeouts,
-  );
 }
