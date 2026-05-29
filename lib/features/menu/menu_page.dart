@@ -194,6 +194,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.4),
       builder: (dialogContext) {
+        var isDeleting = false;
         return StatefulBuilder(
           builder: (ctx, setDialogState) {
             final isDeleteTyped =
@@ -263,95 +264,108 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                deleteController.dispose();
-                                Navigator.of(dialogContext).pop();
-                              },
-                              child: Container(
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: semantic.textDisabled,
-                                    width: 2,
+                      if (isDeleting)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: CircularProgressIndicator(
+                              color: semantic.interactivePrimary,
+                            ),
+                          ),
+                        )
+                      else
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  deleteController.dispose();
+                                  Navigator.of(dialogContext).pop();
+                                },
+                                child: Container(
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: semantic.textDisabled,
+                                      width: 2,
+                                    ),
                                   ),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  '취소',
-                                  style: TsType.bodyMBold.copyWith(
-                                    color: semantic.textDisabled,
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    '취소',
+                                    style: TsType.bodyMBold.copyWith(
+                                      color: semantic.textDisabled,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: isDeleteTyped
-                                  ? () async {
-                                      deleteController.dispose();
-                                      Navigator.of(dialogContext).pop();
-                                      setState(() => _isDeletingAccount = true);
-                                      try {
-                                        await authNotifier.deleteAccount();
-                                        if (!context.mounted) return;
-                                        context.go('/splash');
-                                      } catch (e) {
-                                        if (!context.mounted) return;
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              e
-                                                  .toString()
-                                                  .replaceAll(
-                                                    'Exception: ',
-                                                    '',
-                                                  ),
-                                            ),
-                                          ),
-                                        );
-                                      } finally {
-                                        if (mounted) {
-                                          setState(
-                                            () => _isDeletingAccount = false,
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: isDeleteTyped
+                                    ? () async {
+                                        setDialogState(() => isDeleting = true);
+                                        try {
+                                          await authNotifier.deleteAccount();
+                                          if (dialogContext.mounted) {
+                                            Navigator.of(dialogContext).pop();
+                                          }
+                                          await Future<void>.delayed(
+                                            const Duration(milliseconds: 100),
                                           );
+                                          if (context.mounted) {
+                                            context.go('/splash');
+                                          }
+                                        } catch (e) {
+                                          deleteController.dispose();
+                                          if (dialogContext.mounted) {
+                                            Navigator.of(dialogContext).pop();
+                                          }
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  e
+                                                      .toString()
+                                                      .replaceAll(
+                                                        'Exception: ',
+                                                        '',
+                                                      ),
+                                                ),
+                                              ),
+                                            );
+                                          }
                                         }
                                       }
-                                    }
-                                  : null,
-                              child: Container(
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  color: isDeleteTyped
-                                      ? semantic.interactivePrimary
-                                      : semantic.interactivePrimary.withValues(
-                                          alpha: 0.3,
-                                        ),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  '계정삭제',
-                                  style: TsType.bodyMBold.copyWith(
+                                    : null,
+                                child: Container(
+                                  height: 32,
+                                  decoration: BoxDecoration(
                                     color: isDeleteTyped
-                                        ? semantic.surfaceBase
-                                        : semantic.surfaceBase.withValues(
-                                            alpha: 0.5,
-                                          ),
+                                        ? semantic.interactivePrimary
+                                        : semantic.interactivePrimary
+                                            .withValues(alpha: 0.3),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    '계정삭제',
+                                    style: TsType.bodyMBold.copyWith(
+                                      color: isDeleteTyped
+                                          ? semantic.surfaceBase
+                                          : semantic.surfaceBase.withValues(
+                                              alpha: 0.5,
+                                            ),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                     ],
                   ),
                 ),

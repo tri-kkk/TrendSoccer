@@ -242,6 +242,52 @@ class SupabaseAuthProvider extends ChangeNotifier {
     return int.tryParse(match.group(1)!);
   }
 
+  Never _handleMobileAuthDioException(DioException e, {required String logLabel}) {
+    final statusCode = e.response?.statusCode;
+    final responseData = e.response?.data;
+
+    if (statusCode == 403 && responseData is Map) {
+      final map = responseData is Map<String, dynamic>
+          ? responseData
+          : Map<String, dynamic>.from(responseData);
+      final error = map['error'];
+      if (error is Map) {
+        final errorMap =
+            error is Map<String, dynamic> ? error : Map<String, dynamic>.from(error);
+        final errorCode = errorMap['code'] ?? '';
+        final message = errorMap['message'] ?? '';
+        final daysLeft = errorMap['daysLeft'];
+
+        print(
+          '[AUTH] $logLabel login blocked: code=$errorCode, daysLeft=$daysLeft',
+        );
+
+        if (errorCode == 'COOLDOWN_ACTIVE') {
+          throw Exception(
+            message is String && message.isNotEmpty
+                ? message
+                : '재가입은 탈퇴 후 7일이 지난 뒤 가능합니다.',
+          );
+        }
+      }
+    }
+
+    if (statusCode == 401) {
+      throw Exception('네이버 인증이 만료되었습니다. 다시 시도해주세요.');
+    }
+
+    if (statusCode == 400) {
+      throw Exception('이메일 정보가 필요합니다. 네이버 계정 설정을 확인해주세요.');
+    }
+
+    print('[AUTH] $logLabel login DioException: ${e.message}');
+    throw Exception(
+      logLabel == 'Google'
+          ? '로그인에 실패했습니다. 다시 시도해주세요.'
+          : '네이버 로그인에 실패했습니다. 다시 시도해주세요.',
+    );
+  }
+
   void _resetToGuest() {
     _state = const AuthState();
     userProfile = null;
@@ -624,6 +670,8 @@ class SupabaseAuthProvider extends ChangeNotifier {
         );
       } on ApiException catch (e) {
         throw _mapAuthException(e);
+      } on DioException catch (e) {
+        _handleMobileAuthDioException(e, logLabel: 'Google');
       }
     } catch (e) {
       print('[AUTH] ERROR: ${e.runtimeType}: $e');
@@ -698,6 +746,8 @@ class SupabaseAuthProvider extends ChangeNotifier {
         };
       } on ApiException catch (e) {
         throw _mapAuthException(e);
+      } on DioException catch (e) {
+        _handleMobileAuthDioException(e, logLabel: 'Naver');
       }
     } catch (e) {
       print('[AUTH] Naver login error: $e');

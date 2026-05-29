@@ -43,11 +43,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       } else {
         TsToast.error(context, '네이버 로그인에 실패했습니다. 다시 시도해주세요.');
       }
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('네이버 로그인에 실패했습니다.')),
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+        ),
       );
     }
   }
@@ -71,10 +73,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         TsToast.success(context, '로그인 성공');
         context.go('/trend');
       }
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      TsToast.error(context, '로그인에 실패했습니다. 다시 시도해주세요.');
+      TsToast.error(
+        context,
+        e.toString().replaceAll('Exception: ', ''),
+      );
     }
   }
 
