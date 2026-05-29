@@ -84,7 +84,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
   static const _authJwtKey = 'auth_jwt';
   static const _authProviderKey = 'auth_provider';
   static const _authExpiresAtKey = 'auth_expires_at';
-  static const _mePath = '/api/v1/mobile/me';
+  static const _meUrl = 'https://www.trendsoccer.com/api/v1/mobile/me';
 
   AuthState _state = const AuthState();
   UserProfile? userProfile;
@@ -345,6 +345,75 @@ class SupabaseAuthProvider extends ChangeNotifier {
     _syncStateFromUserProfile(UserProfile.fromJson(user));
   }
 
+  void _applyPostSignupPlanFromAgreeTerms(bool isTrial) {
+    final agreedAt = DateTime.now();
+    final existing = userProfile;
+
+    if (isTrial) {
+      final trialEnds = agreedAt.add(const Duration(hours: 48));
+      _trial = _ProfileTrialInfo(endsAt: trialEnds, active: true);
+      _subscription = null;
+      userProfile = UserProfile(
+        userId: existing?.userId ?? '',
+        email: existing?.email ?? _state.userEmail,
+        name: existing?.name ?? _state.userName,
+        avatarUrl: existing?.avatarUrl,
+        tier: 'premium',
+        premiumExpiresAt: existing?.premiumExpiresAt,
+        trialEndsAt: trialEnds,
+        isNewUser: existing?.isNewUser ?? false,
+        requiresConsent: false,
+        trialUsed: true,
+        termsAgreedAt: agreedAt,
+      );
+      _state = _state.copyWith(
+        planType: PlanType.trial,
+        trialExpiresAt: trialEnds,
+        clearPremiumExpiresAt: true,
+      );
+      print(
+        '[AUTH] Post-signup tier from agreeTerms: trial until $trialEnds',
+      );
+    } else {
+      _trial = null;
+      _subscription = null;
+      userProfile = UserProfile(
+        userId: existing?.userId ?? '',
+        email: existing?.email ?? _state.userEmail,
+        name: existing?.name ?? _state.userName,
+        avatarUrl: existing?.avatarUrl,
+        tier: 'free',
+        premiumExpiresAt: existing?.premiumExpiresAt,
+        trialEndsAt: existing?.trialEndsAt,
+        isNewUser: existing?.isNewUser ?? false,
+        requiresConsent: false,
+        trialUsed: existing?.trialUsed ?? false,
+        termsAgreedAt: agreedAt,
+      );
+      _state = _state.copyWith(
+        planType: PlanType.free,
+        clearTrialExpiresAt: true,
+        clearPremiumExpiresAt: true,
+      );
+      print('[AUTH] Post-signup tier from agreeTerms: free');
+    }
+    notifyListeners();
+  }
+
+  void _schedulePostSignupProfileRefresh(String? jwt) {
+    print('[AUTH] Post-signup loadProfile delayed 1s (background)');
+    unawaited(_refreshProfileAfterSignup(jwt));
+  }
+
+  Future<void> _refreshProfileAfterSignup(String? jwt) async {
+    await Future<void>.delayed(const Duration(seconds: 1));
+    try {
+      await loadProfile(jwt: jwt);
+    } catch (e) {
+      debugPrint('[Auth] Post-signup loadProfile failed (non-critical): $e');
+    }
+  }
+
   void _syncStateFromUserProfile(UserProfile profile) {
     userProfile = profile;
     final planType = _planTypeFromProfile(profile);
@@ -463,17 +532,17 @@ class SupabaseAuthProvider extends ChangeNotifier {
   }
 
   Future<void> loadProfile({String? jwt}) async {
-    print('[AUTH] loadProfile: calling /api/v1/mobile/me');
+    const url = _meUrl;
+    print('[AUTH] loadProfile URL: $url');
     try {
       final headers = await _buildMeRequestHeaders(jwt: jwt);
       print(
         '[AUTH] loadProfile: auth header present=${headers.containsKey('Authorization')}',
       );
 
-      final baseUrl = AppConfig.apiBaseUrl.replaceAll(RegExp(r'/$'), '');
       final dio = Dio();
       final response = await dio.get<dynamic>(
-        '$baseUrl$_mePath',
+        url,
         options: Options(headers: headers),
       );
       final raw = response.data;
@@ -774,18 +843,12 @@ class SupabaseAuthProvider extends ChangeNotifier {
         return false;
       }
 
+      _applyPostSignupPlanFromAgreeTerms(result.isTrial);
+
       final storedToken = await _ref.read(tokenServiceProvider).getToken();
       final prefs = _ref.read(sharedPreferencesProvider);
       final currentJwt = storedToken ?? prefs.getString(_authJwtKey);
-
-      print('[AUTH] Post-signup loadProfile delayed 1s');
-      await Future<void>.delayed(const Duration(seconds: 1));
-
-      try {
-        await loadProfile(jwt: currentJwt);
-      } catch (e) {
-        debugPrint('[Auth] Post-signup loadProfile failed (non-critical): $e');
-      }
+      _schedulePostSignupProfileRefresh(currentJwt);
 
       return true;
     } on ApiException catch (e) {

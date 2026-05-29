@@ -10,7 +10,6 @@ import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/menu/payment_webview_page.dart';
-import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/navigation/ts_bottom_navigation.dart';
@@ -40,6 +39,14 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
   String get _selectedPlan => _selectedPlanIndex == 0 ? 'quarterly' : 'monthly';
 
   int get _successMonths => _selectedPlanIndex == 0 ? 3 : 1;
+
+  void _handleBack(BuildContext context) {
+    if (GoRouter.of(context).canPop()) {
+      context.pop();
+    } else {
+      context.go('/trend');
+    }
+  }
 
   Map<String, dynamic>? _extractFormData(Map<String, dynamic> initResponse) {
     final root = initResponse['formData'];
@@ -177,23 +184,35 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     return TsLoadingOverlay(
       isLoading: _isLoading,
       message: _loadingMessage,
-      child: Scaffold(
-        backgroundColor: semantic.surfaceBase,
-        appBar: AppBar(
-        backgroundColor: semantic.surfaceBase,
-        elevation: 0,
-        leading: TsBackButton(onPressed: () => context.pop()),
-        title: Text(
-          '구독',
-          style: TsType.headingH3.copyWith(color: semantic.textPrimary),
-        ),
-        centerTitle: true,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(2),
-          child: Container(height: 2, color: semantic.textDisabled),
-        ),
-      ),
-      body: SingleChildScrollView(
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          _handleBack(context);
+        },
+        child: Scaffold(
+          backgroundColor: semantic.surfaceBase,
+          appBar: AppBar(
+            backgroundColor: semantic.surfaceBase,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            automaticallyImplyLeading: false,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
+              onPressed: () => _handleBack(context),
+            ),
+            iconTheme: IconThemeData(color: semantic.textPrimary),
+            title: Text(
+              '구독',
+              style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+            ),
+            centerTitle: true,
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(2),
+              child: Container(height: 2, color: semantic.textDisabled),
+            ),
+          ),
+          body: SingleChildScrollView(
         padding: EdgeInsets.only(
           left: 16,
           right: 16,
@@ -279,13 +298,14 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           ],
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: TsBottomNavigation(
-          currentIndex: 4,
-          onTap: (index) => context.go(_tabPaths[index]),
+          bottomNavigationBar: SafeArea(
+            top: false,
+            child: TsBottomNavigation(
+              currentIndex: 4,
+              onTap: (index) => context.go(_tabPaths[index]),
+            ),
+          ),
         ),
-      ),
       ),
     );
   }
