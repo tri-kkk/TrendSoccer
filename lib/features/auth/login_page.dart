@@ -90,6 +90,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
+          onPressed: () => context.go('/trend'),
+        ),
         backgroundColor: semantic.surfaceBase,
         elevation: 0,
         scrolledUnderElevation: 0,

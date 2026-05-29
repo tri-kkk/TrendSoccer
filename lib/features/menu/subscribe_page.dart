@@ -9,7 +9,7 @@ import 'package:trendsoccer/core/services/payment_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/features/payment/payment_webview_page.dart';
+import 'package:trendsoccer/features/menu/payment_webview_page.dart';
 import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
@@ -41,20 +41,43 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
 
   int get _successMonths => _selectedPlanIndex == 0 ? 3 : 1;
 
+  Map<String, dynamic>? _extractFormData(Map<String, dynamic> initResponse) {
+    final root = initResponse['formData'];
+    if (root is Map<String, dynamic>) {
+      return root;
+    }
+    if (root is Map) {
+      return Map<String, dynamic>.from(root);
+    }
+
+    final data = initResponse['data'];
+    if (data is Map<String, dynamic>) {
+      final nested = data['formData'];
+      if (nested is Map<String, dynamic>) return nested;
+      if (nested is Map) return Map<String, dynamic>.from(nested);
+    } else if (data is Map) {
+      final dataMap = Map<String, dynamic>.from(data);
+      final nested = dataMap['formData'];
+      if (nested is Map<String, dynamic>) return nested;
+      if (nested is Map) return Map<String, dynamic>.from(nested);
+    }
+
+    return null;
+  }
+
   Future<void> _startPremium() async {
     if (!ref.read(authProvider).isLoggedIn) {
       context.push('/login');
       return;
     }
 
-    final auth = ref.read(authProvider);
-    final userId = auth.userProfile?.userId;
-    final email = auth.userEmail;
-
-    if (userId == null || userId.isEmpty || email.isEmpty) {
+    final email = ref.read(authProvider).userEmail;
+    if (email.isEmpty) {
       TsToast.error(context, '결제 초기화에 실패했습니다. 다시 시도해주세요.');
       return;
     }
+
+    print('[PAYMENT] Starting payment: plan=$_selectedPlan');
 
     setState(() {
       _isLoading = true;
@@ -62,10 +85,26 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     });
 
     try {
-      final initResponse = await ref.read(paymentServiceProvider).initPayment(
-            plan: _selectedPlan,
-            userId: userId,
-          );
+      final initResponse = await ref
+          .read(paymentServiceProvider)
+          .initPayment(plan: _selectedPlan);
+
+      if (initResponse['success'] != true) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('결제 초기화에 실패했습니다. 다시 시도해주세요.')),
+        );
+        return;
+      }
+
+      final formData = _extractFormData(initResponse);
+      if (formData == null || formData.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('결제 정보를 불러오지 못했습니다.')),
+        );
+        return;
+      }
 
       if (!mounted) return;
       setState(() {
@@ -73,22 +112,15 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
         _loadingMessage = null;
       });
 
-      final status = await context.push<String?>(
-        '/payment/webview',
-        extra: PaymentWebviewRouteArgs(
-          paymentUrl: initResponse.paymentUrl,
-          ordNo: initResponse.ordNo,
+      final paymentComplete = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (_) => PaymentWebViewPage(formData: formData),
         ),
       );
 
       if (!mounted) return;
 
-      if (status == null) {
-        TsToast.info(context, '결제가 취소되었습니다.');
-        return;
-      }
-
-      if (status != 'success') {
+      if (paymentComplete != true) {
         context.push('/menu/subscribe/fail');
         return;
       }
@@ -98,7 +130,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
         _loadingMessage = '결제 확인 중...';
       });
 
-      final subscription = await ref
+      final pollOk = await ref
           .read(paymentServiceProvider)
           .pollSubscription(email: email);
 
@@ -108,21 +140,26 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
         _loadingMessage = null;
       });
 
-      if (subscription != null) {
+      if (pollOk) {
         await ref.read(authProvider).loadProfile();
-        if (!mounted) return;
-        context.push('/menu/subscribe/success', extra: _successMonths);
-        TsToast.success(context, '프리미엄 구독이 시작되었습니다!');
-      } else {
-        context.push('/menu/subscribe/success', extra: _successMonths);
-        TsToast.info(context, '결제가 처리 중입니다. 잠시 후 반영됩니다.');
       }
-    } on ApiException {
+
       if (!mounted) return;
-      TsToast.error(context, '결제 초기화에 실패했습니다. 다시 시도해주세요.');
-    } catch (_) {
+      if (pollOk) {
+        context.push('/menu/subscribe/success', extra: _successMonths);
+      } else {
+        context.push('/menu/subscribe/fail');
+      }
+    } on ApiException catch (e) {
       if (!mounted) return;
-      TsToast.error(context, '결제 초기화에 실패했습니다. 다시 시도해주세요.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('결제 초기화에 실패했습니다. 다시 시도해주세요.')),
+      );
     } finally {
       if (mounted) {
         setState(() {

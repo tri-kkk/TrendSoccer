@@ -4,6 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/features/menu/privacy_policy_page.dart';
+import 'package:trendsoccer/features/menu/terms_of_service_page.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
@@ -27,6 +29,12 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
 
   bool get _agreeAll => _termsAgreed && _privacyAgreed && _marketingAgreed;
   bool get _canSubmit => _termsAgreed && _privacyAgreed;
+
+  Future<void> _cancelSignupAndGoLogin() async {
+    await ref.read(authProvider).signOut();
+    if (!mounted) return;
+    context.go('/login');
+  }
 
   Future<void> _onSubmit() async {
     setState(() => _isLoading = true);
@@ -142,12 +150,18 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        await _cancelSignupAndGoLogin();
+      },
+      child: Scaffold(
       backgroundColor: semantic.surfaceBase,
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
-          onPressed: () => context.go('/login'),
+          onPressed: _cancelSignupAndGoLogin,
         ),
         title: Text(
           '회원가입',
@@ -245,7 +259,13 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
                         onToggle: () => setState(() => _termsAgreed = !_termsAgreed),
                         tag: _requiredTag(),
                         label: '이용약관',
-                        onView: () => context.push('/menu/terms'),
+                        onView: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const TermsOfServicePage(),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 16),
                       _termsRow(
@@ -254,7 +274,13 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
                         onToggle: () => setState(() => _privacyAgreed = !_privacyAgreed),
                         tag: _requiredTag(),
                         label: '개인정보처리방침',
-                        onView: () => context.push('/menu/privacy'),
+                        onView: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const PrivacyPolicyPage(),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 16),
                       _termsRow(
@@ -277,6 +303,7 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

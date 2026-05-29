@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:trendsoccer/core/providers/blog_provider.dart';
+import 'package:trendsoccer/features/menu/help_center_page.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -59,7 +59,11 @@ class TermsOfServicePage extends ConsumerWidget {
             onTapLink: (text, href, title) {
               if (href == null) return;
               if (href.startsWith('mailto:')) {
-                context.go('/menu/help');
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const HelpCenterPage(),
+                  ),
+                );
               } else if (href.startsWith('http')) {
                 launchUrl(Uri.parse(href), mode: LaunchMode.externalApplication);
               }

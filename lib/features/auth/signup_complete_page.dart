@@ -21,10 +21,20 @@ class SignupCompletePage extends ConsumerStatefulWidget {
 class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
   Timer? _redirectTimer;
   int _countdown = 5;
+  bool _countdownFinished = false;
+
+  bool get _showManualHome => _countdownFinished || _redirectTimer == null;
 
   @override
   void initState() {
     super.initState();
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    _cancelRedirect();
+    _countdown = 5;
+    _countdownFinished = false;
     _redirectTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) {
         _cancelRedirect();
@@ -32,11 +42,17 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
       }
       setState(() => _countdown--);
       if (_countdown <= 0) {
+        _countdownFinished = true;
         _cancelRedirect();
         TsToast.success(context, '회원가입 완료! 프리미엄 체험을 시작합니다.');
         context.go('/trend');
       }
     });
+  }
+
+  void _goHome() {
+    _cancelRedirect();
+    context.go('/trend');
   }
 
   void _cancelRedirect() {
@@ -115,23 +131,33 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
-    return Scaffold(
-      backgroundColor: semantic.surfaceBase,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _goHome();
+      },
+      child: Scaffold(
         backgroundColor: semantic.surfaceBase,
-        elevation: 0,
-        title: Text(
-          '가입완료',
-          style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: semantic.surfaceBase,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
+            onPressed: _goHome,
+          ),
+          title: Text(
+            '가입완료',
+            style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+          ),
+          centerTitle: true,
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(2),
+            child: Container(height: 2, color: semantic.textDisabled),
+          ),
         ),
-        centerTitle: true,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(2),
-          child: Container(height: 2, color: semantic.textDisabled),
-        ),
-      ),
-      body: Center(
+        body: Center(
         child: SingleChildScrollView(
           padding: EdgeInsets.only(
             left: 16,
@@ -211,18 +237,28 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
                 variant: TsButtonVariant.primary,
                 onPressed: () {
                   _cancelRedirect();
-                  context.push('/menu/subscribe');
+                  context.go('/menu/subscribe');
                 },
               ),
               const SizedBox(height: 16),
-              Text(
-                '$_countdown초 후 자동으로 홈으로 이동합니다.',
-                style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
-                textAlign: TextAlign.center,
-              ),
+              if (_showManualHome)
+                TsButton(
+                  label: '홈으로 이동',
+                  variant: TsButtonVariant.secondary,
+                  onPressed: _goHome,
+                )
+              else
+                Text(
+                  '$_countdown초 후 자동으로 홈으로 이동합니다.',
+                  style: TsType.labelSRegular.copyWith(
+                    color: semantic.textTertiary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
             ],
           ),
         ),
+      ),
       ),
     );
   }

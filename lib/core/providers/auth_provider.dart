@@ -773,7 +773,20 @@ class SupabaseAuthProvider extends ChangeNotifier {
       if (!result.success) {
         return false;
       }
-      await loadProfile();
+
+      final storedToken = await _ref.read(tokenServiceProvider).getToken();
+      final prefs = _ref.read(sharedPreferencesProvider);
+      final currentJwt = storedToken ?? prefs.getString(_authJwtKey);
+
+      print('[AUTH] Post-signup loadProfile delayed 1s');
+      await Future<void>.delayed(const Duration(seconds: 1));
+
+      try {
+        await loadProfile(jwt: currentJwt);
+      } catch (e) {
+        debugPrint('[Auth] Post-signup loadProfile failed (non-critical): $e');
+      }
+
       return true;
     } on ApiException catch (e) {
       debugPrint('[Auth] agreeTerms failed: $e');
