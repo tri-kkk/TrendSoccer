@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 
@@ -119,14 +118,9 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: semantic.surfaceBase,
         elevation: 0,
-        leading: TsBackButton(
-          onPressed: () {
-            _cancelRedirect();
-            context.pop();
-          },
-        ),
         title: Text(
           '가입완료',
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),

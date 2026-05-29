@@ -8,7 +8,6 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
@@ -146,13 +145,18 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
       appBar: AppBar(
-        backgroundColor: semantic.surfaceBase,
-        elevation: 0,
-        leading: TsBackButton(onPressed: () => context.pop()),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
+          onPressed: () => context.go('/login'),
+        ),
         title: Text(
           '회원가입',
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
         ),
+        backgroundColor: semantic.surfaceBase,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        iconTheme: IconThemeData(color: semantic.textPrimary),
         centerTitle: true,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(2),

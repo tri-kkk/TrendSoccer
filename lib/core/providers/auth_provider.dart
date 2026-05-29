@@ -9,11 +9,13 @@ import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:flutter_naver_login/interface/types/naver_login_status.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 import 'package:trendsoccer/core/config/app_config.dart';
 import 'package:trendsoccer/core/models/api_response.dart';
 import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
+import 'package:trendsoccer/core/services/api_client.dart';
 import 'package:trendsoccer/core/services/auth_service.dart';
 import 'package:trendsoccer/core/services/fcm_service.dart';
 import 'package:trendsoccer/core/services/token_service.dart';
@@ -21,6 +23,58 @@ import 'package:trendsoccer/core/services/token_service.dart';
 final authProvider = ChangeNotifierProvider<SupabaseAuthProvider>(
   (ref) => SupabaseAuthProvider(ref),
 );
+
+class _ProfileSubscriptionInfo {
+  const _ProfileSubscriptionInfo({this.status, this.expiresAt});
+
+  final String? status;
+  final DateTime? expiresAt;
+
+  static _ProfileSubscriptionInfo? fromJson(Object? raw) {
+    if (raw is! Map) return null;
+    final map = raw is Map<String, dynamic>
+        ? raw
+        : Map<String, dynamic>.from(raw);
+    final expiresRaw = map['expiresAt'] ?? map['expires_at'];
+    return _ProfileSubscriptionInfo(
+      status: map['status'] as String?,
+      expiresAt: expiresRaw is String && expiresRaw.isNotEmpty
+          ? DateTime.tryParse(expiresRaw)
+          : null,
+    );
+  }
+}
+
+class _ProfileTrialInfo {
+  const _ProfileTrialInfo({this.endsAt, this.active = false});
+
+  final DateTime? endsAt;
+  final bool active;
+
+  static _ProfileTrialInfo? fromJson(Object? raw) {
+    if (raw is! Map) return null;
+    final map = raw is Map<String, dynamic>
+        ? raw
+        : Map<String, dynamic>.from(raw);
+
+    final endsAtRaw = map['endsAt'] ?? map['ends_at'];
+    final expiresAtRaw = map['expiresAt'] ?? map['expires_at'];
+    final endsAt = (endsAtRaw is String && endsAtRaw.isNotEmpty
+            ? DateTime.tryParse(endsAtRaw)
+            : null) ??
+        (expiresAtRaw is String && expiresAtRaw.isNotEmpty
+            ? DateTime.tryParse(expiresAtRaw)
+            : null);
+    final active = map['active'] == true;
+
+    print(
+      '[AUTH] Trial parse: active=$active, endsAt=$endsAt, '
+      'expiresAt field=${map['expiresAt']}',
+    );
+
+    return _ProfileTrialInfo(endsAt: endsAt, active: active);
+  }
+}
 
 class SupabaseAuthProvider extends ChangeNotifier {
   SupabaseAuthProvider(this._ref);
@@ -30,9 +84,12 @@ class SupabaseAuthProvider extends ChangeNotifier {
   static const _authJwtKey = 'auth_jwt';
   static const _authProviderKey = 'auth_provider';
   static const _authExpiresAtKey = 'auth_expires_at';
+  static const _mePath = '/api/v1/mobile/me';
 
   AuthState _state = const AuthState();
   UserProfile? userProfile;
+  _ProfileSubscriptionInfo? _subscription;
+  _ProfileTrialInfo? _trial;
 
   AuthState get state => _state;
 
@@ -70,19 +127,44 @@ class SupabaseAuthProvider extends ChangeNotifier {
     return profile.requiresConsent;
   }
 
+  PlanType _planTypeFromProfile(UserProfile profile) {
+    final tier = profile.tier;
+    final hasActiveSubscription =
+        _subscription != null && _subscription!.status == 'active';
+    final active = _trial?.active ?? false;
+    final trialEndsAt = _trial?.endsAt ?? profile.trialEndsAt;
+    final isTrialActive = active ||
+        (trialEndsAt != null && trialEndsAt.isAfter(DateTime.now()));
+
+    final PlanType planType;
+    if (tier == 'premium' && hasActiveSubscription) {
+      planType = PlanType.premium;
+    } else if (tier == 'premium' && !hasActiveSubscription && isTrialActive) {
+      planType = PlanType.trial;
+    } else {
+      planType = PlanType.free;
+    }
+
+    print(
+      '[AUTH] Tier mapping: apiTier=$tier, hasSubscription=$hasActiveSubscription, '
+      'isTrialActive=$isTrialActive → planType=$planType',
+    );
+    return planType;
+  }
+
   PlanType _resolvePlanType({
     DateTime? premiumExpiresAt,
     String? tier,
   }) {
     if (!isLoggedIn) return PlanType.none;
-    final effectiveTier = tier ?? userProfile?.tier;
+    if (userProfile != null) {
+      return _planTypeFromProfile(userProfile!);
+    }
+    final effectiveTier = tier;
+    if (effectiveTier == 'free') {
+      return PlanType.free;
+    }
     final expiresAt = premiumExpiresAt ?? _state.premiumExpiresAt;
-    if (effectiveTier == 'premium') {
-      return PlanType.premium;
-    }
-    if (effectiveTier == 'trial') {
-      return PlanType.trial;
-    }
     if (expiresAt != null && expiresAt.isAfter(DateTime.now())) {
       return PlanType.premium;
     }
@@ -163,22 +245,107 @@ class SupabaseAuthProvider extends ChangeNotifier {
   void _resetToGuest() {
     _state = const AuthState();
     userProfile = null;
+    _subscription = null;
+    _trial = null;
     notifyListeners();
+  }
+
+  Map<String, dynamic>? _coerceUserMap(Object? value) {
+    if (value is Map<String, dynamic>) {
+      return value;
+    }
+    if (value is Map) {
+      return Map<String, dynamic>.from(value);
+    }
+    return null;
+  }
+
+  Map<String, dynamic>? _extractMeUser(Map<String, dynamic>? response) {
+    if (response == null) {
+      return null;
+    }
+
+    final data = response['data'];
+    if (data is Map) {
+      final nestedUser = _coerceUserMap(data['user']);
+      if (nestedUser != null) {
+        return nestedUser;
+      }
+      final dataMap = _coerceUserMap(data);
+      if (dataMap != null && dataMap.containsKey('tier')) {
+        return dataMap;
+      }
+    }
+
+    final directUser = _coerceUserMap(response['user']);
+    if (directUser != null) {
+      return directUser;
+    }
+
+    if (response.containsKey('tier')) {
+      return response;
+    }
+
+    return null;
+  }
+
+  void _applyMeUserJson(Map<String, dynamic> user) {
+    _subscription = _ProfileSubscriptionInfo.fromJson(user['subscription']);
+    _trial = _ProfileTrialInfo.fromJson(user['trial']);
+    print(
+      '[AUTH] loadProfile: tier=${user['tier']}, '
+      'trial=${user['trial']}, subscription=${user['subscription']}',
+    );
+    _syncStateFromUserProfile(UserProfile.fromJson(user));
   }
 
   void _syncStateFromUserProfile(UserProfile profile) {
     userProfile = profile;
+    final planType = _planTypeFromProfile(profile);
+    final trialEndsAt = _trial?.endsAt ?? profile.trialEndsAt;
     _state = _state.copyWith(
       userName: profile.name,
       userEmail: profile.email,
-      planType: _resolvePlanType(
-        premiumExpiresAt: profile.premiumExpiresAt,
-        tier: profile.tier,
-      ),
-      premiumExpiresAt: profile.premiumExpiresAt,
-      clearTrialExpiresAt: true,
+      planType: planType,
+      trialExpiresAt: planType == PlanType.trial ? trialEndsAt : null,
+      premiumExpiresAt: planType == PlanType.premium
+          ? (_subscription?.expiresAt ?? profile.premiumExpiresAt)
+          : null,
+      clearTrialExpiresAt: planType != PlanType.trial,
+      clearPremiumExpiresAt: planType != PlanType.premium,
     );
     notifyListeners();
+  }
+
+  void _markConsentRequired() {
+    final existing = userProfile;
+    userProfile = UserProfile(
+      userId: existing?.userId ?? '',
+      email: existing?.email ?? _state.userEmail,
+      name: existing?.name ?? _state.userName,
+      avatarUrl: existing?.avatarUrl,
+      tier: existing?.tier ?? 'free',
+      premiumExpiresAt: existing?.premiumExpiresAt,
+      trialEndsAt: existing?.trialEndsAt,
+      isNewUser: existing?.isNewUser ?? false,
+      requiresConsent: true,
+      trialUsed: existing?.trialUsed ?? false,
+      termsAgreedAt: existing?.termsAgreedAt,
+    );
+    notifyListeners();
+  }
+
+  bool _responseIndicatesConsentRequired(Object? data) {
+    if (data is! Map) return false;
+    final map = data is Map<String, dynamic>
+        ? data
+        : Map<String, dynamic>.from(data);
+    if (map['code'] == 'CONSENT_REQUIRED') return true;
+    final error = map['error'];
+    if (error is Map && error['code'] == 'CONSENT_REQUIRED') {
+      return true;
+    }
+    return false;
   }
 
   Future<void> _clearNaverAuthPrefs(SharedPreferences prefs) async {
@@ -223,13 +390,135 @@ class SupabaseAuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> loadProfile() async {
+  Future<Map<String, String>> _buildMeRequestHeaders({String? jwt}) async {
+    final headers = <String, String>{'Accept': 'application/json'};
+
+    if (jwt != null && jwt.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $jwt';
+    } else {
+      final prefs = _ref.read(sharedPreferencesProvider);
+      final storedJwt = prefs.getString(_authJwtKey);
+      if (storedJwt != null && storedJwt.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $storedJwt';
+      } else {
+        final token = await _ref.read(tokenServiceProvider).getToken();
+        if (token != null && token.isNotEmpty) {
+          headers['Authorization'] = 'Bearer $token';
+        } else {
+          final session = Supabase.instance.client.auth.currentSession;
+          if (session != null) {
+            headers['Authorization'] = 'Bearer ${session.accessToken}';
+          }
+        }
+      }
+    }
+
+    return headers;
+  }
+
+  Future<void> loadProfile({String? jwt}) async {
+    print('[AUTH] loadProfile: calling /api/v1/mobile/me');
     try {
-      final profile = await _ref.read(authServiceProvider).fetchProfile();
-      _syncStateFromUserProfile(profile);
+      final headers = await _buildMeRequestHeaders(jwt: jwt);
+      print(
+        '[AUTH] loadProfile: auth header present=${headers.containsKey('Authorization')}',
+      );
+
+      final baseUrl = AppConfig.apiBaseUrl.replaceAll(RegExp(r'/$'), '');
+      final dio = Dio();
+      final response = await dio.get<dynamic>(
+        '$baseUrl$_mePath',
+        options: Options(headers: headers),
+      );
+      final raw = response.data;
+
+      print('[AUTH] loadProfile: raw response type=${raw.runtimeType}');
+      final rawString = raw.toString();
+      print(
+        '[AUTH] loadProfile: raw response=${rawString.substring(0, math.min(500, rawString.length))}',
+      );
+
+      Map<String, dynamic>? responseData;
+      if (raw is Map<String, dynamic>) {
+        responseData = raw;
+      } else if (raw is Map) {
+        responseData = Map<String, dynamic>.from(raw);
+      }
+
+      print(
+        '[AUTH] loadProfile: has data key=${responseData?.containsKey('data')}, '
+        'has user key=${responseData?.containsKey('user')}',
+      );
+      print('[AUTH] loadProfile: data content=${responseData?['data']}');
+      print('[AUTH] loadProfile: data type=${responseData?['data']?.runtimeType}');
+      print(
+        '[AUTH] loadProfile: data keys=${responseData?['data'] is Map ? (responseData!['data'] as Map).keys : 'not a map'}',
+      );
+
+      if (responseData?['data'] is Map) {
+        final data = responseData!['data'] is Map<String, dynamic>
+            ? responseData['data'] as Map<String, dynamic>
+            : Map<String, dynamic>.from(responseData['data'] as Map);
+        print('[AUTH] loadProfile: data keys=${data.keys}');
+        print('[AUTH] loadProfile: data.user type=${data['user']?.runtimeType}');
+      }
+
+      if (responseData != null &&
+          responseData.containsKey('success') &&
+          responseData['success'] != true) {
+        final error = responseData['error'];
+        if (error is Map<String, dynamic>) {
+          final apiError = ApiError.fromJson(error);
+          if (apiError.code == 'CONSENT_REQUIRED') {
+            print('[AUTH] loadProfile: CONSENT_REQUIRED');
+            _markConsentRequired();
+            return;
+          }
+          throw ApiException.fromApiError(apiError);
+        }
+        throw const ApiException(
+          code: 'REQUEST_FAILED',
+          message: 'Request failed',
+        );
+      }
+
+      final user = _extractMeUser(responseData);
+      if (user == null) {
+        print(
+          '[AUTH] loadProfile: could not find user in response. '
+          'Keys: ${responseData != null ? responseData.keys : 'not a map'}',
+        );
+        return;
+      }
+
+      print(
+        '[AUTH] loadProfile: user found, tier=${user['tier']}, email=${user['email']}',
+      );
+      print(
+        '[AUTH] Tier mapping: apiTier=${user['tier']}, '
+        'subscription=${user['subscription']}, trial=${user['trial']}',
+      );
+
+      _applyMeUserJson(user);
     } on ApiException catch (e) {
+      if (e.code == 'CONSENT_REQUIRED') {
+        print('[AUTH] loadProfile: CONSENT_REQUIRED');
+        _markConsentRequired();
+        return;
+      }
       debugPrint('[Auth] loadProfile warning: $e');
     } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+      if (statusCode == 401) {
+        print('[AUTH] loadProfile: 401 token expired, signing out');
+        await signOut();
+        return;
+      }
+      if (statusCode == 409 || _responseIndicatesConsentRequired(e.response?.data)) {
+        print('[AUTH] loadProfile: CONSENT_REQUIRED (409)');
+        _markConsentRequired();
+        return;
+      }
       debugPrint('[Auth] loadProfile network warning: $e');
     } catch (e) {
       debugPrint('[Auth] loadProfile warning: $e');
@@ -237,24 +526,67 @@ class SupabaseAuthProvider extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
-    if (_state.loginMethod == LoginMethod.naver) {
+    final loginMethod = _state.loginMethod;
+    try {
+      final dio = Dio();
+      String? csrfToken;
       try {
-        await FlutterNaverLogin.logOut();
+        final csrfResponse =
+            await dio.get('https://www.trendsoccer.com/api/auth/csrf');
+        final data = csrfResponse.data;
+        if (data is Map<String, dynamic>) {
+          csrfToken = data['csrfToken'] as String?;
+        } else if (data is Map) {
+          csrfToken = data['csrfToken']?.toString();
+        }
+        print('[AUTH] CSRF token obtained');
       } catch (e) {
-        debugPrint('[Auth] Naver logout failed: $e');
+        print('[AUTH] CSRF fetch failed (non-critical): $e');
       }
+
+      if (csrfToken != null) {
+        try {
+          await dio.post(
+            'https://www.trendsoccer.com/api/auth/signout',
+            data: {'csrfToken': csrfToken},
+          );
+          print('[AUTH] Backend signout success');
+        } catch (e) {
+          print('[AUTH] Backend signout failed (non-critical): $e');
+        }
+      }
+
+      await _clearLocalAuth(loginMethod);
+      print('[AUTH] Logout complete: state reset to guest');
+    } catch (e) {
+      print('[AUTH] Logout error: $e');
+      _resetToGuest();
     }
-    final prefs = _ref.read(sharedPreferencesProvider);
-    await _clearNaverAuthPrefs(prefs);
-    await _ref.read(tokenServiceProvider).deleteToken();
-    _resetToGuest();
   }
 
   Future<void> withdraw() async {
     await _ref.read(authServiceProvider).withdraw();
+    await _clearLocalAuth(_state.loginMethod);
+  }
+
+  Future<void> _clearLocalAuth(LoginMethod loginMethod) async {
     final prefs = _ref.read(sharedPreferencesProvider);
     await _clearNaverAuthPrefs(prefs);
     await _ref.read(tokenServiceProvider).deleteToken();
+
+    if (loginMethod == LoginMethod.google) {
+      try {
+        await GoogleSignIn().signOut();
+      } catch (_) {}
+      try {
+        await Supabase.instance.client.auth.signOut();
+      } catch (_) {}
+    } else if (loginMethod == LoginMethod.naver) {
+      try {
+        await FlutterNaverLogin.logOut();
+      } catch (_) {}
+    }
+
     _resetToGuest();
   }
 
@@ -286,6 +618,10 @@ class SupabaseAuthProvider extends ChangeNotifier {
           '[AUTH] Step 5: Login response received, isNewUser=${response.user.isNewUser}',
         );
         await _applyLoginResponse(response, LoginMethod.google);
+        final session = Supabase.instance.client.auth.currentSession;
+        await loadProfile(
+          jwt: session?.accessToken ?? response.session.accessToken,
+        );
       } on ApiException catch (e) {
         throw _mapAuthException(e);
       }
@@ -345,8 +681,10 @@ class SupabaseAuthProvider extends ChangeNotifier {
           '[AUTH] Backend response: isNewUser=${response.user.isNewUser}, tier=${response.user.tier}',
         );
 
-        await _persistNaverAuthSession(response.session.accessToken);
+        final jwt = response.session.accessToken;
+        await _persistNaverAuthSession(jwt);
         await _applyLoginResponse(response, LoginMethod.naver);
+        await loadProfile(jwt: jwt);
 
         final user = response.user;
         print(
@@ -355,7 +693,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
         return {
           'isNewUser': user.isNewUser,
-          'requiresConsent': user.requiresConsent,
+          'requiresConsent': needsConsent,
           'user': user,
         };
       } on ApiException catch (e) {
@@ -376,12 +714,15 @@ class SupabaseAuthProvider extends ChangeNotifier {
     required bool marketing,
   }) async {
     try {
-      await _ref.read(authServiceProvider).agreeTerms(
+      final result = await _ref.read(authServiceProvider).agreeTerms(
             email: userEmail,
             termsAgreed: terms,
             privacyAgreed: privacy,
             marketingAgreed: marketing,
           );
+      if (!result.success) {
+        return false;
+      }
       await loadProfile();
       return true;
     } on ApiException catch (e) {
@@ -406,6 +747,68 @@ class SupabaseAuthProvider extends ChangeNotifier {
   }
 
   Future<void> deleteAccount() async {
-    await withdraw();
+    final email = userEmail;
+    if (email.isEmpty) {
+      throw Exception('이메일 정보가 없습니다.');
+    }
+
+    final loginMethod = _state.loginMethod;
+
+    try {
+      print('[AUTH] Deleting account: $email');
+
+      final dio = _ref.read(apiClientProvider);
+      final response = await dio.post<dynamic>(
+        '/api/user/delete',
+        data: <String, dynamic>{'email': email},
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+
+      final raw = response.data;
+      if (raw is! Map<String, dynamic>) {
+        throw Exception('회원 탈퇴에 실패했습니다.');
+      }
+
+      print('[AUTH] Delete account response: $raw');
+
+      if (raw['success'] == true) {
+        await _clearLocalAuth(loginMethod);
+        print('[AUTH] Account deleted successfully');
+        return;
+      }
+
+      if (raw['code'] == 'COOLDOWN_ACTIVE') {
+        final daysLeft = raw['daysLeft'] ?? 7;
+        print('[AUTH] Delete account cooldown: $daysLeft days left');
+        throw Exception('탈퇴 후 $daysLeft일간 재가입이 불가합니다. 쿨다운 기간입니다.');
+      }
+
+      throw Exception(raw['message'] as String? ?? '회원 탈퇴에 실패했습니다.');
+    } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+      final responseData = e.response?.data;
+      Map<String, dynamic>? dataMap;
+      if (responseData is Map<String, dynamic>) {
+        dataMap = responseData;
+      } else if (responseData is Map) {
+        dataMap = Map<String, dynamic>.from(responseData);
+      }
+
+      if (statusCode == 403 ||
+          dataMap?['code'] == 'COOLDOWN_ACTIVE') {
+        final daysLeft = dataMap?['daysLeft'] ?? 7;
+        print('[AUTH] Delete account cooldown: $daysLeft days left');
+        throw Exception('탈퇴 후 $daysLeft일간 재가입이 불가합니다. 쿨다운 기간입니다.');
+      }
+      if (statusCode == 404) {
+        throw Exception('사용자를 찾을 수 없습니다.');
+      }
+
+      print('[AUTH] Delete account error: ${e.message}');
+      throw Exception('회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
+    } catch (e) {
+      print('[AUTH] Delete account error: $e');
+      rethrow;
+    }
   }
 }

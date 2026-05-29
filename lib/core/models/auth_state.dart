@@ -99,6 +99,18 @@ class LoginUser {
   final bool requiresConsent;
 }
 
+class AgreeTermsResult {
+  const AgreeTermsResult({
+    required this.success,
+    required this.isTrial,
+    required this.message,
+  });
+
+  final bool success;
+  final bool isTrial;
+  final String message;
+}
+
 class LoginResponse {
   const LoginResponse({
     required this.session,
@@ -131,6 +143,7 @@ class UserProfile {
     this.avatarUrl,
     required this.tier,
     this.premiumExpiresAt,
+    this.trialEndsAt,
     this.isNewUser = false,
     this.requiresConsent = false,
     this.trialUsed = false,
@@ -138,20 +151,54 @@ class UserProfile {
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
+    final trial = json['trial'];
+    DateTime? trialEndsAt;
+    var trialUsed = _readJsonBool(json, 'trialUsed', 'trial_used');
+    if (trial is Map<String, dynamic>) {
+      trialEndsAt = _readJsonDateTime(trial, 'endsAt', 'ends_at');
+      if (trial['used'] == true) {
+        trialUsed = true;
+      }
+    } else if (trial is Map) {
+      final trialMap = Map<String, dynamic>.from(trial);
+      trialEndsAt = _readJsonDateTime(trialMap, 'endsAt', 'ends_at');
+      if (trialMap['used'] == true) {
+        trialUsed = true;
+      }
+    }
+
+    var premiumExpiresAt = _readJsonDateTime(
+      json,
+      'premiumExpiresAt',
+      'premium_expires_at',
+    );
+    final subscription = json['subscription'];
+    if (subscription is Map<String, dynamic>) {
+      final subscriptionExpiresAt =
+          _readJsonDateTime(subscription, 'expiresAt', 'expires_at');
+      if (subscriptionExpiresAt != null) {
+        premiumExpiresAt = subscriptionExpiresAt;
+      }
+    } else if (subscription is Map) {
+      final subscriptionMap = Map<String, dynamic>.from(subscription);
+      final subscriptionExpiresAt =
+          _readJsonDateTime(subscriptionMap, 'expiresAt', 'expires_at');
+      if (subscriptionExpiresAt != null) {
+        premiumExpiresAt = subscriptionExpiresAt;
+      }
+    }
+
     return UserProfile(
       userId: _readJsonString(json, 'userId', 'user_id') ?? '',
       email: json['email'] as String? ?? '',
       name: json['name'] as String? ?? '',
       avatarUrl: _readJsonString(json, 'avatarUrl', 'avatar_url'),
       tier: json['tier'] as String? ?? 'free',
-      premiumExpiresAt: _readJsonDateTime(
-        json,
-        'premiumExpiresAt',
-        'premium_expires_at',
-      ),
+      premiumExpiresAt: premiumExpiresAt,
+      trialEndsAt: trialEndsAt,
       isNewUser: _readJsonBool(json, 'isNewUser', 'is_new_user'),
       requiresConsent: _readJsonBool(json, 'requiresConsent', 'requires_consent'),
-      trialUsed: _readJsonBool(json, 'trialUsed', 'trial_used'),
+      trialUsed: trialUsed,
       termsAgreedAt: _readJsonDateTime(json, 'termsAgreedAt', 'terms_agreed_at'),
     );
   }
@@ -162,6 +209,7 @@ class UserProfile {
   final String? avatarUrl;
   final String tier;
   final DateTime? premiumExpiresAt;
+  final DateTime? trialEndsAt;
   final bool isNewUser;
   final bool requiresConsent;
   final bool trialUsed;

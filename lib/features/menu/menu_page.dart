@@ -301,16 +301,21 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                                       try {
                                         await authNotifier.deleteAccount();
                                         if (!context.mounted) return;
-                                        TsToast.success(
-                                          context,
-                                          '계정이 삭제되었습니다.',
-                                        );
                                         context.go('/splash');
-                                      } catch (_) {
+                                      } catch (e) {
                                         if (!context.mounted) return;
-                                        TsToast.error(
-                                          context,
-                                          '계정 삭제에 실패했습니다. 다시 시도해주세요.',
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              e
+                                                  .toString()
+                                                  .replaceAll(
+                                                    'Exception: ',
+                                                    '',
+                                                  ),
+                                            ),
+                                          ),
                                         );
                                       } finally {
                                         if (mounted) {

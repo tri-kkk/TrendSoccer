@@ -1,16 +1,23 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:trendsoccer/core/models/api_response.dart';
 import 'package:trendsoccer/core/models/auth_state.dart';
+import 'package:trendsoccer/core/services/api_client.dart';
 import 'package:trendsoccer/core/services/api_service.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) {
-  return AuthService(ref.watch(apiServiceProvider));
+  return AuthService(
+    ref.watch(apiServiceProvider),
+    ref.watch(apiClientProvider),
+  );
 });
 
 class AuthService {
-  AuthService(this._api);
+  AuthService(this._api, this._dio);
 
   final ApiService _api;
+  final Dio _dio;
 
   static const bool useNaverStub = false;
 
@@ -29,8 +36,28 @@ class AuthService {
   Future<UserProfile> fetchProfile() async {
     return _api.get<UserProfile>(
       _mePath,
-      fromJson: (json) =>
-          UserProfile.fromJson(json! as Map<String, dynamic>),
+      fromJson: (json) {
+        final map = json! as Map<String, dynamic>;
+        final rawUser = map['user'];
+        if (rawUser is Map<String, dynamic>) {
+          print(
+            '[AUTH] loadProfile: tier=${rawUser['tier']}, '
+            'trial=${rawUser['trial']}, '
+            'subscription=${rawUser['subscription']}',
+          );
+          return UserProfile.fromJson(rawUser);
+        }
+        if (rawUser is Map) {
+          final userMap = Map<String, dynamic>.from(rawUser);
+          print(
+            '[AUTH] loadProfile: tier=${userMap['tier']}, '
+            'trial=${userMap['trial']}, '
+            'subscription=${userMap['subscription']}',
+          );
+          return UserProfile.fromJson(userMap);
+        }
+        return UserProfile.fromJson(map);
+      },
     );
   }
 
@@ -111,13 +138,13 @@ class AuthService {
     );
   }
 
-  Future<void> agreeTerms({
+  Future<AgreeTermsResult> agreeTerms({
     required String email,
     required bool termsAgreed,
     required bool privacyAgreed,
     required bool marketingAgreed,
   }) async {
-    await _api.post<Object?>(
+    final response = await _dio.post<dynamic>(
       _agreeTermsPath,
       data: <String, dynamic>{
         'email': email,
@@ -125,7 +152,32 @@ class AuthService {
         'privacyAgreed': privacyAgreed,
         'marketingAgreed': marketingAgreed,
       },
-      fromJson: (json) => json,
+    );
+
+    final raw = response.data;
+    if (raw is! Map<String, dynamic>) {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'Invalid response format',
+      );
+    }
+
+    final success = raw['success'] == true;
+    final isTrial = raw['isTrial'] == true;
+    final message = raw['message'] as String? ?? '';
+    print('[AUTH] agreeTerms: success=$success, isTrial=$isTrial, message=$message');
+
+    if (!success) {
+      throw ApiException(
+        code: raw['code'] as String? ?? 'REQUEST_FAILED',
+        message: message.isNotEmpty ? message : 'Request failed',
+      );
+    }
+
+    return AgreeTermsResult(
+      success: success,
+      isTrial: isTrial,
+      message: message,
     );
   }
 }
