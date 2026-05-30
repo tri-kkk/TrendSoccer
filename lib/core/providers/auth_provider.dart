@@ -84,6 +84,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
   static const _authJwtKey = 'auth_jwt';
   static const _authProviderKey = 'auth_provider';
   static const _authExpiresAtKey = 'auth_expires_at';
+  static const _userEmailKey = 'user_email';
   static const _meUrl = 'https://www.trendsoccer.com/api/v1/mobile/me';
 
   AuthState _state = const AuthState();
@@ -212,11 +213,20 @@ class SupabaseAuthProvider extends ChangeNotifier {
     );
     notifyListeners();
 
+    unawaited(_persistUserEmail(user.email));
+
     try {
       await _ref.read(fcmServiceProvider).initialize();
     } catch (e) {
       debugPrint('[Auth] FCM initialize failed: $e');
     }
+  }
+
+  Future<void> _persistUserEmail(String email) async {
+    if (email.isEmpty) return;
+    final prefs = _ref.read(sharedPreferencesProvider);
+    await prefs.setString(_userEmailKey, email);
+    print('[AUTH] Persisted user_email to SharedPreferences');
   }
 
   Future<void> _persistNaverAuthSession(String jwt) async {
@@ -343,13 +353,25 @@ class SupabaseAuthProvider extends ChangeNotifier {
   }
 
   void _applyMeUserJson(Map<String, dynamic> user) {
+    final email = user['email'] as String? ?? '';
+    final name = user['name'] as String? ?? '';
+
+    print(
+      '[AUTH] _applyMeUserJson: email=$email, name=$name, '
+      'tier=${user['tier']}',
+    );
+
     _subscription = _ProfileSubscriptionInfo.fromJson(user['subscription']);
     _trial = _ProfileTrialInfo.fromJson(user['trial']);
     print(
       '[AUTH] loadProfile: tier=${user['tier']}, '
       'trial=${user['trial']}, subscription=${user['subscription']}',
     );
-    _syncStateFromUserProfile(UserProfile.fromJson(user));
+
+    final profileJson = Map<String, dynamic>.from(user)
+      ..['email'] = email
+      ..['name'] = name;
+    _syncStateFromUserProfile(UserProfile.fromJson(profileJson));
   }
 
   void _applyPostSignupPlanFromAgreeTerms(bool isTrial) {
@@ -423,11 +445,13 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
   void _syncStateFromUserProfile(UserProfile profile) {
     userProfile = profile;
+    final email = profile.email;
+    final name = profile.name;
     final planType = _planTypeFromProfile(profile);
     final trialEndsAt = _trial?.endsAt ?? profile.trialEndsAt;
     _state = _state.copyWith(
-      userName: profile.name,
-      userEmail: profile.email,
+      userName: name,
+      userEmail: email,
       planType: planType,
       trialExpiresAt: planType == PlanType.trial ? trialEndsAt : null,
       premiumExpiresAt: planType == PlanType.premium
@@ -436,6 +460,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
       clearTrialExpiresAt: planType != PlanType.trial,
       clearPremiumExpiresAt: planType != PlanType.premium,
     );
+    unawaited(_persistUserEmail(email));
     notifyListeners();
   }
 
@@ -474,6 +499,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
     await prefs.remove(_authJwtKey);
     await prefs.remove(_authProviderKey);
     await prefs.remove(_authExpiresAtKey);
+    await prefs.remove(_userEmailKey);
   }
 
   Future<void> initFromStoredToken() async {
@@ -811,8 +837,18 @@ class SupabaseAuthProvider extends ChangeNotifier {
         await loadProfile(jwt: jwt);
 
         final user = response.user;
+        final email = user.email;
+        final name = user.name;
+        if (email.isNotEmpty || name.isNotEmpty) {
+          _state = _state.copyWith(
+            userEmail: email.isNotEmpty ? email : _state.userEmail,
+            userName: name.isNotEmpty ? name : _state.userName,
+          );
+          unawaited(_persistUserEmail(email));
+          notifyListeners();
+        }
         print(
-          '[AUTH] Naver login success: email=${user.email}, tier=${user.tier}, isNewUser=${user.isNewUser}',
+          '[AUTH] Naver login success: email=$email, tier=${user.tier}, isNewUser=${user.isNewUser}',
         );
 
         return {

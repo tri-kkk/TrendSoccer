@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:trendsoccer/core/models/api_response.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
@@ -13,7 +16,6 @@ import 'package:trendsoccer/features/menu/payment_webview_page.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/navigation/ts_bottom_navigation.dart';
-import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 
 class SubscribePage extends ConsumerStatefulWidget {
   const SubscribePage({super.key});
@@ -74,42 +76,85 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
   }
 
   Future<void> _startPremium() async {
-    if (_isProcessing) return;
+    print('[PAYMENT] === Button pressed ===');
+    print('[PAYMENT] isProcessing=$_isProcessing');
 
-    if (!ref.read(authProvider).isLoggedIn) {
-      context.push('/login');
+    if (_isProcessing) {
+      print('[PAYMENT] Step 0: early return — already processing');
       return;
     }
-
-    final email = ref.read(authProvider).userEmail;
-    if (email.isEmpty) {
-      TsToast.error(context, '결제 초기화에 실패했습니다. 다시 시도해주세요.');
-      return;
-    }
-
-    _isProcessing = true;
-    print('[PAYMENT] Starting payment: plan=$_selectedPlan');
-
-    setState(() {
-      _isLoading = true;
-      _loadingMessage = null;
-    });
+    print('[PAYMENT] Step 0: setting isProcessing=true');
+    setState(() => _isProcessing = true);
 
     try {
-      final initResponse = await ref
-          .read(paymentServiceProvider)
-          .initPayment(plan: _selectedPlan);
+      print('[PAYMENT] Step 1: getting selected plan');
+      final plan = _selectedPlan;
+      print('[PAYMENT] Step 2: plan=$plan');
 
+      print('[PAYMENT] Step 3: checking login');
+      if (!ref.read(authProvider).isLoggedIn) {
+        print('[PAYMENT] Step 3a: not logged in — pushing /login');
+        context.push('/login');
+        return;
+      }
+      print('[PAYMENT] Step 4: user is logged in');
+
+      print('[PAYMENT] Step 5: resolving user email');
+      final auth = ref.read(authProvider);
+      var userEmail = auth.userEmail;
+      print('[PAYMENT] Step 5a: auth.userEmail length=${userEmail.length}');
+
+      if (userEmail.isEmpty) {
+        print('[PAYMENT] Step 5b: trying SharedPreferences');
+        final prefs = await SharedPreferences.getInstance();
+        userEmail = prefs.getString('user_email') ?? '';
+        print('[PAYMENT] Step 5c: prefs email length=${userEmail.length}');
+      }
+
+      if (userEmail.isEmpty) {
+        print('[PAYMENT] Step 5d: calling loadProfile');
+        await auth.loadProfile();
+        userEmail = auth.userEmail;
+        print('[PAYMENT] Step 5e: after loadProfile email length=${userEmail.length}');
+      }
+
+      print('[PAYMENT] Step 6: email=$userEmail');
+
+      print('[PAYMENT] Step 7: reading paymentServiceProvider');
+      final paymentService = ref.read(paymentServiceProvider);
+      print(
+        '[PAYMENT] Step 8: paymentService obtained, type=${paymentService.runtimeType}',
+      );
+
+      print('[PAYMENT] Step 9: setState loading overlay on');
+      setState(() {
+        _isLoading = true;
+        _loadingMessage = null;
+      });
+      print('[PAYMENT] Step 10: loading overlay set');
+
+      print('[PAYMENT] Step 11: calling initPayment');
+      final initResponse = await paymentService.initPayment(plan: plan);
+      print(
+        '[PAYMENT] Step 12: initPayment returned, success=${initResponse['success']}',
+      );
+
+      print('[PAYMENT] Step 13: checking init success flag');
       if (initResponse['success'] != true) {
+        print('[PAYMENT] Step 13a: init failed — showing snackbar');
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('결제 초기화에 실패했습니다. 다시 시도해주세요.')),
         );
         return;
       }
+      print('[PAYMENT] Step 14: init success confirmed');
 
+      print('[PAYMENT] Step 15: extracting formData');
       final formData = _extractFormData(initResponse);
+      print('[PAYMENT] Step 16: formData keys=${formData?.keys.toList()}');
       if (formData == null || formData.isEmpty) {
+        print('[PAYMENT] Step 16a: formData missing — showing snackbar');
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('결제 정보를 불러오지 못했습니다.')),
@@ -117,68 +162,125 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
         return;
       }
 
+      print('[PAYMENT] Step 17: checking mounted before webview');
       if (!mounted) return;
+      print('[PAYMENT] Step 18: setState loading overlay off before webview');
       setState(() {
         _isLoading = false;
         _loadingMessage = null;
       });
+      print('[PAYMENT] Step 19: pushing PaymentWebViewPage');
 
       final paymentComplete = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
           builder: (_) => PaymentWebViewPage(formData: formData),
         ),
       );
+      print('[PAYMENT] Step 20: webview returned, paymentComplete=$paymentComplete');
 
+      print('[PAYMENT] Step 21: checking mounted after webview');
       if (!mounted) return;
 
       if (paymentComplete != true) {
+        print('[PAYMENT] Step 22a: payment not complete — pushing fail');
         context.push('/menu/subscribe/fail');
         return;
       }
+      print('[PAYMENT] Step 22: payment complete — starting poll');
 
+      print('[PAYMENT] Step 23: setState poll loading');
       setState(() {
         _isLoading = true;
         _loadingMessage = '결제 확인 중...';
       });
+      print('[PAYMENT] Step 24: resolving email for pollSubscription');
+      var pollEmail = userEmail;
+      if (pollEmail.isEmpty) {
+        pollEmail = auth.userEmail;
+      }
+      if (pollEmail.isEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        pollEmail = prefs.getString('user_email') ?? '';
+      }
+      print('[PAYMENT] Step 24a: pollEmail=$pollEmail');
 
-      final pollOk = await ref
-          .read(paymentServiceProvider)
-          .pollSubscription(email: email);
+      if (pollEmail.isEmpty) {
+        print('[PAYMENT] Step 24b: no email for poll — cannot verify subscription');
+        if (!mounted) return;
+        context.push('/menu/subscribe/fail');
+        return;
+      }
 
+      print('[PAYMENT] Step 24c: calling pollSubscription');
+      final pollOk = await paymentService.pollSubscription(email: pollEmail);
+      print('[PAYMENT] Step 25: pollSubscription returned, pollOk=$pollOk');
+
+      print('[PAYMENT] Step 26: checking mounted after poll');
       if (!mounted) return;
+      print('[PAYMENT] Step 27: setState loading overlay off after poll');
       setState(() {
         _isLoading = false;
         _loadingMessage = null;
       });
 
       if (pollOk) {
+        print('[PAYMENT] Step 28: poll ok — loading profile');
         await ref.read(authProvider).loadProfile();
+        print('[PAYMENT] Step 29: profile loaded');
+      } else {
+        print('[PAYMENT] Step 28: poll failed — skipping profile load');
       }
 
+      print('[PAYMENT] Step 30: checking mounted before navigation');
       if (!mounted) return;
       if (pollOk) {
+        print('[PAYMENT] Step 31: pushing success page');
         context.push('/menu/subscribe/success', extra: _successMonths);
       } else {
+        print('[PAYMENT] Step 31: pushing fail page');
         context.push('/menu/subscribe/fail');
       }
-    } on ApiException catch (e) {
+      print('[PAYMENT] Step 32: payment flow complete');
+    } on ApiException catch (e, stackTrace) {
+      print('[PAYMENT] CATCH ERROR (ApiException): $e');
+      final stackStr = stackTrace.toString();
+      print(
+        '[PAYMENT] CATCH STACK: ${stackStr.substring(0, min(500, stackStr.length))}',
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.message)),
       );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('결제 초기화에 실패했습니다. 다시 시도해주세요.')),
+    } catch (e, stackTrace) {
+      print('[PAYMENT] CATCH ERROR: $e');
+      final stackStr = stackTrace.toString();
+      print(
+        '[PAYMENT] CATCH STACK: ${stackStr.substring(0, min(500, stackStr.length))}',
       );
+      if (mounted) {
+        final message = e.toString();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '결제 초기화에 실패했습니다: ${message.substring(0, min(100, message.length))}',
+            ),
+          ),
+        );
+      }
     } finally {
-      _isProcessing = false;
+      print('[PAYMENT] FINALLY: resetting isProcessing');
       if (mounted) {
         setState(() {
+          _isProcessing = false;
           _isLoading = false;
           _loadingMessage = null;
         });
+      } else {
+        _isProcessing = false;
+        _isLoading = false;
+        _loadingMessage = null;
       }
+      print('[PAYMENT] FINALLY: done');
     }
   }
 

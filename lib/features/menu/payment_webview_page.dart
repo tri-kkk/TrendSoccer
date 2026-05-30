@@ -16,7 +16,7 @@ class PaymentWebViewPage extends StatefulWidget {
 
   final Map<String, dynamic> formData;
 
-  static const defaultGatewayUrl = 'https://pay.seedpay.co.kr/api/pay';
+  static const defaultGatewayUrl = 'https://pay.seedpayments.co.kr/payment';
 
   @override
   State<PaymentWebViewPage> createState() => _PaymentWebViewPageState();
