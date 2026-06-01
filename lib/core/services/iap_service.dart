@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -41,13 +42,11 @@ final iapServiceProvider = Provider<IAPService>((ref) {
 class IAPService {
   IAPService([this._ref]);
 
-  static const premiumMonthly = 'premium_monthly';
-  static const premiumQuarterly = 'premium_quarterly';
+  static const premium = 'premium';
+  static const monthlyPlan = 'monthly-plan';
+  static const quarterlyPlan = 'quarterly-plan';
 
-  static const _productIds = <String>{
-    premiumMonthly,
-    premiumQuarterly,
-  };
+  static const _productIds = <String>{premium};
 
   static const _authJwtKey = 'auth_jwt';
   static const _verifyUrl =
@@ -108,7 +107,11 @@ class IAPService {
     _products = response.productDetails;
     debugPrint('[IAP] available=$_isAvailable, products=${_products.length}');
     for (final product in _products) {
-      debugPrint('[IAP] product: id=${product.id}, price=${product.price}');
+      final basePlanId = _basePlanIdForProduct(product);
+      debugPrint(
+        '[IAP] product: id=${product.id}, price=${product.price}, '
+        'basePlan=$basePlanId',
+      );
     }
 
     _initialized = true;
@@ -126,23 +129,77 @@ class IAPService {
     return null;
   }
 
-  Future<bool> buySubscription(String productId) async {
-    debugPrint('[IAP] buySubscription: productId=$productId');
+  bool hasProduct(String productId) {
+    return _products.any((product) => product.id == productId);
+  }
+
+  ProductDetails? findProductForBasePlan(String basePlanId) {
+    for (final product in _products) {
+      if (product.id != premium) continue;
+      if (_basePlanIdForProduct(product) == basePlanId) {
+        debugPrint(
+          '[IAP] findProductForBasePlan: matched basePlan=$basePlanId, '
+          'price=${product.price}',
+        );
+        return product;
+      }
+    }
+    debugPrint('[IAP] findProductForBasePlan: not found for $basePlanId');
+    return null;
+  }
+
+  String? _basePlanIdForProduct(ProductDetails product) {
+    if (product is! GooglePlayProductDetails) return null;
+    final subscriptionIndex = product.subscriptionIndex;
+    final offers = product.productDetails.subscriptionOfferDetails;
+    if (subscriptionIndex == null || offers == null) return null;
+    if (subscriptionIndex < 0 || subscriptionIndex >= offers.length) {
+      return null;
+    }
+    return offers[subscriptionIndex].basePlanId;
+  }
+
+  Future<bool> buySubscription([String? basePlanId]) async {
+    debugPrint(
+      '[IAP] buySubscription: productId=$premium, basePlan=$basePlanId',
+    );
 
     if (!_isAvailable) {
       debugPrint('[IAP] buySubscription: store not available');
       return false;
     }
 
-    final product = findProduct(productId);
+    ProductDetails? product;
+    if (basePlanId != null) {
+      product = findProductForBasePlan(basePlanId);
+    }
+    product ??= findProduct(premium);
     if (product == null) {
       debugPrint('[IAP] buySubscription: product not found');
       return false;
     }
 
-    final purchaseParam = PurchaseParam(productDetails: product);
+    final resolvedBasePlan = _basePlanIdForProduct(product);
+    debugPrint(
+      '[IAP] buySubscription: using product id=${product.id}, '
+      'basePlan=$resolvedBasePlan, price=${product.price}',
+    );
+
+    final PurchaseParam purchaseParam;
+    if (product is GooglePlayProductDetails) {
+      purchaseParam = GooglePlayPurchaseParam(
+        productDetails: product,
+        offerToken: product.offerToken,
+      );
+      debugPrint('[IAP] buySubscription: offerToken=${product.offerToken}');
+    } else {
+      purchaseParam = PurchaseParam(productDetails: product);
+    }
+
     try {
-      final initiated = await _iap.buyNonConsumable(purchaseParam: purchaseParam);
+      final initiated = await _iap.buyNonConsumable(
+        purchaseParam: purchaseParam,
+      );
       debugPrint('[IAP] buySubscription: initiated=$initiated');
       return initiated;
     } catch (e) {

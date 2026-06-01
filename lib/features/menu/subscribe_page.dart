@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/models/api_response.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/services/iap_service.dart';
@@ -18,6 +19,7 @@ import 'package:trendsoccer/features/menu/payment_webview_page.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/navigation/ts_bottom_navigation.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SubscribePage extends ConsumerStatefulWidget {
   const SubscribePage({super.key});
@@ -47,9 +49,9 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
 
   String get _selectedPlan => _selectedPlanIndex == 0 ? 'quarterly' : 'monthly';
 
-  String get _selectedProductId => _selectedPlanIndex == 0
-      ? IAPService.premiumQuarterly
-      : IAPService.premiumMonthly;
+  String get _selectedBasePlanId => _selectedPlanIndex == 0
+      ? IAPService.quarterlyPlan
+      : IAPService.monthlyPlan;
 
   int get _successMonths => _selectedPlanIndex == 0 ? 3 : 1;
 
@@ -59,6 +61,27 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     } else {
       context.go('/trend');
     }
+  }
+
+  String _formatTrialRemaining(DateTime expiresAt) {
+    final remaining = expiresAt.difference(DateTime.now());
+    if (remaining.isNegative) {
+      return '남은 시간: 0시간 0분';
+    }
+    final hours = remaining.inHours;
+    final minutes = remaining.inMinutes.remainder(60);
+    return '남은 시간: $hours시간 $minutes분';
+  }
+
+  String _formatPremiumExpires(DateTime expiresAt) {
+    final month = expiresAt.month.toString().padLeft(2, '0');
+    final day = expiresAt.day.toString().padLeft(2, '0');
+    return '만료일: ${expiresAt.year}.$month.$day';
+  }
+
+  Future<void> _openGooglePlaySubscriptions() async {
+    final uri = Uri.parse('https://play.google.com/store/account/subscriptions');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   Map<String, dynamic>? _extractFormData(Map<String, dynamic> initResponse) {
@@ -195,16 +218,19 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
 
   Future<_IapAttemptResult> _startGooglePlayPurchase() async {
     final iap = ref.read(iapServiceProvider);
-    final productId = _selectedProductId;
+    final basePlanId = _selectedBasePlanId;
 
-    debugPrint('[IAP] subscribe page: productId=$productId');
+    debugPrint(
+      '[IAP] subscribe page: productId=${IAPService.premium}, '
+      'basePlanId=$basePlanId',
+    );
 
     if (!iap.isAvailable) {
       debugPrint('[IAP] subscribe page: store not available — fallback SeedPay');
       return _IapAttemptResult.unavailable;
     }
 
-    if (iap.findProduct(productId) == null) {
+    if (!iap.hasProduct(IAPService.premium)) {
       debugPrint('[IAP] subscribe page: product not loaded — fallback SeedPay');
       return _IapAttemptResult.unavailable;
     }
@@ -217,7 +243,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     }
 
     final purchaseFuture = _waitForIapPurchaseResult(iap);
-    final initiated = await iap.buySubscription(productId);
+    final initiated = await iap.buySubscription(basePlanId);
     if (!initiated) {
       debugPrint('[IAP] subscribe page: buySubscription failed');
       if (mounted) {
@@ -441,6 +467,9 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final auth = ref.watch(authProvider);
+    final planType = auth.planType;
+    final appBarTitle = planType == PlanType.premium ? '구독 관리' : '구독';
 
     return TsLoadingOverlay(
       isLoading: _isLoading,
@@ -464,7 +493,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
             ),
             iconTheme: IconThemeData(color: semantic.textPrimary),
             title: Text(
-              '구독',
+              appBarTitle,
               style: TsType.headingH3.copyWith(color: semantic.textPrimary),
             ),
             centerTitle: true,
@@ -474,91 +503,20 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
             ),
           ),
           body: SingleChildScrollView(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 24,
-          bottom: 16 + MediaQuery.paddingOf(context).bottom,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Get Full Access To',
-              style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 24,
+              bottom: 16 + MediaQuery.paddingOf(context).bottom,
             ),
-            const SizedBox(height: 8),
-            Text(
-              'The AI Assistant !',
-              style: TsType.headingH2.copyWith(color: semantic.textPrimary),
-            ),
-            const SizedBox(height: 16),
-            _buildPlanCard(
-              semantic: semantic,
-              title: '무료',
-              titleColor: semantic.textPrimary,
-              bgColor: semantic.surfaceRaised,
-              borderColor: null,
-              dividerColor: semantic.borderSubtle,
-              benefits: [
-                '분석 카드 킥오프 2시간 전 공개',
-                '기본 경기 분석 및 통계',
-                '실시간 스코어 및 경기 일정',
-                '광고 포함',
-              ],
-            ),
-            const SizedBox(height: 12),
-            _buildPlanCard(
-              semantic: semantic,
-              title: '프리미엄',
-              titleColor: semantic.interactivePrimary,
-              bgColor: semantic.interactivePrimary.withValues(alpha: 0.1),
-              borderColor: semantic.interactivePrimary,
-              dividerColor: semantic.interactivePrimary.withValues(alpha: 0.2),
-              benefits: [
-                '모든 분석 24시간 우선 접근',
-                '축구 프리미엄픽 무제한',
-                'AI 야구 분석 전체 공개',
-                '야구 조합 픽',
-                '광고 없는 경험',
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '구독 상품 선택',
-              style: TsType.headingH2.copyWith(color: semantic.textPrimary),
-            ),
-            const SizedBox(height: 12),
-            _buildPlanOption(
-              semantic: semantic,
-              price: '₩ 9,900',
-              period: '3개월',
-              isSelected: _selectedPlanIndex == 0,
-              discountLabel: '33% OFF',
-              onTap: () => setState(() => _selectedPlanIndex = 0),
-            ),
-            const SizedBox(height: 12),
-            _buildPlanOption(
-              semantic: semantic,
-              price: '₩ 4,900',
-              period: '1개월',
-              isSelected: _selectedPlanIndex == 1,
-              discountLabel: null,
-              onTap: () => setState(() => _selectedPlanIndex = 1),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: TsButton(
-                label: '프리미엄 구독 시작하기 →',
-                variant: TsButtonVariant.primary,
-                onPressed: _startPremium,
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
+            child: switch (planType) {
+              PlanType.trial => _buildTrialStatusContent(context, semantic, auth),
+              PlanType.premium =>
+                _buildPremiumStatusContent(context, semantic, auth),
+              PlanType.free || PlanType.none =>
+                _buildPurchaseContent(semantic),
+            },
+          ),
           bottomNavigationBar: SafeArea(
             top: false,
             child: TsBottomNavigation(
@@ -568,6 +526,218 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTrialStatusContent(
+    BuildContext context,
+    TsSemanticColors semantic,
+    SupabaseAuthProvider auth,
+  ) {
+    final trialExpiresAt = auth.trialExpiresAt;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: semantic.surfaceRaised,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgPicture.asset(
+            TsAssets.iconPremium,
+            width: 64,
+            height: 64,
+            colorFilter: ColorFilter.mode(
+              semantic.interactivePrimary,
+              BlendMode.srcIn,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '48시간 프리미엄 체험 중',
+            style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '체험 기간 종료 후 구독할 수 있습니다.',
+            style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+          if (trialExpiresAt != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _formatTrialRemaining(trialExpiresAt),
+              style: TsType.bodyMBold.copyWith(
+                color: semantic.interactivePrimary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: TsButton(
+              label: '돌아가기',
+              variant: TsButtonVariant.secondary,
+              onPressed: () => _handleBack(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPremiumStatusContent(
+    BuildContext context,
+    TsSemanticColors semantic,
+    SupabaseAuthProvider auth,
+  ) {
+    final premiumExpiresAt = auth.premiumExpiresAt;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: semantic.surfaceRaised,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgPicture.asset(
+            TsAssets.iconPremium,
+            width: 64,
+            height: 64,
+            colorFilter: ColorFilter.mode(
+              semantic.interactivePrimary,
+              BlendMode.srcIn,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '프리미엄 구독 중',
+            style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '현재 프리미엄 구독을 이용 중입니다.',
+            style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+          if (premiumExpiresAt != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _formatPremiumExpires(premiumExpiresAt),
+              style: TsType.bodyMBold.copyWith(color: semantic.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+          ],
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: TsButton(
+              label: 'Google Play에서 구독 관리',
+              variant: TsButtonVariant.primary,
+              onPressed: _openGooglePlaySubscriptions,
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: TsButton(
+              label: '돌아가기',
+              variant: TsButtonVariant.secondary,
+              onPressed: () => _handleBack(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPurchaseContent(TsSemanticColors semantic) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Get Full Access To',
+          style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'The AI Assistant !',
+          style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+        ),
+        const SizedBox(height: 16),
+        _buildPlanCard(
+          semantic: semantic,
+          title: '무료',
+          titleColor: semantic.textPrimary,
+          bgColor: semantic.surfaceRaised,
+          borderColor: null,
+          dividerColor: semantic.borderSubtle,
+          benefits: [
+            '분석 카드 킥오프 2시간 전 공개',
+            '기본 경기 분석 및 통계',
+            '실시간 스코어 및 경기 일정',
+            '광고 포함',
+          ],
+        ),
+        const SizedBox(height: 12),
+        _buildPlanCard(
+          semantic: semantic,
+          title: '프리미엄',
+          titleColor: semantic.interactivePrimary,
+          bgColor: semantic.interactivePrimary.withValues(alpha: 0.1),
+          borderColor: semantic.interactivePrimary,
+          dividerColor: semantic.interactivePrimary.withValues(alpha: 0.2),
+          benefits: [
+            '모든 분석 24시간 우선 접근',
+            '축구 프리미엄픽 무제한',
+            'AI 야구 분석 전체 공개',
+            '야구 조합 픽',
+            '광고 없는 경험',
+          ],
+        ),
+        const SizedBox(height: 16),
+        Text(
+          '구독 상품 선택',
+          style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+        ),
+        const SizedBox(height: 12),
+        _buildPlanOption(
+          semantic: semantic,
+          price: '₩ 9,900',
+          period: '3개월',
+          isSelected: _selectedPlanIndex == 0,
+          discountLabel: '33% OFF',
+          onTap: () => setState(() => _selectedPlanIndex = 0),
+        ),
+        const SizedBox(height: 12),
+        _buildPlanOption(
+          semantic: semantic,
+          price: '₩ 4,900',
+          period: '1개월',
+          isSelected: _selectedPlanIndex == 1,
+          discountLabel: null,
+          onTap: () => setState(() => _selectedPlanIndex = 1),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: TsButton(
+            label: '프리미엄 구독 시작하기 →',
+            variant: TsButtonVariant.primary,
+            onPressed: _startPremium,
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
     );
   }
 

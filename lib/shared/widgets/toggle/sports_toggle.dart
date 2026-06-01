@@ -50,18 +50,19 @@ class SportsToggle extends StatelessWidget {
               children: [
                 TsSportsIcon(
                   sport: sport,
-                  fill: selected
-                      ? SportsIconFill.onPrimary
-                      : SportsIconFill.primary,
+                  fill: SportsIconFill.primary,
                   size: 24,
+                  color: selected
+                      ? semantic.interactiveOnPrimary
+                      : semantic.textPrimary,
                 ),
                 const SizedBox(width: TsSpacing.sm),
                 Text(
                   _label(sport),
                   style: TsType.bodyLBold.copyWith(
                     color: selected
-                        ? semantic.surfaceBase
-                        : semantic.textSecondary,
+                        ? semantic.interactiveOnPrimary
+                        : semantic.textPrimary,
                   ),
                 ),
               ],

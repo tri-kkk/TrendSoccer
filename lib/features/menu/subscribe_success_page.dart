@@ -142,7 +142,7 @@ class _SubscribeSuccessPageState extends ConsumerState<SubscribeSuccessPage> {
                       SizedBox(
                         width: double.infinity,
                         child: TsButton(
-                          label: '프리미엄 확인하기',
+                          label: '프리미엄 분석 시작하기',
                           variant: TsButtonVariant.primary,
                           onPressed: () => context.go('/premium'),
                         ),

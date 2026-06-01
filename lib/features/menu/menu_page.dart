@@ -64,6 +64,19 @@ class _MenuPageState extends ConsumerState<MenuPage> {
     return '만료일 ${DateFormat('yyyy.MM.dd').format(expiresAt)}';
   }
 
+  String _subscribeButtonLabel(PlanType planType) {
+    return switch (planType) {
+      PlanType.none || PlanType.free => '구독 시작하기',
+      PlanType.trial => '체험 중',
+      PlanType.premium => '구독 관리',
+    };
+  }
+
+  VoidCallback? _subscribeButtonTap(PlanType planType) {
+    if (planType == PlanType.trial) return null;
+    return () => navigateToSubscribe(context, ref);
+  }
+
   void _showThemeSheet(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
@@ -351,7 +364,8 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                 PlanTicket(
                   type: _planTicketType(auth.planType),
                   subtitle: _planSubtitle(auth.state),
-                  onButtonTap: () => navigateToSubscribe(context, ref),
+                  buttonLabel: _subscribeButtonLabel(auth.planType),
+                  onButtonTap: _subscribeButtonTap(auth.planType),
                 ),
                 const SizedBox(height: 16),
               ],

@@ -11,12 +11,14 @@ class TsSportsIcon extends StatelessWidget {
     required this.sport,
     this.fill = SportsIconFill.primary,
     this.size = 24,
+    this.color,
     super.key,
   });
 
   final SportType sport;
   final SportsIconFill fill;
   final double size;
+  final Color? color;
 
   static String _assetPath(SportType sport, SportsIconFill fill) {
     return switch ((sport, fill)) {
@@ -36,6 +38,9 @@ class TsSportsIcon extends StatelessWidget {
       _assetPath(sport, fill),
       width: size,
       height: size,
+      colorFilter: color != null
+          ? ColorFilter.mode(color!, BlendMode.srcIn)
+          : null,
     );
   }
 }
