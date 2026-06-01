@@ -10,6 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:trendsoccer/core/config/app_config.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/services/fcm_service.dart';
+import 'package:trendsoccer/core/services/iap_service.dart';
 import 'package:trendsoccer/core/providers/language_provider.dart';
 import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
 import 'package:trendsoccer/core/providers/theme_provider.dart';
@@ -37,11 +38,14 @@ Future<void> main() async {
   // ignore: avoid_print
   print('[AUTH] Naver SDK initialized');
   final prefs = await SharedPreferences.getInstance();
+  final iapService = IAPService();
+  await iapService.init();
 
   runApp(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        iapServiceProvider.overrideWithValue(iapService),
       ],
       child: const TrendSoccerApp(),
     ),

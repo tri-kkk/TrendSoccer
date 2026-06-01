@@ -34,3 +34,8 @@ Thumbs.db          # Windows
 
 # Supabase - 로컬 설정
 # .supabase/
+
+# Signing keys
+*.jks
+*.keystore
+key.properties

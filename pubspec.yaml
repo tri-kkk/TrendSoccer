@@ -2,7 +2,7 @@ name: trendsoccer
 description: "A new Flutter project."
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 0.1.2+3
 
 environment:
   sdk: ^3.11.4
@@ -33,6 +33,7 @@ dependencies:
   webview_flutter: ^4.10.0
   flutter_inappwebview: ^6.0.0
   flutter_markdown: ^0.7.7+1
+  in_app_purchase: ^3.2.0
 
 dev_dependencies:
   flutter_test:
