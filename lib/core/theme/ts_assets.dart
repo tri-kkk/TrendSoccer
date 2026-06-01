@@ -114,6 +114,7 @@ abstract final class TsAssets {
   static const iconAccountCircle =
       'assets/images/icon/foundation/account_circle.svg';
   static const iconInfo = 'assets/images/icon/foundation/info.svg';
+  static const iconVerified = 'assets/images/icon/foundation/verified.svg';
   static const iconPrivacyTip = 'assets/images/icon/foundation/privacy_tip.svg';
   static const iconBlog = 'assets/images/icon/foundation/blog.svg';
   static const iconHelp = 'assets/images/icon/foundation/help.svg';

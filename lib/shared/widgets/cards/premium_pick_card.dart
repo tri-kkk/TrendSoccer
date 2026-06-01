@@ -322,10 +322,16 @@ class _PremiumPickCardState extends State<PremiumPickCard>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const TsSportsIcon(
-                sport: SportType.soccer,
-                fill: SportsIconFill.primary,
-                size: 24,
+              ColorFiltered(
+                colorFilter: ColorFilter.mode(
+                  semantic.textPrimary,
+                  BlendMode.srcIn,
+                ),
+                child: const TsSportsIcon(
+                  sport: SportType.soccer,
+                  fill: SportsIconFill.primary,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: TsSpacing.sm),
               Text(

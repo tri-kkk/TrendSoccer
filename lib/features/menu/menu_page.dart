@@ -127,51 +127,24 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                   Row(
                     children: [
                       Expanded(
-                        child: GestureDetector(
-                          onTap: () => Navigator.of(dialogContext).pop(),
-                          child: Container(
-                            height: 32,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: semantic.textDisabled,
-                                width: 2,
-                              ),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              '취소',
-                              style: TsType.bodyMBold.copyWith(
-                                color: semantic.textDisabled,
-                              ),
-                            ),
-                          ),
+                        child: TsButton(
+                          label: '취소',
+                          variant: TsButtonVariant.secondary,
+                          onPressed: () => Navigator.of(dialogContext).pop(),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: GestureDetector(
-                          onTap: () async {
+                        child: TsButton(
+                          label: '로그아웃',
+                          variant: TsButtonVariant.primary,
+                          onPressed: () async {
                             Navigator.of(dialogContext).pop();
                             await authNotifier.signOut();
                             if (!context.mounted) return;
                             TsToast.success(context, '로그아웃 되었습니다.');
                             context.go('/trend');
                           },
-                          child: Container(
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: semantic.interactivePrimary,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              '로그아웃',
-                              style: TsType.bodyMBold.copyWith(
-                                color: semantic.surfaceBase,
-                              ),
-                            ),
-                          ),
                         ),
                       ),
                     ],
@@ -277,34 +250,21 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                         Row(
                           children: [
                             Expanded(
-                              child: GestureDetector(
-                                onTap: () {
+                              child: TsButton(
+                                label: '취소',
+                                variant: TsButtonVariant.secondary,
+                                onPressed: () {
                                   deleteController.dispose();
                                   Navigator.of(dialogContext).pop();
                                 },
-                                child: Container(
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: semantic.textDisabled,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    '취소',
-                                    style: TsType.bodyMBold.copyWith(
-                                      color: semantic.textDisabled,
-                                    ),
-                                  ),
-                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: GestureDetector(
-                                onTap: isDeleteTyped
+                              child: TsButton(
+                                label: '계정삭제',
+                                variant: TsButtonVariant.primary,
+                                onPressed: isDeleteTyped
                                     ? () async {
                                         setDialogState(() => isDeleting = true);
                                         try {
@@ -341,27 +301,6 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                                         }
                                       }
                                     : null,
-                                child: Container(
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    color: isDeleteTyped
-                                        ? semantic.interactivePrimary
-                                        : semantic.interactivePrimary
-                                            .withValues(alpha: 0.3),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    '계정삭제',
-                                    style: TsType.bodyMBold.copyWith(
-                                      color: isDeleteTyped
-                                          ? semantic.surfaceBase
-                                          : semantic.surfaceBase.withValues(
-                                              alpha: 0.5,
-                                            ),
-                                    ),
-                                  ),
-                                ),
                               ),
                             ),
                           ],
@@ -469,7 +408,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                   ),
                   const SizedBox(height: 8),
                   MenuListItem(
-                    iconAsset: TsAssets.iconInfo,
+                    iconAsset: TsAssets.iconVerified,
                     label: '이용약관',
                     onTap: () => context.go('/menu/terms'),
                   ),

@@ -72,48 +72,21 @@ void _showExitDialog(BuildContext context) {
               Row(
                 children: [
                   Expanded(
-                    child: GestureDetector(
-                      onTap: () => Navigator.of(dialogContext).pop(),
-                      child: Container(
-                        height: 32,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: dialogSemantic.interactivePrimary,
-                            width: 2,
-                          ),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          '취소',
-                          style: TsType.bodyMBold.copyWith(
-                            color: dialogSemantic.interactivePrimary,
-                          ),
-                        ),
-                      ),
+                    child: TsButton(
+                      label: '취소',
+                      variant: TsButtonVariant.secondary,
+                      onPressed: () => Navigator.of(dialogContext).pop(),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: GestureDetector(
-                      onTap: () {
+                    child: TsButton(
+                      label: '종료하기',
+                      variant: TsButtonVariant.primary,
+                      onPressed: () {
                         Navigator.of(dialogContext).pop();
                         SystemNavigator.pop();
                       },
-                      child: Container(
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: dialogSemantic.interactivePrimary,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          '종료하기',
-                          style: TsType.bodyMBold.copyWith(
-                            color: dialogSemantic.surfaceBase,
-                          ),
-                        ),
-                      ),
                     ),
                   ),
                 ],
@@ -141,6 +114,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   Widget build(BuildContext context) {
     final path = GoRouterState.of(context).uri.path;
     final selectedIndex = _selectedIndexForLocation(path);
+    final isMenuTab = selectedIndex == 4;
     final isRootTab = _tabPaths.contains(path);
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final brightness = Theme.of(context).brightness;
@@ -208,7 +182,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           size: TsButtonSize.small,
                           onPressed: () => context.push('/login'),
                         )
-                      else
+                      else if (!isMenuTab)
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [

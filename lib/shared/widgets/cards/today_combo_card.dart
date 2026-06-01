@@ -52,10 +52,16 @@ class TodayComboCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TsSportsIcon(
-                sport: SportType.baseball,
-                size: 24,
-                fill: SportsIconFill.primary,
+              ColorFiltered(
+                colorFilter: ColorFilter.mode(
+                  semantic.textPrimary,
+                  BlendMode.srcIn,
+                ),
+                child: const TsSportsIcon(
+                  sport: SportType.baseball,
+                  size: 24,
+                  fill: SportsIconFill.primary,
+                ),
               ),
               const SizedBox(width: TsSpacing.sm),
               Text(

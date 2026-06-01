@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 class PaymentWebviewRouteArgs {
   const PaymentWebviewRouteArgs({required this.formData});
@@ -181,20 +182,26 @@ $inputs
             '결제를 취소하시겠습니까?',
             style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
           ),
+          actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(
-                '아니오',
-                style: TsType.bodyMBold.copyWith(color: semantic.textDisabled),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(
-                '예',
-                style: TsType.bodyMBold.copyWith(color: semantic.interactivePrimary),
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: TsButton(
+                    label: '아니오',
+                    variant: TsButtonVariant.secondary,
+                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TsButton(
+                    label: '예',
+                    variant: TsButtonVariant.primary,
+                    onPressed: () => Navigator.of(dialogContext).pop(true),
+                  ),
+                ),
+              ],
             ),
           ],
         );

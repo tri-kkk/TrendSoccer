@@ -76,21 +76,26 @@ class _DeleteAccountDialogBodyState extends State<_DeleteAccountDialogBody> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: TsSpacing.lg),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-              decoration: BoxDecoration(
-                color: semantic.surfaceContainer,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: TextField(
-                controller: _controller,
-                textAlign: TextAlign.center,
-                style: TsType.bodyLRegular.copyWith(color: semantic.textPrimary),
-                cursorColor: semantic.textPrimary,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: 'DELETE',
-                  hintStyle: TsType.bodyLRegular.copyWith(color: semantic.textDisabled),
+            SizedBox(
+              height: 48,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
+                decoration: BoxDecoration(
+                  color: semantic.surfaceContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: TextField(
+                  controller: _controller,
+                  textAlign: TextAlign.center,
+                  style: TsType.bodyLRegular.copyWith(color: semantic.textPrimary),
+                  cursorColor: semantic.textPrimary,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'DELETE',
+                    hintStyle: TsType.bodyLRegular.copyWith(
+                      color: semantic.textDisabled,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -109,7 +114,8 @@ class _DeleteAccountDialogBodyState extends State<_DeleteAccountDialogBody> {
                   child: TsButton(
                     label: '삭제',
                     variant: TsButtonVariant.primary,
-                    onPressed: _canDelete ? () => Navigator.of(context).pop(true) : null,
+                    onPressed:
+                        _canDelete ? () => Navigator.of(context).pop(true) : null,
                   ),
                 ),
               ],
