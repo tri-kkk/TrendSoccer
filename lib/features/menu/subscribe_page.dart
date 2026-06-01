@@ -26,7 +26,9 @@ class SubscribePage extends ConsumerStatefulWidget {
   ConsumerState<SubscribePage> createState() => _SubscribePageState();
 }
 
-enum _IapAttemptResult { success, unavailable, failed }
+enum _IapAttemptResult { success, unavailable, failed, canceled, verifyPending }
+
+enum _IapPurchaseOutcome { success, fail, canceled, verifyPending }
 
 class _SubscribePageState extends ConsumerState<SubscribePage> {
   static const _tabPaths = [
@@ -83,8 +85,38 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     return null;
   }
 
-  Future<bool> _waitForIapPurchaseResult(IAPService iap) async {
-    final completer = Completer<bool>();
+  bool _isVerifyPendingError(String message) {
+    return message.contains('GOOGLE_VERIFY_FAILED') ||
+        message.contains('Purchase verification failed') ||
+        message.contains('Purchase restore verification failed');
+  }
+
+  Future<void> _navigateIapSuccess() async {
+    setState(() {
+      _isLoading = true;
+      _loadingMessage = '구독 정보 업데이트 중...';
+    });
+    await ref.read(authProvider).loadProfile();
+    if (!mounted) return;
+    context.go('/menu/subscribe/success', extra: _successMonths);
+  }
+
+  void _navigateIapFail() {
+    context.go('/menu/subscribe/fail');
+  }
+
+  void _showVerifyPendingSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          '결제는 완료되었으나 검증 대기 중입니다. 잠시 후 앱을 재시작해주세요.',
+        ),
+      ),
+    );
+  }
+
+  Future<_IapPurchaseOutcome> _waitForIapPurchaseResult(IAPService iap) async {
+    final completer = Completer<_IapPurchaseOutcome>();
     late StreamSubscription<IapPurchaseEvent> subscription;
 
     subscription = iap.purchaseEvents.listen((event) {
@@ -99,12 +131,51 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
         case IapPurchaseEventType.purchased:
         case IapPurchaseEventType.restored:
           if (!completer.isCompleted) {
-            completer.complete(true);
+            completer.complete(_IapPurchaseOutcome.success);
           }
+        case IapPurchaseEventType.itemAlreadyOwned:
+          if (mounted) {
+            setState(() {
+              _isLoading = true;
+              _loadingMessage = '기존 구독 확인 중...';
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('이미 구독 중입니다. 기존 구독을 확인합니다.'),
+              ),
+            );
+          }
+          unawaited(iap.restoreAndVerify());
         case IapPurchaseEventType.error:
+          final message = event.message ?? '';
+          if (message.contains('itemAlreadyOwned') ||
+              message.contains('AlreadyOwned')) {
+            if (mounted) {
+              setState(() {
+                _isLoading = true;
+                _loadingMessage = '기존 구독 확인 중...';
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('이미 구독 중입니다. 기존 구독을 확인합니다.'),
+                ),
+              );
+            }
+            unawaited(iap.restoreAndVerify());
+            return;
+          }
+          if (_isVerifyPendingError(message)) {
+            if (!completer.isCompleted) {
+              completer.complete(_IapPurchaseOutcome.verifyPending);
+            }
+            return;
+          }
+          if (!completer.isCompleted) {
+            completer.complete(_IapPurchaseOutcome.fail);
+          }
         case IapPurchaseEventType.canceled:
           if (!completer.isCompleted) {
-            completer.complete(false);
+            completer.complete(_IapPurchaseOutcome.canceled);
           }
       }
     });
@@ -114,7 +185,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
         const Duration(minutes: 5),
         onTimeout: () {
           debugPrint('[IAP] purchase wait timed out');
-          return false;
+          return _IapPurchaseOutcome.fail;
         },
       );
     } finally {
@@ -148,30 +219,35 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     final purchaseFuture = _waitForIapPurchaseResult(iap);
     final initiated = await iap.buySubscription(productId);
     if (!initiated) {
-      debugPrint('[IAP] subscribe page: buySubscription failed — fallback SeedPay');
-      return _IapAttemptResult.unavailable;
+      debugPrint('[IAP] subscribe page: buySubscription failed');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Google Play 결제를 시작할 수 없습니다.'),
+          ),
+        );
+      }
+      return _IapAttemptResult.canceled;
     }
 
-    final success = await purchaseFuture;
+    final outcome = await purchaseFuture;
     if (!mounted) return _IapAttemptResult.failed;
 
-    if (success) {
-      setState(() {
-        _isLoading = true;
-        _loadingMessage = '구독 정보 업데이트 중...';
-      });
-      await ref.read(authProvider).loadProfile();
-      if (!mounted) return _IapAttemptResult.failed;
-      context.push('/menu/subscribe/success', extra: _successMonths);
-      return _IapAttemptResult.success;
+    switch (outcome) {
+      case _IapPurchaseOutcome.success:
+        await _navigateIapSuccess();
+        return _IapAttemptResult.success;
+      case _IapPurchaseOutcome.fail:
+        _navigateIapFail();
+        return _IapAttemptResult.failed;
+      case _IapPurchaseOutcome.canceled:
+        return _IapAttemptResult.canceled;
+      case _IapPurchaseOutcome.verifyPending:
+        if (mounted) {
+          _showVerifyPendingSnackBar();
+        }
+        return _IapAttemptResult.verifyPending;
     }
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google Play 결제에 실패했습니다.')),
-      );
-    }
-    return _IapAttemptResult.failed;
   }
 
   Future<void> _startSeedPayPayment() async {
@@ -307,8 +383,13 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
         print('[PAYMENT] Step 2: IAP purchase completed');
         return;
       }
+      if (iapResult == _IapAttemptResult.canceled ||
+          iapResult == _IapAttemptResult.verifyPending) {
+        print('[PAYMENT] Step 2: IAP canceled or verify pending — staying on page');
+        return;
+      }
       if (iapResult == _IapAttemptResult.failed) {
-        print('[PAYMENT] Step 2: IAP failed or canceled — stopping');
+        print('[PAYMENT] Step 2: IAP failed — navigated to fail page');
         return;
       }
 

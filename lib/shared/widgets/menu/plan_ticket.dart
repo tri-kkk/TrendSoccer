@@ -56,18 +56,11 @@ class PlanTicket extends StatelessWidget {
       padding: const EdgeInsets.all(TsSpacing.lg),
       decoration: BoxDecoration(
         color: semantic.surfaceRaised,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(TsSpacing.sm),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Image.asset(
-            _imageAsset,
-            width: 100,
-            height: 100,
-            fit: BoxFit.contain,
-          ),
-          const SizedBox(width: TsSpacing.lg),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,7 +73,9 @@ class PlanTicket extends StatelessWidget {
                 const SizedBox(height: TsSpacing.sm),
                 Text(
                   subtitle,
-                  style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+                  style: TsType.labelSRegular.copyWith(
+                    color: semantic.textTertiary,
+                  ),
                 ),
                 const SizedBox(height: TsSpacing.sm),
                 TsButton(
@@ -91,6 +86,13 @@ class PlanTicket extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          const SizedBox(width: TsSpacing.lg),
+          Image.asset(
+            _imageAsset,
+            width: 100,
+            height: 100,
+            fit: BoxFit.contain,
           ),
         ],
       ),

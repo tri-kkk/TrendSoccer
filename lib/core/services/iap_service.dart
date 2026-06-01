@@ -1,13 +1,21 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
+import 'package:trendsoccer/core/services/token_service.dart';
 
 enum IapPurchaseEventType {
   pending,
   purchased,
   restored,
+  itemAlreadyOwned,
   error,
   canceled,
 }
@@ -25,12 +33,14 @@ class IapPurchaseEvent {
 }
 
 final iapServiceProvider = Provider<IAPService>((ref) {
-  final service = IAPService();
+  final service = IAPService(ref);
   ref.onDispose(service.dispose);
   return service;
 });
 
 class IAPService {
+  IAPService([this._ref]);
+
   static const premiumMonthly = 'premium_monthly';
   static const premiumQuarterly = 'premium_quarterly';
 
@@ -39,6 +49,11 @@ class IAPService {
     premiumQuarterly,
   };
 
+  static const _authJwtKey = 'auth_jwt';
+  static const _verifyUrl =
+      'https://www.trendsoccer.com/api/v1/mobile/purchase/verify';
+
+  final Ref? _ref;
   final InAppPurchase _iap = InAppPurchase.instance;
 
   StreamSubscription<List<PurchaseDetails>>? _purchaseSubscription;
@@ -145,6 +160,133 @@ class IAPService {
     await _iap.restorePurchases();
   }
 
+  Future<void> restoreAndVerify() async {
+    debugPrint('[IAP] restoreAndVerify: starting');
+    await restorePurchases();
+  }
+
+  bool _isItemAlreadyOwnedError(String message) {
+    return message.contains('itemAlreadyOwned') ||
+        message.contains('AlreadyOwned') ||
+        message.contains('BillingResponse.itemAlreadyOwned');
+  }
+
+  Future<String?> _getAuthJwt() async {
+    final ref = _ref;
+    if (ref != null) {
+      try {
+        final jwt = ref.read(sharedPreferencesProvider).getString(_authJwtKey);
+        if (jwt != null && jwt.isNotEmpty) {
+          debugPrint('[IAP] JWT found in SharedPreferences');
+          return jwt;
+        }
+        debugPrint('[IAP] JWT NOT in SharedPreferences (Riverpod)');
+      } catch (e) {
+        debugPrint('[IAP] SharedPreferences (Riverpod) error: $e');
+      }
+    }
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jwt = prefs.getString(_authJwtKey);
+      if (jwt != null && jwt.isNotEmpty) {
+        debugPrint('[IAP] JWT found in SharedPreferences');
+        return jwt;
+      }
+      debugPrint('[IAP] JWT NOT in SharedPreferences');
+    } catch (e) {
+      debugPrint('[IAP] SharedPreferences error: $e');
+    }
+
+    try {
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session != null && session.accessToken.isNotEmpty) {
+        debugPrint('[IAP] JWT found in Supabase session');
+        return session.accessToken;
+      }
+      debugPrint('[IAP] JWT NOT in Supabase session');
+    } catch (e) {
+      debugPrint('[IAP] Supabase session error: $e');
+    }
+
+    try {
+      if (ref != null) {
+        final token = await ref.read(tokenServiceProvider).getToken();
+        if (token != null && token.isNotEmpty) {
+          debugPrint('[IAP] JWT found in TokenService');
+          return token;
+        }
+      } else {
+        final tokenService = TokenService();
+        final token = await tokenService.getToken();
+        if (token != null && token.isNotEmpty) {
+          debugPrint('[IAP] JWT found in TokenService');
+          return token;
+        }
+      }
+      debugPrint('[IAP] JWT NOT in TokenService');
+    } catch (e) {
+      debugPrint('[IAP] TokenService error: $e');
+    }
+
+    debugPrint('[IAP] verify: NO JWT available from any source');
+    return null;
+  }
+
+  Map<String, dynamic>? _unwrapResponseData(Object? raw) {
+    if (raw is! Map) return null;
+    final map = raw is Map<String, dynamic>
+        ? raw
+        : Map<String, dynamic>.from(raw);
+    final nested = map['data'];
+    if (nested is Map<String, dynamic>) return nested;
+    if (nested is Map) return Map<String, dynamic>.from(nested);
+    return map;
+  }
+
+  String? _readErrorCode(Object? raw) {
+    if (raw is! Map) return null;
+    final map = raw is Map<String, dynamic>
+        ? raw
+        : Map<String, dynamic>.from(raw);
+    final error = map['error'];
+    if (error is Map) {
+      final errorMap = Map<String, dynamic>.from(error);
+      final code = errorMap['code'];
+      if (code is String && code.isNotEmpty) return code;
+    }
+    final code = map['code'];
+    if (code is String && code.isNotEmpty) return code;
+    return null;
+  }
+
+  Future<void> _loadProfileAfterVerify() async {
+    final ref = _ref;
+    if (ref == null) {
+      debugPrint('[IAP] loadProfile skipped: Ref not available');
+      return;
+    }
+    try {
+      await ref.read(authProvider).loadProfile();
+      debugPrint('[IAP] loadProfile completed after verify');
+    } catch (e) {
+      debugPrint('[IAP] loadProfile failed after verify: $e');
+    }
+  }
+
+  Future<void> _emitVerifiedPurchase({
+    required PurchaseDetails purchase,
+    required IapPurchaseEventType eventType,
+  }) async {
+    await _loadProfileAfterVerify();
+    _purchaseEventsController.add(
+      IapPurchaseEvent(
+        type: eventType,
+        productId: purchase.productID,
+      ),
+    );
+  }
+
   Future<void> _onPurchaseUpdate(List<PurchaseDetails> purchaseDetailsList) async {
     for (final purchase in purchaseDetailsList) {
       debugPrint(
@@ -165,11 +307,9 @@ class IAPService {
           debugPrint('[IAP] status=purchased');
           final verified = await _verifyPurchase(purchase);
           if (verified) {
-            _purchaseEventsController.add(
-              IapPurchaseEvent(
-                type: IapPurchaseEventType.purchased,
-                productId: purchase.productID,
-              ),
+            await _emitVerifiedPurchase(
+              purchase: purchase,
+              eventType: IapPurchaseEventType.purchased,
             );
           } else {
             _purchaseEventsController.add(
@@ -181,25 +321,48 @@ class IAPService {
           }
           await _completePurchaseIfNeeded(purchase);
         case PurchaseStatus.restored:
-          debugPrint('[IAP] status=restored');
+          debugPrint('[IAP] restored: verifying with backend');
           final verified = await _verifyPurchase(purchase);
           if (verified) {
+            debugPrint('[IAP] restored purchase verified successfully');
+            await _emitVerifiedPurchase(
+              purchase: purchase,
+              eventType: IapPurchaseEventType.restored,
+            );
+          } else {
             _purchaseEventsController.add(
-              IapPurchaseEvent(
-                type: IapPurchaseEventType.restored,
-                productId: purchase.productID,
+              const IapPurchaseEvent(
+                type: IapPurchaseEventType.error,
+                message: 'Purchase restore verification failed',
               ),
             );
           }
           await _completePurchaseIfNeeded(purchase);
         case PurchaseStatus.error:
-          final message = purchase.error?.message ?? 'Unknown purchase error';
-          debugPrint('[IAP] status=error: $message');
+          final errorMsg = purchase.error?.message ?? 'Unknown purchase error';
+          debugPrint('[IAP] status=error: $errorMsg');
+
+          if (_isItemAlreadyOwnedError(errorMsg)) {
+            debugPrint(
+              '[IAP] Item already owned — restoring purchases to verify',
+            );
+            _purchaseEventsController.add(
+              IapPurchaseEvent(
+                type: IapPurchaseEventType.itemAlreadyOwned,
+                productId: purchase.productID,
+                message: errorMsg,
+              ),
+            );
+            await restorePurchases();
+            await _completePurchaseIfNeeded(purchase);
+            continue;
+          }
+
           _purchaseEventsController.add(
             IapPurchaseEvent(
               type: IapPurchaseEventType.error,
               productId: purchase.productID,
-              message: message,
+              message: errorMsg,
             ),
           );
           await _completePurchaseIfNeeded(purchase);
@@ -217,12 +380,86 @@ class IAPService {
   }
 
   Future<bool> _verifyPurchase(PurchaseDetails purchase) async {
+    final purchaseToken = purchase.verificationData.serverVerificationData;
     debugPrint(
-      '[IAP] verify: productId=${purchase.productID}, '
-      'token=${purchase.verificationData.serverVerificationData}',
+      '[IAP] verify: productId=${purchase.productID}, token=$purchaseToken',
     );
-    // TODO: POST to backend verification endpoint when available.
-    return true;
+
+    try {
+      final jwt = await _getAuthJwt();
+      if (jwt == null) {
+        debugPrint('[IAP] verify: cannot verify without JWT');
+        return false;
+      }
+
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $jwt',
+      };
+      debugPrint('[IAP] verify: sending JWT as Bearer token');
+
+      final dio = Dio();
+      final response = await dio.post<dynamic>(
+        _verifyUrl,
+        data: <String, dynamic>{
+          'productId': purchase.productID,
+          'purchaseToken': purchaseToken,
+          'platform': 'android',
+        },
+        options: Options(headers: headers),
+      );
+
+      final data = _unwrapResponseData(response.data);
+      debugPrint(
+        '[IAP] verify success: tier=${data?['tier']}, plan=${data?['plan']}, '
+        'expiresAt=${data?['expiresAt']}',
+      );
+      debugPrint(
+        '[IAP] verify: alreadyProcessed=${data?['alreadyProcessed']}',
+      );
+      return true;
+    } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+      final body = e.response?.data;
+      final errorCode = _readErrorCode(body);
+
+      if (statusCode == 402 || errorCode == 'PAYMENT_PENDING') {
+        debugPrint(
+          '[IAP] payment pending, will be activated via webhook',
+        );
+        return false;
+      }
+
+      if (statusCode == 409 || errorCode == 'TOKEN_ALREADY_USED') {
+        debugPrint('[IAP] verify: token already used, treating as success');
+        final data = _unwrapResponseData(body);
+        debugPrint(
+          '[IAP] verify success: tier=${data?['tier']}, plan=${data?['plan']}, '
+          'expiresAt=${data?['expiresAt']}',
+        );
+        debugPrint(
+          '[IAP] verify: alreadyProcessed=${data?['alreadyProcessed'] ?? true}',
+        );
+        return true;
+      }
+
+      if (statusCode == 400 || statusCode == 401) {
+        debugPrint(
+          '[IAP] verify error: statusCode=$statusCode, body=$body, '
+          'message=${e.message}',
+        );
+        return false;
+      }
+
+      debugPrint(
+        '[IAP] verify error: statusCode=$statusCode, body=$body, '
+        'message=${e.message}',
+      );
+      return false;
+    } catch (e) {
+      debugPrint('[IAP] verify unexpected error: $e');
+      return false;
+    }
   }
 
   Future<void> _completePurchaseIfNeeded(PurchaseDetails purchase) async {
