@@ -639,6 +639,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
       try {
         await FCMService().registerDevice();
         await FCMService().migrateToUser();
+        await Future<void>.delayed(const Duration(milliseconds: 500));
       } catch (e) {
         debugPrint('[Auth] FCM post-login failed: $e');
       }

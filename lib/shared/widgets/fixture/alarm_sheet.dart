@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:trendsoccer/core/services/fcm_service.dart';
 import 'package:trendsoccer/core/services/notification_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -112,12 +116,18 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
       value: value,
       onChanged: onChanged,
       thumbColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return semantic.textTertiary;
+        }
         if (states.contains(WidgetState.selected)) {
           return semantic.surfaceBase;
         }
         return semantic.surfaceOverlay;
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return semantic.surfaceContainer;
+        }
         if (states.contains(WidgetState.selected)) {
           return semantic.interactivePrimary;
         }
@@ -180,7 +190,14 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
                 onChanged: _isLoading || _isSaving
                     ? null
                     : (value) {
-                        setState(() => _enabled = value);
+                        setState(() {
+                          _enabled = value;
+                          if (value) {
+                            _events = _events.map(
+                              (key, _) => MapEntry(key, true),
+                            );
+                          }
+                        });
                         _save();
                       },
               ),
@@ -200,7 +217,7 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
             ..._eventLabels.entries.toList().asMap().entries.map((entry) {
               final index = entry.key;
               final event = entry.value;
-              final eventEnabled = _enabled && !_isSaving;
+              final eventKey = event.key;
               return Padding(
                 padding: EdgeInsets.only(
                   bottom: index < _eventLabels.length - 1 ? 16 : 0,
@@ -212,7 +229,7 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
                       child: Text(
                         event.value,
                         style: TsType.bodyLRegular.copyWith(
-                          color: eventEnabled
+                          color: _enabled
                               ? semantic.textPrimary
                               : semantic.textTertiary,
                         ),
@@ -220,11 +237,11 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
                     ),
                     _styledSwitch(
                       semantic: semantic,
-                      value: _events[event.key] ?? false,
-                      onChanged: eventEnabled
+                      value: _events[eventKey] ?? false,
+                      onChanged: _enabled && !_isSaving
                           ? (value) {
                               setState(() {
-                                _events[event.key] = value;
+                                _events[eventKey] = value;
                               });
                               _save();
                             }
@@ -240,13 +257,85 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
   }
 }
 
-void showAlarmSheet(
+/// Checks notification permission, then opens the alarm bottom sheet.
+Future<void> showAlarmSheet(
   BuildContext context, {
   required int matchId,
   required String sport,
   ValueChanged<bool>? onEnabledChanged,
-}) {
-  showModalBottomSheet<void>(
+}) async {
+  final prefs = await SharedPreferences.getInstance();
+  final matchEventsEnabled =
+      prefs.getBool(FCMService.prefMatchEvents) ?? true;
+
+  if (!matchEventsEnabled) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('메뉴 > 알림 설정에서 경기 알림을 켜주세요.'),
+          action: SnackBarAction(
+            label: '설정',
+            onPressed: () => context.go('/menu'),
+          ),
+        ),
+      );
+    }
+    return;
+  }
+
+  var status = await Permission.notification.status;
+
+  if (!status.isPermanentlyDenied && status.isDenied) {
+    await Permission.notification.request();
+    status = await Permission.notification.status;
+  }
+
+  if (status.isPermanentlyDenied) {
+    if (!context.mounted) return;
+    final shouldOpen = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final semantic = Theme.of(ctx).extension<TsSemanticColors>()!;
+        return AlertDialog(
+          backgroundColor: semantic.surfaceOverlay,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            '알림 권한 필요',
+            style: TextStyle(color: semantic.textPrimary),
+          ),
+          content: Text(
+            '경기 알림을 받으려면 알림 권한이 필요합니다.\n설정에서 알림을 허용해주세요.',
+            style: TextStyle(color: semantic.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(
+                '취소',
+                style: TextStyle(color: semantic.textTertiary),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(
+                '설정으로 이동',
+                style: TextStyle(color: semantic.interactivePrimary),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    if (shouldOpen == true) {
+      await openAppSettings();
+    }
+    return;
+  }
+
+  if (!context.mounted) return;
+  await showModalBottomSheet<void>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,

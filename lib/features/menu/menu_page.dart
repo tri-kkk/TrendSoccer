@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:trendsoccer/core/models/auth_state.dart';
+import 'package:trendsoccer/core/services/fcm_service.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/language_provider.dart';
@@ -93,12 +97,92 @@ class _MenuPageState extends ConsumerState<MenuPage> {
     );
   }
 
-  void _showNotificationSheet(BuildContext context) {
-    showModalBottomSheet<void>(
+  Future<void> _showPermissionSettingsDialog(BuildContext context) async {
+    if (!context.mounted) return;
+    final shouldOpen = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final semantic = Theme.of(ctx).extension<TsSemanticColors>()!;
+        return AlertDialog(
+          backgroundColor: semantic.surfaceOverlay,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            '알림 권한 필요',
+            style: TextStyle(color: semantic.textPrimary),
+          ),
+          content: Text(
+            '알림 권한이 필요합니다. 설정에서 알림을 허용해주세요.',
+            style: TextStyle(color: semantic.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(
+                '취소',
+                style: TextStyle(color: semantic.textTertiary),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(
+                '설정으로 이동',
+                style: TextStyle(color: semantic.interactivePrimary),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    if (shouldOpen == true) {
+      await openAppSettings();
+    }
+  }
+
+  Future<void> _openNotificationBottomSheet(BuildContext context) async {
+    if (!context.mounted) return;
+    await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => const _NotificationBottomSheet(),
     );
+  }
+
+  Future<void> _showNotificationSheet(BuildContext context) async {
+    final status = await Permission.notification.status;
+
+    if (status.isPermanentlyDenied) {
+      if (!context.mounted) return;
+      await _showPermissionSettingsDialog(context);
+      return;
+    }
+
+    if (status.isDenied) {
+      final result = await Permission.notification.request();
+      if (!result.isGranted) {
+        await FCMService().unsubscribeAllTopics();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                '알림이 비활성화되었습니다. 설정에서 알림을 허용해주세요.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      final appGeneral = prefs.getBool(FCMService.prefAppGeneral) ?? false;
+      if (!appGeneral) {
+        await FCMService().subscribeAllTopics();
+      }
+    }
+
+    if (!context.mounted) return;
+    await _openNotificationBottomSheet(context);
   }
 
   void _showSignOutDialog(BuildContext context) {
@@ -751,13 +835,65 @@ class _NotificationBottomSheet extends StatefulWidget {
 }
 
 class _NotificationBottomSheetState extends State<_NotificationBottomSheet> {
-  bool _generalOn = true;
-  bool _eventOn = false;
-  bool _flashOn = false;
+  bool _isLoading = true;
+  bool _isSaving = false;
+  bool _appGeneral = true;
+  bool _matchEvents = true;
+  bool _marketing = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPrefs();
+  }
+
+  Future<void> _loadPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _appGeneral = prefs.getBool(FCMService.prefAppGeneral) ?? true;
+      _matchEvents = prefs.getBool(FCMService.prefMatchEvents) ?? true;
+      _marketing = prefs.getBool(FCMService.prefMarketing) ?? true;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _onToggleChanged({
+    required String prefKey,
+    required String topic,
+    required bool value,
+    required void Function(bool) updateState,
+  }) async {
+    if (_isSaving || _isLoading) return;
+    setState(() {
+      _isSaving = true;
+      updateState(value);
+    });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (value) {
+        await FirebaseMessaging.instance.subscribeToTopic(topic);
+        await prefs.setBool(prefKey, true);
+      } else {
+        await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
+        await prefs.setBool(prefKey, false);
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => updateState(!value));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final togglesEnabled = !_isLoading && !_isSaving;
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
@@ -775,41 +911,68 @@ class _NotificationBottomSheetState extends State<_NotificationBottomSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const TsBottomSheetHandle(),
-              const SizedBox(height: TsSpacing.lg),
+              const SizedBox(height: 16),
               Text(
                 '알림 설정',
-                style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+                style: TsType.headingH3.copyWith(color: semantic.textPrimary),
               ),
-              const SizedBox(height: TsSpacing.sm),
-              _NotificationToggleRow(
-                label: '일반 알림',
-                value: _generalOn,
-                onChanged: (v) => setState(() => _generalOn = v),
-              ),
-              const SizedBox(height: TsSpacing.sm),
-              _NotificationToggleRow(
-                label: '경기 이벤트',
-                value: _eventOn,
-                onChanged: (v) => setState(() => _eventOn = v),
-              ),
-              const SizedBox(height: TsSpacing.sm),
-              _NotificationToggleRow(
-                label: '속보',
-                value: _flashOn,
-                onChanged: (v) => setState(() => _flashOn = v),
-              ),
-              const SizedBox(height: TsSpacing.lg),
-              TsButton(
-                label: '적용하기',
-                variant: TsButtonVariant.primary,
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              const SizedBox(height: TsSpacing.sm),
-              TsButton(
-                label: '뒤로가기',
-                variant: TsButtonVariant.secondary,
-                onPressed: () => Navigator.of(context).pop(),
-              ),
+              const SizedBox(height: 16),
+              if (_isLoading)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: semantic.interactivePrimary,
+                    ),
+                  ),
+                )
+              else ...[
+                _NotificationTopicSection(
+                  semantic: semantic,
+                  label: '앱 알림',
+                  subtitle: '업데이트, 공지, 서비스 안내',
+                  value: _appGeneral,
+                  onChanged: togglesEnabled
+                      ? (v) => _onToggleChanged(
+                            prefKey: FCMService.prefAppGeneral,
+                            topic: FCMService.topicAppGeneral,
+                            value: v,
+                            updateState: (val) => _appGeneral = val,
+                          )
+                      : null,
+                  showDivider: true,
+                ),
+                _NotificationTopicSection(
+                  semantic: semantic,
+                  label: '경기 알림',
+                  subtitle: '경기 이벤트 푸시 알림',
+                  value: _matchEvents,
+                  onChanged: togglesEnabled
+                      ? (v) => _onToggleChanged(
+                            prefKey: FCMService.prefMatchEvents,
+                            topic: FCMService.topicMatchEvents,
+                            value: v,
+                            updateState: (val) => _matchEvents = val,
+                          )
+                      : null,
+                  showDivider: true,
+                ),
+                _NotificationTopicSection(
+                  semantic: semantic,
+                  label: '마케팅 알림',
+                  subtitle: '프로모션, 이벤트, 할인 안내',
+                  value: _marketing,
+                  onChanged: togglesEnabled
+                      ? (v) => _onToggleChanged(
+                            prefKey: FCMService.prefMarketing,
+                            topic: FCMService.topicMarketing,
+                            value: v,
+                            updateState: (val) => _marketing = val,
+                          )
+                      : null,
+                  showDivider: false,
+                ),
+              ],
             ],
           ),
         ),
@@ -818,34 +981,53 @@ class _NotificationBottomSheetState extends State<_NotificationBottomSheet> {
   }
 }
 
-class _NotificationToggleRow extends StatelessWidget {
-  const _NotificationToggleRow({
+class _NotificationTopicSection extends StatelessWidget {
+  const _NotificationTopicSection({
+    required this.semantic,
     required this.label,
+    required this.subtitle,
     required this.value,
     required this.onChanged,
+    required this.showDivider,
   });
 
+  final TsSemanticColors semantic;
   final String label;
+  final String subtitle;
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool>? onChanged;
+  final bool showDivider;
 
   @override
   Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    return SizedBox(
-      height: 48,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: TsType.bodyLRegular.copyWith(color: semantic.textPrimary),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: TsType.bodyLRegular.copyWith(
+                  color: semantic.textPrimary,
+                ),
+              ),
             ),
-          ),
-          TsToggle(value: value, onChanged: onChanged),
+            TsToggle(value: value, onChanged: onChanged),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          subtitle,
+          style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+        ),
+        if (showDivider) ...[
+          const SizedBox(height: 16),
+          Container(height: 1, color: semantic.borderSubtle),
+          const SizedBox(height: 16),
         ],
-      ),
+      ],
     );
   }
 }

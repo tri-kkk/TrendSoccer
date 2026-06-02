@@ -119,13 +119,11 @@ class NotificationService {
     final jwt = await _getJwt();
     if (jwt != null && jwt.isNotEmpty) {
       headers['Authorization'] = 'Bearer $jwt';
-      return headers;
     }
 
     final fcmToken = FCMService().fcmToken;
     if (fcmToken != null && fcmToken.isNotEmpty) {
       headers['X-Device-Token'] = fcmToken;
-      debugPrint('[NOTIF] Using X-Device-Token for anonymous access');
     }
 
     return headers;

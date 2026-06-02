@@ -255,15 +255,25 @@ class _FixturePageState extends ConsumerState<FixturePage>
     });
   }
 
-  void _scheduleAlarmStateRefresh(List<FixtureMatch> matches) {
+  void _scheduleAlarmStateRefresh(
+    List<FixtureMatch> matches, {
+    Duration delay = Duration.zero,
+  }) {
+    if (delay > Duration.zero) {
+      Future<void>.delayed(delay, () {
+        if (!mounted) return;
+        unawaited(_refreshAlarmStates(matches));
+      });
+      return;
+    }
     unawaited(_refreshAlarmStates(matches));
   }
 
-  void _onNotificationTap(FixtureMatch match) {
+  Future<void> _onNotificationTap(FixtureMatch match) async {
     if (!_isAlarmEligible(match)) return;
 
     final sport = _sportApiValue(match.sport);
-    showAlarmSheet(
+    await showAlarmSheet(
       context,
       matchId: match.matchId,
       sport: sport,
@@ -707,10 +717,25 @@ class _FixturePageState extends ConsumerState<FixturePage>
     });
 
     ref.listen(authProvider, (previous, next) {
+      final wasLoggedIn = previous?.isLoggedIn ?? false;
+      final isLoggedIn = next.isLoggedIn;
+
+      // Logout: keep bell states in memory (device-level settings)
+      if (wasLoggedIn && !isLoggedIn) return;
+
       final matches = ref.read(allFixturesWithLiveProvider).value;
-      if (matches != null) {
-        _scheduleAlarmStateRefresh(matches);
+      if (matches == null) return;
+
+      // Login: delay refresh so migration can complete on the backend
+      if (!wasLoggedIn && isLoggedIn) {
+        _scheduleAlarmStateRefresh(
+          matches,
+          delay: const Duration(milliseconds: 500),
+        );
+        return;
       }
+
+      _scheduleAlarmStateRefresh(matches);
     });
 
     ref.listen(fixtureSelectedDateProvider, (previous, next) {

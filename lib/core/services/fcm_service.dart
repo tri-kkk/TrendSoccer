@@ -8,6 +8,16 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:trendsoccer/core/services/token_service.dart';
 
 class FCMService {
+  static const String prefAppGeneral = 'notification_app_general';
+  static const String prefMatchEvents = 'notification_match_events';
+  static const String prefMarketing = 'notification_marketing';
+
+  static const String topicAppGeneral = 'app_general';
+  static const String topicMatchEvents = 'match_events';
+  static const String topicMarketing = 'marketing';
+
+  static const String _prefPermissionAsked = 'fcm_permission_asked';
+
   static final FCMService _instance = FCMService._internal();
   factory FCMService() => _instance;
   FCMService._internal();
@@ -21,12 +31,46 @@ class FCMService {
   /// Initialize FCM: request permission, get token, setup handlers
   Future<void> init() async {
     debugPrint('[FCM] ===== init() START =====');
-    final settings = await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-    debugPrint('[FCM] Permission: ${settings.authorizationStatus}');
+
+    final prefs = await SharedPreferences.getInstance();
+    final alreadyAsked = prefs.getBool(_prefPermissionAsked) ?? false;
+
+    if (!alreadyAsked) {
+      final settings = await _messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      await prefs.setBool(_prefPermissionAsked, true);
+      debugPrint(
+        '[FCM] First-time permission request: ${settings.authorizationStatus}',
+      );
+
+      if (!prefs.containsKey(prefAppGeneral)) {
+        if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+          await _subscribeAllTopics(prefs);
+          debugPrint('[FCM] First launch: all topics subscribed');
+        } else {
+          await _setAllTopicsOff(prefs);
+          debugPrint('[FCM] First launch: permission denied, all topics off');
+        }
+      }
+    } else {
+      final currentSettings = await _messaging.getNotificationSettings();
+      debugPrint(
+        '[FCM] Permission already asked. Current: '
+        '${currentSettings.authorizationStatus}',
+      );
+
+      if (!prefs.containsKey(prefAppGeneral)) {
+        if (currentSettings.authorizationStatus ==
+            AuthorizationStatus.authorized) {
+          await _subscribeAllTopics(prefs);
+        } else {
+          await _setAllTopicsOff(prefs);
+        }
+      }
+    }
 
     _fcmToken = await _messaging.getToken();
     debugPrint('[FCM] Token: $_fcmToken');
@@ -60,6 +104,47 @@ class FCMService {
     FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
 
     debugPrint('[FCM] init complete');
+  }
+
+  /// Subscribe all topics and save prefs when permission is first granted (e.g. from menu).
+  Future<void> subscribeAllTopicsOnFirstPermissionGrant() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.containsKey(prefAppGeneral)) return;
+
+    await subscribeAllTopics();
+    debugPrint('[FCM] Permission granted: all topics subscribed');
+  }
+
+  /// Unsubscribe all topics and save prefs as off.
+  Future<void> unsubscribeAllTopics() async {
+    final prefs = await SharedPreferences.getInstance();
+    await _messaging.unsubscribeFromTopic(topicAppGeneral);
+    await _messaging.unsubscribeFromTopic(topicMatchEvents);
+    await _messaging.unsubscribeFromTopic(topicMarketing);
+    await _setAllTopicsOff(prefs);
+    debugPrint('[FCM] All topics unsubscribed');
+  }
+
+  /// Subscribe all topics and save prefs as on.
+  Future<void> subscribeAllTopics() async {
+    final prefs = await SharedPreferences.getInstance();
+    await _subscribeAllTopics(prefs);
+    debugPrint('[FCM] All topics subscribed');
+  }
+
+  Future<void> _subscribeAllTopics(SharedPreferences prefs) async {
+    await _messaging.subscribeToTopic(topicAppGeneral);
+    await _messaging.subscribeToTopic(topicMatchEvents);
+    await _messaging.subscribeToTopic(topicMarketing);
+    await prefs.setBool(prefAppGeneral, true);
+    await prefs.setBool(prefMatchEvents, true);
+    await prefs.setBool(prefMarketing, true);
+  }
+
+  Future<void> _setAllTopicsOff(SharedPreferences prefs) async {
+    await prefs.setBool(prefAppGeneral, false);
+    await prefs.setBool(prefMatchEvents, false);
+    await prefs.setBool(prefMarketing, false);
   }
 
   /// Register device token with backend
