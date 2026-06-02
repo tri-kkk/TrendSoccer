@@ -100,15 +100,72 @@ class _FixturePageState extends ConsumerState<FixturePage>
     ref.read(liveMatchesProvider.notifier).state = liveData;
   }
 
+  Future<void> _fetchBaseballNow() async {
+    if (!mounted) return;
+    if (ref.read(fixtureSelectedSportProvider) != 'baseball') return;
+    if (!fixtureIsTodayDate(ref.read(fixtureSelectedDateProvider))) return;
+
+    final today = fixtureTodayDateString();
+    try {
+      final service = ref.read(fixtureServiceProvider);
+      final todayMatches = await service
+          .getBaseballFixtures(date: today)
+          .timeout(const Duration(seconds: 10));
+      if (!mounted) return;
+
+      for (final match in todayMatches) {
+        debugPrint(
+          '[FIXTURE] Baseball match: ${match.homeTeam} vs ${match.awayTeam} | '
+          'status: ${match.status} | statusShort: ${match.rawStatus} | '
+          'score: ${match.homeScore}-${match.awayScore}',
+        );
+      }
+
+      final polled = ref.read(baseballPolledFixturesProvider);
+      final base = polled ??
+          ref.read(baseballFixturesProvider).asData?.value;
+      if (base == null) {
+        debugPrint(
+          '[FIXTURE] Baseball poll: skipped merge (initial load not ready)',
+        );
+        return;
+      }
+
+      ref.read(baseballPolledFixturesProvider.notifier).state =
+          mergeBaseballTodayFixtures(base, todayMatches, today);
+      debugPrint(
+        '[FIXTURE] Baseball poll: ${todayMatches.length} matches',
+      );
+    } catch (e) {
+      debugPrint('[FIXTURE] Baseball poll error: $e');
+    }
+  }
+
+  bool _shouldPollBaseball() {
+    return ref.read(fixtureSelectedSportProvider) == 'baseball' &&
+        fixtureIsTodayDate(ref.read(fixtureSelectedDateProvider));
+  }
+
   void _startLivePolling() {
     if (!mounted) return;
-    if (ref.read(fixtureSelectedSportProvider) != 'soccer') return;
 
     _stopLivePolling();
-    unawaited(_fetchLiveNow());
-    _livePollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+
+    final sport = ref.read(fixtureSelectedSportProvider);
+    if (sport == 'soccer') {
       unawaited(_fetchLiveNow());
-    });
+      _livePollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+        unawaited(_fetchLiveNow());
+      });
+      return;
+    }
+
+    if (_shouldPollBaseball()) {
+      unawaited(_fetchBaseballNow());
+      _livePollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+        unawaited(_fetchBaseballNow());
+      });
+    }
   }
 
   void _stopLivePolling() {
@@ -162,6 +219,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
     ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
     ref.read(fixtureLiveFilterProvider.notifier).state = false;
     _scrollDateChipToIndex(_dateChipIndexForPage(index));
+    _startLivePolling();
   }
 
   void _resetFixtureToTodayOnSportChange() {
@@ -212,7 +270,10 @@ class _FixturePageState extends ConsumerState<FixturePage>
           curve: Curves.easeInOut,
         )
         .whenComplete(() {
-      if (mounted) _syncingPage = false;
+      if (mounted) {
+        _syncingPage = false;
+        _startLivePolling();
+      }
     });
   }
 
@@ -776,6 +837,10 @@ class _FixturePageState extends ConsumerState<FixturePage>
     });
 
     ref.listen(fixtureSelectedDateProvider, (previous, next) {
+      if (previous != next) {
+        _startLivePolling();
+      }
+
       if (_syncingPage || ref.read(fixtureLiveFilterProvider)) return;
 
       final index = _dateIndexFor(next);
@@ -804,11 +869,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
                     ref.read(fixtureSelectedSportProvider.notifier).state =
                         sport == SportType.baseball ? 'baseball' : 'soccer';
                     _resetFixtureToTodayOnSportChange();
-                    if (sport == SportType.baseball) {
-                      _stopLivePolling();
-                    } else {
-                      _startLivePolling();
-                    }
+                    _startLivePolling();
                   },
                 ),
                 const SizedBox(height: 16),

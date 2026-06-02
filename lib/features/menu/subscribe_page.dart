@@ -105,7 +105,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     messenger.showSnackBar(
       SnackBar(
         content: Text(
-          context.l10n.subscribeIapVerifyPending,
+          context.l10n.errorPaymentPending,
         ),
         duration: Duration(seconds: 5),
         behavior: SnackBarBehavior.floating,

@@ -519,6 +519,47 @@ class AppLocalizationsKo extends AppLocalizations {
   String get errorPayment => '결제에 실패했습니다.';
 
   @override
+  String get errorContactFailed => '문의 전송에 실패했습니다';
+
+  @override
+  String errorCooldownActive(int daysLeft) {
+    return '$daysLeft일 후 다시 시도해주세요';
+  }
+
+  @override
+  String get errorDeleteConfirmation => '계정 삭제에 실패했습니다';
+
+  @override
+  String get errorEmailRequired => '이메일이 필요합니다';
+
+  @override
+  String get errorNetworkTimeout => '네트워크 연결을 확인해주세요';
+
+  @override
+  String get errorNotFound => '요청한 정보를 찾을 수 없습니다';
+
+  @override
+  String get errorPaymentPending => '결제 처리 중입니다. 잠시 후 다시 시도해주세요';
+
+  @override
+  String get errorPurchaseVerifyFailed => '결제 확인에 실패했습니다';
+
+  @override
+  String get errorRateLimited => '요청이 너무 많습니다. 잠시 후 다시 시도해주세요';
+
+  @override
+  String get errorServerError => '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요';
+
+  @override
+  String get errorSubscriptionRequired => '프리미엄 구독이 필요합니다';
+
+  @override
+  String get errorUnauthorized => '로그인이 필요합니다';
+
+  @override
+  String get errorUnknown => '오류가 발생했습니다';
+
+  @override
   String get exitConfirm => '종료하기';
 
   @override

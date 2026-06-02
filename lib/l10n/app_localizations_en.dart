@@ -530,6 +530,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorPayment => 'Payment failed.';
 
   @override
+  String get errorContactFailed => 'Failed to send inquiry';
+
+  @override
+  String errorCooldownActive(int daysLeft) {
+    return 'Please try again in $daysLeft days';
+  }
+
+  @override
+  String get errorDeleteConfirmation => 'Account deletion failed';
+
+  @override
+  String get errorEmailRequired => 'Email is required';
+
+  @override
+  String get errorNetworkTimeout => 'Please check your network connection';
+
+  @override
+  String get errorNotFound => 'Requested information not found';
+
+  @override
+  String get errorPaymentPending =>
+      'Payment processing. Please try again shortly';
+
+  @override
+  String get errorPurchaseVerifyFailed => 'Payment verification failed';
+
+  @override
+  String get errorRateLimited => 'Too many requests. Please try again later';
+
+  @override
+  String get errorServerError => 'Server error. Please try again later';
+
+  @override
+  String get errorSubscriptionRequired => 'Premium subscription required';
+
+  @override
+  String get errorUnauthorized => 'Login required';
+
+  @override
+  String get errorUnknown => 'An error occurred';
+
+  @override
   String get exitConfirm => 'Exit';
 
   @override

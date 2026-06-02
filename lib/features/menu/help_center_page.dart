@@ -6,6 +6,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/error_resolver.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
@@ -138,7 +139,9 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
     messenger.clearSnackBars();
     messenger.showSnackBar(
       SnackBar(
-        content: Text(context.l10n.helpCenterSubmitFail),
+        content: Text(
+          resolveApiError(context, result),
+        ),
         duration: const Duration(seconds: 5),
         behavior: SnackBarBehavior.floating,
       ),

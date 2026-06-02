@@ -3,19 +3,30 @@ class ApiError {
     required this.code,
     required this.message,
     this.messageEn,
+    this.extra,
   });
 
   factory ApiError.fromJson(Map<String, dynamic> json) {
+    Map<String, dynamic>? extra;
+    final rawExtra = json['extra'];
+    if (rawExtra is Map) {
+      extra = Map<String, dynamic>.from(rawExtra);
+    } else if (json['daysLeft'] != null) {
+      extra = <String, dynamic>{'daysLeft': json['daysLeft']};
+    }
+
     return ApiError(
       code: json['code'] as String? ?? 'UNKNOWN_ERROR',
       message: json['message'] as String? ?? 'Unknown error',
       messageEn: json['messageEn'] as String?,
+      extra: extra,
     );
   }
 
   final String code;
   final String message;
   final String? messageEn;
+  final Map<String, dynamic>? extra;
 }
 
 class ApiException implements Exception {
@@ -23,6 +34,7 @@ class ApiException implements Exception {
     required this.code,
     required this.message,
     this.messageEn,
+    this.extra,
   });
 
   factory ApiException.fromApiError(ApiError error) {
@@ -30,12 +42,14 @@ class ApiException implements Exception {
       code: error.code,
       message: error.message,
       messageEn: error.messageEn,
+      extra: error.extra,
     );
   }
 
   final String code;
   final String message;
   final String? messageEn;
+  final Map<String, dynamic>? extra;
 
   @override
   String toString() => 'ApiException($code): $message';

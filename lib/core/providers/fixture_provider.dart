@@ -25,6 +25,26 @@ bool matchIsOnDate(FixtureMatch match, String dateStr) {
   return fixtureDateString(local) == dateStr;
 }
 
+bool fixtureIsTodayDate(String dateStr) =>
+    dateStr == fixtureTodayDateString();
+
+/// Replaces today's matches in [existing] with [todayFresh] from a live poll.
+List<FixtureMatch> mergeBaseballTodayFixtures(
+  List<FixtureMatch> existing,
+  List<FixtureMatch> todayFresh,
+  String todayStr,
+) {
+  final nonToday =
+      existing.where((match) => !matchIsOnDate(match, todayStr)).toList();
+  final merged = [...nonToday, ...todayFresh]
+    ..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
+  return merged;
+}
+
+/// Latest baseball fixture list after live polling; `null` uses [baseballFixturesProvider].
+final baseballPolledFixturesProvider =
+    StateProvider<List<FixtureMatch>?>((ref) => null);
+
 class FixtureLeagueOption {
   const FixtureLeagueOption({
     required this.code,
@@ -68,6 +88,10 @@ final rawFixturesProvider = Provider<AsyncValue<List<FixtureMatch>>>((ref) {
   final sport = ref.watch(fixtureSelectedSportProvider);
 
   if (sport == 'baseball') {
+    final polled = ref.watch(baseballPolledFixturesProvider);
+    if (polled != null) {
+      return AsyncValue.data(polled);
+    }
     return ref.watch(baseballFixturesProvider);
   }
   return ref.watch(soccerFixturesProvider);
@@ -217,6 +241,7 @@ void invalidateFixtureData(WidgetRef ref) {
   final sport = ref.read(fixtureSelectedSportProvider);
 
   if (sport == 'baseball') {
+    ref.read(baseballPolledFixturesProvider.notifier).state = null;
     ref.invalidate(baseballFixturesProvider);
   } else {
     ref.invalidate(soccerFixturesProvider);

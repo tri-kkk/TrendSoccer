@@ -1058,6 +1058,84 @@ abstract class AppLocalizations {
   /// **'결제에 실패했습니다.'**
   String get errorPayment;
 
+  /// No description provided for @errorContactFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'문의 전송에 실패했습니다'**
+  String get errorContactFailed;
+
+  /// No description provided for @errorCooldownActive.
+  ///
+  /// In ko, this message translates to:
+  /// **'{daysLeft}일 후 다시 시도해주세요'**
+  String errorCooldownActive(int daysLeft);
+
+  /// No description provided for @errorDeleteConfirmation.
+  ///
+  /// In ko, this message translates to:
+  /// **'계정 삭제에 실패했습니다'**
+  String get errorDeleteConfirmation;
+
+  /// No description provided for @errorEmailRequired.
+  ///
+  /// In ko, this message translates to:
+  /// **'이메일이 필요합니다'**
+  String get errorEmailRequired;
+
+  /// No description provided for @errorNetworkTimeout.
+  ///
+  /// In ko, this message translates to:
+  /// **'네트워크 연결을 확인해주세요'**
+  String get errorNetworkTimeout;
+
+  /// No description provided for @errorNotFound.
+  ///
+  /// In ko, this message translates to:
+  /// **'요청한 정보를 찾을 수 없습니다'**
+  String get errorNotFound;
+
+  /// No description provided for @errorPaymentPending.
+  ///
+  /// In ko, this message translates to:
+  /// **'결제 처리 중입니다. 잠시 후 다시 시도해주세요'**
+  String get errorPaymentPending;
+
+  /// No description provided for @errorPurchaseVerifyFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'결제 확인에 실패했습니다'**
+  String get errorPurchaseVerifyFailed;
+
+  /// No description provided for @errorRateLimited.
+  ///
+  /// In ko, this message translates to:
+  /// **'요청이 너무 많습니다. 잠시 후 다시 시도해주세요'**
+  String get errorRateLimited;
+
+  /// No description provided for @errorServerError.
+  ///
+  /// In ko, this message translates to:
+  /// **'서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요'**
+  String get errorServerError;
+
+  /// No description provided for @errorSubscriptionRequired.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 구독이 필요합니다'**
+  String get errorSubscriptionRequired;
+
+  /// No description provided for @errorUnauthorized.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그인이 필요합니다'**
+  String get errorUnauthorized;
+
+  /// No description provided for @errorUnknown.
+  ///
+  /// In ko, this message translates to:
+  /// **'오류가 발생했습니다'**
+  String get errorUnknown;
+
   /// No description provided for @exitConfirm.
   ///
   /// In ko, this message translates to:

@@ -28,6 +28,7 @@ import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/radio/ts_radio_button.dart';
 import 'package:trendsoccer/shared/widgets/section/ts_section_header.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
+import 'package:trendsoccer/core/utils/error_resolver.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/toggle/ts_toggle.dart';
 
@@ -399,12 +400,10 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                                             messenger.showSnackBar(
                                               SnackBar(
                                                 content: Text(
-                                                  e
-                                                      .toString()
-                                                      .replaceAll(
-                                                        'Exception: ',
-                                                        '',
-                                                      ),
+                                                  resolveApiError(
+                                                    context,
+                                                    e,
+                                                  ),
                                                 ),
                                                 duration: const Duration(
                                                   seconds: 5,

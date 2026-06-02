@@ -8,6 +8,7 @@ import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/error_resolver.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
@@ -39,23 +40,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      if (e.code == 'ACCOUNT_DELETED') {
-        TsToast.error(context, e.message);
-      } else {
-        TsToast.error(context, context.l10n.loginNaverFailed);
-      }
+      TsToast.error(context, resolveApiError(context, e));
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      final messenger = ScaffoldMessenger.of(context);
-      messenger.clearSnackBars();
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(e.toString().replaceAll('Exception: ', '')),
-          duration: const Duration(seconds: 5),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      TsToast.error(context, resolveApiError(context, e));
     }
   }
 
@@ -81,10 +70,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      TsToast.error(
-        context,
-        e.toString().replaceAll('Exception: ', ''),
-      );
+      TsToast.error(context, resolveApiError(context, e));
     }
   }
 
