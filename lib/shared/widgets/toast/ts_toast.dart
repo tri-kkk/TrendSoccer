@@ -9,7 +9,7 @@ abstract final class TsToast {
       context,
       message: message,
       backgroundColor: TsColors.brandPrimary500,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 5),
     );
   }
 
@@ -18,7 +18,7 @@ abstract final class TsToast {
       context,
       message: message,
       backgroundColor: TsColors.error500,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 5),
     );
   }
 
@@ -27,7 +27,7 @@ abstract final class TsToast {
       context,
       message: message,
       backgroundColor: TsColors.neutral700,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 5),
     );
   }
 

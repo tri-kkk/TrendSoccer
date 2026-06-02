@@ -121,14 +121,26 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
       _titleController.clear();
       _messageController.clear();
       _formKey.currentState?.reset();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('문의가 성공적으로 전송되었습니다.')),
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.clearSnackBars();
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('문의가 성공적으로 전송되었습니다.'),
+          duration: Duration(seconds: 5),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('전송에 실패했습니다. 다시 시도해주세요.')),
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Text('전송에 실패했습니다. 다시 시도해주세요.'),
+        duration: Duration(seconds: 5),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 

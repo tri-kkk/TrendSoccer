@@ -98,11 +98,15 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
   }
 
   void _showVerifyPendingSnackBar() {
-    ScaffoldMessenger.of(context).showSnackBar(
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    messenger.showSnackBar(
       const SnackBar(
         content: Text(
           '결제는 완료되었으나 검증 대기 중입니다. 잠시 후 앱을 재시작해주세요.',
         ),
+        duration: Duration(seconds: 5),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -131,9 +135,13 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
               _isLoading = true;
               _loadingMessage = '기존 구독 확인 중...';
             });
-            ScaffoldMessenger.of(context).showSnackBar(
+            final messenger = ScaffoldMessenger.of(context);
+            messenger.clearSnackBars();
+            messenger.showSnackBar(
               const SnackBar(
                 content: Text('이미 구독 중입니다. 기존 구독을 확인합니다.'),
+                duration: Duration(seconds: 5),
+                behavior: SnackBarBehavior.floating,
               ),
             );
           }
@@ -147,9 +155,13 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
                 _isLoading = true;
                 _loadingMessage = '기존 구독 확인 중...';
               });
-              ScaffoldMessenger.of(context).showSnackBar(
+              final messenger = ScaffoldMessenger.of(context);
+              messenger.clearSnackBars();
+              messenger.showSnackBar(
                 const SnackBar(
                   content: Text('이미 구독 중입니다. 기존 구독을 확인합니다.'),
+                  duration: Duration(seconds: 5),
+                  behavior: SnackBarBehavior.floating,
                 ),
               );
             }
@@ -216,9 +228,13 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     if (!initiated) {
       debugPrint('[IAP] subscribe page: buySubscription failed');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        final messenger = ScaffoldMessenger.of(context);
+        messenger.clearSnackBars();
+        messenger.showSnackBar(
           const SnackBar(
             content: Text('Google Play 결제를 시작할 수 없습니다.'),
+            duration: Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -264,9 +280,13 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           return;
         case _IapAttemptResult.unavailable:
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
+          final messenger = ScaffoldMessenger.of(context);
+          messenger.clearSnackBars();
+          messenger.showSnackBar(
             const SnackBar(
               content: Text('Google Play 결제를 사용할 수 없습니다.'),
+              duration: Duration(seconds: 5),
+              behavior: SnackBarBehavior.floating,
             ),
           );
       }

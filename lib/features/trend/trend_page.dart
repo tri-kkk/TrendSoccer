@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,13 +11,14 @@ import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
+import 'package:trendsoccer/core/services/ad_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/banner/ts_banner.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/baseball_today_combo_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class TrendPage extends ConsumerStatefulWidget {
   const TrendPage({super.key});
@@ -28,28 +30,87 @@ class TrendPage extends ConsumerStatefulWidget {
 class _TrendPageState extends ConsumerState<TrendPage> {
   static const int _maxSoccerPreviewCards = 5;
   static const int _maxBaseballPreviewCards = 5;
-  static const int _bannerCount = 3;
   static const double _analysisCardViewportFraction = 0.96;
+  static const double _topBannerHeight = 380;
+  static const double _bottomBannerHeight = 160;
 
   late final PageController _bannerController;
+  late final PageController _bottomBannerController;
   late final PageController _soccerCardsPageController;
   late final PageController _baseballCardsPageController;
   Timer? _bannerTimer;
   int _currentBannerPage = 0;
+  int _currentBottomBannerPage = 0;
+
+  List<Map<String, dynamic>> _topBanners = [];
+  List<Map<String, dynamic>> _bottomBanners = [];
+  bool _loadingBanners = true;
 
   @override
   void initState() {
     super.initState();
-    _bannerController = PageController(viewportFraction: 1.0);
+    _bannerController = PageController();
+    _bottomBannerController = PageController(viewportFraction: 1.0);
     _soccerCardsPageController =
         PageController(viewportFraction: _analysisCardViewportFraction);
     _baseballCardsPageController =
         PageController(viewportFraction: _analysisCardViewportFraction);
-    _bannerTimer = Timer.periodic(const Duration(seconds: 4), (_) {
-      if (!mounted || !_bannerController.hasClients) {
+    _loadBanners();
+  }
+
+  @override
+  void dispose() {
+    _bannerTimer?.cancel();
+    _bannerController.dispose();
+    _bottomBannerController.dispose();
+    _soccerCardsPageController.dispose();
+    _baseballCardsPageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadBanners() async {
+    final adService = ref.read(adServiceProvider);
+    final results = await Future.wait([
+      adService.getAds('mobile_app_main_top'),
+      adService.getAds('mobile_app_main_bottom'),
+    ]);
+
+    final top = results[0];
+    final bottom = results[1];
+
+    for (final ad in top) {
+      final id = ad['id']?.toString() ?? '';
+      if (id.isNotEmpty) {
+        unawaited(adService.trackAd(id, 'impression'));
+      }
+    }
+    for (final ad in bottom) {
+      final id = ad['id']?.toString() ?? '';
+      if (id.isNotEmpty) {
+        unawaited(adService.trackAd(id, 'impression'));
+      }
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _topBanners = top;
+      _bottomBanners = bottom;
+      _loadingBanners = false;
+      _currentBannerPage = 0;
+      _currentBottomBannerPage = 0;
+    });
+    _startBannerAutoSlide();
+  }
+
+  void _startBannerAutoSlide() {
+    _bannerTimer?.cancel();
+    if (_topBanners.length <= 1) return;
+
+    _bannerTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted || !_bannerController.hasClients || _topBanners.isEmpty) {
         return;
       }
-      final next = (_currentBannerPage + 1) % _bannerCount;
+      final next = (_currentBannerPage + 1) % _topBanners.length;
       _bannerController.animateToPage(
         next,
         duration: const Duration(milliseconds: 300),
@@ -58,28 +119,119 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     });
   }
 
-  @override
-  void dispose() {
-    _bannerTimer?.cancel();
-    _bannerController.dispose();
-    _soccerCardsPageController.dispose();
-    _baseballCardsPageController.dispose();
-    super.dispose();
+  void _handleAdClick(Map<String, dynamic> ad) {
+    final adService = ref.read(adServiceProvider);
+    final id = ad['id']?.toString() ?? '';
+    if (id.isNotEmpty) {
+      unawaited(adService.trackAd(id, 'click'));
+    }
+
+    final linkUrl = ad['link_url'] as String? ?? '';
+    if (linkUrl.isEmpty) return;
+
+    if (linkUrl.startsWith('/')) {
+      context.push(linkUrl);
+    } else if (linkUrl.startsWith('http')) {
+      unawaited(
+        launchUrl(Uri.parse(linkUrl), mode: LaunchMode.externalApplication),
+      );
+    }
   }
 
-  Widget _buildEventBanner() {
-    final bannerSize = MediaQuery.sizeOf(context).width - 32;
-    return SizedBox(
-      height: bannerSize,
-      child: PageView.builder(
-        controller: _bannerController,
-        onPageChanged: (index) {
-          setState(() => _currentBannerPage = index);
-        },
-        itemCount: _bannerCount,
-        itemBuilder: (context, index) {
-          return const TsBanner(type: TsBannerType.event);
-        },
+  Widget _buildTopBannerCarousel() {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          height: _topBannerHeight,
+          child: PageView.builder(
+            controller: _bannerController,
+            padEnds: false,
+            onPageChanged: (index) {
+              setState(() => _currentBannerPage = index);
+            },
+            itemCount: _topBanners.length,
+            itemBuilder: (context, index) {
+              final ad = _topBanners[index];
+              final isLast = index == _topBanners.length - 1;
+              return Container(
+                margin: EdgeInsets.only(right: isLast ? 0 : 8),
+                child: GestureDetector(
+                  onTap: () => _handleAdClick(ad),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: CachedNetworkImage(
+                      imageUrl: ad['image_url'] as String? ?? '',
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: _topBannerHeight,
+                      placeholder: (_, _) => Container(
+                        color: semantic.surfaceContainer,
+                        height: _topBannerHeight,
+                      ),
+                      errorWidget: (_, _, _) => Container(
+                        color: semantic.surfaceContainer,
+                        height: _topBannerHeight,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        if (_topBanners.length > 1) ...[
+          const SizedBox(height: 8),
+          _buildBannerIndicator(),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildTopBannerSection(TsSemanticColors semantic) {
+    if (_loadingBanners) {
+      return SizedBox(
+        height: _topBannerHeight,
+        child: Container(
+          width: double.infinity,
+          color: semantic.surfaceContainer,
+          child: Center(
+            child: CircularProgressIndicator(
+              color: semantic.interactivePrimary,
+              strokeWidth: 2,
+            ),
+          ),
+        ),
+      );
+    }
+    if (_topBanners.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return _buildTopBannerCarousel();
+  }
+
+  Widget _buildBottomBanner(Map<String, dynamic> ad) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    return GestureDetector(
+      onTap: () => _handleAdClick(ad),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: CachedNetworkImage(
+          imageUrl: ad['image_url'] as String? ?? '',
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: _bottomBannerHeight,
+          placeholder: (_, _) => Container(
+            color: semantic.surfaceContainer,
+            height: _bottomBannerHeight,
+          ),
+          errorWidget: (_, _, _) => Container(
+            color: semantic.surfaceContainer,
+            height: _bottomBannerHeight,
+          ),
+        ),
       ),
     );
   }
@@ -89,7 +241,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        for (var i = 0; i < _bannerCount; i++) ...[
+        for (var i = 0; i < _topBanners.length; i++) ...[
           if (i > 0) const SizedBox(width: 8),
           i == _currentBannerPage
               ? Container(
@@ -111,6 +263,84 @@ class _TrendPageState extends ConsumerState<TrendPage> {
         ],
       ],
     );
+  }
+
+  Widget _buildBottomBannerCarousel() {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          height: _bottomBannerHeight,
+          child: PageView.builder(
+            controller: _bottomBannerController,
+            onPageChanged: (index) {
+              setState(() => _currentBottomBannerPage = index);
+            },
+            itemCount: _bottomBanners.length,
+            itemBuilder: (context, index) =>
+                _buildBottomBanner(_bottomBanners[index]),
+          ),
+        ),
+        if (_bottomBanners.length > 1) ...[
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              for (var i = 0; i < _bottomBanners.length; i++) ...[
+                if (i > 0) const SizedBox(width: 8),
+                i == _currentBottomBannerPage
+                    ? Container(
+                        width: 20,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: TsColors.brandPrimary500,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      )
+                    : Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: semantic.textDisabled,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+              ],
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildBottomBannerSection(
+    TsSemanticColors semantic,
+    bool showBottomAds,
+  ) {
+    if (!showBottomAds) {
+      return const SizedBox.shrink();
+    }
+    if (_loadingBanners) {
+      return SizedBox(
+        height: _bottomBannerHeight,
+        child: Container(
+          width: double.infinity,
+          color: semantic.surfaceContainer,
+          child: Center(
+            child: CircularProgressIndicator(
+              color: semantic.interactivePrimary,
+              strokeWidth: 2,
+            ),
+          ),
+        ),
+      );
+    }
+    if (_bottomBanners.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return _buildBottomBannerCarousel();
   }
 
   Widget _buildSectionHeader({
@@ -237,6 +467,12 @@ class _TrendPageState extends ConsumerState<TrendPage> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final auth = ref.watch(authProvider);
+    final showBottomAds = !auth.hasFullAccess;
+    final showTopBannerArea = _loadingBanners || _topBanners.isNotEmpty;
+    final showBottomBannerArea =
+        showBottomAds && (_loadingBanners || _bottomBanners.isNotEmpty);
+
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
       body: SingleChildScrollView(
@@ -245,54 +481,49 @@ class _TrendPageState extends ConsumerState<TrendPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-                _buildEventBanner(),
-                const SizedBox(height: 8),
-                _buildBannerIndicator(),
+              if (showTopBannerArea) ...[
+                _buildTopBannerSection(semantic),
                 const SizedBox(height: 16),
-
-                const TsBanner(type: TsBannerType.subscription),
-                const SizedBox(height: 16),
-
-                _buildSectionHeader(
-                  title: '축구 분석',
-                  onMoreTap: () => context.go('/analysis'),
-                ),
-                const SizedBox(height: 16),
-                _buildSoccerCards(),
-                const SizedBox(height: 16),
-
-                _buildSectionHeader(
-                  title: '야구 분석',
-                  onMoreTap: () => context.go('/analysis?sport=baseball'),
-                ),
-                const SizedBox(height: 16),
-                _buildBaseballCards(),
-                const SizedBox(height: 16),
-
-                _buildSectionHeader(
-                  title: '프리미엄 분석',
-                ),
-                const SizedBox(height: 16),
-                PremiumPickStatsCard(
-                  showCTA: true,
-                  onCTATap: () {
-                    final auth = ref.read(authProvider);
-                    if (auth.hasFullAccess) {
-                      context.go('/premium');
-                    } else {
-                      navigateToSubscribeIfLoggedIn(context, auth.isLoggedIn);
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                const BaseballTodayComboCard(),
-
-                const SizedBox(height: 24),
               ],
-            ),
+              if (showBottomBannerArea) ...[
+                _buildBottomBannerSection(semantic, showBottomAds),
+                const SizedBox(height: 16),
+              ],
+              _buildSectionHeader(
+                title: '축구 분석',
+                onMoreTap: () => context.go('/analysis'),
+              ),
+              const SizedBox(height: 16),
+              _buildSoccerCards(),
+              const SizedBox(height: 16),
+              _buildSectionHeader(
+                title: '야구 분석',
+                onMoreTap: () => context.go('/analysis?sport=baseball'),
+              ),
+              const SizedBox(height: 16),
+              _buildBaseballCards(),
+              const SizedBox(height: 16),
+              _buildSectionHeader(
+                title: '프리미엄 분석',
+              ),
+              const SizedBox(height: 16),
+              PremiumPickStatsCard(
+                showCTA: true,
+                onCTATap: () {
+                  if (auth.hasFullAccess) {
+                    context.go('/premium');
+                  } else {
+                    navigateToSubscribeIfLoggedIn(context, auth.isLoggedIn);
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              const BaseballTodayComboCard(),
+              const SizedBox(height: 24),
+            ],
           ),
         ),
+      ),
     );
   }
 }

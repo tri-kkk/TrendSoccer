@@ -270,15 +270,45 @@ Future<void> showAlarmSheet(
 
   if (!matchEventsEnabled) {
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('메뉴 > 알림 설정에서 경기 알림을 켜주세요.'),
-          action: SnackBarAction(
-            label: '설정',
-            onPressed: () => context.go('/menu'),
-          ),
-        ),
+      final shouldGoMenu = await showDialog<bool>(
+        context: context,
+        builder: (ctx) {
+          final sem = Theme.of(ctx).extension<TsSemanticColors>()!;
+          return AlertDialog(
+            backgroundColor: sem.surfaceOverlay,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Text(
+              '경기 알림 비활성화',
+              style: TextStyle(color: sem.textPrimary),
+            ),
+            content: Text(
+              '경기 알림이 꺼져 있습니다.\n메뉴 > 알림 설정에서 경기 알림을 켜주세요.',
+              style: TsType.bodyLRegular.copyWith(color: sem.textSecondary),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(
+                  '취소',
+                  style: TextStyle(color: sem.textTertiary),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(
+                  '설정으로 이동',
+                  style: TextStyle(color: sem.interactivePrimary),
+                ),
+              ),
+            ],
+          );
+        },
       );
+      if (shouldGoMenu == true && context.mounted) {
+        context.go('/menu');
+      }
     }
     return;
   }

@@ -163,11 +163,15 @@ class _MenuPageState extends ConsumerState<MenuPage> {
       if (!result.isGranted) {
         await FCMService().unsubscribeAllTopics();
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          final messenger = ScaffoldMessenger.of(context);
+          messenger.clearSnackBars();
+          messenger.showSnackBar(
             const SnackBar(
               content: Text(
                 '알림이 비활성화되었습니다. 설정에서 알림을 허용해주세요.',
               ),
+              duration: Duration(seconds: 5),
+              behavior: SnackBarBehavior.floating,
             ),
           );
         }
@@ -381,8 +385,10 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                                             Navigator.of(dialogContext).pop();
                                           }
                                           if (context.mounted) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
+                                            final messenger =
+                                                ScaffoldMessenger.of(context);
+                                            messenger.clearSnackBars();
+                                            messenger.showSnackBar(
                                               SnackBar(
                                                 content: Text(
                                                   e
@@ -392,6 +398,11 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                                                         '',
                                                       ),
                                                 ),
+                                                duration: const Duration(
+                                                  seconds: 5,
+                                                ),
+                                                behavior:
+                                                    SnackBarBehavior.floating,
                                               ),
                                             );
                                           }
