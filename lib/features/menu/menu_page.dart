@@ -36,7 +36,7 @@ class MenuPage extends ConsumerStatefulWidget {
 }
 
 class _MenuPageState extends ConsumerState<MenuPage> {
-  bool _isDeletingAccount = false;
+  final bool _isDeletingAccount = false;
 
   PlanType _planTicketType(PlanType planType) {
     return switch (planType) {

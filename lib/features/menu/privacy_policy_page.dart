@@ -39,7 +39,7 @@ class PrivacyPolicyPage extends ConsumerWidget {
         loading: () => Center(
           child: CircularProgressIndicator(color: semantic.interactivePrimary),
         ),
-        error: (_, __) => _LegalErrorState(
+        error: (_, _) => _LegalErrorState(
           semantic: semantic,
           onRetry: () => ref.invalidate(privacyContentProvider),
         ),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,7 +33,7 @@ Future<String> _loadLegalMarkdown(
   }
 
   final previewLen = min(100, content.length);
-  print(
+  debugPrint(
     '[LEGAL] $type content: ${content.length} chars, '
     'first 100: ${content.substring(0, previewLen)}',
   );

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -24,21 +25,21 @@ class BaseballComboService {
         queryParameters: <String, String>{'date': date},
       );
       final data = _adaptToMap(response.data);
-      print('[BASEBALL] Combo picks response keys: ${data.keys.toList()}');
+      debugPrint('[BASEBALL] Combo picks response keys: ${data.keys.toList()}');
 
       final firstItem = _firstComboItem(data);
       if (firstItem != null) {
-        print(
+        debugPrint(
           '[BASEBALL] Combo picks for today: first item keys: '
           '${firstItem.keys.toList()}',
         );
       } else {
-        print('[BASEBALL] Combo picks for today: no combo items found');
+        debugPrint('[BASEBALL] Combo picks for today: no combo items found');
       }
 
       return data;
     } catch (e) {
-      print('[BASEBALL] Combo picks for $date failed: $e');
+      debugPrint('[BASEBALL] Combo picks for $date failed: $e');
       return const {};
     }
   }

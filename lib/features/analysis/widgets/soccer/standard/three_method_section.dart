@@ -142,7 +142,7 @@ class ThreeMethodAnalysisSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
-    print(
+    debugPrint(
       '[SOCCER] 3-Method data: ${methods.map((m) => 'win=${m.win} draw=${m.draw} lose=${m.lose}').toList()}',
     );
 

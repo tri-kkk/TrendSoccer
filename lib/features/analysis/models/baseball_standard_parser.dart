@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:trendsoccer/core/models/baseball_models.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/features/analysis/models/baseball_match_report_data.dart';
@@ -178,12 +179,12 @@ bool _loggedDetailKeys = false;
 BaseballStandardParsed parseBaseballStandardDetail(Map<String, dynamic> raw) {
   if (!_loggedDetailKeys) {
     _loggedDetailKeys = true;
-    print('[BASEBALL] Match detail keys: ${raw.keys.toList()}');
+    debugPrint('[BASEBALL] Match detail keys: ${raw.keys.toList()}');
   }
 
   final match = _unwrapDetail(raw);
   if (match.isNotEmpty && match != raw) {
-    print('[BASEBALL] Match detail data keys: ${match.keys.toList()}');
+    debugPrint('[BASEBALL] Match detail data keys: ${match.keys.toList()}');
   }
 
   final homeSide = _readMap(match, const ['home']) ?? {};
@@ -233,26 +234,26 @@ BaseballStandardParsed parseBaseballStandardDetail(Map<String, dynamic> raw) {
   final homePitcher = _parsePitcherFromMatchRoot(match, side: 'home');
   final awayPitcher = _parsePitcherFromMatchRoot(match, side: 'away');
 
-  print('[BASEBALL] Standard parse: home=$homeTeam, away=$awayTeam');
-  print(
+  debugPrint('[BASEBALL] Standard parse: home=$homeTeam, away=$awayTeam');
+  debugPrint(
     '[BASEBALL] Standard parse: homePitcher=${homePitcher.displayName}, awayPitcher=${awayPitcher.displayName}',
   );
 
   final oddsMap = _mergeOddsMap(match);
-  print(
+  debugPrint(
     '[BASEBALL] Odds raw: homeWinOdds=${oddsMap['homeWinOdds']}, awayWinOdds=${oddsMap['awayWinOdds']}',
   );
-  print(
+  debugPrint(
     '[BASEBALL] Odds raw: homeWinProb=${oddsMap['homeWinProb']}, awayWinProb=${oddsMap['awayWinProb']}',
   );
-  print('[BASEBALL] Odds ouLines: ${oddsMap['ouLines'] ?? oddsMap['ou_lines']}');
+  debugPrint('[BASEBALL] Odds ouLines: ${oddsMap['ouLines'] ?? oddsMap['ou_lines']}');
   final odds = BaseballOdds.fromJson(oddsMap);
   final homeMoneylineOdds = _readMoneylineOdds(oddsMap, isHome: true);
   final awayMoneylineOdds = _readMoneylineOdds(oddsMap, isHome: false);
   final homeProbRatio = _normalizeProbRatio(odds.homeWinProb);
   final awayProbRatio = _normalizeProbRatio(odds.awayWinProb);
 
-  print(
+  debugPrint(
     '[BASEBALL] Standard parse: moneyline home=${_formatMoneylineOdds(homeMoneylineOdds)}, away=${_formatMoneylineOdds(awayMoneylineOdds)}',
   );
 
@@ -670,7 +671,7 @@ void _logRawH2BMatches(List? rawMatches) {
     final item = rawMatches[i];
     if (item is! Map) continue;
     final m = Map<String, dynamic>.from(item);
-    print(
+    debugPrint(
       '[BASEBALL] H2H raw[$i]: date=${m['date']}, homeTeamKo=${m['homeTeamKo']}, awayTeamKo=${m['awayTeamKo']}, homeTeam=${m['homeTeam']}, awayTeam=${m['awayTeam']}',
     );
   }
@@ -810,7 +811,7 @@ List<BaseballOULine> _parseOuLines(
         .where((map) => map.isNotEmpty)
         .toList();
   }
-  print('[BASEBALL] Parsed ouLines: ${parsedOuLines?.length ?? 'null'} lines');
+  debugPrint('[BASEBALL] Parsed ouLines: ${parsedOuLines?.length ?? 'null'} lines');
 
   final apiLines = odds.ouLines;
   if (apiLines != null && apiLines.isNotEmpty) {

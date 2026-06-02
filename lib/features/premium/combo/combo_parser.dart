@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'package:trendsoccer/shared/widgets/combo/combo_card.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_status_badge.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_type_badge.dart';
@@ -202,11 +204,11 @@ class ComboParser {
         ? (highWins * 100 / highPicks.length).round()
         : 0;
 
-    print(
+    debugPrint(
       '[BASEBALL] combo dashboard accuracy: $wins wins / $total total = '
       '$accRate% (date: $selectedDate)',
     );
-    print(
+    debugPrint(
       '[BASEBALL] combo stats: safe=${safePicks.length}, '
       'high=${highPicks.length} (date: $selectedDate)',
     );
@@ -251,13 +253,13 @@ class ComboParser {
       final aiText = pick['ai_analysis']?.toString() ?? '';
       final aiPreview =
           aiText.length > 50 ? aiText.substring(0, 50) : aiText;
-      print(
+      debugPrint(
         '[BASEBALL] combo card: id=${pick['id']}, '
         'total_odds=${pick['total_odds']}, '
         'avg_confidence=${pick['avg_confidence']}, '
         'ai_analysis=$aiPreview',
       );
-      print(
+      debugPrint(
         '[BASEBALL] combo type: id=${pick['id']}, '
         'fold_count=$foldCount, type=$comboType',
       );
@@ -293,7 +295,7 @@ class ComboParser {
     final homeScore = (m['homeScore'] as num?)?.toInt();
     final awayScore = (m['awayScore'] as num?)?.toInt();
 
-    print(
+    debugPrint(
       '[BASEBALL] combo match: pickTeam=${m['pickTeamKo']}, '
       'isCorrect=$isCorrect, matchStatus=$matchStatus, '
       'score=$homeScore-$awayScore',

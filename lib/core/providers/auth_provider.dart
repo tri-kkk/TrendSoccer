@@ -67,7 +67,7 @@ class _ProfileTrialInfo {
             : null);
     final active = map['active'] == true;
 
-    print(
+    debugPrint(
       '[AUTH] Trial parse: active=$active, endsAt=$endsAt, '
       'expiresAt field=${map['expiresAt']}',
     );
@@ -107,7 +107,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
   bool get hasFullAccess {
     final result = _state.planType == PlanType.premium ||
         _state.planType == PlanType.trial;
-    print(
+    debugPrint(
       '[AUTH] hasFullAccess: planType=${_state.planType}, result=$result',
     );
     return result;
@@ -153,7 +153,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
       planType = PlanType.free;
     }
 
-    print(
+    debugPrint(
       '[AUTH] Tier mapping: apiTier=$tier, hasSubscription=$hasActiveSubscription, '
       'isTrialActive=$isTrialActive → planType=$planType',
     );
@@ -220,7 +220,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
     if (email.isEmpty) return;
     final prefs = _ref.read(sharedPreferencesProvider);
     await prefs.setString(_userEmailKey, email);
-    print('[AUTH] Persisted user_email to SharedPreferences');
+    debugPrint('[AUTH] Persisted user_email to SharedPreferences');
   }
 
   Future<void> _persistNaverAuthSession(String jwt) async {
@@ -269,7 +269,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
         final message = errorMap['message'] ?? '';
         final daysLeft = errorMap['daysLeft'];
 
-        print(
+        debugPrint(
           '[AUTH] $logLabel login blocked: code=$errorCode, daysLeft=$daysLeft',
         );
 
@@ -291,7 +291,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
       throw Exception('이메일 정보가 필요합니다. 네이버 계정 설정을 확인해주세요.');
     }
 
-    print('[AUTH] $logLabel login DioException: ${e.message}');
+    debugPrint('[AUTH] $logLabel login DioException: ${e.message}');
     throw Exception(
       logLabel == 'Google'
           ? '로그인에 실패했습니다. 다시 시도해주세요.'
@@ -350,14 +350,14 @@ class SupabaseAuthProvider extends ChangeNotifier {
     final email = user['email'] as String? ?? '';
     final name = user['name'] as String? ?? '';
 
-    print(
+    debugPrint(
       '[AUTH] _applyMeUserJson: email=$email, name=$name, '
       'tier=${user['tier']}',
     );
 
     _subscription = _ProfileSubscriptionInfo.fromJson(user['subscription']);
     _trial = _ProfileTrialInfo.fromJson(user['trial']);
-    print(
+    debugPrint(
       '[AUTH] loadProfile: tier=${user['tier']}, '
       'trial=${user['trial']}, subscription=${user['subscription']}',
     );
@@ -394,7 +394,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
         trialExpiresAt: trialEnds,
         clearPremiumExpiresAt: true,
       );
-      print(
+      debugPrint(
         '[AUTH] Post-signup tier from agreeTerms: trial until $trialEnds',
       );
     } else {
@@ -418,13 +418,13 @@ class SupabaseAuthProvider extends ChangeNotifier {
         clearTrialExpiresAt: true,
         clearPremiumExpiresAt: true,
       );
-      print('[AUTH] Post-signup tier from agreeTerms: free');
+      debugPrint('[AUTH] Post-signup tier from agreeTerms: free');
     }
     notifyListeners();
   }
 
   void _schedulePostSignupProfileRefresh(String? jwt) {
-    print('[AUTH] Post-signup loadProfile delayed 1s (background)');
+    debugPrint('[AUTH] Post-signup loadProfile delayed 1s (background)');
     unawaited(_refreshProfileAfterSignup(jwt));
   }
 
@@ -554,10 +554,10 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
   Future<void> loadProfile({String? jwt}) async {
     const url = _meUrl;
-    print('[AUTH] loadProfile URL: $url');
+    debugPrint('[AUTH] loadProfile URL: $url');
     try {
       final headers = await _buildMeRequestHeaders(jwt: jwt);
-      print(
+      debugPrint(
         '[AUTH] loadProfile: auth header present=${headers.containsKey('Authorization')}',
       );
 
@@ -568,9 +568,9 @@ class SupabaseAuthProvider extends ChangeNotifier {
       );
       final raw = response.data;
 
-      print('[AUTH] loadProfile: raw response type=${raw.runtimeType}');
+      debugPrint('[AUTH] loadProfile: raw response type=${raw.runtimeType}');
       final rawString = raw.toString();
-      print(
+      debugPrint(
         '[AUTH] loadProfile: raw response=${rawString.substring(0, math.min(500, rawString.length))}',
       );
 
@@ -581,13 +581,13 @@ class SupabaseAuthProvider extends ChangeNotifier {
         responseData = Map<String, dynamic>.from(raw);
       }
 
-      print(
+      debugPrint(
         '[AUTH] loadProfile: has data key=${responseData?.containsKey('data')}, '
         'has user key=${responseData?.containsKey('user')}',
       );
-      print('[AUTH] loadProfile: data content=${responseData?['data']}');
-      print('[AUTH] loadProfile: data type=${responseData?['data']?.runtimeType}');
-      print(
+      debugPrint('[AUTH] loadProfile: data content=${responseData?['data']}');
+      debugPrint('[AUTH] loadProfile: data type=${responseData?['data']?.runtimeType}');
+      debugPrint(
         '[AUTH] loadProfile: data keys=${responseData?['data'] is Map ? (responseData!['data'] as Map).keys : 'not a map'}',
       );
 
@@ -595,8 +595,8 @@ class SupabaseAuthProvider extends ChangeNotifier {
         final data = responseData!['data'] is Map<String, dynamic>
             ? responseData['data'] as Map<String, dynamic>
             : Map<String, dynamic>.from(responseData['data'] as Map);
-        print('[AUTH] loadProfile: data keys=${data.keys}');
-        print('[AUTH] loadProfile: data.user type=${data['user']?.runtimeType}');
+        debugPrint('[AUTH] loadProfile: data keys=${data.keys}');
+        debugPrint('[AUTH] loadProfile: data.user type=${data['user']?.runtimeType}');
       }
 
       if (responseData != null &&
@@ -606,7 +606,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
         if (error is Map<String, dynamic>) {
           final apiError = ApiError.fromJson(error);
           if (apiError.code == 'CONSENT_REQUIRED') {
-            print('[AUTH] loadProfile: CONSENT_REQUIRED');
+            debugPrint('[AUTH] loadProfile: CONSENT_REQUIRED');
             _markConsentRequired();
             return;
           }
@@ -620,17 +620,17 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
       final user = _extractMeUser(responseData);
       if (user == null) {
-        print(
+        debugPrint(
           '[AUTH] loadProfile: could not find user in response. '
           'Keys: ${responseData != null ? responseData.keys : 'not a map'}',
         );
         return;
       }
 
-      print(
+      debugPrint(
         '[AUTH] loadProfile: user found, tier=${user['tier']}, email=${user['email']}',
       );
-      print(
+      debugPrint(
         '[AUTH] Tier mapping: apiTier=${user['tier']}, '
         'subscription=${user['subscription']}, trial=${user['trial']}',
       );
@@ -645,7 +645,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
       }
     } on ApiException catch (e) {
       if (e.code == 'CONSENT_REQUIRED') {
-        print('[AUTH] loadProfile: CONSENT_REQUIRED');
+        debugPrint('[AUTH] loadProfile: CONSENT_REQUIRED');
         _markConsentRequired();
         return;
       }
@@ -653,12 +653,12 @@ class SupabaseAuthProvider extends ChangeNotifier {
     } on DioException catch (e) {
       final statusCode = e.response?.statusCode;
       if (statusCode == 401) {
-        print('[AUTH] loadProfile: 401 token expired, signing out');
+        debugPrint('[AUTH] loadProfile: 401 token expired, signing out');
         await signOut();
         return;
       }
       if (statusCode == 409 || _responseIndicatesConsentRequired(e.response?.data)) {
-        print('[AUTH] loadProfile: CONSENT_REQUIRED (409)');
+        debugPrint('[AUTH] loadProfile: CONSENT_REQUIRED (409)');
         _markConsentRequired();
         return;
       }
@@ -684,9 +684,9 @@ class SupabaseAuthProvider extends ChangeNotifier {
         } else if (data is Map) {
           csrfToken = data['csrfToken']?.toString();
         }
-        print('[AUTH] CSRF token obtained');
+        debugPrint('[AUTH] CSRF token obtained');
       } catch (e) {
-        print('[AUTH] CSRF fetch failed (non-critical): $e');
+        debugPrint('[AUTH] CSRF fetch failed (non-critical): $e');
       }
 
       if (csrfToken != null) {
@@ -695,16 +695,16 @@ class SupabaseAuthProvider extends ChangeNotifier {
             'https://www.trendsoccer.com/api/auth/signout',
             data: {'csrfToken': csrfToken},
           );
-          print('[AUTH] Backend signout success');
+          debugPrint('[AUTH] Backend signout success');
         } catch (e) {
-          print('[AUTH] Backend signout failed (non-critical): $e');
+          debugPrint('[AUTH] Backend signout failed (non-critical): $e');
         }
       }
 
       await _clearLocalAuth(loginMethod);
-      print('[AUTH] Logout complete: state reset to guest');
+      debugPrint('[AUTH] Logout complete: state reset to guest');
     } catch (e) {
-      print('[AUTH] Logout error: $e');
+      debugPrint('[AUTH] Logout error: $e');
       _resetToGuest();
     }
   }
@@ -737,29 +737,29 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
   Future<void> loginWithGoogle() async {
     try {
-      print('[AUTH] Step 1: Starting Google Sign-In');
+      debugPrint('[AUTH] Step 1: Starting Google Sign-In');
       final googleSignIn = GoogleSignIn(
         serverClientId: AppConfig.googleWebClientId,
       );
       final account = await googleSignIn.signIn();
       if (account == null) return;
 
-      print('[AUTH] Step 2: Got account: ${account.email}');
+      debugPrint('[AUTH] Step 2: Got account: ${account.email}');
       final authentication = await account.authentication;
       final idToken = authentication.idToken;
       final accessToken = authentication.accessToken;
-      print(
+      debugPrint(
         '[AUTH] Step 3: idToken=${idToken != null}, accessToken=${accessToken != null}, accessToken length: ${accessToken?.length}',
       );
       if (accessToken == null) {
         throw Exception('Google sign-in failed: accessToken is null');
       }
 
-      print('[AUTH] Step 4: Calling /api/v1/mobile/auth/google');
+      debugPrint('[AUTH] Step 4: Calling /api/v1/mobile/auth/google');
       try {
         final response =
             await _ref.read(authServiceProvider).googleAuth(accessToken);
-        print(
+        debugPrint(
           '[AUTH] Step 5: Login response received, isNewUser=${response.user.isNewUser}',
         );
         await _applyLoginResponse(response, LoginMethod.google);
@@ -773,12 +773,12 @@ class SupabaseAuthProvider extends ChangeNotifier {
         _handleMobileAuthDioException(e, logLabel: 'Google');
       }
     } catch (e) {
-      print('[AUTH] ERROR: ${e.runtimeType}: $e');
+      debugPrint('[AUTH] ERROR: ${e.runtimeType}: $e');
       if (e is ApiException) {
-        print('[AUTH] API Error code: ${e.code}, message: ${e.message}');
+        debugPrint('[AUTH] API Error code: ${e.code}, message: ${e.message}');
       }
       if (e is DioException) {
-        print(
+        debugPrint(
           '[AUTH] Dio Error: ${e.type}, statusCode: ${e.response?.statusCode}, data: ${e.response?.data}',
         );
       }
@@ -788,16 +788,16 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
   Future<Map<String, dynamic>> loginWithNaver() async {
     try {
-      print('[AUTH] Naver login: calling FlutterNaverLogin.logIn()');
+      debugPrint('[AUTH] Naver login: calling FlutterNaverLogin.logIn()');
       final result = await FlutterNaverLogin.logIn();
 
       if (result.status == NaverLoginStatus.loggedOut) {
-        print('[AUTH] Naver login cancelled by user');
+        debugPrint('[AUTH] Naver login cancelled by user');
         return {'cancelled': true};
       }
 
       if (result.status == NaverLoginStatus.error) {
-        print('[AUTH] Naver SDK error: ${result.errorMessage}');
+        debugPrint('[AUTH] Naver SDK error: ${result.errorMessage}');
         throw Exception('Naver login failed: ${result.errorMessage}');
       }
 
@@ -812,7 +812,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
       final previewLength =
           math.min(10, naverAccessToken.length);
-      print(
+      debugPrint(
         '[AUTH] Naver accessToken obtained: ${naverAccessToken.substring(0, previewLength)}...',
       );
 
@@ -820,11 +820,11 @@ class SupabaseAuthProvider extends ChangeNotifier {
         throw Exception('Naver access token is empty');
       }
 
-      print('[AUTH] Posting to /api/v1/mobile/auth/naver');
+      debugPrint('[AUTH] Posting to /api/v1/mobile/auth/naver');
       try {
         final response =
             await _ref.read(authServiceProvider).naverAuth(naverAccessToken);
-        print(
+        debugPrint(
           '[AUTH] Backend response: isNewUser=${response.user.isNewUser}, tier=${response.user.tier}',
         );
 
@@ -844,7 +844,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
           unawaited(_persistUserEmail(email));
           notifyListeners();
         }
-        print(
+        debugPrint(
           '[AUTH] Naver login success: email=$email, tier=${user.tier}, isNewUser=${user.isNewUser}',
         );
 
@@ -859,7 +859,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
         _handleMobileAuthDioException(e, logLabel: 'Naver');
       }
     } catch (e) {
-      print('[AUTH] Naver login error: $e');
+      debugPrint('[AUTH] Naver login error: $e');
       if (e.toString().contains('cancelled')) {
         return {'cancelled': true};
       }
@@ -921,7 +921,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
     final loginMethod = _state.loginMethod;
 
     try {
-      print('[AUTH] Deleting account: $email');
+      debugPrint('[AUTH] Deleting account: $email');
 
       final dio = _ref.read(apiClientProvider);
       final response = await dio.post<dynamic>(
@@ -935,17 +935,17 @@ class SupabaseAuthProvider extends ChangeNotifier {
         throw Exception('회원 탈퇴에 실패했습니다.');
       }
 
-      print('[AUTH] Delete account response: $raw');
+      debugPrint('[AUTH] Delete account response: $raw');
 
       if (raw['success'] == true) {
         await _clearLocalAuth(loginMethod);
-        print('[AUTH] Account deleted successfully');
+        debugPrint('[AUTH] Account deleted successfully');
         return;
       }
 
       if (raw['code'] == 'COOLDOWN_ACTIVE') {
         final daysLeft = raw['daysLeft'] ?? 7;
-        print('[AUTH] Delete account cooldown: $daysLeft days left');
+        debugPrint('[AUTH] Delete account cooldown: $daysLeft days left');
         throw Exception('탈퇴 후 $daysLeft일간 재가입이 불가합니다. 쿨다운 기간입니다.');
       }
 
@@ -963,17 +963,17 @@ class SupabaseAuthProvider extends ChangeNotifier {
       if (statusCode == 403 ||
           dataMap?['code'] == 'COOLDOWN_ACTIVE') {
         final daysLeft = dataMap?['daysLeft'] ?? 7;
-        print('[AUTH] Delete account cooldown: $daysLeft days left');
+        debugPrint('[AUTH] Delete account cooldown: $daysLeft days left');
         throw Exception('탈퇴 후 $daysLeft일간 재가입이 불가합니다. 쿨다운 기간입니다.');
       }
       if (statusCode == 404) {
         throw Exception('사용자를 찾을 수 없습니다.');
       }
 
-      print('[AUTH] Delete account error: ${e.message}');
+      debugPrint('[AUTH] Delete account error: ${e.message}');
       throw Exception('회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
     } catch (e) {
-      print('[AUTH] Delete account error: $e');
+      debugPrint('[AUTH] Delete account error: $e');
       rethrow;
     }
   }

@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 DateTime? _parseDateTime(Object? value) {
   if (value is String && value.isNotEmpty) {
     return DateTime.tryParse(value);
@@ -265,13 +267,13 @@ class SoccerMatch {
   });
 
   factory SoccerMatch.fromJson(Map<String, dynamic> json) {
-    print('[SOCCER] SoccerMatch.fromJson keys: ${json.keys.toList()}');
+    debugPrint('[SOCCER] SoccerMatch.fromJson keys: ${json.keys.toList()}');
     final homeValue = json['homeTeam'] ?? json['home_team'] ?? json['home'];
     final awayValue = json['awayTeam'] ?? json['away_team'] ?? json['away'];
     final isFlat = homeValue is String || awayValue is String;
 
     if (isFlat) {
-      print(
+      debugPrint(
         '[SOCCER] Field mapping: flat format — home_team/away_team strings, leagueName, commence_time',
       );
       final matchId =
@@ -359,7 +361,7 @@ class SoccerMatch {
       json,
       const ['league', 'leagueInfo', 'league_info'],
     );
-    print(
+    debugPrint(
       '[SOCCER] Field mapping: homeTeam<=homeTeam|home_team|home (found: ${homeJson != null}), awayTeam<=awayTeam|away_team|away (found: ${awayJson != null}), league<=league|leagueInfo|league_info (found: ${leagueJson != null})',
     );
     final scoreJson = _readMap(json, const ['score', 'scores', 'result']);
@@ -458,8 +460,8 @@ class SoccerAnalysisCard {
   });
 
   factory SoccerAnalysisCard.fromJson(Map<String, dynamic> json) {
-    print('[SOCCER] fromJson keys: ${json.keys.toList()}');
-    print(
+    debugPrint('[SOCCER] fromJson keys: ${json.keys.toList()}');
+    debugPrint(
       '[SOCCER] Field mapping: match<=match|fixture|game|root; odds<=odds|matchOdds|match_odds|flat home_odds; grade<=grade|pickGrade|pick_grade; prediction<=prediction|analysis|pick|flat predicted_winner',
     );
 

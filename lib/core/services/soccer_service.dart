@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:trendsoccer/core/models/soccer_models.dart';
@@ -62,7 +63,7 @@ class SoccerService {
     String? date,
     String? league,
   }) async {
-    print('[SOCCER] getMatches called with date: $date');
+    debugPrint('[SOCCER] getMatches called with date: $date');
     try {
       final queryParameters = <String, String>{};
       if (date != null && date.isNotEmpty) {
@@ -73,29 +74,29 @@ class SoccerService {
         queryParameters: queryParameters.isEmpty ? null : queryParameters,
       );
       final raw = response.data;
-      print('[SOCCER] Raw response type: ${raw.runtimeType}');
+      debugPrint('[SOCCER] Raw response type: ${raw.runtimeType}');
       if (raw is Map) {
-        print('[SOCCER] Raw response keys: ${raw.keys.toList()}');
+        debugPrint('[SOCCER] Raw response keys: ${raw.keys.toList()}');
       } else {
-        print('[SOCCER] Raw response keys: not a map');
+        debugPrint('[SOCCER] Raw response keys: not a map');
       }
       if (raw is Map && raw.containsKey('data')) {
-        print('[SOCCER] data is List: ${raw['data'] is List}');
-        print('[SOCCER] data length: ${(raw['data'] as List?)?.length}');
+        debugPrint('[SOCCER] data is List: ${raw['data'] is List}');
+        debugPrint('[SOCCER] data length: ${(raw['data'] as List?)?.length}');
         if (raw['data'] is List && (raw['data'] as List).isNotEmpty) {
           final first = (raw['data'] as List).first;
           if (first is Map) {
-            print('[SOCCER] First item keys: ${first.keys.toList()}');
-            print(
+            debugPrint('[SOCCER] First item keys: ${first.keys.toList()}');
+            debugPrint(
               '[SOCCER] First item sample: home_team=${first['home_team']}, away_team=${first['away_team']}',
             );
           }
         }
       }
       if (raw is List) {
-        print('[SOCCER] Response is direct List, length: ${raw.length}');
+        debugPrint('[SOCCER] Response is direct List, length: ${raw.length}');
         if (raw.isNotEmpty && raw.first is Map) {
-          print('[SOCCER] First item keys: ${(raw.first as Map).keys.toList()}');
+          debugPrint('[SOCCER] First item keys: ${(raw.first as Map).keys.toList()}');
         }
       }
       final cards = _filterAnalysisLeagueCards(_adaptToAnalysisCards(raw));
@@ -118,9 +119,9 @@ class SoccerService {
     int? matchId,
     String? commenceTime,
   }) async {
-    print('[SOCCER] POST /api/predict-v2 for $homeTeam vs $awayTeam');
+    debugPrint('[SOCCER] POST /api/predict-v2 for $homeTeam vs $awayTeam');
     final normalizedCode = leagueCode.trim().toUpperCase();
-    print(
+    debugPrint(
       '[SOCCER] predict-v2 request body: matchId=$matchId, leagueCode=$normalizedCode, odds={home:$homeOdds, draw:$drawOdds, away:$awayOdds}',
     );
     try {
@@ -135,7 +136,7 @@ class SoccerService {
         'homeOdds': homeOdds,
         'drawOdds': drawOdds,
         'awayOdds': awayOdds,
-        if (matchId != null) 'matchId': matchId,
+        'matchId': ?matchId,
         if (commenceTime != null && commenceTime.isNotEmpty)
           'commenceTime': commenceTime,
       };
@@ -149,19 +150,19 @@ class SoccerService {
         ),
       );
       final adapted = _adaptToMap(response.data);
-      print('[SOCCER] predict-v2 response keys: ${adapted.keys.toList()}');
+      debugPrint('[SOCCER] predict-v2 response keys: ${adapted.keys.toList()}');
       if (adapted['prediction'] != null) {
         final pred = adapted['prediction'];
         if (pred is Map) {
-          print('[SOCCER] prediction keys: ${pred.keys.toList()}');
-          print('[SOCCER] prediction.recommendation: ${pred['recommendation']}');
-          print('[SOCCER] prediction.finalProb: ${pred['finalProb']}');
-          print('[SOCCER] prediction.homePower: ${pred['homePower']}');
-          print('[SOCCER] prediction.awayPower: ${pred['awayPower']}');
-          print('[SOCCER] prediction.patternStats: ${pred['patternStats']}');
+          debugPrint('[SOCCER] prediction keys: ${pred.keys.toList()}');
+          debugPrint('[SOCCER] prediction.recommendation: ${pred['recommendation']}');
+          debugPrint('[SOCCER] prediction.finalProb: ${pred['finalProb']}');
+          debugPrint('[SOCCER] prediction.homePower: ${pred['homePower']}');
+          debugPrint('[SOCCER] prediction.awayPower: ${pred['awayPower']}');
+          debugPrint('[SOCCER] prediction.patternStats: ${pred['patternStats']}');
           final patternStats = pred['patternStats'];
           if (patternStats is Map) {
-            print(
+            debugPrint(
               '[SOCCER] patternStats keys: ${patternStats.keys.toList()}',
             );
           }
@@ -173,11 +174,11 @@ class SoccerService {
               'awayPower',
               'patternStats',
             ].contains(key)) {
-              print(
+              debugPrint(
                 '[SOCCER] prediction.$key type: ${pred[key].runtimeType}',
               );
               if (pred[key] is Map) {
-                print(
+                debugPrint(
                   '[SOCCER] prediction.$key keys: ${(pred[key] as Map).keys.toList()}',
                 );
               }
@@ -196,7 +197,7 @@ class SoccerService {
     required int awayTeamId,
     int last = 10,
   }) async {
-    print('[SOCCER] GET /api/h2h-enhanced for $homeTeamId vs $awayTeamId');
+    debugPrint('[SOCCER] GET /api/h2h-enhanced for $homeTeamId vs $awayTeamId');
     try {
       final response = await _dio.get<dynamic>(
         '/api/h2h-enhanced',
@@ -216,7 +217,7 @@ class SoccerService {
     required String homeTeam,
     required String awayTeam,
   }) async {
-    print('[SOCCER] GET /api/h2h-analysis for $homeTeam vs $awayTeam');
+    debugPrint('[SOCCER] GET /api/h2h-analysis for $homeTeam vs $awayTeam');
     try {
       final response = await _dio.get<dynamic>(
         '/api/h2h-analysis',
@@ -226,19 +227,19 @@ class SoccerService {
         },
       );
       final data = response.data;
-      print('[SOCCER] h2h-analysis response type: ${data.runtimeType}');
-      print(
+      debugPrint('[SOCCER] h2h-analysis response type: ${data.runtimeType}');
+      debugPrint(
         '[SOCCER] h2h-analysis keys: ${data is Map ? data.keys.toList() : "not map"}',
       );
       if (data is Map) {
         for (final key in data.keys) {
           final val = data[key];
-          print('[SOCCER] h2h-analysis.$key type: ${val.runtimeType}');
+          debugPrint('[SOCCER] h2h-analysis.$key type: ${val.runtimeType}');
           if (val is Map) {
-            print('[SOCCER] h2h-analysis.$key keys: ${val.keys.toList()}');
+            debugPrint('[SOCCER] h2h-analysis.$key keys: ${val.keys.toList()}');
           }
           if (val is List) {
-            print('[SOCCER] h2h-analysis.$key length: ${val.length}');
+            debugPrint('[SOCCER] h2h-analysis.$key length: ${val.length}');
           }
         }
       }
@@ -263,14 +264,14 @@ class SoccerService {
         },
       );
       final data = response.data;
-      print(
+      debugPrint(
         '[SOCCER] team-stats for $teamName ($teamId): source=${data is Map ? data['source'] : null}',
       );
       if (data is Map<String, dynamic>) return data;
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};
     } catch (e) {
-      print('[SOCCER] team-stats error for $teamName: $e');
+      debugPrint('[SOCCER] team-stats error for $teamName: $e');
       return {};
     }
   }
@@ -298,17 +299,17 @@ class SoccerService {
 
   // TODO: Replace with /api/v1/mobile/soccer/premium-picks/stats when available
   Future<Map<String, dynamic>> getPremiumPickStats({int days = 30}) async {
-    print('[SOCCER] getPremiumPickStats days=$days');
+    debugPrint('[SOCCER] getPremiumPickStats days=$days');
     try {
       final response = await _dio.get<dynamic>(
         '/api/premium-picks/stats',
         queryParameters: <String, int>{'days': days},
       );
       final raw = response.data;
-      print(
+      debugPrint(
         '[SOCCER] getPremiumPickStats raw response type: ${raw.runtimeType}',
       );
-      print(
+      debugPrint(
         '[SOCCER] getPremiumPickStats raw keys: ${raw is Map ? raw.keys.toList() : "not map"}',
       );
       if (raw is Map<String, dynamic>) return raw;
@@ -385,7 +386,7 @@ class SoccerService {
     final recentResults =
         window.take(7).map(_toRecentResultEntry).toList(growable: false);
 
-    print(
+    debugPrint(
       '[SOCCER] calculateRecentStats: winRate=$winRate, streak=$streak, total=$total',
     );
 
@@ -650,8 +651,8 @@ class SoccerService {
         'score': pick['score'],
         'result': pick['result'],
         'date': pick['date'] ?? pick['commence_time'] ?? pick['commenceTime'],
-        if (homeLogo != null) 'homeTeamLogo': homeLogo,
-        if (awayLogo != null) 'awayTeamLogo': awayLogo,
+        'homeTeamLogo': ?homeLogo,
+        'awayTeamLogo': ?awayLogo,
       };
     }
 
@@ -663,8 +664,8 @@ class SoccerService {
       if (matchLabel.isNotEmpty) 'match': matchLabel,
       if (home is String && home.isNotEmpty) 'homeTeam': home,
       if (away is String && away.isNotEmpty) 'awayTeam': away,
-      if (homeLogo != null) 'homeTeamLogo': homeLogo,
-      if (awayLogo != null) 'awayTeamLogo': awayLogo,
+      'homeTeamLogo': ?homeLogo,
+      'awayTeamLogo': ?awayLogo,
       'predicted': pick['predicted'] ??
           pick['prediction'] ??
           pick['pick'] ??
@@ -691,11 +692,11 @@ class SoccerService {
     }).toList();
 
     if (excludedCodes.isNotEmpty) {
-      print(
+      debugPrint(
         '[SOCCER] Filtered non-analysis league codes: ${excludedCodes.toList()}',
       );
     }
-    print(
+    debugPrint(
       '[SOCCER] Analysis league filter: ${cards.length} -> ${filtered.length} cards',
     );
     return filtered;
@@ -703,19 +704,19 @@ class SoccerService {
 
   List<SoccerAnalysisCard> _adaptToAnalysisCards(dynamic data) {
     final items = _extractList(data);
-    print('[SOCCER] Parsing ${items.length} items into SoccerAnalysisCard');
+    debugPrint('[SOCCER] Parsing ${items.length} items into SoccerAnalysisCard');
     final cards = items
         .whereType<Map<String, dynamic>>()
         .map(SoccerAnalysisCard.fromJson)
         .toList();
     if (cards.isNotEmpty) {
       final card = cards.first;
-      print(
+      debugPrint(
         '[SOCCER] Parsed card: home=${card.match.homeTeam.name}, away=${card.match.awayTeam.name}, league=${card.match.league.name}',
       );
     }
     if (items.isNotEmpty && cards.isEmpty) {
-      print('[SOCCER] WARNING: Data exists but parsed 0 cards');
+      debugPrint('[SOCCER] WARNING: Data exists but parsed 0 cards');
     }
     return cards;
   }

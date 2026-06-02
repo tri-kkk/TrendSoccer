@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/premium/team_stat_gauge_card.dart';
 import 'package:trendsoccer/shared/widgets/baseball/premium/confidence_chip.dart';
 
@@ -112,12 +113,12 @@ bool _loggedAiKeys = false;
 BaseballAiAnalysisParsed parseBaseballAiAnalysis(Map<String, dynamic> raw) {
   if (!_loggedAiKeys) {
     _loggedAiKeys = true;
-    print('[BASEBALL] AI analysis keys: ${raw.keys.toList()}');
+    debugPrint('[BASEBALL] AI analysis keys: ${raw.keys.toList()}');
   }
 
   final data = _unwrapAi(raw);
   if (data.isNotEmpty && data != raw) {
-    print('[BASEBALL] AI analysis data keys: ${data.keys.toList()}');
+    debugPrint('[BASEBALL] AI analysis data keys: ${data.keys.toList()}');
   }
 
   final homeTeam = _readTeamName(data, isHome: true);

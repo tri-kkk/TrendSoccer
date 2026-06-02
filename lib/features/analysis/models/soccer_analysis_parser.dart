@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
@@ -134,7 +135,7 @@ SoccerStandardAnalysisParsed parseSoccerStandardAnalysis(
     _parseMethodBreakdown(method2, 'MIN-MAX 비교'),
     _parseMethodBreakdown(method3, '선제골'),
   ];
-  print(
+  debugPrint(
     '[SOCCER] 3-Method parsed: ${threeMethods.map((m) => 'win=${m.win} draw=${m.draw} lose=${m.lose}').toList()}',
   );
 
@@ -202,24 +203,24 @@ SoccerStandardAnalysisParsed parseSoccerStandardAnalysis(
 }
 
 void _logPredictV2Structure(Map<String, dynamic> pred) {
-  print('[SOCCER] parse predict-v2 root keys: ${pred.keys.toList()}');
-  print('[SOCCER] prediction.pattern: ${pred['pattern']}');
-  print('[SOCCER] homePA: ${pred['homePA']}');
-  print('[SOCCER] awayPA: ${pred['awayPA']}');
+  debugPrint('[SOCCER] parse predict-v2 root keys: ${pred.keys.toList()}');
+  debugPrint('[SOCCER] prediction.pattern: ${pred['pattern']}');
+  debugPrint('[SOCCER] homePA: ${pred['homePA']}');
+  debugPrint('[SOCCER] awayPA: ${pred['awayPA']}');
   final homePA = pred['homePA'];
   if (homePA is Map) {
-    print('[SOCCER] homePA.all: ${homePA['all']}');
-    print('[SOCCER] homePA.five: ${homePA['five']}');
-    print('[SOCCER] homePA.firstGoal: ${homePA['firstGoal']}');
+    debugPrint('[SOCCER] homePA.all: ${homePA['all']}');
+    debugPrint('[SOCCER] homePA.five: ${homePA['five']}');
+    debugPrint('[SOCCER] homePA.firstGoal: ${homePA['firstGoal']}');
   }
   final debug = pred['debug'];
   if (debug is Map) {
-    print('[SOCCER] debug.homeStats: ${debug['homeStats']}');
-    print('[SOCCER] debug.awayStats: ${debug['awayStats']}');
+    debugPrint('[SOCCER] debug.homeStats: ${debug['homeStats']}');
+    debugPrint('[SOCCER] debug.awayStats: ${debug['awayStats']}');
   }
   final patternStats = pred['patternStats'];
   if (patternStats is Map) {
-    print('[SOCCER] patternStats keys: ${patternStats.keys.toList()}');
+    debugPrint('[SOCCER] patternStats keys: ${patternStats.keys.toList()}');
   }
 }
 

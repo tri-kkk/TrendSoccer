@@ -187,10 +187,10 @@ class StartingPitchersSection extends ConsumerWidget {
               ? Map<String, dynamic>.from(awayCurrentRaw)
               : null,
         );
-        print(
+        debugPrint(
           '[BASEBALL] KBO pitcher chips: home strengths=${homeDisplay.strengths.length}, weakness=${homeDisplay.weaknesses.length}',
         );
-        print(
+        debugPrint(
           '[BASEBALL] KBO pitcher chips: away strengths=${awayDisplay.strengths.length}, weakness=${awayDisplay.weaknesses.length}',
         );
 

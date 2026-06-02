@@ -62,7 +62,7 @@ Future<void> main() async {
     },
   );
   // ignore: avoid_print
-  print('[AUTH] Naver SDK initialized');
+  debugPrint('[AUTH] Naver SDK initialized');
   final prefs = await SharedPreferences.getInstance();
   final iapService = IAPService();
   await iapService.init();

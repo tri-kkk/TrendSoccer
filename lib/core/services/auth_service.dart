@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -40,7 +41,7 @@ class AuthService {
         final map = json! as Map<String, dynamic>;
         final rawUser = map['user'];
         if (rawUser is Map<String, dynamic>) {
-          print(
+          debugPrint(
             '[AUTH] loadProfile: tier=${rawUser['tier']}, '
             'trial=${rawUser['trial']}, '
             'subscription=${rawUser['subscription']}',
@@ -49,7 +50,7 @@ class AuthService {
         }
         if (rawUser is Map) {
           final userMap = Map<String, dynamic>.from(rawUser);
-          print(
+          debugPrint(
             '[AUTH] loadProfile: tier=${userMap['tier']}, '
             'trial=${userMap['trial']}, '
             'subscription=${userMap['subscription']}',
@@ -77,7 +78,7 @@ class AuthService {
   }
 
   Future<LoginResponse> googleAuth(String accessToken) async {
-    print(
+    debugPrint(
       '[AUTH] Request body token field: accessToken (OAuth), value length: ${accessToken.length}',
     );
     return _api.post<LoginResponse>(
@@ -96,7 +97,7 @@ class AuthService {
       return _naverAuthStubResponse();
     }
 
-    print('[AUTH] Naver login: sending accessToken to backend');
+    debugPrint('[AUTH] Naver login: sending accessToken to backend');
     return _api.post<LoginResponse>(
       _naverAuthPath,
       data: <String, dynamic>{
@@ -165,7 +166,7 @@ class AuthService {
     final success = raw['success'] == true;
     final isTrial = raw['isTrial'] == true;
     final message = raw['message'] as String? ?? '';
-    print('[AUTH] agreeTerms: success=$success, isTrial=$isTrial, message=$message');
+    debugPrint('[AUTH] agreeTerms: success=$success, isTrial=$isTrial, message=$message');
 
     if (!success) {
       throw ApiException(

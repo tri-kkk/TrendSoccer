@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -34,14 +35,14 @@ class FixtureService {
       for (final m in matches) {
         if (m.status != 'scheduled' && m.status != 'finished') {
           if (nonStandardStatusLogs >= 5) break;
-          print(
+          debugPrint(
             '[FIXTURE] Non-standard status: matchId=${m.matchId} ${m.homeTeam} vs ${m.awayTeam} rawStatus="${m.rawStatus}" normalizedStatus="${m.status}"',
           );
           nonStandardStatusLogs++;
         }
       }
 
-      print('[FIXTURE] Soccer fixtures loaded: ${matches.length} matches');
+      debugPrint('[FIXTURE] Soccer fixtures loaded: ${matches.length} matches');
       final dates = matches
           .map((match) {
             final local = match.matchTimestamp.toLocal();
@@ -52,13 +53,13 @@ class FixtureService {
           .toSet()
           .toList()
         ..sort();
-      print('[FIXTURE] Date range: $dates');
-      print(
+      debugPrint('[FIXTURE] Date range: $dates');
+      debugPrint(
         '[FIXTURE] Leagues found: ${matches.map((m) => m.leagueCode.isNotEmpty ? m.leagueCode : m.leagueName).toSet().toList()}',
       );
       return matches;
     } catch (e) {
-      print('[FIXTURE] Soccer fixtures failed: $e');
+      debugPrint('[FIXTURE] Soccer fixtures failed: $e');
       return const [];
     }
   }
@@ -78,7 +79,7 @@ class FixtureService {
     final merged = results.expand((matches) => matches).toList()
       ..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
 
-    print(
+    debugPrint(
       '[FIXTURE] Baseball fixtures range: ${merged.length} matches from 7 dates',
     );
     return merged;
@@ -118,7 +119,7 @@ class FixtureService {
   Future<List<FixtureMatch>> getBaseballFixtures({required String date}) async {
     try {
       final status = _baseballStatusForDate(date);
-      print('[FIXTURE] Baseball call: date=$date, status=$status');
+      debugPrint('[FIXTURE] Baseball call: date=$date, status=$status');
 
       final response = await _dio.get<dynamic>(
         '/api/baseball/matches',
@@ -129,10 +130,10 @@ class FixtureService {
         sport: 'baseball',
         label: 'Baseball fixtures for $date (status=$status)',
       );
-      print('[FIXTURE] Baseball fixtures for $date: ${matches.length} matches');
+      debugPrint('[FIXTURE] Baseball fixtures for $date: ${matches.length} matches');
       return matches;
     } catch (e) {
-      print('[FIXTURE] Baseball fixtures for $date failed: $e');
+      debugPrint('[FIXTURE] Baseball fixtures for $date failed: $e');
       return const [];
     }
   }
@@ -151,10 +152,10 @@ class FixtureService {
           result[id] = LiveMatchData.fromJson(map);
         }
       }
-      print('[FIXTURE] Live matches: ${result.length} active');
+      debugPrint('[FIXTURE] Live matches: ${result.length} active');
       return result;
     } catch (e) {
-      print('[FIXTURE] Live matches error: $e');
+      debugPrint('[FIXTURE] Live matches error: $e');
       return {};
     }
   }
@@ -212,9 +213,9 @@ class FixtureService {
 
   void _logFirstItemKeys(List<Map<String, dynamic>> items, String label) {
     if (items.isEmpty) {
-      print('[FIXTURE] $label: no items in response');
+      debugPrint('[FIXTURE] $label: no items in response');
       return;
     }
-    print('[FIXTURE] $label first item keys: ${items.first.keys.toList()}');
+    debugPrint('[FIXTURE] $label first item keys: ${items.first.keys.toList()}');
   }
 }

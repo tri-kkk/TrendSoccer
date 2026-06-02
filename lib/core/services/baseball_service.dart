@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -36,7 +37,7 @@ class BaseballService {
         'league': league,
         'language': language,
       };
-      print(
+      debugPrint(
         '[BASEBALL] POST pitcher-analysis: api_match_id=$matchId, league=$league',
       );
       final response = await _dio.post<dynamic>(
@@ -48,12 +49,12 @@ class BaseballService {
         ),
       );
       final data = response.data;
-      print('[BASEBALL] Pitcher analysis success: cached=${data?['cached']}');
+      debugPrint('[BASEBALL] Pitcher analysis success: cached=${data?['cached']}');
       if (data is Map<String, dynamic>) return data;
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};
     } catch (e) {
-      print('[BASEBALL] Pitcher analysis error: $e');
+      debugPrint('[BASEBALL] Pitcher analysis error: $e');
       return {};
     }
   }
@@ -78,16 +79,16 @@ class BaseballService {
             .where((match) => match.league.toUpperCase() == normalizedLeague)
             .toList();
       }
-      print('[BASEBALL] Analysis matches for $date: ${matches.length}');
+      debugPrint('[BASEBALL] Analysis matches for $date: ${matches.length}');
       return matches;
     } catch (e) {
-      print('[BASEBALL] Analysis matches for $date failed: $e');
+      debugPrint('[BASEBALL] Analysis matches for $date failed: $e');
       return const [];
     }
   }
 
   Future<Map<String, dynamic>> getMatchDetail({required int matchId}) async {
-    print('[BASEBALL] Match detail request: api_match_id=$matchId');
+    debugPrint('[BASEBALL] Match detail request: api_match_id=$matchId');
     try {
       final response = await _dio.get<dynamic>(
         '/api/baseball/matches',
@@ -105,21 +106,21 @@ class BaseballService {
         match = _adaptToMap((responseData['matches'] as List).first);
       }
 
-      print(
+      debugPrint(
         '[BASEBALL] Match detail via query: id=$matchId, keys=${match?.keys}',
       );
-      print('[BASEBALL] aiPrediction: ${match?['aiPrediction']}');
-      print(
+      debugPrint('[BASEBALL] aiPrediction: ${match?['aiPrediction']}');
+      debugPrint(
         '[BASEBALL] aiPick: ${match?['aiPick']}, confidence: ${match?['aiPickConfidence']}',
       );
 
       if (match != null) {
         return {'match': match};
       }
-      print('[BASEBALL] Match detail for $matchId: no match in response');
+      debugPrint('[BASEBALL] Match detail for $matchId: no match in response');
       return responseData;
     } catch (e) {
-      print('[BASEBALL] Match detail for $matchId failed: $e');
+      debugPrint('[BASEBALL] Match detail for $matchId failed: $e');
       rethrow;
     }
   }
@@ -136,7 +137,7 @@ class BaseballService {
           'awayTeamId': awayTeamId,
         },
       );
-      print(
+      debugPrint(
         '[BASEBALL] H2H for $homeTeamId vs $awayTeamId: ${response.data?['count']} matches',
       );
       final data = response.data;
@@ -144,7 +145,7 @@ class BaseballService {
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};
     } catch (e) {
-      print('[BASEBALL] H2H error: $e');
+      debugPrint('[BASEBALL] H2H error: $e');
       return {};
     }
   }
@@ -169,13 +170,13 @@ class BaseballService {
           receiveTimeout: const Duration(seconds: 30),
         ),
       );
-      print('[BASEBALL] predict response: success=${response.data?['success']}');
+      debugPrint('[BASEBALL] predict response: success=${response.data?['success']}');
       final data = response.data;
       if (data is Map<String, dynamic>) return data;
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};
     } catch (e) {
-      print('[BASEBALL] predict error: $e');
+      debugPrint('[BASEBALL] predict error: $e');
       return {};
     }
   }
@@ -184,7 +185,7 @@ class BaseballService {
     required int teamId,
   }) async {
     try {
-      print('[BASEBALL] team-stats request: teamId=$teamId');
+      debugPrint('[BASEBALL] team-stats request: teamId=$teamId');
       final response = await _dio.get<dynamic>(
         '/api/baseball/team-stats',
         queryParameters: <String, dynamic>{
@@ -192,14 +193,14 @@ class BaseballService {
         },
       );
       final data = response.data;
-      print(
+      debugPrint(
         '[BASEBALL] team-stats response: success=${data?['success']}, games=${data?['stats']?['games']}',
       );
       if (data is Map<String, dynamic>) return data;
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};
     } catch (e) {
-      print('[BASEBALL] team-stats error: $e');
+      debugPrint('[BASEBALL] team-stats error: $e');
       return {};
     }
   }
@@ -213,20 +214,20 @@ class BaseballService {
       final params = <String, dynamic>{};
       if (homePitcherId != null) params['homePitcherId'] = homePitcherId;
       if (awayPitcherId != null) params['awayPitcherId'] = awayPitcherId;
-      print(
+      debugPrint(
         '[BASEBALL] MLB pitcher-stats request: homePitcherId=$homePitcherId, awayPitcherId=$awayPitcherId',
       );
       final response = await _dio.get<dynamic>(
         '/api/baseball/pitcher-stats',
         queryParameters: params,
       );
-      print('[BASEBALL] MLB pitcher-stats: success=${response.data?['success']}');
+      debugPrint('[BASEBALL] MLB pitcher-stats: success=${response.data?['success']}');
       final data = response.data;
       if (data is Map<String, dynamic>) return data;
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};
     } catch (e) {
-      print('[BASEBALL] MLB pitcher-stats error: $e');
+      debugPrint('[BASEBALL] MLB pitcher-stats error: $e');
       return {};
     }
   }
@@ -238,7 +239,7 @@ class BaseballService {
     try {
       final url =
           'https://statsapi.mlb.com/api/v1/people/$pitcherId?hydrate=stats(group=[pitching],type=[season],season=$season)';
-      print('[BASEBALL] MLB Stats API request: pitcherId=$pitcherId, season=$season');
+      debugPrint('[BASEBALL] MLB Stats API request: pitcherId=$pitcherId, season=$season');
       final response = await Dio().get<dynamic>(
         url,
         options: Options(
@@ -255,17 +256,17 @@ class BaseballService {
       final firstSplit = splits is List && splits.isNotEmpty ? splits[0] : null;
       final stat = firstSplit is Map ? firstSplit['stat'] : null;
       if (stat is Map) {
-        print(
+        debugPrint(
           '[BASEBALL] MLB Stats API success: pitcherId=$pitcherId, season=$season, era=${stat['era']}',
         );
         return Map<String, dynamic>.from(stat);
       }
-      print(
+      debugPrint(
         '[BASEBALL] MLB Stats API: no stats for pitcherId=$pitcherId, season=$season',
       );
       return null;
     } catch (e) {
-      print('[BASEBALL] MLB Stats API error: $e');
+      debugPrint('[BASEBALL] MLB Stats API error: $e');
       return null;
     }
   }
@@ -289,13 +290,13 @@ class BaseballService {
           'awayTeam': awayTeam,
         },
       );
-      print('[BASEBALL] KBO/NPB pitcher stats: ${response.data?.keys}');
+      debugPrint('[BASEBALL] KBO/NPB pitcher stats: ${response.data?.keys}');
       final data = response.data;
       if (data is Map<String, dynamic>) return data;
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};
     } catch (e) {
-      print('[BASEBALL] KBO/NPB pitcher stats error: $e');
+      debugPrint('[BASEBALL] KBO/NPB pitcher stats error: $e');
       return {};
     }
   }
@@ -313,7 +314,7 @@ class BaseballService {
         '/api/baseball/combo-picks',
         queryParameters: params,
       );
-      print(
+      debugPrint(
         '[BASEBALL] combo-picks: success=${response.data?['success']}, '
         'picks=${(response.data?['picks'] as List?)?.length}',
       );
@@ -322,7 +323,7 @@ class BaseballService {
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};
     } catch (e) {
-      print('[BASEBALL] combo-picks error: $e');
+      debugPrint('[BASEBALL] combo-picks error: $e');
       return {};
     }
   }
@@ -350,7 +351,7 @@ class BaseballService {
     final merged = byId.values.toList()
       ..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
 
-    print('[BASEBALL] Upcoming analysis matches: ${merged.length}');
+    debugPrint('[BASEBALL] Upcoming analysis matches: ${merged.length}');
     return merged;
   }
 

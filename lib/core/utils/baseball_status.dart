@@ -78,7 +78,7 @@ class BaseballStatus {
     if (isFinished(status)) return 'Final';
     if (status == 'INTR') return '중단';
     final inning = extractInningNumber(status);
-    if (inning != null) return '${inning}회';
+    if (inning != null) return '$inning회';
     if (_liveBreaks.contains(status)) return 'LIVE';
     return status;
   }

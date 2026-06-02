@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 // Fixture schedule models for soccer and baseball match lists.
 
 class FixtureMatch {
@@ -93,10 +95,10 @@ class FixtureMatch {
     final normalizedStatus = normalizeMatchStatus(rawStatus);
 
     if (statusDebugIndex != null && statusDebugIndex < 5) {
-      print(
+      debugPrint(
         '[FIXTURE] status fields: status=${json['status']}, matchStatus=${json['matchStatus']}',
       );
-      print(
+      debugPrint(
         '[FIXTURE] Match status raw: "${statusStr ?? ''}" → normalized: "$normalizedStatus"',
       );
     }

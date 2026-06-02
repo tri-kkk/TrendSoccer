@@ -55,12 +55,12 @@ class BaseballH2HMatch {
     final awayKo = _normalizeOptionalKo(awayTeamKo);
 
     if ((homeKo == null || homeKo.isEmpty) && homeTeam.isNotEmpty) {
-      print(
+      debugPrint(
         '[BASEBALL] H2H WARNING: missing Ko for home "$homeTeam" on $date',
       );
     }
     if ((awayKo == null || awayKo.isEmpty) && awayTeam.isNotEmpty) {
-      print(
+      debugPrint(
         '[BASEBALL] H2H WARNING: missing Ko for away "$awayTeam" on $date',
       );
     }

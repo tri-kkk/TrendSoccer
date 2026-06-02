@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:trendsoccer/core/services/baseball_service.dart';
@@ -76,7 +77,7 @@ final baseballPitcherAnalysisProvider =
         }
       }
     } catch (e) {
-      print('[BASEBALL] Failed to get KBO/NPB pitcher stats for analysis: $e');
+      debugPrint('[BASEBALL] Failed to get KBO/NPB pitcher stats for analysis: $e');
     }
   }
 
@@ -105,7 +106,7 @@ final baseballPitcherAnalysisProvider =
         );
       }
     } catch (e) {
-      print('[BASEBALL] Failed to get MLB pitcher stats for analysis: $e');
+      debugPrint('[BASEBALL] Failed to get MLB pitcher stats for analysis: $e');
     }
   }
 
@@ -141,13 +142,13 @@ final baseballPitcherAnalysisProvider =
     };
   }
 
-  print('[BASEBALL] pitcher-analysis homeStats keys: ${homeStats.keys}');
+  debugPrint('[BASEBALL] pitcher-analysis homeStats keys: ${homeStats.keys}');
   if (league == 'MLB') {
-    print(
+    debugPrint(
       '[BASEBALL] pitcher-analysis MLB shape: current=${(homeStats['current'] as Map?)?.keys}, prev=${homeStats['prev'] != null}',
     );
   }
-  print(
+  debugPrint(
     '[BASEBALL] pitcher-analysis POST: league=$league, homeTeam=$homeTeamForAnalysis, homePitcher=$homePitcherName, statsShape=${league == 'MLB' ? 'current/prev' : 'flat'}',
   );
 
@@ -242,7 +243,7 @@ final baseballPredictProvider =
   if (detail.isEmpty) return {};
   final ctx = _baseballMatchContext(detail, matchId);
   final service = ref.read(baseballServiceProvider);
-  print(
+  debugPrint(
     '[BASEBALL] predict POST: homeTeam=${ctx.homeTeam}, awayTeam=${ctx.awayTeam}',
   );
   return service.getBaseballPredict(

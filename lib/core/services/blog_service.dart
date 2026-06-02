@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -26,7 +27,7 @@ class BlogService {
           'offset': offset,
         },
       );
-      print(
+      debugPrint(
         '[BLOG] posts: success=${response.data?['success']}, '
         'count=${(response.data?['data'] as List?)?.length}',
       );
@@ -35,7 +36,7 @@ class BlogService {
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};
     } catch (e) {
-      print('[BLOG] posts error: $e');
+      debugPrint('[BLOG] posts error: $e');
       return {};
     }
   }
@@ -43,7 +44,7 @@ class BlogService {
   Future<Map<String, dynamic>> getBlogPost(String slug) async {
     try {
       final response = await _dio.get<dynamic>('/api/blog/post/$slug');
-      print(
+      debugPrint(
         '[BLOG] post detail: slug=$slug, success=${response.data?['success']}',
       );
       final data = response.data;
@@ -51,7 +52,7 @@ class BlogService {
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};
     } catch (e) {
-      print('[BLOG] post detail error: $e');
+      debugPrint('[BLOG] post detail error: $e');
       return {};
     }
   }
@@ -63,10 +64,10 @@ class BlogService {
         options: Options(responseType: ResponseType.plain),
       );
       final html = response.data?.toString() ?? '';
-      print('[LEGAL] Fetched $type: ${html.length} chars');
+      debugPrint('[LEGAL] Fetched $type: ${html.length} chars');
       return html;
     } catch (e) {
-      print('[LEGAL] Error fetching $type: $e');
+      debugPrint('[LEGAL] Error fetching $type: $e');
       return '';
     }
   }
@@ -78,7 +79,7 @@ class BlogService {
     required String message,
   }) async {
     try {
-      print('[CONTACT] Sending: name=$name, email=$email, subject=$subject');
+      debugPrint('[CONTACT] Sending: name=$name, email=$email, subject=$subject');
       final response = await _dio.post<dynamic>(
         '/api/contact',
         data: <String, String>{
@@ -88,13 +89,13 @@ class BlogService {
           'message': message,
         },
       );
-      print('[CONTACT] Response: ${response.data}');
+      debugPrint('[CONTACT] Response: ${response.data}');
       final data = response.data;
       if (data is Map<String, dynamic>) return data;
       if (data is Map) return Map<String, dynamic>.from(data);
       return {'success': false};
     } catch (e) {
-      print('[CONTACT] Error: $e');
+      debugPrint('[CONTACT] Error: $e');
       return {'success': false, 'error': e.toString()};
     }
   }

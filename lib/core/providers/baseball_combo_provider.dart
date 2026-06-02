@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:trendsoccer/core/services/baseball_combo_service.dart';
@@ -10,7 +11,7 @@ final baseballComboPicksProvider =
 });
 
 void invalidateBaseballComboPicks(WidgetRef ref) {
-  print('[BASEBALL] combo-picks provider invalidated — fetching fresh data');
+  debugPrint('[BASEBALL] combo-picks provider invalidated — fetching fresh data');
   ref.invalidate(baseballComboPicksProvider);
 }
 

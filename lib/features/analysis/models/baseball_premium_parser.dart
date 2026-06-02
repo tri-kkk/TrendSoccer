@@ -1,32 +1,33 @@
+import 'package:flutter/foundation.dart';
 import 'package:trendsoccer/core/models/baseball_models.dart';
 import 'package:trendsoccer/shared/widgets/baseball/premium/confidence_chip.dart';
 
 void logBaseballPremiumPredict(Map<String, dynamic> predictData) {
-  print('[BASEBALL] Premium predict keys: ${predictData.keys}');
+  debugPrint('[BASEBALL] Premium predict keys: ${predictData.keys}');
 
   final prediction = predictData['prediction'] as Map?;
   final insights = predictData['insights'] as Map?;
   final dataQuality = predictData['dataQuality'] as Map?;
 
-  print(
+  debugPrint(
     '[BASEBALL] Premium WIN PROB: home=${prediction?['homeWinProb']}, away=${prediction?['awayWinProb']}',
   );
-  print(
+  debugPrint(
     '[BASEBALL] Premium O/U PROB: over=${prediction?['overProb']}, under=${prediction?['underProb']}',
   );
-  print('[BASEBALL] Premium CONFIDENCE: ${prediction?['confidence']}');
-  print('[BASEBALL] Premium RECENT FORM: ${insights?['recentForm']}');
-  print('[BASEBALL] Premium HOME ADVANTAGE: ${insights?['homeAdvantage']}');
-  print('[BASEBALL] Premium TEAM FORM: ${insights?['teamForm']}');
-  print('[BASEBALL] Premium TEAM SEASON: ${insights?['teamSeason']}');
-  print('[BASEBALL] Premium DATA QUALITY: $dataQuality');
-  print('[BASEBALL] Premium using predict for sections 3-7');
+  debugPrint('[BASEBALL] Premium CONFIDENCE: ${prediction?['confidence']}');
+  debugPrint('[BASEBALL] Premium RECENT FORM: ${insights?['recentForm']}');
+  debugPrint('[BASEBALL] Premium HOME ADVANTAGE: ${insights?['homeAdvantage']}');
+  debugPrint('[BASEBALL] Premium TEAM FORM: ${insights?['teamForm']}');
+  debugPrint('[BASEBALL] Premium TEAM SEASON: ${insights?['teamSeason']}');
+  debugPrint('[BASEBALL] Premium DATA QUALITY: $dataQuality');
+  debugPrint('[BASEBALL] Premium using predict for sections 3-7');
 }
 
 void logBaseballPremiumDetail(Map<String, dynamic> detail) {
   final match = _unwrapMatch(detail);
   final aiPred = match['aiPrediction'] as Map?;
-  print(
+  debugPrint(
     '[BASEBALL] Premium using aiPrediction: homeWinProb=${aiPred?['homeWinProb']}, grade=${match['aiPick']}',
   );
   final odds = match['odds'] as Map?;
@@ -34,7 +35,7 @@ void logBaseballPremiumDetail(Map<String, dynamic> detail) {
     _parseDouble(odds?['overOdds']),
     _parseDouble(odds?['underOdds']),
   );
-  print('[BASEBALL] Premium O/U implied: over=$overProb%, under=$underProb%');
+  debugPrint('[BASEBALL] Premium O/U implied: over=$overProb%, under=$underProb%');
 }
 
 class PremiumGaugeItem {
