@@ -113,7 +113,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
             style: TextStyle(color: semantic.textPrimary),
           ),
           content: Text(
-            '알림 권한이 필요합니다. 설정에서 알림을 허용해주세요.',
+            '알림 권한이 필요합니다.\n설정에서 알림을 허용해주세요.',
             style: TextStyle(color: semantic.textSecondary),
           ),
           actions: [

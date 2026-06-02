@@ -285,7 +285,7 @@ Future<void> showAlarmSheet(
             ),
             content: Text(
               '경기 알림이 꺼져 있습니다.\n메뉴 > 알림 설정에서 경기 알림을 켜주세요.',
-              style: TsType.bodyLRegular.copyWith(color: sem.textSecondary),
+              style: TextStyle(color: sem.textSecondary),
             ),
             actions: [
               TextButton(
