@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
+import 'package:trendsoccer/features/analysis/models/parser_labels.dart';
 import 'package:trendsoccer/features/analysis/models/soccer_match_report_data.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer/standard/reasoning_section.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer/standard/team_statistics_section.dart';
@@ -73,6 +74,7 @@ class SoccerStandardAnalysisParsed {
 
 SoccerStandardAnalysisParsed parseSoccerStandardAnalysis(
   Map<String, dynamic> raw, {
+  required ParserLabels labels,
   DateTime? fallbackMatchTimestamp,
   MatchHeaderData? headerFallback,
 }) {
@@ -131,9 +133,9 @@ SoccerStandardAnalysisParsed parseSoccerStandardAnalysis(
   final pickRaw = _readString(recommendation, const ['pick', 'direction']);
 
   final threeMethods = [
-    _parseMethodBreakdown(method1, 'P/A비교'),
-    _parseMethodBreakdown(method2, 'MIN-MAX 비교'),
-    _parseMethodBreakdown(method3, '선제골'),
+    _parseMethodBreakdown(method1, labels.soccerMethodPaCompare),
+    _parseMethodBreakdown(method2, labels.soccerMethodMinMax),
+    _parseMethodBreakdown(method3, labels.soccerMethodFirstGoal),
   ];
   debugPrint(
     '[SOCCER] 3-Method parsed: ${threeMethods.map((m) => 'win=${m.win} draw=${m.draw} lose=${m.lose}').toList()}',
@@ -147,14 +149,14 @@ SoccerStandardAnalysisParsed parseSoccerStandardAnalysis(
                 LeagueInfo.fromJson(leagueMap),
               )),
     matchDateDisplay: headerFallback?.displayDate ?? _formatMatchDateDisplay(match),
-    homeTeam: homeName.isEmpty ? '홈' : homeName,
-    awayTeam: awayName.isEmpty ? '원정' : awayName,
+    homeTeam: homeName.isEmpty ? labels.labelHome : homeName,
+    awayTeam: awayName.isEmpty ? labels.labelAway : awayName,
     homeLogoUrl: headerFallback?.homeTeamLogo ??
         _readString(homeTeamMap, const ['logo', 'logoUrl', 'logo_url']),
     awayLogoUrl: headerFallback?.awayTeamLogo ??
         _readString(awayTeamMap, const ['logo', 'logoUrl', 'logo_url']),
     matchTimestampUtc: matchTimestamp?.toUtc(),
-    prediction: _formatPickDisplayKorean(pickRaw),
+    prediction: _formatPickDisplay(labels, pickRaw),
     winProbability: _formatPickWinProbability(
       pickRaw,
       homeProbValue,
@@ -168,7 +170,10 @@ SoccerStandardAnalysisParsed parseSoccerStandardAnalysis(
       predictionRoot: predictionRoot,
       patternStats: patternStats,
     ),
-    reasoningItems: _parseReasoningFromRecommendation(recommendation?['reasons']),
+    reasoningItems: _parseReasoningFromRecommendation(
+      labels,
+      recommendation?['reasons'],
+    ),
     homeOdds: _formatOdds(
       headerFallback?.homeOdds ??
           odds?['home'] ??
@@ -194,6 +199,7 @@ SoccerStandardAnalysisParsed parseSoccerStandardAnalysis(
     drawProb: drawProbValue,
     awayProb: awayProbValue,
     teamStats: _parseTeamStatsFromDebug(
+      labels: labels,
       debug: debug,
       homePA: homePA,
       awayPA: awayPA,
@@ -242,11 +248,11 @@ String _formatPickDirection(String? pick) {
   return normalized;
 }
 
-String _formatPickDisplayKorean(String? pick) {
+String _formatPickDisplay(ParserLabels labels, String? pick) {
   return switch (_formatPickDirection(pick)) {
-    'HOME' => '홈 승',
-    'DRAW' => '무승부',
-    'AWAY' => '원정 승',
+    'HOME' => labels.soccerPickHomeWin,
+    'DRAW' => labels.soccerPickDraw,
+    'AWAY' => labels.soccerPickAwayWin,
     _ => '-',
   };
 }
@@ -280,7 +286,10 @@ String _formatPowerValue(double? value) {
       : value.toStringAsFixed(1);
 }
 
-List<ReasoningDisplayItem> _parseReasoningFromRecommendation(Object? reasonsRaw) {
+List<ReasoningDisplayItem> _parseReasoningFromRecommendation(
+  ParserLabels labels,
+  Object? reasonsRaw,
+) {
   if (reasonsRaw is! List || reasonsRaw.isEmpty) {
     return const [];
   }
@@ -294,7 +303,7 @@ List<ReasoningDisplayItem> _parseReasoningFromRecommendation(Object? reasonsRaw)
     if (trimmed.isEmpty) continue;
     if (_shouldSkipReason(trimmed)) continue;
 
-    items.add(_parseReasonString(trimmed));
+    items.add(_parseReasonString(labels, trimmed));
   }
 
   return items;
@@ -305,7 +314,7 @@ bool _shouldSkipReason(String reason) {
   return lower.startsWith('data:');
 }
 
-ReasoningDisplayItem _parseReasonString(String reason) {
+ReasoningDisplayItem _parseReasonString(ParserLabels labels, String reason) {
   final lower = reason.toLowerCase();
 
   if (lower.startsWith('power diff') || lower.contains('power diff:')) {
@@ -314,15 +323,17 @@ ReasoningDisplayItem _parseReasonString(String reason) {
         .replaceAll(RegExp(r'pts', caseSensitive: false), '')
         .trim();
     return ReasoningDisplayItem(
-      label: '파워 차이',
-      value: value.isEmpty ? '-' : '$value점',
+      label: labels.soccerReasonPowerDiff,
+      value: value.isEmpty
+          ? '-'
+          : labels.soccerReasonPowerDiffPoints(value),
     );
   }
 
   if (lower.contains('prob edge')) {
     final value = reason.contains(':') ? reason.split(':').last.trim() : reason;
     return ReasoningDisplayItem(
-      label: '확률 우위',
+      label: labels.soccerReasonProbEdge,
       value: value.isEmpty ? '-' : value,
     );
   }
@@ -334,13 +345,13 @@ ReasoningDisplayItem _parseReasonString(String reason) {
       final count = int.tryParse(match.group(1)!);
       if (count != null) {
         return ReasoningDisplayItem(
-          label: '패턴',
-          value: '${_formatCountWithComma(count)} 경기 기반',
+          label: labels.soccerReasonPattern,
+          value: labels.soccerReasonPatternMatches(count),
         );
       }
     }
     return ReasoningDisplayItem(
-      label: '패턴',
+      label: labels.soccerReasonPattern,
       value: segment.isEmpty ? '-' : segment,
     );
   }
@@ -349,14 +360,16 @@ ReasoningDisplayItem _parseReasonString(String reason) {
       lower.contains('first goal') ||
       lower.contains('선득점')) {
     final value = reason.contains(':') ? reason.split(':').last.trim() : reason;
-    final label = lower.contains('away') ? '원정 선득점 승률' : '홈 선득점 승률';
+    final label = lower.contains('away')
+        ? labels.soccerReasonFirstGoalAway
+        : labels.soccerReasonFirstGoalHome;
     return ReasoningDisplayItem(
       label: label,
       value: value.isEmpty ? '-' : value,
     );
   }
 
-  return ReasoningDisplayItem(label: reason, value: '');
+  return ReasoningDisplayItem(label: labels.soccerReasonBasis, value: reason);
 }
 
 String _formatPatternDisplay({
@@ -415,6 +428,7 @@ double? _parseMethodProbability(Object? value) {
 enum _StatFormat { integerPercent, form }
 
 List<TeamStatItem> _parseTeamStatsFromDebug({
+  required ParserLabels labels,
   required Map<String, dynamic>? debug,
   required Map<String, dynamic>? homePA,
   required Map<String, dynamic>? awayPA,
@@ -424,24 +438,25 @@ List<TeamStatItem> _parseTeamStatsFromDebug({
 
   return [
     _buildCompareStatItem(
-      label: '선제골 승률',
+      label: labels.soccerStatFirstGoalRate,
       homeValue: _parseDouble(homeStats?['homeFirstGoalWinRate']),
       awayValue: _parseDouble(awayStats?['awayFirstGoalWinRate']),
       format: _StatFormat.integerPercent,
     ),
     _buildCompareStatItem(
-      label: '역전률',
+      label: labels.soccerStatComebackRate,
       homeValue: _parseDouble(homeStats?['homeComebackRate']),
       awayValue: _parseDouble(awayStats?['awayComebackRate']),
       format: _StatFormat.integerPercent,
     ),
     _buildCompareStatItem(
-      label: '최근 폼',
+      label: labels.soccerStatRecentForm,
       homeValue: _parseDouble(homeStats?['form']),
       awayValue: _parseDouble(awayStats?['form']),
       format: _StatFormat.form,
     ),
     _buildGoalRatioStatItem(
+      labels: labels,
       homeRatio: _parsePaAllValue(homePA),
       awayRatio: _parsePaAllValue(awayPA),
     ),
@@ -456,6 +471,7 @@ double? _parsePaAllValue(Map<String, dynamic>? paMap) {
 }
 
 TeamStatItem _buildGoalRatioStatItem({
+  required ParserLabels labels,
   required double? homeRatio,
   required double? awayRatio,
 }) {
@@ -473,7 +489,7 @@ TeamStatItem _buildGoalRatioStatItem({
   }
 
   return TeamStatItem(
-    label: '득실비',
+    label: labels.soccerStatGoalDifference,
     homeValue: homeRatio ?? 0,
     awayValue: awayRatio ?? 0,
     homeDisplay: homeDisplay,

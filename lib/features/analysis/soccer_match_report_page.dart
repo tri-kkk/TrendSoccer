@@ -9,6 +9,9 @@ import 'package:trendsoccer/core/providers/soccer_match_report_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/core/utils/locale_data_helper.dart';
+import 'package:trendsoccer/features/analysis/models/parser_labels.dart';
 import 'package:trendsoccer/features/analysis/models/soccer_analysis_parser.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer/premium/soccer_premium_tab.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer/standard/soccer_standard_tab.dart';
@@ -96,6 +99,7 @@ class _SoccerMatchReportPageState extends ConsumerState<SoccerMatchReportPage> {
       data: (raw) {
         final parsed = parseSoccerStandardAnalysis(
           raw,
+          labels: ParserLabels.from(context.l10n),
           fallbackMatchTimestamp: matchTimestamp,
           headerFallback: header,
         );
@@ -124,7 +128,7 @@ class _SoccerMatchReportPageState extends ConsumerState<SoccerMatchReportPage> {
       appBar: TsAppBar.preferred(
         context,
         location: TsAppBarLocation.backTitle,
-        title: '매치 리포트',
+        title: context.l10n.matchReportTitle,
         onBack: () => context.pop(),
       ),
       body: SingleChildScrollView(
@@ -135,11 +139,23 @@ class _SoccerMatchReportPageState extends ConsumerState<SoccerMatchReportPage> {
           children: [
             MatchHeader(
               leagueId: header.resolvedLeagueIconId,
-              leagueName: header.leagueName,
+              leagueName: localizedLeagueName(
+                context,
+                header.leagueNameEn,
+                header.leagueName,
+              ),
               leagueLogoUrl: header.leagueLogo,
               matchDate: header.displayDate,
-              homeTeam: header.homeTeam,
-              awayTeam: header.awayTeam,
+              homeTeam: localizedTeamName(
+                context,
+                header.homeTeam,
+                header.homeTeamKo,
+              ),
+              awayTeam: localizedTeamName(
+                context,
+                header.awayTeam,
+                header.awayTeamKo,
+              ),
               homeLogoUrl: header.homeTeamLogo,
               awayLogoUrl: header.awayTeamLogo,
               selectedTab: _selectedTab,
@@ -183,13 +199,13 @@ class _MissingHeaderState extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            '경기 정보가 없습니다',
+            context.l10n.noMatchInfo,
             style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: TsSpacing.sm),
           Text(
-            '분석 페이지에서 경기를 선택해 주세요.',
+            context.l10n.selectMatchFromAnalysis,
             style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
             textAlign: TextAlign.center,
           ),

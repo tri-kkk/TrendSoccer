@@ -8,6 +8,7 @@ import 'package:trendsoccer/features/menu/help_center_page.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 class PrivacyPolicyPage extends ConsumerWidget {
@@ -16,13 +17,14 @@ class PrivacyPolicyPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     final contentAsync = ref.watch(privacyContentProvider);
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
       appBar: AppBar(
         title: Text(
-          '개인정보처리방침',
+          l10n.menuPrivacyPolicy,
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
         ),
         backgroundColor: semantic.surfaceBase,
@@ -147,6 +149,7 @@ class _LegalErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -154,13 +157,13 @@ class _LegalErrorState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '내용을 불러오지 못했습니다.',
+              l10n.legalLoadError,
               style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             TsButton(
-              label: '다시 시도',
+              label: l10n.retry,
               variant: TsButtonVariant.secondary,
               size: TsButtonSize.small,
               onPressed: onRetry,

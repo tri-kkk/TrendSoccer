@@ -13,12 +13,15 @@ import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/providers/language_provider.dart';
 
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 
 import 'package:trendsoccer/features/analysis/analysis_dummy_data.dart';
 
@@ -47,8 +50,6 @@ class AnalysisPage extends ConsumerStatefulWidget {
 
 class _AnalysisPageState extends ConsumerState<AnalysisPage> {
   static final _md = DateFormat('M.dd');
-
-  static const _weekdays = ['월', '화', '수', '목', '금', '토', '일'];
 
   static const _pageScrollPhysics = PageScrollPhysics(
     parent: ClampingScrollPhysics(),
@@ -229,7 +230,30 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
 
+  List<String> _weekdayLabels(AppLocalizations l10n) => [
+        l10n.weekdayMon,
+        l10n.weekdayTue,
+        l10n.weekdayWed,
+        l10n.weekdayThu,
+        l10n.weekdayFri,
+        l10n.weekdaySat,
+        l10n.weekdaySun,
+      ];
+
+  String _leagueChipLabel({
+    required bool isAll,
+    required String label,
+    required String labelEn,
+    required AppLanguage language,
+    required AppLocalizations l10n,
+  }) {
+    if (isAll) return l10n.filterAll;
+    return language == AppLanguage.en ? labelEn : label;
+  }
+
   Widget _buildSoccerFilterChips() {
+    final language = ref.watch(languageProvider);
+    final l10n = context.l10n;
     final selectedSoccerLeague = ref.watch(selectedLeagueProvider);
 
     return SizedBox(
@@ -250,7 +274,13 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
               : selectedSoccerLeague == chip.id;
 
           return TsFilterChip(
-            label: chip.displayLabel,
+            label: _leagueChipLabel(
+              isAll: chip.isAll,
+              label: chip.label,
+              labelEn: chip.labelEn,
+              language: language,
+              l10n: l10n,
+            ),
 
             isSelected: isSelected,
 
@@ -274,6 +304,8 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
   }
 
   Widget _buildBaseballLeagueFilterChips() {
+    final language = ref.watch(languageProvider);
+    final l10n = context.l10n;
     final selectedBaseballLeague = ref.watch(selectedBaseballLeagueProvider);
 
     return SizedBox(
@@ -294,7 +326,13 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
               : selectedBaseballLeague == chip.code;
 
           return TsFilterChip(
-            label: chip.displayLabel,
+            label: _leagueChipLabel(
+              isAll: chip.isAll,
+              label: chip.label,
+              labelEn: chip.labelEn,
+              language: language,
+              l10n: l10n,
+            ),
 
             isSelected: isSelected,
 
@@ -317,6 +355,8 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
   }
 
   Widget _buildBaseballDateNavStrip() {
+    final l10n = context.l10n;
+    final weekdays = _weekdayLabels(l10n);
     final today = DateTime.now();
 
     final todayDay = DateTime(today.year, today.month, today.day);
@@ -341,8 +381,8 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
                     : DateNavChipType.date,
 
                 dayLabel: _isSameDay(chipDates[i], todayDay)
-                    ? '오늘'
-                    : _weekdays[chipDates[i].weekday - 1],
+                    ? l10n.analysisToday
+                    : weekdays[chipDates[i].weekday - 1],
 
                 dateLabel: _md.format(chipDates[i]),
 
@@ -358,6 +398,8 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
   }
 
   Widget _buildSoccerDateNavStrip() {
+    final l10n = context.l10n;
+    final weekdays = _weekdayLabels(l10n);
     final today = DateTime.now();
     final todayDay = DateTime(today.year, today.month, today.day);
     final chipDates = soccerAnalysisDateTimes();
@@ -376,8 +418,8 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
                     ? DateNavChipType.today
                     : DateNavChipType.date,
                 dayLabel: _isSameDay(chipDates[i], todayDay)
-                    ? '오늘'
-                    : _weekdays[chipDates[i].weekday - 1],
+                    ? l10n.analysisToday
+                    : weekdays[chipDates[i].weekday - 1],
                 dateLabel: _md.format(chipDates[i]),
                 isActive: selectedDateStr == fixtureDateString(chipDates[i]),
                 onTap: () => _selectSoccerDateAtIndex(i),

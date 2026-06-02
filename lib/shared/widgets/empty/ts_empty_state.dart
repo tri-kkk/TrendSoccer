@@ -5,6 +5,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 enum TsEmptyStateType { defaultState, withAction, premiumPickEmpty, noData }
@@ -29,31 +30,32 @@ class TsEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
+    final l10n = context.l10n;
     final (String? iconAsset, IconData? icon, defaultTitle, defaultSubtitle) =
         switch (type) {
       TsEmptyStateType.premiumPickEmpty => (
           TsAssets.iconHourglassEmpty,
           null,
-          '오늘의 픽이 없습니다.',
-          '오전 6시 또는 오후 6시에 다시 확인해 주세요.',
+          l10n.emptyPremiumPickTitle,
+          l10n.emptyPremiumPickSubtitle,
         ),
       TsEmptyStateType.withAction => (
           TsAssets.iconHourglassEmpty,
           null,
-          '데이터가 없습니다.',
-          '나중에 다시 확인해 주세요.',
+          l10n.emptyDataTitle,
+          l10n.emptyDataSubtitle,
         ),
       TsEmptyStateType.noData => (
           TsAssets.iconHourglassEmpty,
           null,
-          '데이터가 없습니다.',
-          '나중에 다시 확인해주세요.',
+          l10n.emptyDataTitle,
+          l10n.emptyDataSubtitle,
         ),
       _ => (
           null,
           Icons.inbox,
-          '데이터가 없습니다.',
-          '나중에 다시 확인해 주세요.',
+          l10n.emptyDataTitle,
+          l10n.emptyDataSubtitle,
         ),
     };
 
@@ -96,7 +98,7 @@ class TsEmptyState extends StatelessWidget {
             if (type == TsEmptyStateType.withAction && onButtonPressed != null) ...[
               const SizedBox(height: TsSpacing.md),
               TsButton(
-                label: buttonLabel ?? '날짜 변경',
+                label: buttonLabel ?? l10n.emptyChangeDate,
                 variant: TsButtonVariant.primary,
                 size: TsButtonSize.small,
                 onPressed: onButtonPressed,

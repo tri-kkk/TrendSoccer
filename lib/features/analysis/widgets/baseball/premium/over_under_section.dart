@@ -4,6 +4,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 
 class OverUnderSection extends StatelessWidget {
   const OverUnderSection({
@@ -22,11 +23,15 @@ class OverUnderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
+    final baselineLabel = baseLine == '-' || baseLine.isEmpty
+        ? l10n.baseballBaselineDash
+        : l10n.baseballBaselineValue(baseLine);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '오버 / 언더',
+          l10n.baseballOverUnder,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
         const SizedBox(height: TsSpacing.sm),
@@ -49,7 +54,7 @@ class OverUnderSection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    '기준선 $baseLine',
+                    baselineLabel,
                     style: TsType.bodyLRegular.copyWith(color: TsColors.systemWarning500),
                   ),
                 ),
@@ -59,7 +64,7 @@ class OverUnderSection extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _UOBox(
-                      label: '오버',
+                      label: l10n.labelOver,
                       value: overOdds,
                       isFavored: !isFavoredUnder,
                     ),
@@ -67,7 +72,7 @@ class OverUnderSection extends StatelessWidget {
                   const SizedBox(width: TsSpacing.sm),
                   Expanded(
                     child: _UOBox(
-                      label: '언더',
+                      label: l10n.labelUnder,
                       value: underOdds,
                       isFavored: isFavoredUnder,
                     ),

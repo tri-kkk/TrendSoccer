@@ -16,6 +16,7 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/report/blog_parser.dart';
 import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 
 class SoccerReportDetailPage extends ConsumerWidget {
@@ -137,13 +138,13 @@ class SoccerReportDetailPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: TsSpacing.sm),
                   Text(
-                    '프리미엄 구독 회원 전용 콘텐츠입니다',
+                    context.l10n.reportPremiumOnlyTitle,
                     style: TsType.bodyLBold.copyWith(color: colors.textPrimary),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: TsSpacing.xs),
                   Text(
-                    'AI 분석 결과를 확인하려면 구독이 필요합니다',
+                    context.l10n.reportPremiumOnlyMessage,
                     style: TsType.bodyMRegular.copyWith(color: colors.textTertiary),
                     textAlign: TextAlign.center,
                   ),
@@ -161,7 +162,7 @@ class SoccerReportDetailPage extends ConsumerWidget {
                         ),
                       ),
                       child: Text(
-                        '지금 구독하기',
+                        context.l10n.premiumSubscribeNow,
                         style: TsType.bodyLBold.copyWith(
                           color: colors.interactiveOnPrimary,
                         ),
@@ -235,6 +236,7 @@ class SoccerReportDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     final brightness = Theme.of(context).brightness;
     final auth = ref.watch(authProvider);
     final hasFullAccess = auth.hasFullAccess;
@@ -246,10 +248,10 @@ class SoccerReportDetailPage extends ConsumerWidget {
         if (post != null) {
           return extractMatchupTitle(post.content, post.title);
         }
-        return '매치 프리뷰';
+        return l10n.menuMatchPreview;
       },
-      loading: () => '매치 프리뷰',
-      error: (error, stackTrace) => '매치 프리뷰',
+      loading: () => l10n.menuMatchPreview,
+      error: (error, stackTrace) => l10n.menuMatchPreview,
     );
 
     return Scaffold(
@@ -267,13 +269,13 @@ class SoccerReportDetailPage extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '매치 프리뷰를 불러오지 못했습니다.',
+                l10n.reportDetailLoadError,
                 style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: TsSpacing.lg),
               TsButton(
-                label: '다시 시도',
+                label: l10n.retry,
                 variant: TsButtonVariant.primary,
                 size: TsButtonSize.small,
                 onPressed: () => ref.invalidate(blogPostDetailProvider(slug)),
@@ -286,9 +288,9 @@ class SoccerReportDetailPage extends ConsumerWidget {
           if (post == null) {
             return Padding(
               padding: EdgeInsets.only(bottom: bottomPadding),
-              child: const TsEmptyState(
-                title: '리포트를 찾을 수 없습니다.',
-                subtitle: '목록에서 다시 선택해 주세요.',
+              child: TsEmptyState(
+                title: l10n.reportNotFoundTitle,
+                subtitle: l10n.reportNotFoundSubtitle,
               ),
             );
           }
@@ -340,14 +342,14 @@ class SoccerReportDetailPage extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'TrendSoccer',
+                            l10n.appName,
                             style: TsType.bodyLRegular.copyWith(
                               color: semantic.textPrimary,
                             ),
                           ),
                           const SizedBox(height: TsSpacing.xs),
                           Text(
-                            '축구 데이터 분석가',
+                            l10n.reportAuthorRole,
                             style: TsType.labelSRegular.copyWith(
                               color: semantic.textTertiary,
                             ),

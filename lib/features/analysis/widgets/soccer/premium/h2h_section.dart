@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/premium/circle_badge.dart';
 import 'package:trendsoccer/shared/widgets/premium/insights_card.dart';
 import 'package:trendsoccer/shared/widgets/premium/score_box.dart';
@@ -125,7 +126,9 @@ class _H2HSectionState extends State<H2HSection> {
     );
   }
 
-  Widget _buildInnerContent(TsSemanticColors semantic) {
+  Widget _buildInnerContent(BuildContext context, TsSemanticColors semantic) {
+    final l10n = context.l10n;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -139,7 +142,7 @@ class _H2HSectionState extends State<H2HSection> {
           SizedBox(
             width: double.infinity,
             child: Text(
-              '역대 전적',
+              l10n.soccerH2hAllTime,
               style: TsType.bodyLRegular.copyWith(
                 color: semantic.textSecondary,
               ),
@@ -150,7 +153,7 @@ class _H2HSectionState extends State<H2HSection> {
           SizedBox(
             width: double.infinity,
             child: Text(
-              '(${widget.totalMatches} Matches)',
+              l10n.soccerH2hMatchCount(widget.totalMatches),
               style: TsType.labelSRegular.copyWith(
                 color: semantic.textTertiary,
               ),
@@ -162,19 +165,19 @@ class _H2HSectionState extends State<H2HSection> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircleBadge(
-                label: '승',
+                label: l10n.soccerStatWins,
                 value: '${widget.homeWins}',
                 type: CircleBadgeType.win,
               ),
               const SizedBox(width: 48),
               CircleBadge(
-                label: '무',
+                label: l10n.labelDraw,
                 value: '${widget.draws}',
                 type: CircleBadgeType.draw,
               ),
               const SizedBox(width: 48),
               CircleBadge(
-                label: '패',
+                label: l10n.soccerStatLosses,
                 value: '${widget.awayWins}',
                 type: CircleBadgeType.lose,
               ),
@@ -184,7 +187,7 @@ class _H2HSectionState extends State<H2HSection> {
           SizedBox(
             width: double.infinity,
             child: Text(
-              '최근 맞대결',
+              l10n.soccerH2hRecent,
               style: TsType.bodyLRegular.copyWith(
                 color: semantic.textSecondary,
               ),
@@ -197,7 +200,7 @@ class _H2HSectionState extends State<H2HSection> {
           SizedBox(
             width: double.infinity,
             child: Text(
-              '통계',
+              l10n.soccerH2hStatistics,
               style: TsType.bodyLRegular.copyWith(
                 color: semantic.textSecondary,
               ),
@@ -210,14 +213,14 @@ class _H2HSectionState extends State<H2HSection> {
               Expanded(
                 child: StatsCard(
                   value: widget.avgGoals,
-                  label: '평균 득점',
+                  label: l10n.soccerH2hAvgGoals,
                 ),
               ),
               const SizedBox(width: TsSpacing.lg),
               Expanded(
                 child: StatsCard(
                   value: widget.over25,
-                  label: 'O 2.5',
+                  label: l10n.soccerStatOver25,
                   isHighlight: widget.over25Highlight,
                 ),
               ),
@@ -225,7 +228,7 @@ class _H2HSectionState extends State<H2HSection> {
               Expanded(
                 child: StatsCard(
                   value: widget.btts,
-                  label: 'BTTS',
+                  label: l10n.soccerMarketBtts,
                 ),
               ),
             ],
@@ -235,7 +238,7 @@ class _H2HSectionState extends State<H2HSection> {
             SizedBox(
               width: double.infinity,
               child: Text(
-                '최대 스코어',
+                l10n.soccerH2hMaxScore,
                 style: TsType.bodyLRegular.copyWith(
                   color: semantic.textSecondary,
                 ),
@@ -261,7 +264,7 @@ class _H2HSectionState extends State<H2HSection> {
           SizedBox(
             width: double.infinity,
             child: Text(
-              '매치 인사이트',
+              l10n.soccerH2hInsights,
               style: TsType.bodyLRegular.copyWith(
                 color: semantic.textSecondary,
               ),
@@ -278,7 +281,7 @@ class _H2HSectionState extends State<H2HSection> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final inner = _buildInnerContent(semantic);
+    final inner = _buildInnerContent(context, semantic);
 
     if (!widget.collapsible) {
       return inner;

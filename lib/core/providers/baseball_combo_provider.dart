@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/core/services/baseball_combo_service.dart';
 import 'package:trendsoccer/core/services/baseball_service.dart';
 
@@ -71,15 +72,20 @@ class BaseballComboStatsView {
 
   String get displayAvgOdds => comboCount > 0 ? avgOdds : '-';
 
-  String get displaySubtitle =>
-      comboCount > 0 ? '오늘 조합 $comboCount개' : '오늘의 AI 조합을 확인하세요.';
+  String displaySubtitle(AppLocalizations l10n) => comboCount > 0
+      ? l10n.cardComboTodayCount(comboCount)
+      : l10n.cardComboDefaultSubtitle;
 
-  String get resultStatusSummary {
+  String resultStatusSummary(AppLocalizations l10n) {
     final parts = <String>[];
-    if (pendingCount > 0) parts.add('$pendingCount개 진행 중');
-    if (partialCount > 0) parts.add('$partialCount개 부분 적중');
-    if (winCount > 0) parts.add('$winCount개 적중');
-    if (loseCount > 0) parts.add('$loseCount개 미적중');
+    if (pendingCount > 0) {
+      parts.add(l10n.comboResultInProgressCount(pendingCount));
+    }
+    if (partialCount > 0) {
+      parts.add(l10n.comboResultPartialCount(partialCount));
+    }
+    if (winCount > 0) parts.add(l10n.comboResultHitCount(winCount));
+    if (loseCount > 0) parts.add(l10n.comboResultMissCount(loseCount));
     return parts.join(' · ');
   }
 

@@ -8,6 +8,7 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/report/blog_parser.dart';
 import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 
 class SoccerReportListPage extends ConsumerWidget {
@@ -16,6 +17,7 @@ class SoccerReportListPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     final postsAsync = ref.watch(blogPostsProvider);
 
     return Scaffold(
@@ -23,7 +25,7 @@ class SoccerReportListPage extends ConsumerWidget {
       appBar: TsAppBar.preferred(
         context,
         location: TsAppBarLocation.backTitle,
-        title: '매치 프리뷰',
+        title: l10n.menuMatchPreview,
         onBack: () => context.pop(),
       ),
       body: postsAsync.when(
@@ -33,13 +35,13 @@ class SoccerReportListPage extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '매치 프리뷰 목록을 불러오지 못했습니다.',
+                l10n.reportListLoadError,
                 style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               TsButton(
-                label: '다시 시도',
+                label: l10n.retry,
                 variant: TsButtonVariant.primary,
                 size: TsButtonSize.small,
                 onPressed: () => ref.invalidate(blogPostsProvider),
@@ -50,9 +52,9 @@ class SoccerReportListPage extends ConsumerWidget {
         data: (response) {
           final posts = BlogParser.parsePostsList(response);
           if (posts.isEmpty) {
-            return const TsEmptyState(
-              title: '등록된 매치 프리뷰가 없습니다.',
-              subtitle: '새 프리뷰가 등록되면 여기에 표시됩니다.',
+            return TsEmptyState(
+              title: l10n.reportEmptyTitle,
+              subtitle: l10n.reportEmptySubtitle,
             );
           }
 

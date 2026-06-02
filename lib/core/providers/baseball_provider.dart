@@ -28,7 +28,7 @@ class BaseballAnalysisLeagueChip {
 const baseballAnalysisLeagueChips = [
   BaseballAnalysisLeagueChip(
     id: 'all',
-    label: '전체',
+    label: '',
     labelEn: 'All',
   ),
   BaseballAnalysisLeagueChip(

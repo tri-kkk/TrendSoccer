@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 /// Dialog helpers; use static [show] only.
@@ -65,13 +66,13 @@ class _DeleteAccountDialogBodyState extends State<_DeleteAccountDialogBody> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              '계정 삭제',
+              context.l10n.deleteAccountTitle,
               style: TsType.headingH2.copyWith(color: semantic.textPrimary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: TsSpacing.lg),
             Text(
-              '계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.\n확인을 위해 아래에 DELETE를 입력하세요.',
+              '${context.l10n.deleteAccountMessage}\n${context.l10n.deleteAccountHint}',
               style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
               textAlign: TextAlign.center,
             ),
@@ -104,7 +105,7 @@ class _DeleteAccountDialogBodyState extends State<_DeleteAccountDialogBody> {
               children: [
                 Expanded(
                   child: TsButton(
-                    label: '취소',
+                    label: context.l10n.cancel,
                     variant: TsButtonVariant.secondary,
                     onPressed: () => Navigator.of(context).pop(false),
                   ),
@@ -112,7 +113,7 @@ class _DeleteAccountDialogBodyState extends State<_DeleteAccountDialogBody> {
                 const SizedBox(width: TsSpacing.sm),
                 Expanded(
                   child: TsButton(
-                    label: '삭제',
+                    label: context.l10n.deleteAccountConfirm,
                     variant: TsButtonVariant.primary,
                     onPressed:
                         _canDelete ? () => Navigator.of(context).pop(true) : null,

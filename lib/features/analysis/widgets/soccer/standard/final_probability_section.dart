@@ -4,6 +4,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 
 class FinalProbabilitySection extends StatelessWidget {
   const FinalProbabilitySection({
@@ -24,6 +25,7 @@ class FinalProbabilitySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     final homePercent = (homeProb * 100).round();
     final drawPercent = (drawProb * 100).round();
     final awayPercent = (awayProb * 100).round();
@@ -43,7 +45,7 @@ class FinalProbabilitySection extends StatelessWidget {
       children: [
         if (showTitle) ...[
           Text(
-            '최종 예측 확률',
+            l10n.soccerFinalProbability,
             style: TsType.headingH2.copyWith(color: semantic.textPrimary),
           ),
           const SizedBox(height: TsSpacing.sm),
@@ -110,19 +112,19 @@ class FinalProbabilitySection extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '홈',
+                    l10n.labelHome,
                     style: TsType.labelSRegular.copyWith(
                       color: semantic.textTertiary,
                     ),
                   ),
                   Text(
-                    '무승부',
+                    l10n.soccerDraw,
                     style: TsType.labelSRegular.copyWith(
                       color: semantic.textTertiary,
                     ),
                   ),
                   Text(
-                    '원정',
+                    l10n.labelAway,
                     style: TsType.labelSRegular.copyWith(
                       color: semantic.textTertiary,
                     ),

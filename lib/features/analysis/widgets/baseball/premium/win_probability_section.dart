@@ -4,6 +4,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/baseball/premium/baseball_info_box.dart';
 
 class WinProbabilitySection extends StatelessWidget {
@@ -25,11 +26,12 @@ class WinProbabilitySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '승리 확률',
+          l10n.baseballWinProbability,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
         const SizedBox(height: TsSpacing.sm),
@@ -48,7 +50,7 @@ class WinProbabilitySection extends StatelessWidget {
                 children: [
                   Expanded(
                     child: BaseballInfoBox(
-                      label: '원정',
+                      label: l10n.labelAway,
                       value: awayProb,
                       valueColor: TsColors.systemError500,
                     ),
@@ -56,7 +58,7 @@ class WinProbabilitySection extends StatelessWidget {
                   const SizedBox(width: TsSpacing.sm),
                   Expanded(
                     child: BaseballInfoBox(
-                      label: '홈',
+                      label: l10n.labelHome,
                       value: homeProb,
                       valueColor: semantic.interactivePrimary,
                     ),

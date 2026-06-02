@@ -98,13 +98,14 @@ List<RecentWinData> _parseRecentWins(Object? value) {
               ]) ??
               matchTeams?.away ??
               '—',
-          pickDirection: _formatPickDirectionLabel(
+          pickDirection: _pickDirectionCode(
             map['predicted'] ??
                 map['pickDirection'] ??
                 map['pick_direction'] ??
                 map['pick'] ??
                 map['direction'],
-          ),
+          ) ??
+              '—',
         );
       })
       .where((w) => w.homeTeam != '—' || w.awayTeam != '—')
@@ -189,11 +190,11 @@ String _formatPickCount(Object? value) {
   return value.toString();
 }
 
-String _formatPickDirectionLabel(Object? value) {
-  if (value == null) return '—';
+String? _pickDirectionCode(Object? value) {
+  if (value == null) return null;
   final raw = value.toString().toLowerCase();
-  if (raw.contains('home') || raw == 'h' || raw.contains('홈')) return '홈';
-  if (raw.contains('draw') || raw == 'd' || raw.contains('무')) return '무';
-  if (raw.contains('away') || raw == 'a' || raw.contains('원정')) return '원정';
-  return value.toString();
+  if (raw.contains('home') || raw == 'h' || raw.contains('홈')) return 'home';
+  if (raw.contains('draw') || raw == 'd' || raw.contains('무')) return 'draw';
+  if (raw.contains('away') || raw == 'a' || raw.contains('원정')) return 'away';
+  return null;
 }

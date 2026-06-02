@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:trendsoccer/features/analysis/models/parser_labels.dart';
 import 'package:trendsoccer/core/models/baseball_models.dart';
 import 'package:trendsoccer/shared/widgets/baseball/premium/confidence_chip.dart';
 
@@ -58,6 +59,8 @@ class BaseballPremiumParsed {
   const BaseballPremiumParsed({
     required this.homeTeam,
     required this.awayTeam,
+    this.homeTeamKo,
+    this.awayTeamKo,
     required this.awayWinProb,
     required this.homeWinProb,
     required this.grade,
@@ -117,13 +120,18 @@ class BaseballPremiumParsed {
   final double? homeWhip;
   final double? awayWhip;
 
+  final String? homeTeamKo;
+  final String? awayTeamKo;
+
   factory BaseballPremiumParsed.fromResponses({
     required Map<String, dynamic> matchData,
     Map<String, dynamic>? predictData,
+    required ParserLabels labels,
   }) {
     return parseBaseballPremium(
       detail: matchData,
       predict: predictData,
+      labels: labels,
     );
   }
 }
@@ -131,6 +139,7 @@ class BaseballPremiumParsed {
 BaseballPremiumParsed parseBaseballPremium({
   required Map<String, dynamic> detail,
   Map<String, dynamic>? predict,
+  required ParserLabels labels,
 }) {
   final match = _unwrapMatch(detail);
   final homeSide = _readMap(match, const ['home']) ?? {};
@@ -143,14 +152,16 @@ BaseballPremiumParsed parseBaseballPremium({
       _readString(homeSide, const ['team', 'name']) ?? homeTeamEnFlat;
   final awayTeamEn =
       _readString(awaySide, const ['team', 'name']) ?? awayTeamEnFlat;
-  final homeTeam = _preferKo(
-    _readString(homeSide, const ['teamKo', 'team_ko']) ?? homeTeamKoFlat,
-    homeTeamEn ?? '홈',
-  );
-  final awayTeam = _preferKo(
-    _readString(awaySide, const ['teamKo', 'team_ko']) ?? awayTeamKoFlat,
-    awayTeamEn ?? '원정',
-  );
+  final homeTeamKo =
+      _readString(homeSide, const ['teamKo', 'team_ko']) ?? homeTeamKoFlat;
+  final awayTeamKo =
+      _readString(awaySide, const ['teamKo', 'team_ko']) ?? awayTeamKoFlat;
+  final homeTeam = (homeTeamEn ?? '').isNotEmpty
+      ? homeTeamEn!
+      : (homeTeamKo ?? labels.labelHome);
+  final awayTeam = (awayTeamEn ?? '').isNotEmpty
+      ? awayTeamEn!
+      : (awayTeamKo ?? labels.labelAway);
 
   final leagueRaw = _readString(match, const ['league', 'leagueName', 'league_name']) ??
       _readString(detail, const ['league']) ??
@@ -183,7 +194,8 @@ BaseballPremiumParsed parseBaseballPremium({
       ? gradeText.toUpperCase()
       : 'PASS';
 
-  final summaryRaw = _readString(insights, const ['summary']) ?? 'AI 분석 데이터';
+  final summaryRaw =
+      _readString(insights, const ['summary']) ?? labels.baseballAiSummaryDefault;
   final summary = _localizeTeamNamesInSummary(
     _formatPremiumSummary(summaryRaw),
     homeTeamEn: homeTeamEn,
@@ -241,21 +253,21 @@ BaseballPremiumParsed parseBaseballPremium({
 
   final teamProduction = [
     _gaugeFromTeamForm(
-      '득점',
+      labels.baseballStatRunsScored,
       homeForm,
       awayForm,
       'scored',
       homeFormat: _formatOneDecimal,
     ),
     _gaugeFromTeamForm(
-      '실점',
+      labels.baseballStatRunsAllowed,
       homeForm,
       awayForm,
       'conceded',
       homeFormat: _formatOneDecimal,
     ),
     _gaugeFromTeamForm(
-      '안타',
+      labels.baseballStatHits,
       homeForm,
       awayForm,
       'hits',
@@ -264,6 +276,7 @@ BaseballPremiumParsed parseBaseballPremium({
   ];
 
   final (teamProductionLine1, teamProductionLine2) = _buildProductionLines(
+    labels: labels,
     homeTeam: homeTeam,
     awayTeam: awayTeam,
     homeScored: homeScored,
@@ -326,6 +339,8 @@ BaseballPremiumParsed parseBaseballPremium({
   return BaseballPremiumParsed(
     homeTeam: homeTeam,
     awayTeam: awayTeam,
+    homeTeamKo: homeTeamKo,
+    awayTeamKo: awayTeamKo,
     awayWinProb: awayWinProb,
     homeWinProb: homeWinProb,
     grade: grade,
@@ -366,6 +381,7 @@ bool _hasTeamFormData(Map<String, dynamic> homeForm, Map<String, dynamic> awayFo
 }
 
 (String, String) _buildProductionLines({
+  required ParserLabels labels,
   required String homeTeam,
   required String awayTeam,
   required double homeScored,
@@ -375,20 +391,24 @@ bool _hasTeamFormData(Map<String, dynamic> homeForm, Map<String, dynamic> awayFo
   required bool hasTeamFormData,
 }) {
   if (!hasTeamFormData) {
-    return ('최근 10경기 팀 공격 생산성 지표입니다.', '');
+    return (labels.baseballTeamProductivityComment, '');
   }
 
   final homeScoredMore = homeScored >= awayScored;
   final batterTeam = homeScoredMore ? homeTeam : awayTeam;
   final batterValue = homeScoredMore ? homeScored : awayScored;
-  final line1 =
-      '$batterTeam 타선 우세 (${batterValue.toStringAsFixed(1)}점/경기)';
+  final line1 = labels.baseballProductionBatterEdge(
+    batterTeam,
+    batterValue.toStringAsFixed(1),
+  );
 
   final homeBetterDefense = homeConceded <= awayConceded;
   final defenseTeam = homeBetterDefense ? homeTeam : awayTeam;
   final defenseValue = homeBetterDefense ? homeConceded : awayConceded;
-  final line2 =
-      '$defenseTeam 수비 우세 (${defenseValue.toStringAsFixed(1)}실점/경기)';
+  final line2 = labels.baseballProductionDefenseEdge(
+    defenseTeam,
+    defenseValue.toStringAsFixed(1),
+  );
 
   return (line1, line2);
 }
@@ -575,12 +595,6 @@ String _localizeTeamNamesInSummary(
     localized = localized.replaceAll(awayTeamEn, awayTeamKo);
   }
   return localized;
-}
-
-String _preferKo(String? ko, String fallback) {
-  final trimmedKo = ko?.trim();
-  if (trimmedKo != null && trimmedKo.isNotEmpty) return trimmedKo;
-  return fallback.trim().isEmpty ? '-' : fallback.trim();
 }
 
 Map<String, dynamic>? _readMap(Map<String, dynamic>? map, List<String> keys) {

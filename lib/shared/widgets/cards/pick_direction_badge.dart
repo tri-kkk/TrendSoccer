@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
@@ -10,11 +12,11 @@ class PickDirectionBadge extends StatelessWidget {
 
   final PickDirection pick;
 
-  static String _label(PickDirection pick) {
+  static String _label(AppLocalizations l10n, PickDirection pick) {
     return switch (pick) {
-      PickDirection.home => '홈',
-      PickDirection.draw => '무',
-      PickDirection.away => '원정',
+      PickDirection.home => l10n.pickDirectionHome,
+      PickDirection.draw => l10n.pickDirectionDraw,
+      PickDirection.away => l10n.pickDirectionAway,
     };
   }
 
@@ -32,7 +34,7 @@ class PickDirectionBadge extends StatelessWidget {
         ),
         alignment: Alignment.center,
         child: Text(
-          _label(pick),
+          _label(context.l10n, pick),
           style: TsType.labelSBold.copyWith(color: semantic.interactivePrimary),
           textAlign: TextAlign.center,
         ),

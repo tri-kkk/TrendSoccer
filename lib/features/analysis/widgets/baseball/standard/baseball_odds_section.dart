@@ -4,6 +4,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 
 class BaseballOULine {
   const BaseballOULine({
@@ -34,11 +35,12 @@ class BaseballOddsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '배당',
+          l10n.labelOdds,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
         const SizedBox(height: TsSpacing.sm),
@@ -56,7 +58,7 @@ class BaseballOddsSection extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _OddsBox(
-                      label: '홈',
+                      label: l10n.labelHome,
                       odds: homeOdds,
                       isHome: true,
                     ),
@@ -65,7 +67,7 @@ class BaseballOddsSection extends StatelessWidget {
                   SizedBox(
                     width: 170,
                     child: _OddsBox(
-                      label: '원정',
+                      label: l10n.labelAway,
                       odds: awayOdds,
                       isHome: false,
                     ),
@@ -75,7 +77,7 @@ class BaseballOddsSection extends StatelessWidget {
               if (overUnderLines.isNotEmpty) ...[
                 const SizedBox(height: TsSpacing.lg),
                 Text(
-                  'Over / Under',
+                  l10n.baseballOverUnder,
                   style: TsType.bodyLRegular.copyWith(
                     color: semantic.textSecondary,
                   ),
@@ -153,6 +155,7 @@ class _OuTableHeaderRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     final primaryStyle = TsType.bodyLRegular.copyWith(color: semantic.textPrimary);
     final overStyle = TsType.headingH3.copyWith(color: TsColors.systemError500);
     final underStyle =
@@ -161,12 +164,12 @@ class _OuTableHeaderRow extends StatelessWidget {
       children: [
         SizedBox(
           width: 120,
-          child: Text('기준점', style: primaryStyle),
+          child: Text(l10n.baseballOddsBaseline, style: primaryStyle),
         ),
         Expanded(
-          child: Text('Over', style: overStyle, textAlign: TextAlign.center),
+          child: Text(l10n.labelOver, style: overStyle, textAlign: TextAlign.center),
         ),
-        Text('Under', style: underStyle, textAlign: TextAlign.right),
+        Text(l10n.labelUnder, style: underStyle, textAlign: TextAlign.right),
       ],
     );
   }
@@ -182,6 +185,7 @@ class _OuLineRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     final lineLabelStyle = TsType.bodyLRegular.copyWith(color: semantic.textPrimary);
     final overStyle = TsType.headingH3.copyWith(color: TsColors.systemError500);
     final underStyle =
@@ -204,7 +208,7 @@ class _OuLineRow extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    '기준점',
+                    l10n.baseballOddsBaseline,
                     style: TsType.labelSRegular.copyWith(
                       color: TsColors.systemWarning500,
                     ),

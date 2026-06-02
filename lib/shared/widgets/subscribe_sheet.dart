@@ -5,6 +5,7 @@ import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 class SubscribeSheet extends ConsumerWidget {
@@ -16,9 +17,10 @@ class SubscribeSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
+    final l10n = context.l10n;
     final description = sport == SportType.soccer
-        ? 'H2H 상대전적, 팀 심층 분석 등 프리미엄 혜택을 이용해보세요.'
-        : '승리 확률, 오버&언더, 시즌 통계 등 AI 분석 데이터를 이용해보세요.';
+        ? l10n.premiumSubscribeSheetSoccerDesc
+        : l10n.premiumSubscribeSheetBaseballDesc;
 
     return Container(
       decoration: BoxDecoration(
@@ -47,7 +49,7 @@ class SubscribeSheet extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            '프리미엄 전용 콘텐츠입니다.',
+            l10n.premiumExclusiveContent,
             style: TsType.headingH3.copyWith(color: semantic.textPrimary),
           ),
           const SizedBox(height: 16),
@@ -59,7 +61,7 @@ class SubscribeSheet extends ConsumerWidget {
           SizedBox(
             width: double.infinity,
             child: TsButton(
-              label: '지금 구독하기',
+              label: l10n.premiumSubscribeNow,
               variant: TsButtonVariant.primary,
               onPressed: () {
                 Navigator.of(context).pop();
@@ -71,7 +73,7 @@ class SubscribeSheet extends ConsumerWidget {
           SizedBox(
             width: double.infinity,
             child: TsButton(
-              label: '닫기',
+              label: l10n.close,
               variant: TsButtonVariant.secondary,
               onPressed: () => Navigator.of(context).pop(),
             ),

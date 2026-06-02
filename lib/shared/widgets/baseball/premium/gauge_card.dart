@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
@@ -10,21 +11,24 @@ class GaugeCard extends StatelessWidget {
   const GaugeCard({
     required this.label,
     required this.homeRatio,
-    this.homeLabel = '홈',
-    this.awayLabel = '원정',
+    this.homeLabel,
+    this.awayLabel,
     super.key,
   });
 
   final String label;
   final double homeRatio;
-  final String homeLabel;
-  final String awayLabel;
+  final String? homeLabel;
+  final String? awayLabel;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final hr = homeRatio.clamp(0.0, 1.0);
     final ar = (1.0 - hr).clamp(0.0, 1.0);
+    final resolvedHomeLabel = homeLabel ?? l10n.labelHome;
+    final resolvedAwayLabel = awayLabel ?? l10n.labelAway;
 
     return Container(
       width: double.infinity,
@@ -49,12 +53,12 @@ class GaugeCard extends StatelessWidget {
               RatioSegment(
                 flex: hr,
                 color: semantic.interactivePrimary,
-                bottomLabel: homeLabel,
+                bottomLabel: resolvedHomeLabel,
               ),
               RatioSegment(
                 flex: ar,
                 color: TsColors.systemError500,
-                bottomLabel: awayLabel,
+                bottomLabel: resolvedAwayLabel,
               ),
             ],
             height: 8,

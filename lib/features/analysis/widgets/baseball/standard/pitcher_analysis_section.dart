@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 
 String formatPitcherAnalysisParagraphs(String text) {
   if (text.isEmpty) return text;
@@ -46,6 +47,7 @@ class PitcherAnalysisSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     final bodyStyle = TsType.bodyMRegular.copyWith(color: semantic.textSecondary);
     final paragraphs = analysisText == null
         ? const <String>[]
@@ -58,7 +60,7 @@ class PitcherAnalysisSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '투수 분석',
+          l10n.baseballPitcherAnalysis,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
         const SizedBox(height: TsSpacing.sm),
@@ -92,7 +94,7 @@ class PitcherAnalysisSection extends StatelessWidget {
                       ],
                     )
                   : Text(
-                      '투수 분석 데이터를 불러올 수 없습니다.',
+                      l10n.baseballPitcherAnalysisNoData,
                       style: bodyStyle,
                     ),
         ),

@@ -15,6 +15,8 @@ import 'package:trendsoccer/core/services/ad_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/baseball_today_combo_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
@@ -362,7 +364,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
             onTap: onMoreTap,
             behavior: HitTestBehavior.opaque,
             child: Text(
-              '더 보기 →',
+              context.l10n.seeMore,
               style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             ),
           ),
@@ -382,7 +384,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
         ),
         error: (error, stackTrace) => Center(
           child: Text(
-            '경기 목록을 불러오지 못했습니다.',
+            context.l10n.loadMatchesFailed,
             style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
             textAlign: TextAlign.center,
           ),
@@ -392,7 +394,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
           if (preview.isEmpty) {
             return Center(
               child: Text(
-                '예정된 축구 경기가 없습니다.',
+                context.l10n.trendNoSoccerScheduled,
                 style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
                 textAlign: TextAlign.center,
               ),
@@ -429,7 +431,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
         ),
         error: (error, stackTrace) => Center(
           child: Text(
-            '경기 목록을 불러오지 못했습니다.',
+            context.l10n.loadMatchesFailed,
             style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
             textAlign: TextAlign.center,
           ),
@@ -439,7 +441,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
           if (preview.isEmpty) {
             return Center(
               child: Text(
-                '예정된 야구 경기가 없습니다.',
+                context.l10n.trendNoBaseballScheduled,
                 style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
                 textAlign: TextAlign.center,
               ),
@@ -490,21 +492,21 @@ class _TrendPageState extends ConsumerState<TrendPage> {
                 const SizedBox(height: 16),
               ],
               _buildSectionHeader(
-                title: '축구 분석',
+                title: context.l10n.trendSoccerAnalysis,
                 onMoreTap: () => context.go('/analysis'),
               ),
               const SizedBox(height: 16),
               _buildSoccerCards(),
               const SizedBox(height: 16),
               _buildSectionHeader(
-                title: '야구 분석',
+                title: context.l10n.trendBaseballAnalysis,
                 onMoreTap: () => context.go('/analysis?sport=baseball'),
               ),
               const SizedBox(height: 16),
               _buildBaseballCards(),
               const SizedBox(height: 16),
               _buildSectionHeader(
-                title: '프리미엄 분석',
+                title: context.l10n.trendPremiumAnalysis,
               ),
               const SizedBox(height: 16),
               PremiumPickStatsCard(
@@ -539,8 +541,8 @@ class _TrendBaseballCard extends StatelessWidget {
       leagueId: baseballLeagueIconId(card.league),
       leagueName: card.league,
       date: formatBaseballCardDate(card),
-      homeTeam: card.homeDisplayTeam,
-      awayTeam: card.awayDisplayTeam,
+      homeTeam: localizedTeamName(context, card.homeTeam, card.homeTeamKo),
+      awayTeam: localizedTeamName(context, card.awayTeam, card.awayTeamKo),
       matchTime: formatBaseballMatchTimeKst(card),
       homeLogoUrl: card.homeTeamLogo,
       awayLogoUrl: card.awayTeamLogo,
@@ -567,11 +569,15 @@ class _TrendSoccerCard extends StatelessWidget {
 
     return AnalysisCard(
       leagueId: leagueId,
-      leagueName: match.league.name,
+      leagueName: localizedLeagueName(
+        context,
+        match.league.nameEn,
+        match.league.name,
+      ),
       leagueLogoUrl: match.league.icon,
       date: formatSoccerCardDate(match.matchDate),
-      homeTeam: match.homeTeam.name,
-      awayTeam: match.awayTeam.name,
+      homeTeam: localizedTeamName(context, match.homeTeam.name, null),
+      awayTeam: localizedTeamName(context, match.awayTeam.name, null),
       matchTime: match.matchTime,
       homeLogoUrl: match.homeTeam.logo,
       awayLogoUrl: match.awayTeam.logo,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -14,17 +16,20 @@ class ComboTypeBadge extends StatelessWidget {
 
   final ComboType type;
 
-  (Color, Color, String) _style(TsSemanticColors semantic) {
+  (Color, Color, String) _style(
+    TsSemanticColors semantic,
+    AppLocalizations l10n,
+  ) {
     return switch (type) {
       ComboType.safe => (
           const Color(0x3300DF81),
           semantic.interactivePrimary,
-          '안전형',
+          l10n.comboTypeSafe,
         ),
       ComboType.highOdds => (
           const Color(0x33F59E0B),
           TsColors.systemWarning500,
-          '고배당',
+          l10n.comboTypeHigh,
         ),
     };
   }
@@ -32,7 +37,7 @@ class ComboTypeBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final (bg, fg, label) = _style(semantic);
+    final (bg, fg, label) = _style(semantic, context.l10n);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(

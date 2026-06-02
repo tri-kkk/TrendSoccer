@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
@@ -44,6 +45,7 @@ class ComboDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     return Container(
       padding: const EdgeInsets.all(TsSpacing.lg),
       decoration: BoxDecoration(
@@ -104,7 +106,7 @@ class ComboDashboard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        '조합 수',
+                        l10n.comboComboCount,
                         style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
                       ),
                       Text(
@@ -127,7 +129,7 @@ class ComboDashboard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        '정합도',
+                        l10n.confidenceAccuracy,
                         style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
                       ),
                       Text(
@@ -150,7 +152,7 @@ class ComboDashboard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        '평균 배당',
+                        l10n.comboAvgOdds,
                         style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
                       ),
                       Text(
@@ -189,7 +191,7 @@ class ComboDashboard extends StatelessWidget {
                           ),
                           const SizedBox(width: TsSpacing.sm),
                           Text(
-                            '안전형',
+                            l10n.comboSafe,
                             style: TsType.labelSBold.copyWith(color: semantic.textSecondary),
                           ),
                         ],
@@ -235,7 +237,7 @@ class ComboDashboard extends StatelessWidget {
                           ),
                           const SizedBox(width: TsSpacing.sm),
                           Text(
-                            '고배당',
+                            l10n.comboTypeHigh,
                             style: TsType.labelSBold.copyWith(color: semantic.textSecondary),
                           ),
                         ],

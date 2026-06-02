@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -11,12 +12,13 @@ class AboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
       appBar: AppBar(
         title: Text(
-          'About',
+          l10n.menuAbout,
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
         ),
         backgroundColor: semantic.surfaceBase,
@@ -46,54 +48,66 @@ class AboutPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'About',
+              l10n.menuAbout,
               style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             ),
             const SizedBox(height: 8),
             Text(
-              'TrendSoccer',
+              l10n.appName,
               style: TsType.displayHero.copyWith(color: semantic.interactivePrimary),
             ),
             const SizedBox(height: 24),
             Text(
-              'Reading the Flow of Football Through Data',
+              l10n.aboutTagline,
               style: TsType.headingH3.copyWith(color: semantic.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
-              'TrendSoccer는 AI 기반 실시간 분석으로 경기 흐름을 예측합니다. 프리미어리그부터 챔피언스리그까지, 모든 빅매치를 전문가 수준의 인사이트로 경험하세요.',
+              l10n.aboutDescription,
               style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             ),
             const SizedBox(height: 24),
             Container(height: 1, color: semantic.borderSubtle),
             const SizedBox(height: 24),
             Text(
-              '주요 기능',
+              l10n.aboutFeaturesSection,
               style: TsType.headingH3.copyWith(color: semantic.textPrimary),
             ),
             const SizedBox(height: 16),
-            _buildFeatureItem(semantic, 'AI 기반 분석', '4시즌 방대한 경기 데이터를 기반으로 구축'),
+            _buildFeatureItem(
+              semantic,
+              l10n.aboutFeatureAiTitle,
+              l10n.aboutFeatureAiDesc,
+            ),
             const SizedBox(height: 8),
-            _buildFeatureItem(semantic, '실시간 배당 분석', '배당 무브먼트에 따른 마켓 모니터링'),
+            _buildFeatureItem(
+              semantic,
+              l10n.aboutFeatureOddsTitle,
+              l10n.aboutFeatureOddsDesc,
+            ),
             const SizedBox(height: 8),
-            _buildFeatureItem(semantic, '글로벌 리그 지원', '주요 6대 리그 종합 데이터 지원'),
+            _buildFeatureItem(
+              semantic,
+              l10n.aboutFeatureLeaguesTitle,
+              l10n.aboutFeatureLeaguesDesc,
+            ),
             const SizedBox(height: 24),
             Container(height: 1, color: semantic.borderSubtle),
             const SizedBox(height: 24),
             Text(
-              '비전',
+              l10n.aboutVisionSection,
               style: TsType.headingH3.copyWith(color: semantic.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
-              '축구 팬들이 경기를 더 깊이 이해하고 즐길 수 있도록 돕습니다.',
+              l10n.aboutVisionText,
               style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             ),
             const SizedBox(height: 24),
             Container(height: 1, color: semantic.borderSubtle),
             const SizedBox(height: 24),
             Text(
-              '컨택 & 서포트',
+              l10n.aboutContactSection,
               style: TsType.headingH3.copyWith(color: semantic.textPrimary),
             ),
             const SizedBox(height: 16),

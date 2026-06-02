@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -38,7 +39,10 @@ class ComboMatchRow extends StatelessWidget {
   final int? homeScore;
   final int? awayScore;
 
-  bool get _homePredicted => predictDirection == '홈';
+  bool _homePredicted(BuildContext context) {
+    final home = context.l10n.labelHome;
+    return predictDirection == home || predictDirection == '홈';
+  }
 
   bool get _isFinished =>
       matchResult == ComboStatus.hit || matchResult == ComboStatus.miss;
@@ -109,8 +113,10 @@ class ComboMatchRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final homeFaded = !_homePredicted;
-    final awayFaded = _homePredicted;
+    final l10n = context.l10n;
+    final homePredicted = _homePredicted(context);
+    final homeFaded = !homePredicted;
+    final awayFaded = homePredicted;
 
     bool? homeWinner;
     bool? awayWinner;
@@ -224,7 +230,7 @@ class ComboMatchRow extends StatelessWidget {
                               ),
                               const SizedBox(width: TsSpacing.xs),
                               Text(
-                                '승',
+                                l10n.comboWin,
                                 style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
                               ),
                             ],

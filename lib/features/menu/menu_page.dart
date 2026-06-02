@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -26,6 +28,7 @@ import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/radio/ts_radio_button.dart';
 import 'package:trendsoccer/shared/widgets/section/ts_section_header.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/toggle/ts_toggle.dart';
 
 class MenuPage extends ConsumerStatefulWidget {
@@ -46,33 +49,38 @@ class _MenuPageState extends ConsumerState<MenuPage> {
     };
   }
 
-  String _planSubtitle(AuthState state) {
+  String _planSubtitle(BuildContext context, AuthState state) {
+    final l10n = context.l10n;
     return switch (state.planType) {
-      PlanType.none || PlanType.free => '지금 구독 시작하고 프리미엄 데이터를 확인하세요.',
-      PlanType.trial => _formatTrialRemaining(state.trialExpiresAt),
-      PlanType.premium => _formatPremiumExpiry(state.premiumExpiresAt),
+      PlanType.none || PlanType.free => l10n.menuSubscribePrompt,
+      PlanType.trial => _formatTrialRemaining(context, state.trialExpiresAt),
+      PlanType.premium => _formatPremiumExpiry(context, state.premiumExpiresAt),
     };
   }
 
-  String _formatTrialRemaining(DateTime? expiresAt) {
+  String _formatTrialRemaining(BuildContext context, DateTime? expiresAt) {
     if (expiresAt == null) return '';
+    final l10n = context.l10n;
     final remaining = expiresAt.difference(DateTime.now());
-    if (remaining.isNegative) return '체험 기간 만료';
+    if (remaining.isNegative) return l10n.menuTrialExpired;
     final hours = remaining.inHours;
     final minutes = remaining.inMinutes % 60;
-    return '$hours시간 $minutes분 남음';
+    return l10n.menuTrialRemaining(hours, minutes);
   }
 
-  String _formatPremiumExpiry(DateTime? expiresAt) {
+  String _formatPremiumExpiry(BuildContext context, DateTime? expiresAt) {
     if (expiresAt == null) return '';
-    return '만료일 ${DateFormat('yyyy.MM.dd').format(expiresAt)}';
+    return context.l10n.menuPremiumExpiryDate(
+      DateFormat('yyyy.MM.dd').format(expiresAt),
+    );
   }
 
-  String _subscribeButtonLabel(PlanType planType) {
+  String _subscribeButtonLabel(BuildContext context, PlanType planType) {
+    final l10n = context.l10n;
     return switch (planType) {
-      PlanType.none || PlanType.free => '구독 시작하기',
-      PlanType.trial => '체험 중',
-      PlanType.premium => '구독 관리',
+      PlanType.none || PlanType.free => l10n.menuSubscribeFree,
+      PlanType.trial => l10n.menuSubscribeTrial,
+      PlanType.premium => l10n.menuSubscribeManage,
     };
   }
 
@@ -109,25 +117,25 @@ class _MenuPageState extends ConsumerState<MenuPage> {
             borderRadius: BorderRadius.circular(16),
           ),
           title: Text(
-            '알림 권한 필요',
+            ctx.l10n.notificationPermissionTitle,
             style: TextStyle(color: semantic.textPrimary),
           ),
           content: Text(
-            '알림 권한이 필요합니다.\n설정에서 알림을 허용해주세요.',
+            ctx.l10n.notificationPermissionMessage,
             style: TextStyle(color: semantic.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child: Text(
-                '취소',
+                ctx.l10n.cancel,
                 style: TextStyle(color: semantic.textTertiary),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(
-                '설정으로 이동',
+                ctx.l10n.notificationPermissionGoSettings,
                 style: TextStyle(color: semantic.interactivePrimary),
               ),
             ),
@@ -166,9 +174,9 @@ class _MenuPageState extends ConsumerState<MenuPage> {
           final messenger = ScaffoldMessenger.of(context);
           messenger.clearSnackBars();
           messenger.showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text(
-                '알림이 비활성화되었습니다. 설정에서 알림을 허용해주세요.',
+                context.l10n.notificationDisabledSnack,
               ),
               duration: Duration(seconds: 5),
               behavior: SnackBarBehavior.floating,
@@ -212,14 +220,14 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '로그아웃',
+                    dialogContext.l10n.signOutTitle,
                     style: TsType.headingH2.copyWith(
                       color: semantic.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    '정말 로그아웃 하시겠습니까 ?',
+                    dialogContext.l10n.signOutMessage,
                     style: TsType.bodyLRegular.copyWith(
                       color: semantic.textSecondary,
                     ),
@@ -229,7 +237,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                     children: [
                       Expanded(
                         child: TsButton(
-                          label: '취소',
+                          label: dialogContext.l10n.cancel,
                           variant: TsButtonVariant.secondary,
                           onPressed: () => Navigator.of(dialogContext).pop(),
                         ),
@@ -237,13 +245,13 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: TsButton(
-                          label: '로그아웃',
+                          label: dialogContext.l10n.signOutConfirm,
                           variant: TsButtonVariant.primary,
                           onPressed: () async {
                             Navigator.of(dialogContext).pop();
                             await authNotifier.signOut();
                             if (!context.mounted) return;
-                            TsToast.success(context, '로그아웃 되었습니다.');
+                            TsToast.success(context, context.l10n.signOutSuccess);
                             context.go('/trend');
                           },
                         ),
@@ -288,21 +296,21 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '계정 삭제',
+                        dialogContext.l10n.deleteAccountTitle,
                         style: TsType.headingH2.copyWith(
                           color: semantic.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        '계정을 삭제하면 모든 데이터가 삭제되며 복구할 수 없습니다.',
+                        dialogContext.l10n.deleteAccountMessage,
                         style: TsType.bodyLRegular.copyWith(
                           color: semantic.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        '\'DELETE\'를 입력하여 확인하세요.',
+                        dialogContext.l10n.deleteAccountHint,
                         style: TsType.bodyLRegular.copyWith(
                           color: semantic.textSecondary,
                         ),
@@ -352,7 +360,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                           children: [
                             Expanded(
                               child: TsButton(
-                                label: '취소',
+                                label: dialogContext.l10n.cancel,
                                 variant: TsButtonVariant.secondary,
                                 onPressed: () {
                                   deleteController.dispose();
@@ -363,7 +371,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: TsButton(
-                                label: '계정삭제',
+                                label: dialogContext.l10n.deleteAccountConfirm,
                                 variant: TsButtonVariant.primary,
                                 onPressed: isDeleteTyped
                                     ? () async {
@@ -427,6 +435,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     final auth = ref.watch(authProvider);
     final isLoggedIn = auth.isLoggedIn;
 
@@ -454,83 +463,83 @@ class _MenuPageState extends ConsumerState<MenuPage> {
               const SizedBox(height: 16),
 
               if (isLoggedIn) ...[
-                TsSectionHeader(title: '구독 정보'),
+                TsSectionHeader(title: l10n.menuSubscribeInfoSection),
                 const SizedBox(height: 16),
                 PlanTicket(
                   type: _planTicketType(auth.planType),
-                  subtitle: _planSubtitle(auth.state),
-                  buttonLabel: _subscribeButtonLabel(auth.planType),
+                  subtitle: _planSubtitle(context, auth.state),
+                  buttonLabel: _subscribeButtonLabel(context, auth.planType),
                   onButtonTap: _subscribeButtonTap(auth.planType),
                 ),
                 const SizedBox(height: 16),
               ],
-              TsSectionHeader(title: '추가 기능'),
+              TsSectionHeader(title: l10n.menuExploreSection),
               const SizedBox(height: 16),
               MenuListItem(
                 iconAsset: TsAssets.iconBlog,
-                label: '매치 프리뷰',
+                label: l10n.menuMatchPreview,
                 onTap: () => context.go('/menu/reports/soccer'),
               ),
               const SizedBox(height: 16),
 
-              TsSectionHeader(title: '앱 설정'),
+              TsSectionHeader(title: l10n.menuSettingsSection),
               const SizedBox(height: 16),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   MenuListItem(
                     iconAsset: TsAssets.iconLanguage,
-                    label: '언어',
+                    label: l10n.menuLanguage,
                     onTap: () => _showLanguageSheet(context),
                   ),
                   const SizedBox(height: 8),
                   MenuListItem(
                     iconAsset: TsAssets.iconTheme,
-                    label: '테마',
+                    label: l10n.menuTheme,
                     onTap: () => _showThemeSheet(context),
                   ),
                   const SizedBox(height: 8),
                   MenuListItem(
                     iconAsset: TsAssets.iconNotifications,
-                    label: '알림',
+                    label: l10n.menuNotification,
                     onTap: () => _showNotificationSheet(context),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
 
-              TsSectionHeader(title: '기타'),
+              TsSectionHeader(title: l10n.menuOthers),
               const SizedBox(height: 16),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   MenuListItem(
                     iconAsset: TsAssets.iconInfo,
-                    label: 'About',
+                    label: l10n.menuAbout,
                     onTap: () => context.push('/menu/about'),
                   ),
                   const SizedBox(height: 8),
                   MenuListItem(
                     iconAsset: TsAssets.iconPrivacyTip,
-                    label: '개인정보처리방침',
+                    label: l10n.menuPrivacyPolicy,
                     onTap: () => context.go('/menu/privacy'),
                   ),
                   const SizedBox(height: 8),
                   MenuListItem(
                     iconAsset: TsAssets.iconVerified,
-                    label: '이용약관',
+                    label: l10n.menuTermsOfService,
                     onTap: () => context.go('/menu/terms'),
                   ),
                   const SizedBox(height: 8),
                   MenuListItem(
                     iconAsset: TsAssets.iconHelp,
-                    label: '문의하기',
+                    label: l10n.menuHelpCenter,
                     onTap: () => context.go('/menu/help'),
                   ),
                   const SizedBox(height: 8),
-                  const MenuListItem(
+                  MenuListItem(
                     iconAsset: TsAssets.iconVersionInfo,
-                    label: '앱 버전',
+                    label: l10n.menuAppVersion,
                     type: MenuItemType.value,
                     value: '1.0.0',
                   ),
@@ -547,7 +556,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                       child: Opacity(
                         opacity: 0.5,
                         child: Text(
-                          '로그아웃',
+                          l10n.menuSignOut,
                           style: TsType.labelSRegular.copyWith(
                             color: semantic.textPrimary,
                           ),
@@ -569,7 +578,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                       child: Opacity(
                         opacity: 0.5,
                         child: Text(
-                          '회원탈퇴',
+                          l10n.menuDeleteAccount,
                           style: TsType.labelSRegular.copyWith(
                             color: semantic.textPrimary,
                           ),
@@ -612,6 +621,7 @@ class _ThemeBottomSheetState extends ConsumerState<_ThemeBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
@@ -631,39 +641,39 @@ class _ThemeBottomSheetState extends ConsumerState<_ThemeBottomSheet> {
               const TsBottomSheetHandle(),
               const SizedBox(height: TsSpacing.lg),
               Text(
-                '테마 설정',
+                l10n.themeSettingsTitle,
                 style: TsType.headingH2.copyWith(color: semantic.textPrimary),
               ),
               const SizedBox(height: TsSpacing.sm),
               _ThemeOption(
-                label: '다크 모드',
+                label: l10n.themeDark,
                 mode: ThemeMode.dark,
                 currentMode: _selectedMode,
                 onSelected: _selectMode,
               ),
               const SizedBox(height: TsSpacing.sm),
               _ThemeOption(
-                label: '라이트 모드',
+                label: l10n.themeLight,
                 mode: ThemeMode.light,
                 currentMode: _selectedMode,
                 onSelected: _selectMode,
               ),
               const SizedBox(height: TsSpacing.sm),
               _ThemeOption(
-                label: '시스템 설정',
+                label: l10n.themeSystem,
                 mode: ThemeMode.system,
                 currentMode: _selectedMode,
                 onSelected: _selectMode,
               ),
               const SizedBox(height: TsSpacing.lg),
               TsButton(
-                label: '적용하기',
+                label: l10n.apply,
                 variant: TsButtonVariant.primary,
                 onPressed: _applyTheme,
               ),
               const SizedBox(height: TsSpacing.sm),
               TsButton(
-                label: '뒤로가기',
+                label: l10n.goBack,
                 variant: TsButtonVariant.secondary,
                 onPressed: () => Navigator.of(context).pop(),
               ),
@@ -733,24 +743,23 @@ class _LanguageBottomSheet extends ConsumerStatefulWidget {
 }
 
 class _LanguageBottomSheetState extends ConsumerState<_LanguageBottomSheet> {
-  _LanguageCode? _draftLanguage;
-
   _LanguageCode get _selected =>
-      _draftLanguage ?? _languageCodeFromApp(ref.read(languageProvider));
+      _languageCodeFromApp(ref.watch(languageProvider));
 
-  void _selectLanguage(_LanguageCode language) =>
-      setState(() => _draftLanguage = language);
-
-  Future<void> _applyLanguage() async {
+  Future<void> _selectLanguage(_LanguageCode language) async {
     await ref
         .read(languageProvider.notifier)
-        .setLanguage(_appLanguageFromCode(_selected));
+        .setLanguage(_appLanguageFromCode(language));
+  }
+
+  Future<void> _applyLanguage() async {
     if (mounted) Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
@@ -770,30 +779,30 @@ class _LanguageBottomSheetState extends ConsumerState<_LanguageBottomSheet> {
               const TsBottomSheetHandle(),
               const SizedBox(height: TsSpacing.lg),
               Text(
-                '언어 설정',
+                l10n.languageSettingsTitle,
                 style: TsType.headingH2.copyWith(color: semantic.textPrimary),
               ),
               const SizedBox(height: TsSpacing.sm),
               _LanguageOptionRow(
-                label: '한국어',
+                label: l10n.languageKorean,
                 selected: _selected == _LanguageCode.ko,
-                onTap: () => _selectLanguage(_LanguageCode.ko),
+                onTap: () => unawaited(_selectLanguage(_LanguageCode.ko)),
               ),
               const SizedBox(height: TsSpacing.sm),
               _LanguageOptionRow(
-                label: 'English',
+                label: l10n.languageEnglish,
                 selected: _selected == _LanguageCode.en,
-                onTap: () => _selectLanguage(_LanguageCode.en),
+                onTap: () => unawaited(_selectLanguage(_LanguageCode.en)),
               ),
               const SizedBox(height: TsSpacing.lg),
               TsButton(
-                label: '적용하기',
+                label: l10n.apply,
                 variant: TsButtonVariant.primary,
                 onPressed: _applyLanguage,
               ),
               const SizedBox(height: TsSpacing.sm),
               TsButton(
-                label: '뒤로가기',
+                label: l10n.goBack,
                 variant: TsButtonVariant.secondary,
                 onPressed: () => Navigator.of(context).pop(),
               ),
@@ -904,6 +913,7 @@ class _NotificationBottomSheetState extends State<_NotificationBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     final togglesEnabled = !_isLoading && !_isSaving;
 
     return ClipRRect(
@@ -924,7 +934,7 @@ class _NotificationBottomSheetState extends State<_NotificationBottomSheet> {
               const TsBottomSheetHandle(),
               const SizedBox(height: 16),
               Text(
-                '알림 설정',
+                l10n.notificationTitle,
                 style: TsType.headingH3.copyWith(color: semantic.textPrimary),
               ),
               const SizedBox(height: 16),
@@ -940,8 +950,8 @@ class _NotificationBottomSheetState extends State<_NotificationBottomSheet> {
               else ...[
                 _NotificationTopicSection(
                   semantic: semantic,
-                  label: '앱 알림',
-                  subtitle: '업데이트, 공지, 서비스 안내',
+                  label: l10n.notificationAppGeneral,
+                  subtitle: l10n.notificationAppGeneralDesc,
                   value: _appGeneral,
                   onChanged: togglesEnabled
                       ? (v) => _onToggleChanged(
@@ -955,8 +965,8 @@ class _NotificationBottomSheetState extends State<_NotificationBottomSheet> {
                 ),
                 _NotificationTopicSection(
                   semantic: semantic,
-                  label: '경기 알림',
-                  subtitle: '경기 이벤트 푸시 알림',
+                  label: l10n.notificationMatchEvents,
+                  subtitle: l10n.notificationMatchEventsDesc,
                   value: _matchEvents,
                   onChanged: togglesEnabled
                       ? (v) => _onToggleChanged(
@@ -970,8 +980,8 @@ class _NotificationBottomSheetState extends State<_NotificationBottomSheet> {
                 ),
                 _NotificationTopicSection(
                   semantic: semantic,
-                  label: '마케팅 알림',
-                  subtitle: '프로모션, 이벤트, 할인 안내',
+                  label: l10n.notificationMarketing,
+                  subtitle: l10n.notificationMarketingDesc,
                   value: _marketing,
                   onChanged: togglesEnabled
                       ? (v) => _onToggleChanged(

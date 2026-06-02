@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 class GuestBanner extends StatelessWidget {
@@ -16,6 +17,7 @@ class GuestBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(TsSpacing.lg),
@@ -27,17 +29,17 @@ class GuestBanner extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '지금 가입하고 48시간 무료 체험',
+            l10n.guestBannerTitle,
             style: TsType.headingH3.copyWith(color: semantic.textPrimary),
           ),
           const SizedBox(height: TsSpacing.sm),
           Text(
-            '분석 카드, 프리미엄 픽 등 모든 기능 이용',
+            l10n.guestBannerSubtitle,
             style: TsType.labelSRegular.copyWith(color: semantic.textSecondary),
           ),
           const SizedBox(height: TsSpacing.sm),
           TsButton(
-            label: '지금 바로 프리미엄 체험하기 →',
+            label: l10n.guestBannerCta,
             variant: TsButtonVariant.primary,
             onPressed: onJoinTap,
           ),

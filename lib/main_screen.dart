@@ -14,6 +14,7 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/badge/ts_badge.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/logo/ts_logo.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/navigation/ts_bottom_navigation.dart';
 
 const List<String> _tabPaths = [
@@ -56,14 +57,14 @@ void _showExitDialog(BuildContext context) {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '앱 종료',
+                dialogContext.l10n.exitTitle,
                 style: TsType.headingH2.copyWith(
                   color: dialogSemantic.textPrimary,
                 ),
               ),
               const SizedBox(height: 24),
               Text(
-                'TrendSoccer를 종료하시겠습니까?',
+                dialogContext.l10n.exitMessage,
                 style: TsType.bodyLRegular.copyWith(
                   color: dialogSemantic.textSecondary,
                 ),
@@ -73,7 +74,7 @@ void _showExitDialog(BuildContext context) {
                 children: [
                   Expanded(
                     child: TsButton(
-                      label: '취소',
+                      label: dialogContext.l10n.cancel,
                       variant: TsButtonVariant.secondary,
                       onPressed: () => Navigator.of(dialogContext).pop(),
                     ),
@@ -81,7 +82,7 @@ void _showExitDialog(BuildContext context) {
                   const SizedBox(width: 8),
                   Expanded(
                     child: TsButton(
-                      label: '종료하기',
+                      label: dialogContext.l10n.exitConfirm,
                       variant: TsButtonVariant.primary,
                       onPressed: () {
                         Navigator.of(dialogContext).pop();
@@ -177,7 +178,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       ),
                       if (!auth.isLoggedIn)
                         TsButton(
-                          label: '로그인',
+                          label: context.l10n.loginAppBarTitle,
                           variant: TsButtonVariant.primary,
                           size: TsButtonSize.small,
                           onPressed: () => context.push('/login'),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 /// Dialog helpers; use static [show] only.
@@ -33,13 +34,13 @@ class SignOutDialog {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  '로그아웃',
+                  ctx.l10n.signOutTitle,
                   style: TsType.headingH2.copyWith(color: semantic.textPrimary),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: TsSpacing.lg),
                 Text(
-                  '정말 로그아웃 하시겠습니까?',
+                  ctx.l10n.signOutMessage,
                   style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
                   textAlign: TextAlign.center,
                 ),
@@ -48,7 +49,7 @@ class SignOutDialog {
                   children: [
                     Expanded(
                       child: TsButton(
-                        label: '취소',
+                        label: ctx.l10n.cancel,
                         variant: TsButtonVariant.secondary,
                         onPressed: () => Navigator.of(ctx).pop(false),
                       ),
@@ -56,7 +57,7 @@ class SignOutDialog {
                     const SizedBox(width: TsSpacing.sm),
                     Expanded(
                       child: TsButton(
-                        label: '로그아웃',
+                        label: ctx.l10n.signOutConfirm,
                         variant: TsButtonVariant.primary,
                         onPressed: () => Navigator.of(ctx).pop(true),
                       ),

@@ -8,6 +8,7 @@ import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/features/analysis/models/soccer_premium_parser.dart';
 import 'package:trendsoccer/features/analysis/models/soccer_team_stats_parser.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer/premium/premium_sections.dart';
@@ -85,24 +86,25 @@ class _PremiumLockedState extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          '프리미엄 전용 분석',
+          l10n.soccerAiPremiumOnly,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: TsSpacing.sm),
         Text(
-          'H2H 심층 분석과 팀 인사이트는 프리미엄 구독 후 이용할 수 있습니다.',
+          l10n.soccerAiPremiumSubscribeHint,
           style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: TsSpacing.xl),
         TsButton(
-          label: '지금 구독하기',
+          label: l10n.premiumSubscribeNow,
           variant: TsButtonVariant.primary,
           onPressed: () => navigateToSubscribe(context, ref),
         ),
@@ -117,6 +119,7 @@ class _PremiumTabLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 64),
@@ -126,7 +129,7 @@ class _PremiumTabLoading extends StatelessWidget {
           CircularProgressIndicator(color: semantic.interactivePrimary),
           const SizedBox(height: TsSpacing.lg),
           Text(
-            'H2H 분석 로딩 중...',
+            l10n.soccerH2hLoading,
             style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             textAlign: TextAlign.center,
           ),
@@ -149,12 +152,9 @@ class _PremiumContent extends ConsumerWidget {
   final String? homeTeamLogo;
   final String? awayTeamLogo;
 
-  static const _h2hSectionTitle = 'H2H';
-  static const _homeSectionTitle = '홈';
-  static const _awaySectionTitle = '원정';
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final overall = parsed.overall ?? H2HOverall.empty;
     final patterns = parsed.scorePatterns ?? H2HScorePatterns.empty;
     final h2hData = _mapH2HData(parsed, patterns);
@@ -163,7 +163,7 @@ class _PremiumContent extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         H2HSection(
-          headerTitle: _h2hSectionTitle,
+          headerTitle: l10n.soccerH2h,
           initialExpanded: true,
           homeTeamLogo: homeTeamLogo,
           awayTeamLogo: awayTeamLogo,
@@ -183,16 +183,16 @@ class _PremiumContent extends ConsumerWidget {
         _TeamStatsSectionHost(
           params: params,
           isHome: true,
-          title: _homeSectionTitle,
-          last10Label: '시즌 홈 성적',
+          title: l10n.labelHome,
+          last10Label: l10n.soccerSeasonHome,
           teamLogo: homeTeamLogo,
         ),
         const SizedBox(height: TsSpacing.lg),
         _TeamStatsSectionHost(
           params: params,
           isHome: false,
-          title: _awaySectionTitle,
-          last10Label: '시즌 원정 성적',
+          title: l10n.labelAway,
+          last10Label: l10n.soccerSeasonAway,
           teamLogo: awayTeamLogo,
         ),
         const SizedBox(height: TsSpacing.xl),

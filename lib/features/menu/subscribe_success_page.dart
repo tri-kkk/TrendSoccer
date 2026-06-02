@@ -7,6 +7,7 @@ import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 class SubscribeSuccessPage extends ConsumerStatefulWidget {
@@ -26,13 +27,17 @@ class _SubscribeSuccessPageState extends ConsumerState<SubscribeSuccessPage> {
     Future.microtask(() => ref.read(authProvider).loadProfile());
   }
 
-  String get _priceLabel => widget.months == 3 ? '₩ 9,900' : '₩ 4,900';
-
-  String get _periodLabel => '${widget.months}개월';
+  String _priceLabel(BuildContext context) {
+    final l10n = context.l10n;
+    return widget.months == 3
+        ? l10n.subscribePriceQuarterly
+        : l10n.subscribePriceMonthly;
+  }
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return PopScope(
       canPop: false,
@@ -52,7 +57,7 @@ class _SubscribeSuccessPageState extends ConsumerState<SubscribeSuccessPage> {
             onPressed: () => context.go('/trend'),
           ),
           title: Text(
-            '결제 완료',
+            l10n.subscribeSuccessTitle,
             style: TsType.headingH3.copyWith(color: semantic.textPrimary),
           ),
           centerTitle: true,
@@ -85,13 +90,13 @@ class _SubscribeSuccessPageState extends ConsumerState<SubscribeSuccessPage> {
                       ),
                       const SizedBox(height: 48),
                       Text(
-                        '구독이 완료되었습니다.',
+                        l10n.subscribeSuccessComplete,
                         style: TsType.headingH2.copyWith(color: semantic.textPrimary),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '지금 바로 프리미엄 혜택을 이용해보세요.',
+                        l10n.subscribeSuccessSubtitle,
                         style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
                         textAlign: TextAlign.center,
                       ),
@@ -109,11 +114,11 @@ class _SubscribeSuccessPageState extends ConsumerState<SubscribeSuccessPage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  '결제 금액',
+                                  l10n.subscribeReceiptAmount,
                                   style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
                                 ),
                                 Text(
-                                  _priceLabel,
+                                  _priceLabel(context),
                                   style: TsType.headingH3.copyWith(color: semantic.textPrimary),
                                 ),
                               ],
@@ -125,11 +130,11 @@ class _SubscribeSuccessPageState extends ConsumerState<SubscribeSuccessPage> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    '구독 플랜',
+                                    l10n.subscribeReceiptPlan,
                                     style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
                                   ),
                                   Text(
-                                    _periodLabel,
+                                    l10n.subscribePeriodMonths(widget.months),
                                     style: TsType.headingH3.copyWith(color: semantic.textPrimary),
                                   ),
                                 ],
@@ -142,7 +147,7 @@ class _SubscribeSuccessPageState extends ConsumerState<SubscribeSuccessPage> {
                       SizedBox(
                         width: double.infinity,
                         child: TsButton(
-                          label: '프리미엄 분석 시작하기',
+                          label: l10n.subscribeSuccessCTA,
                           variant: TsButtonVariant.primary,
                           onPressed: () => context.go('/premium'),
                         ),
@@ -151,7 +156,7 @@ class _SubscribeSuccessPageState extends ConsumerState<SubscribeSuccessPage> {
                       SizedBox(
                         width: double.infinity,
                         child: TsButton(
-                          label: '홈으로 돌아가기',
+                          label: l10n.subscribeGoHome,
                           variant: TsButtonVariant.secondary,
                           onPressed: () => context.go('/trend'),
                         ),

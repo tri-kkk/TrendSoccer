@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_combo_provider.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/cards/today_combo_card.dart';
 
 class BaseballTodayComboCard extends ConsumerWidget {
@@ -36,8 +37,8 @@ class BaseballTodayComboCard extends ConsumerWidget {
       comboCount: stats.displayComboCount,
       accuracy: stats.displayAccuracy,
       avgOdds: stats.displayAvgOdds,
-      subtitle: stats.displaySubtitle,
-      statusSummary: stats.resultStatusSummary,
+      subtitle: stats.displaySubtitle(context.l10n),
+      statusSummary: stats.resultStatusSummary(context.l10n),
       onCTATap: onCTATap ?? onDefaultCtaTap,
     );
   }

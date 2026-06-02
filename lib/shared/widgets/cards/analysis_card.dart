@@ -6,6 +6,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/access_gate.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/cards/pick_direction_badge.dart';
 import 'package:trendsoccer/shared/widgets/league/ts_league_icon.dart';
@@ -81,10 +82,11 @@ class AnalysisCard extends StatelessWidget {
     );
   }
 
-  Widget _buildAnalyzeButton(TsSemanticColors semantic) {
+  Widget _buildAnalyzeButton(BuildContext context, TsSemanticColors semantic) {
+    final l10n = context.l10n;
     if (alwaysActiveAnalyzeButton) {
       return TsButton(
-        label: '분석보기',
+        label: l10n.analysisCardView,
         variant: TsButtonVariant.primary,
         onPressed: onAnalyze,
       );
@@ -100,7 +102,7 @@ class AnalysisCard extends StatelessWidget {
       );
       if (canView) {
         return TsButton(
-          label: '분석보기',
+          label: l10n.analysisCardView,
           variant: TsButtonVariant.primary,
           onPressed: onAnalyze,
         );
@@ -111,8 +113,8 @@ class AnalysisCard extends StatelessWidget {
         planType: tier,
       );
       final label = until != null
-          ? AccessGate.formatTimeUntilUnlock(until)
-          : '분석보기';
+          ? AccessGate.formatTimeUntilUnlock(until, l10n: l10n)
+          : l10n.analysisCardView;
 
       return SizedBox(
         width: double.infinity,
@@ -138,7 +140,7 @@ class AnalysisCard extends StatelessWidget {
     }
 
     return TsButton(
-      label: '분석하기',
+      label: l10n.analysisCardViewAnalysis,
       variant: TsButtonVariant.primary,
       onPressed: onAnalyze,
     );
@@ -279,7 +281,7 @@ class AnalysisCard extends StatelessWidget {
               ),
               const SizedBox(height: TsSpacing.lg),
             ],
-            _buildAnalyzeButton(semantic),
+            _buildAnalyzeButton(context, semantic),
           ],
         ),
       ),

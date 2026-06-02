@@ -9,7 +9,10 @@ import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/access_gate.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/features/analysis/models/baseball_ai_parser.dart';
+import 'package:trendsoccer/features/analysis/models/parser_labels.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/premium/premium_sections.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/report/ratio_bar.dart';
@@ -57,7 +60,10 @@ class BaseballAiTab extends ConsumerWidget {
         ),
       ),
       data: (raw) {
-        final parsed = parseBaseballAiAnalysis(raw);
+        final parsed = parseBaseballAiAnalysis(
+          raw,
+          labels: ParserLabels.from(context.l10n),
+        );
         return KeyedSubtree(
           key: const ValueKey<Object>('baseball_report_ai'),
           child: Padding(
@@ -76,24 +82,25 @@ class _AiLockedState extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'AI 분석',
+          l10n.reportTabAiAnalysis,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: TsSpacing.sm),
         Text(
-          'AI 기반 심층 분석은 프리미엄 구독 후 이용할 수 있습니다.',
+          l10n.baseballAiPremiumHint,
           style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: TsSpacing.xl),
         TsButton(
-          label: '지금 구독하기',
+          label: l10n.premiumSubscribeNow,
           variant: TsButtonVariant.primary,
           onPressed: () => navigateToSubscribe(context, ref),
         ),
@@ -108,6 +115,7 @@ class BaseballAiTabLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 64),
@@ -117,13 +125,13 @@ class BaseballAiTabLoading extends StatelessWidget {
           CircularProgressIndicator(color: semantic.interactivePrimary),
           const SizedBox(height: TsSpacing.lg),
           Text(
-            'AI 분석 로딩 중...',
+            l10n.baseballAiTabLoading,
             style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: TsSpacing.sm),
           Text(
-            '최초 분석 시 10–15초 정도 소요될 수 있습니다.',
+            l10n.baseballAiTabLoadingHint,
             style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
             textAlign: TextAlign.center,
           ),
@@ -144,6 +152,7 @@ class BaseballAiTabError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 48),
@@ -151,13 +160,13 @@ class BaseballAiTabError extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'AI 분석을 불러오지 못했습니다.',
+            l10n.baseballAiTabLoadFailed,
             style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: TsSpacing.lg),
           TsButton(
-            label: '다시 시도',
+            label: l10n.retry,
             variant: TsButtonVariant.primary,
             size: TsButtonSize.small,
             onPressed: onRetry,
@@ -177,6 +186,8 @@ class _AiAnalysisContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final ou = parsed.overUnder;
     final favoredOver = ou.favorsOver || (!ou.favorsUnder && ou.prediction != null);
+    final l10n = context.l10n;
+    final recommendLabel = l10n.labelRecommend;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -185,8 +196,8 @@ class _AiAnalysisContent extends StatelessWidget {
         const SizedBox(height: TsSpacing.xl),
         OverUnderSection(
           baseLine: ou.lineDisplay,
-          overOdds: favoredOver ? '추천' : '-',
-          underOdds: ou.favorsUnder ? '추천' : '-',
+          overOdds: favoredOver ? recommendLabel : '-',
+          underOdds: ou.favorsUnder ? recommendLabel : '-',
           isFavoredUnder: ou.favorsUnder,
         ),
         if (ou.analysis != null && ou.analysis!.trim().isNotEmpty) ...[
@@ -195,10 +206,22 @@ class _AiAnalysisContent extends StatelessWidget {
         ],
         const SizedBox(height: TsSpacing.xl),
         HomeAwayRecordSection(
-          awayRecord: parsed.awayLast10Record.formatted,
-          homeRecord: parsed.homeLast10Record.formatted,
-          awayTeam: parsed.awayTeam,
-          homeTeam: parsed.homeTeam,
+          awayRecord: parsed.awayLast10Record.formattedWith(
+            ParserLabels.from(context.l10n),
+          ),
+          homeRecord: parsed.homeLast10Record.formattedWith(
+            ParserLabels.from(context.l10n),
+          ),
+          awayTeam: localizedTeamName(
+            context,
+            parsed.awayTeam,
+            parsed.awayTeamKo,
+          ),
+          homeTeam: localizedTeamName(
+            context,
+            parsed.homeTeam,
+            parsed.homeTeamKo,
+          ),
         ),
         const SizedBox(height: TsSpacing.xl),
         WinRateSection(
@@ -234,13 +257,24 @@ class _AiWinProbabilitySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     final winProb = parsed.winProbability;
+    final awayLabel = localizedTeamName(
+      context,
+      parsed.awayTeam,
+      parsed.awayTeamKo,
+    );
+    final homeLabel = localizedTeamName(
+      context,
+      parsed.homeTeam,
+      parsed.homeTeamKo,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '승리 확률',
+          l10n.baseballWinProbability,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
         const SizedBox(height: TsSpacing.sm),
@@ -260,13 +294,13 @@ class _AiWinProbabilitySection extends StatelessWidget {
                     flex: winProb.awayRatio,
                     color: TsColors.systemError500,
                     label: winProb.awayDisplay,
-                    bottomLabel: parsed.awayTeam,
+                    bottomLabel: awayLabel,
                   ),
                   RatioSegment(
                     flex: winProb.homeRatio,
                     color: semantic.interactivePrimary,
                     label: winProb.homeDisplay,
-                    bottomLabel: parsed.homeTeam,
+                    bottomLabel: homeLabel,
                   ),
                 ],
                 height: 32,
@@ -317,12 +351,13 @@ class _AiSummarySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'AI 분석 요약',
+          l10n.baseballAiSummary,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
         const SizedBox(height: TsSpacing.sm),

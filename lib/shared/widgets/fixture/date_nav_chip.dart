@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -29,6 +30,7 @@ class DateNavChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return GestureDetector(
       onTap: onTap,
@@ -37,7 +39,7 @@ class DateNavChip extends StatelessWidget {
         DateNavChipType.today => _TodayChip(
           semantic: semantic,
           isActive: isActive,
-          dayLabel: dayLabel ?? 'Today',
+          dayLabel: dayLabel ?? l10n.today,
           dateLabel: dateLabel ?? '',
           expandWidth: expandWidth,
         ),

@@ -5,7 +5,10 @@ import 'package:trendsoccer/core/providers/baseball_match_report_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/features/analysis/models/baseball_standard_parser.dart';
+import 'package:trendsoccer/features/analysis/models/parser_labels.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/standard/standard_sections.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
@@ -39,7 +42,8 @@ class BaseballStandardTab extends ConsumerWidget {
         ),
       ),
       data: (raw) {
-        final parsed = parseBaseballStandardDetail(raw);
+        final labels = ParserLabels.from(context.l10n);
+        final parsed = parseBaseballStandardDetail(raw, labels: labels);
         return KeyedSubtree(
           key: const ValueKey<Object>('baseball_report_standard'),
           child: Padding(
@@ -53,13 +57,6 @@ class BaseballStandardTab extends ConsumerWidget {
       },
     );
   }
-}
-
-String _pitcherApiName(BaseballStandardPitcher pitcher) {
-  final ko = pitcher.nameKo?.trim();
-  if (ko != null && ko.isNotEmpty) return ko;
-  final name = pitcher.name.trim();
-  return name.isEmpty ? '-' : name;
 }
 
 Widget _buildH2HSection(WidgetRef ref, BaseballStandardParsed parsed) {
@@ -96,9 +93,18 @@ class _BaseballStandardContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final labels = ParserLabels.from(context.l10n);
     final analysisAsync = ref.watch(baseballPitcherAnalysisProvider(matchId));
-    final homePitcherName = _pitcherApiName(parsed.homePitcher);
-    final awayPitcherName = _pitcherApiName(parsed.awayPitcher);
+    final homePitcherName = localizedPitcherName(
+      context,
+      parsed.homePitcher.name,
+      parsed.homePitcher.nameKo,
+    );
+    final awayPitcherName = localizedPitcherName(
+      context,
+      parsed.awayPitcher.name,
+      parsed.awayPitcher.nameKo,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -107,14 +113,26 @@ class _BaseballStandardContent extends ConsumerWidget {
           matchId: matchId,
           leagueCode: parsed.leagueCode,
           currentSeason: parsed.currentSeason,
-          homeTeam: parsed.homeTeam,
-          awayTeam: parsed.awayTeam,
+          homeTeam: localizedTeamName(
+            context,
+            parsed.homeTeam,
+            parsed.homeTeamKo,
+          ),
+          awayTeam: localizedTeamName(
+            context,
+            parsed.awayTeam,
+            parsed.awayTeamKo,
+          ),
           homePitcherName: homePitcherName,
           awayPitcherName: awayPitcherName,
           awayPitcher: parsed.awayPitcher.toPitcherData(
+            labels: labels,
+            displayName: awayPitcherName,
             teamLogoUrl: parsed.awayLogoUrl,
           ),
           homePitcher: parsed.homePitcher.toPitcherData(
+            labels: labels,
+            displayName: homePitcherName,
             teamLogoUrl: parsed.homeLogoUrl,
           ),
         ),
@@ -150,6 +168,7 @@ class BaseballStandardTabLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 64),
@@ -159,7 +178,7 @@ class BaseballStandardTabLoading extends StatelessWidget {
           CircularProgressIndicator(color: semantic.interactivePrimary),
           const SizedBox(height: TsSpacing.lg),
           Text(
-            '경기 정보 로딩 중...',
+            l10n.analysisMatchInfoLoading,
             style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             textAlign: TextAlign.center,
           ),
@@ -180,6 +199,7 @@ class BaseballStandardTabError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 48),
@@ -187,13 +207,13 @@ class BaseballStandardTabError extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            '경기 정보를 불러오지 못했습니다.',
+            l10n.analysisMatchInfoLoadFailed,
             style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: TsSpacing.lg),
           TsButton(
-            label: '다시 시도',
+            label: l10n.retry,
             variant: TsButtonVariant.primary,
             size: TsButtonSize.small,
             onPressed: onRetry,

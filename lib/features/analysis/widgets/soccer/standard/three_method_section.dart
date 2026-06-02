@@ -6,6 +6,8 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 
 class ThreeMethodData {
   const ThreeMethodData({
@@ -37,14 +39,18 @@ class ThreeMethodAnalysisSection extends StatelessWidget {
     return value / 100;
   }
 
-  String _pickLabel(double win, double lose) {
+  String _pickLabel(AppLocalizations l10n, double win, double lose) {
     if (win >= lose) {
-      return '홈 ${(win * 100).round()}%';
+      return l10n.soccerHomeWinPct((win * 100).round());
     }
-    return '원정 ${(lose * 100).round()}%';
+    return l10n.soccerAwayWinPct((lose * 100).round());
   }
 
-  Widget _buildMethodBar(ThreeMethodData method, TsSemanticColors semantic) {
+  Widget _buildMethodBar(
+    BuildContext context,
+    ThreeMethodData method,
+    TsSemanticColors semantic,
+  ) {
     final win = _normalizedRate(method.win);
     final draw = _normalizedRate(method.draw);
     final lose = _normalizedRate(method.lose);
@@ -95,7 +101,7 @@ class ThreeMethodAnalysisSection extends StatelessWidget {
               style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             ),
             Text(
-              _pickLabel(win, lose),
+              _pickLabel(context.l10n, win, lose),
               style: TsType.labelSBold.copyWith(color: semantic.textPrimary),
             ),
           ],
@@ -141,6 +147,7 @@ class ThreeMethodAnalysisSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     debugPrint(
       '[SOCCER] 3-Method data: ${methods.map((m) => 'win=${m.win} draw=${m.draw} lose=${m.lose}').toList()}',
@@ -151,7 +158,7 @@ class ThreeMethodAnalysisSection extends StatelessWidget {
       children: [
         if (showTitle) ...[
           Text(
-            '3-Method 분석',
+            l10n.soccerMethod3,
             style: TsType.headingH2.copyWith(color: semantic.textPrimary),
           ),
           const SizedBox(height: TsSpacing.sm),
@@ -168,7 +175,7 @@ class ThreeMethodAnalysisSection extends StatelessWidget {
             children: [
               for (var i = 0; i < methods.length; i++) ...[
                 if (i > 0) const SizedBox(height: TsSpacing.sm),
-                _buildMethodBar(methods[i], semantic),
+                _buildMethodBar(context, methods[i], semantic),
               ],
             ],
           ),

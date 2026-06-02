@@ -8,7 +8,10 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/features/analysis/models/baseball_premium_parser.dart';
+import 'package:trendsoccer/features/analysis/models/parser_labels.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/premium/team_stat_gauge_card.dart';
 import 'package:trendsoccer/shared/widgets/baseball/premium/confidence_chip.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
@@ -93,6 +96,7 @@ class _BaseballPremiumTabState extends ConsumerState<BaseballPremiumTab> {
     final parsed = BaseballPremiumParsed.fromResponses(
       matchData: detailData,
       predictData: predictData,
+      labels: ParserLabels.from(context.l10n),
     );
 
     return KeyedSubtree(
@@ -130,6 +134,7 @@ class BaseballPremiumTabLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -156,13 +161,13 @@ class BaseballPremiumTabLoading extends StatelessWidget {
         ],
         const SizedBox(height: TsSpacing.lg),
         Text(
-          '프리미엄 분석 로딩 중...',
+          l10n.baseballAiLoading,
           style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: TsSpacing.sm),
         Text(
-          '최초 분석 시 10–30초 정도 소요될 수 있습니다.',
+          l10n.baseballAiLoadingHint,
           style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
           textAlign: TextAlign.center,
         ),
@@ -182,6 +187,7 @@ class BaseballPremiumTabError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 48),
@@ -189,13 +195,13 @@ class BaseballPremiumTabError extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            '프리미엄 분석을 불러오지 못했습니다.',
+            l10n.baseballAiLoadFailed,
             style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: TsSpacing.lg),
           TsButton(
-            label: '다시 시도',
+            label: l10n.retry,
             variant: TsButtonVariant.primary,
             size: TsButtonSize.small,
             onPressed: onRetry,
@@ -214,12 +220,13 @@ class _AiAnalysisSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'AI 경기 분석',
+          l10n.baseballAiMatchAnalysis,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
         Container(
@@ -261,6 +268,7 @@ class _WinProbabilitySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     final summaryLines = parsed.summary
         .split('\n\n')
         .map((line) => line.trim())
@@ -271,7 +279,7 @@ class _WinProbabilitySection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '승리 확률',
+          l10n.baseballWinProbability,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
         const SizedBox(height: TsSpacing.sm),
@@ -289,7 +297,11 @@ class _WinProbabilitySection extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _InfoBox(
-                      label: parsed.homeTeam,
+                      label: localizedTeamName(
+                        context,
+                        parsed.homeTeam,
+                        parsed.homeTeamKo,
+                      ),
                       value: parsed.homeWinProb,
                       valueColor: semantic.interactivePrimary,
                     ),
@@ -297,7 +309,11 @@ class _WinProbabilitySection extends StatelessWidget {
                   const SizedBox(width: TsSpacing.sm),
                   Expanded(
                     child: _InfoBox(
-                      label: parsed.awayTeam,
+                      label: localizedTeamName(
+                        context,
+                        parsed.awayTeam,
+                        parsed.awayTeamKo,
+                      ),
                       value: parsed.awayWinProb,
                       valueColor: TsColors.error500,
                     ),
@@ -336,16 +352,15 @@ class _OverUnderSection extends StatelessWidget {
 
   final BaseballPremiumParsed parsed;
 
-  static String _formatOverUnderLineLabel(String line) {
-    if (line == '-' || line == '0' || line.isEmpty) {
-      return '기준선 -';
-    }
-    return '기준선 $line';
-  }
-
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
+    final baselineLabel = parsed.overUnderLine == '-' ||
+            parsed.overUnderLine == '0' ||
+            parsed.overUnderLine.isEmpty
+        ? l10n.baseballBaselineDash
+        : l10n.baseballBaselineValue(parsed.overUnderLine);
     final hasOuData = parsed.overProb >= 0 && parsed.underProb >= 0;
     final highlightUnder = hasOuData &&
         parsed.underProb > 0 &&
@@ -353,13 +368,12 @@ class _OverUnderSection extends StatelessWidget {
         parsed.underProb > parsed.overProb;
     final overText = hasOuData ? '${parsed.overProb}%' : '-';
     final underText = hasOuData ? '${parsed.underProb}%' : '-';
-    final lineLabel = _formatOverUnderLineLabel(parsed.overUnderLine);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '오버&언더',
+          l10n.baseballOverUnder,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
         const SizedBox(height: TsSpacing.sm),
@@ -381,7 +395,7 @@ class _OverUnderSection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    lineLabel,
+                    baselineLabel,
                     style: TsType.bodyLRegular.copyWith(
                       color: TsColors.systemWarning500,
                     ),
@@ -393,7 +407,7 @@ class _OverUnderSection extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _UOBox(
-                      label: '오버',
+                      label: l10n.labelOver,
                       value: overText,
                       isHighlighted: hasOuData && !highlightUnder,
                     ),
@@ -401,7 +415,7 @@ class _OverUnderSection extends StatelessWidget {
                   const SizedBox(width: TsSpacing.sm),
                   Expanded(
                     child: _UOBox(
-                      label: '언더',
+                      label: l10n.labelUnder,
                       value: underText,
                       isHighlighted: hasOuData && highlightUnder,
                     ),
@@ -424,6 +438,7 @@ class _HomeAwayRecordSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -433,11 +448,11 @@ class _HomeAwayRecordSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              '홈&원정 성적',
+              l10n.baseballHomeAwayRecord,
               style: TsType.headingH2.copyWith(color: semantic.textPrimary),
             ),
             Text(
-              '최근 10경기',
+              l10n.baseballRecent10,
               style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
             ),
           ],
@@ -453,7 +468,11 @@ class _HomeAwayRecordSection extends StatelessWidget {
             children: [
               Expanded(
                 child: _HomeAwayAdvantageBox(
-                  teamName: parsed.homeTeam,
+                  teamName: localizedTeamName(
+                    context,
+                    parsed.homeTeam,
+                    parsed.homeTeamKo,
+                  ),
                   recordRaw: parsed.homeAdvantageRecord,
                   isHome: true,
                 ),
@@ -461,7 +480,11 @@ class _HomeAwayRecordSection extends StatelessWidget {
               const SizedBox(width: TsSpacing.sm),
               Expanded(
                 child: _HomeAwayAdvantageBox(
-                  teamName: parsed.awayTeam,
+                  teamName: localizedTeamName(
+                    context,
+                    parsed.awayTeam,
+                    parsed.awayTeamKo,
+                  ),
                   recordRaw: parsed.awayAdvantageRecord,
                   isHome: false,
                 ),
@@ -482,6 +505,7 @@ class _WinRateSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -491,11 +515,11 @@ class _WinRateSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              '최근 10경기 승률',
+              l10n.baseballHomeAwayWinRate,
               style: TsType.headingH2.copyWith(color: semantic.textPrimary),
             ),
             Text(
-              '최근 10경기',
+              l10n.baseballRecent10,
               style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
             ),
           ],
@@ -515,7 +539,11 @@ class _WinRateSection extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _RecentWinRateBox(
-                      teamName: parsed.homeTeam,
+                      teamName: localizedTeamName(
+                        context,
+                        parsed.homeTeam,
+                        parsed.homeTeamKo,
+                      ),
                       winRate: parsed.homeRecentWinRate,
                       isHome: true,
                     ),
@@ -523,7 +551,11 @@ class _WinRateSection extends StatelessWidget {
                   const SizedBox(width: TsSpacing.sm),
                   Expanded(
                     child: _RecentWinRateBox(
-                      teamName: parsed.awayTeam,
+                      teamName: localizedTeamName(
+                        context,
+                        parsed.awayTeam,
+                        parsed.awayTeamKo,
+                      ),
                       winRate: parsed.awayRecentWinRate,
                       isHome: false,
                     ),
@@ -535,7 +567,7 @@ class _WinRateSection extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '신뢰도',
+                    l10n.baseballReliability,
                     style: TsType.bodyLRegular.copyWith(
                       color: semantic.textSecondary,
                     ),
@@ -559,6 +591,7 @@ class _TeamProductionSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -568,11 +601,11 @@ class _TeamProductionSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              '팀 생산성',
+              l10n.baseballTeamProductivity,
               style: TsType.headingH2.copyWith(color: semantic.textPrimary),
             ),
             Text(
-              '최근 10경기',
+              l10n.baseballRecent10,
               style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
             ),
           ],
@@ -630,17 +663,18 @@ class _SeasonTeamStatsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     final isKBO = parsed.league == 'KBO';
-    final avgLabel = isKBO ? '팀 타율' : 'AVG';
-    final opsLabel = isKBO ? '팀 OPS' : 'OPS';
-    final eraLabel = isKBO ? '팀 방어율' : 'ERA';
-    final whipLabel = isKBO ? '팀 WHIP' : 'WHIP';
+    final avgLabel = isKBO ? l10n.baseballTeamBattingAvg : 'AVG';
+    final opsLabel = isKBO ? l10n.baseballTeamOps : 'OPS';
+    final eraLabel = isKBO ? l10n.baseballTeamEra : 'ERA';
+    final whipLabel = isKBO ? l10n.baseballTeamWhip : 'WHIP';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '시즌 팀 통계',
+          l10n.baseballSeasonStats,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
         const SizedBox(height: TsSpacing.sm),
@@ -701,7 +735,7 @@ class _SeasonTeamStatsSection extends StatelessWidget {
                   ],
                 )
               : Text(
-                  '시즌 통계 데이터를 불러올 수 없습니다.',
+                  l10n.baseballSeasonStatsNoData,
                   style: TsType.bodyMRegular.copyWith(
                     color: semantic.textSecondary,
                   ),

@@ -10,6 +10,8 @@ class MatchHeaderData {
     required this.matchId,
     required this.homeTeam,
     required this.awayTeam,
+    this.homeTeamKo,
+    this.awayTeamKo,
     this.homeTeamLogo,
     this.awayTeamLogo,
     this.homeTeamId,
@@ -31,6 +33,8 @@ class MatchHeaderData {
   final int matchId;
   final String homeTeam;
   final String awayTeam;
+  final String? homeTeamKo;
+  final String? awayTeamKo;
   final String? homeTeamLogo;
   final String? awayTeamLogo;
   final int? homeTeamId;
@@ -77,8 +81,10 @@ class MatchHeaderData {
   factory MatchHeaderData.fromBaseballCard(BaseballAnalysisCard card) {
     return MatchHeaderData(
       matchId: card.detailMatchId,
-      homeTeam: card.homeDisplayTeam,
-      awayTeam: card.awayDisplayTeam,
+      homeTeam: card.homeTeam,
+      awayTeam: card.awayTeam,
+      homeTeamKo: card.homeTeamKo,
+      awayTeamKo: card.awayTeamKo,
       homeTeamLogo: card.homeTeamLogo,
       awayTeamLogo: card.awayTeamLogo,
       leagueName: card.league,
@@ -114,6 +120,8 @@ class MatchHeaderData {
       matchId: matchId,
       homeTeam: parsed.homeTeam,
       awayTeam: parsed.awayTeam,
+      homeTeamKo: parsed.homeTeamKo,
+      awayTeamKo: parsed.awayTeamKo,
       homeTeamLogo: parsed.homeLogoUrl,
       awayTeamLogo: parsed.awayLogoUrl,
       leagueName: parsed.league,

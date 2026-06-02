@@ -5,6 +5,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 
 class TsBottomNavigation extends StatelessWidget {
   const TsBottomNavigation({
@@ -19,14 +20,6 @@ class TsBottomNavigation extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  static const List<String> _labels = [
-    '트렌드',
-    '분석',
-    '일정',
-    '프리미엄',
-    '메뉴',
-  ];
-
   static const List<String> _iconAssets = [
     TsAssets.iconTrend,
     TsAssets.iconAnalysis,
@@ -38,6 +31,13 @@ class TsBottomNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final labels = [
+      context.l10n.tabTrend,
+      context.l10n.tabAnalysis,
+      context.l10n.tabFixture,
+      context.l10n.tabPremium,
+      context.l10n.tabMenu,
+    ];
 
     return Container(
       height: barHeight,
@@ -53,7 +53,7 @@ class TsBottomNavigation extends StatelessWidget {
           return Expanded(
             child: _NavTabItem(
               iconAsset: _iconAssets[index],
-              label: _labels[index],
+              label: labels[index],
               selected: index == currentIndex,
               onTap: () => onTap(index),
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/models/sport_type.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
@@ -34,6 +35,7 @@ class TodayComboCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(TsSpacing.lg),
@@ -65,7 +67,7 @@ class TodayComboCard extends StatelessWidget {
               ),
               const SizedBox(width: TsSpacing.sm),
               Text(
-                '오늘의 추천 조합',
+                l10n.cardTodayCombo,
                 style: TsType.headingH3.copyWith(color: semantic.textPrimary),
               ),
             ],
@@ -81,7 +83,7 @@ class TodayComboCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                subtitle ?? '오늘의 AI 조합을 확인하세요.',
+                subtitle ?? l10n.cardComboDefaultSubtitle,
                 style: TsType.bodyLBold.copyWith(color: semantic.textPrimary),
                 textAlign: TextAlign.center,
               ),
@@ -89,7 +91,7 @@ class TodayComboCard extends StatelessWidget {
               Text(
                 statusSummary?.isNotEmpty == true
                     ? statusSummary!
-                    : '매일 3대 리그 AI 분석 조합 제공',
+                    : l10n.cardComboLeagueHint,
                 style: TsType.labelSRegular.copyWith(
                   color: semantic.textTertiary,
                 ),
@@ -114,7 +116,7 @@ class TodayComboCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        '조합 수',
+                        l10n.cardComboCount,
                         style: TsType.labelSRegular.copyWith(
                           color: semantic.textTertiary,
                         ),
@@ -143,7 +145,7 @@ class TodayComboCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        '정합도',
+                        l10n.confidenceAccuracy,
                         style: TsType.labelSRegular.copyWith(
                           color: semantic.textTertiary,
                         ),
@@ -172,7 +174,7 @@ class TodayComboCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        '평균 배당',
+                        l10n.comboAvgOdds,
                         style: TsType.labelSRegular.copyWith(
                           color: semantic.textTertiary,
                         ),
@@ -194,7 +196,7 @@ class TodayComboCard extends StatelessWidget {
           Container(height: 1, width: double.infinity, color: semantic.borderSubtle),
           const SizedBox(height: TsSpacing.lg),
           TsButton(
-            label: '오늘의 조합 확인하기 →',
+            label: l10n.cardComboCheck,
             variant: TsButtonVariant.primary,
             onPressed: onCTATap,
           ),

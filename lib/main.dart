@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -105,6 +106,7 @@ class _TrendSoccerAppState extends ConsumerState<TrendSoccerApp> {
       darkTheme: AppTheme.dark(),
       locale: Locale(language.name),
       localizationsDelegates: const [
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

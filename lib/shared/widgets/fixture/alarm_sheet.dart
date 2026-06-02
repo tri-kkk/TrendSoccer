@@ -8,6 +8,7 @@ import 'package:trendsoccer/core/services/fcm_service.dart';
 import 'package:trendsoccer/core/services/notification_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 
 class AlarmSheet extends ConsumerStatefulWidget {
   const AlarmSheet({
@@ -26,31 +27,32 @@ class AlarmSheet extends ConsumerStatefulWidget {
 }
 
 class _AlarmSheetState extends ConsumerState<AlarmSheet> {
-  static const _soccerEventLabels = <String, String>{
-    'kickoff': '경기 시작',
-    'goal': '득점',
-    'halftime': '하프타임',
-    'fulltime': '경기 종료',
-    'yellowCard': '경고',
-    'redCard': '퇴장',
-    'substitution': '선수 교체',
-  };
-
-  static const _baseballEventLabels = <String, String>{
-    'firstPitch': '경기 시작',
-    'score': '득점',
-    'inningChange': '이닝 종료',
-    'homerun': '홈런',
-    'gameEnd': '경기 종료',
-  };
-
   bool _isLoading = true;
   bool _isSaving = false;
   bool _enabled = false;
   Map<String, bool> _events = {};
 
-  Map<String, String> get _eventLabels =>
-      widget.sport == 'baseball' ? _baseballEventLabels : _soccerEventLabels;
+  Map<String, String> _eventLabels(BuildContext context) {
+    final l10n = context.l10n;
+    if (widget.sport == 'baseball') {
+      return {
+        'firstPitch': l10n.baseballEventFirstPitch,
+        'score': l10n.baseballEventScore,
+        'inningChange': l10n.baseballEventInningChange,
+        'homerun': l10n.baseballEventHomerun,
+        'gameEnd': l10n.baseballEventGameEnd,
+      };
+    }
+    return {
+      'kickoff': l10n.soccerEventKickoff,
+      'goal': l10n.soccerEventGoal,
+      'halftime': l10n.soccerEventHalftime,
+      'fulltime': l10n.soccerEventFulltime,
+      'yellowCard': l10n.soccerEventYellowCard,
+      'redCard': l10n.soccerEventRedCard,
+      'substitution': l10n.soccerEventSubstitution,
+    };
+  }
 
   @override
   void initState() {
@@ -70,10 +72,11 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
     final defaultEvents = _parseEvents(defaults['events']);
     final loadedEvents = _parseEvents(settings['events']);
 
+    final labels = _eventLabels(context);
     setState(() {
       _enabled = settings['enabled'] == true;
       _events = {
-        for (final key in _eventLabels.keys)
+        for (final key in labels.keys)
           key: loadedEvents[key] ?? defaultEvents[key] ?? false,
       };
       _isLoading = false;
@@ -139,6 +142,8 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
+    final eventLabels = _eventLabels(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -168,7 +173,7 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              '경기 알림 설정',
+              l10n.matchAlarmSettingsTitle,
               style: TsType.headingH3.copyWith(color: semantic.textPrimary),
             ),
           ),
@@ -178,7 +183,7 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
             children: [
               Expanded(
                 child: Text(
-                  '알림 받기',
+                  l10n.alarmToggleTitle,
                   style: TsType.bodyLRegular.copyWith(
                     color: semantic.textPrimary,
                   ),
@@ -214,13 +219,13 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
               ),
             )
           else
-            ..._eventLabels.entries.toList().asMap().entries.map((entry) {
+            ...eventLabels.entries.toList().asMap().entries.map((entry) {
               final index = entry.key;
               final event = entry.value;
               final eventKey = event.key;
               return Padding(
                 padding: EdgeInsets.only(
-                  bottom: index < _eventLabels.length - 1 ? 16 : 0,
+                  bottom: index < eventLabels.length - 1 ? 16 : 0,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -280,25 +285,25 @@ Future<void> showAlarmSheet(
               borderRadius: BorderRadius.circular(16),
             ),
             title: Text(
-              '경기 알림 비활성화',
+              ctx.l10n.matchAlarmDisabledTitle,
               style: TextStyle(color: sem.textPrimary),
             ),
             content: Text(
-              '경기 알림이 꺼져 있습니다.\n메뉴 > 알림 설정에서 경기 알림을 켜주세요.',
+              ctx.l10n.matchAlarmDisabledMessage,
               style: TextStyle(color: sem.textSecondary),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
                 child: Text(
-                  '취소',
+                  ctx.l10n.cancel,
                   style: TextStyle(color: sem.textTertiary),
                 ),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(ctx, true),
                 child: Text(
-                  '설정으로 이동',
+                  ctx.l10n.matchAlarmDisabledGoSettings,
                   style: TextStyle(color: sem.interactivePrimary),
                 ),
               ),
@@ -332,25 +337,25 @@ Future<void> showAlarmSheet(
             borderRadius: BorderRadius.circular(16),
           ),
           title: Text(
-            '알림 권한 필요',
+            ctx.l10n.notificationPermissionTitle,
             style: TextStyle(color: semantic.textPrimary),
           ),
           content: Text(
-            '경기 알림을 받으려면 알림 권한이 필요합니다.\n설정에서 알림을 허용해주세요.',
+            ctx.l10n.notificationPermissionMessageMatch,
             style: TextStyle(color: semantic.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child: Text(
-                '취소',
+                ctx.l10n.cancel,
                 style: TextStyle(color: semantic.textTertiary),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(
-                '설정으로 이동',
+                ctx.l10n.notificationPermissionGoSettings,
                 style: TextStyle(color: semantic.interactivePrimary),
               ),
             ),

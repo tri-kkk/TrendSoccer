@@ -6,6 +6,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 class HelpCenterPage extends ConsumerStatefulWidget {
@@ -124,9 +125,9 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
       final messenger = ScaffoldMessenger.of(context);
       messenger.clearSnackBars();
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('문의가 성공적으로 전송되었습니다.'),
-          duration: Duration(seconds: 5),
+        SnackBar(
+          content: Text(context.l10n.helpCenterSubmitSuccess),
+          duration: const Duration(seconds: 5),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -136,9 +137,9 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
     final messenger = ScaffoldMessenger.of(context);
     messenger.clearSnackBars();
     messenger.showSnackBar(
-      const SnackBar(
-        content: Text('전송에 실패했습니다. 다시 시도해주세요.'),
-        duration: Duration(seconds: 5),
+      SnackBar(
+        content: Text(context.l10n.helpCenterSubmitFail),
+        duration: const Duration(seconds: 5),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -147,12 +148,13 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: colors.surfaceBase,
       appBar: AppBar(
         title: Text(
-          '문의하기',
+          l10n.helpCenterTitle,
           style: TsType.headingH3.copyWith(color: colors.textPrimary),
         ),
         backgroundColor: colors.surfaceBase,
@@ -178,27 +180,27 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '문의 사항을 남겨주시면 이메일로 답변드리겠습니다.',
+                l10n.helpCenterIntro,
                 style: TsType.bodyLRegular.copyWith(color: colors.textTertiary),
               ),
               const SizedBox(height: TsSpacing.lg),
               _buildField(
                 colors: colors,
-                title: '이름',
+                title: l10n.helpCenterName,
                 controller: _nameController,
                 validator: (v) =>
-                    (v?.isEmpty ?? true) ? '필수 입력 항목입니다' : null,
+                    (v?.isEmpty ?? true) ? l10n.formRequired : null,
               ),
               const SizedBox(height: TsSpacing.lg),
               _buildField(
                 colors: colors,
-                title: '이메일',
+                title: l10n.helpCenterEmail,
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 validator: (v) {
-                  if (v?.isEmpty ?? true) return '필수 입력 항목입니다';
+                  if (v?.isEmpty ?? true) return l10n.formRequired;
                   if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v!)) {
-                    return '올바른 이메일 형식이 아닙니다';
+                    return l10n.formInvalidEmail;
                   }
                   return null;
                 },
@@ -206,20 +208,20 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
               const SizedBox(height: TsSpacing.lg),
               _buildField(
                 colors: colors,
-                title: '제목',
+                title: l10n.helpCenterSubject,
                 controller: _titleController,
                 validator: (v) =>
-                    (v?.isEmpty ?? true) ? '필수 입력 항목입니다' : null,
+                    (v?.isEmpty ?? true) ? l10n.formRequired : null,
               ),
               const SizedBox(height: TsSpacing.lg),
               _buildField(
                 colors: colors,
-                title: '메시지',
+                title: l10n.helpCenterMessage,
                 controller: _messageController,
                 minLines: 6,
                 maxLines: 10,
                 validator: (v) =>
-                    (v?.isEmpty ?? true) ? '필수 입력 항목입니다' : null,
+                    (v?.isEmpty ?? true) ? l10n.formRequired : null,
               ),
               const SizedBox(height: TsSpacing.lg),
               Stack(
@@ -228,7 +230,7 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
                   SizedBox(
                     width: double.infinity,
                     child: TsButton(
-                      label: '문의 보내기',
+                      label: l10n.helpCenterSend,
                       variant: TsButtonVariant.primary,
                       onPressed: _isSending ? null : _submit,
                     ),

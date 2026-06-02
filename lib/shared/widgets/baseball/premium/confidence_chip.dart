@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
@@ -12,18 +14,27 @@ class ConfidenceChip extends StatelessWidget {
 
   final ConfidenceLevel level;
 
-  (Color, String) _style(BuildContext context) {
+  (Color, String) _style(BuildContext context, AppLocalizations l10n) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     return switch (level) {
-      ConfidenceLevel.high => (semantic.interactivePrimary, '높음'),
-      ConfidenceLevel.medium => (TsColors.systemWarning500, '보통'),
-      ConfidenceLevel.low => (TsColors.systemError500, '낮음'),
+      ConfidenceLevel.high => (
+          semantic.interactivePrimary,
+          l10n.baseballConfidenceHigh,
+        ),
+      ConfidenceLevel.medium => (
+          TsColors.systemWarning500,
+          l10n.baseballConfidenceMedium,
+        ),
+      ConfidenceLevel.low => (
+          TsColors.systemError500,
+          l10n.baseballConfidenceLow,
+        ),
     };
   }
 
   @override
   Widget build(BuildContext context) {
-    final (color, label) = _style(context);
+    final (color, label) = _style(context, context.l10n);
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,

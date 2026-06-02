@@ -1,5 +1,8 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/locale_data_helper.dart';
+
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_card.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_status_badge.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_type_badge.dart';
@@ -62,10 +65,13 @@ class ComboCardData {
 
 class ComboMatchData {
   const ComboMatchData({
+    required this.homeTeam,
+    required this.awayTeam,
     required this.homeTeamKo,
     required this.awayTeamKo,
     required this.homeLogo,
     required this.awayLogo,
+    required this.pickTeam,
     required this.pickTeamKo,
     required this.pickPosition,
     required this.pickResult,
@@ -80,10 +86,13 @@ class ComboMatchData {
     this.awayScore,
   });
 
+  final String homeTeam;
+  final String awayTeam;
   final String homeTeamKo;
   final String awayTeamKo;
   final String homeLogo;
   final String awayLogo;
+  final String pickTeam;
   final String pickTeamKo;
   final String pickPosition;
   final String pickResult;
@@ -101,9 +110,9 @@ class ComboMatchData {
 class ComboParser {
   ComboParser._();
 
-  static List<String> buildDateChips() {
+  static List<String> buildDateChips(AppLocalizations l10n) {
     final today = DateTime.now();
-    final chips = <String>['오늘'];
+    final chips = <String>[l10n.comboDashboardToday];
     for (var i = 1; i <= 7; i++) {
       final d = today.subtract(Duration(days: i));
       chips.add('${d.month}.${d.day}');
@@ -128,7 +137,10 @@ class ComboParser {
     return values[selectedDateIdx];
   }
 
-  static List<ComboAiSection> parseAiAnalysis(String? aiAnalysis) {
+  static List<ComboAiSection> parseAiAnalysis(
+    String? aiAnalysis,
+    AppLocalizations l10n,
+  ) {
     if (aiAnalysis == null || aiAnalysis.isEmpty) return [];
 
     final sections = aiAnalysis.split('\n\n');
@@ -155,23 +167,40 @@ class ComboParser {
         }
 
         result.add(
-          ComboAiSection(label: label, content: content, type: type),
+          ComboAiSection(
+            label: _localizedAiLabel(label, l10n),
+            content: content,
+            type: type,
+          ),
         );
       } else {
         result.add(
-          ComboAiSection(label: '총평', content: trimmed, type: 'summary'),
+          ComboAiSection(
+            label: l10n.comboAiSummary,
+            content: trimmed,
+            type: 'summary',
+          ),
         );
       }
     }
     return result;
   }
 
+  static String _localizedAiLabel(String apiLabel, AppLocalizations l10n) {
+    return switch (apiLabel) {
+      '총평' => l10n.comboAiSummary,
+      '주의' => l10n.comboAiWarning,
+      _ => apiLabel,
+    };
+  }
+
   static ComboDashboardData parseDashboard(
     Map<String, dynamic> data,
     int selectedDateIdx,
+    AppLocalizations l10n,
   ) {
     final picks = _extractPicks(data);
-    final dateChips = buildDateChips();
+    final dateChips = buildDateChips(l10n);
     final dateValues = buildDateValues();
     final idx = selectedDateIdx.clamp(0, dateValues.length - 1);
     final selectedDate = dateValues[idx];
@@ -214,13 +243,11 @@ class ComboParser {
     );
 
     final selectedDt = DateTime.parse(selectedDate);
-    const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
-    final dateTitle =
-        '${selectedDt.month}월 ${selectedDt.day}일 (${weekdays[selectedDt.weekday - 1]})';
+    final dateTitle = _dashboardDateTitle(l10n, selectedDt);
 
     return ComboDashboardData(
       dateTitle: dateTitle,
-      subtitle: '$total개 AI 조합 분석 완료',
+      subtitle: l10n.comboPicksCompleted(total),
       dateChips: dateChips,
       selectedDateIndex: idx,
       comboCount: total,
@@ -236,6 +263,7 @@ class ComboParser {
   static List<ComboCardData> parseComboCards(
     Map<String, dynamic> data,
     String selectedDate,
+    AppLocalizations l10n,
   ) {
     final picks = _extractPicks(data);
     final datePicks =
@@ -245,7 +273,7 @@ class ComboParser {
       final innerPicks = pick['picks'] as List? ?? [];
       final result = pick['result']?.toString() ?? 'pending';
 
-      final (statusLabel, statusType) = _mapComboResult(result);
+      final (statusLabel, statusType) = _mapComboResult(result, l10n);
 
       final foldCount = _readFoldCount(pick, innerPicks: innerPicks);
       final comboType = foldCount <= 2 ? 'safe' : 'high';
@@ -269,23 +297,26 @@ class ComboParser {
       return ComboCardData(
         id: (pick['id'] as num?)?.toInt() ?? 0,
         league: pick['league']?.toString() ?? 'KBO',
-        comboCount: '$foldCount Combo',
+        comboCount: l10n.comboFoldCount(foldCount),
         statusLabel: statusLabel,
         statusType: statusType,
         comboType: comboType,
         totalOdd: _readTotalOdd(pick),
         reliability: '${(pick['avg_confidence'] as num?)?.round() ?? 0}%',
         aiSummary: aiSummary,
-        aiSections: parseAiAnalysis(aiSummary),
+        aiSections: parseAiAnalysis(aiSummary, l10n),
         matches: innerPicks.map((m) {
           final map = Map<String, dynamic>.from(m as Map);
-          return _parseMatch(map);
+          return _parseMatch(map, l10n);
         }).toList(),
       );
     }).toList();
   }
 
-  static ComboMatchData _parseMatch(Map<String, dynamic> m) {
+  static ComboMatchData _parseMatch(
+    Map<String, dynamic> m,
+    AppLocalizations l10n,
+  ) {
     final pickSide = m['pick']?.toString() ?? 'home';
     final pickTeamKo =
         m['pickTeamKo']?.toString() ?? m['pickTeam']?.toString() ?? '';
@@ -306,25 +337,37 @@ class ComboParser {
 
     if (matchStatus == 'FT' || matchStatus == 'AOT') {
       if (isCorrect == true) {
-        matchResultLabel = '적중';
+        matchResultLabel = l10n.comboMatchHit;
         matchResultType = 'hit';
       } else {
-        matchResultLabel = '실패';
+        matchResultLabel = l10n.comboMatchFail;
         matchResultType = 'miss';
       }
     } else {
-      matchResultLabel = '대기';
+      matchResultLabel = l10n.comboMatchPending;
       matchResultType = 'inProgress';
     }
 
+    final homeTeam = m['homeTeam']?.toString() ?? '';
+    final awayTeam = m['awayTeam']?.toString() ?? '';
+    final homeTeamKo =
+        m['homeTeamKo']?.toString() ?? homeTeam;
+    final awayTeamKo =
+        m['awayTeamKo']?.toString() ?? awayTeam;
+    final pickTeam = m['pickTeam']?.toString() ?? pickTeamKo;
+
     return ComboMatchData(
-      homeTeamKo: m['homeTeamKo']?.toString() ?? m['homeTeam']?.toString() ?? '',
-      awayTeamKo: m['awayTeamKo']?.toString() ?? m['awayTeam']?.toString() ?? '',
+      homeTeam: homeTeam,
+      awayTeam: awayTeam,
+      homeTeamKo: homeTeamKo,
+      awayTeamKo: awayTeamKo,
       homeLogo: m['homeLogo']?.toString() ?? '',
       awayLogo: m['awayLogo']?.toString() ?? '',
+      pickTeam: pickTeam,
       pickTeamKo: pickTeamKo,
-      pickPosition: pickSide == 'home' ? '홈' : '원정',
-      pickResult: '승',
+      pickPosition:
+          pickSide == 'home' ? l10n.labelHome : l10n.labelAway,
+      pickResult: l10n.comboWin,
       odds: (m['odds'] as num?)?.toDouble() ?? 0,
       winProb: _readWinProb(m),
       reason: m['reason']?.toString() ?? '',
@@ -337,12 +380,36 @@ class ComboParser {
     );
   }
 
-  static (String, String) _mapComboResult(String result) {
+  static (String, String) _mapComboResult(
+    String result,
+    AppLocalizations l10n,
+  ) {
     return switch (result) {
-      'win' => ('적중', 'hit'),
-      'partial' => ('부분', 'partial'),
-      'lose' => ('미적중', 'miss'),
-      _ => ('진행중', 'inProgress'),
+      'win' => (l10n.comboStatusHit, 'hit'),
+      'partial' => (l10n.comboStatusPartial, 'partial'),
+      'lose' => (l10n.comboStatusMiss, 'miss'),
+      _ => (l10n.comboStatusInProgress, 'inProgress'),
+    };
+  }
+
+  static String _dashboardDateTitle(AppLocalizations l10n, DateTime dt) {
+    final weekday = _weekdayLabel(l10n, dt.weekday);
+    if (l10n.localeName.startsWith('en')) {
+      return '${dt.month}/${dt.day} ($weekday)';
+    }
+    return '${dt.month}월 ${dt.day}일 ($weekday)';
+  }
+
+  static String _weekdayLabel(AppLocalizations l10n, int weekday) {
+    return switch (weekday) {
+      DateTime.monday => l10n.weekdayMon,
+      DateTime.tuesday => l10n.weekdayTue,
+      DateTime.wednesday => l10n.weekdayWed,
+      DateTime.thursday => l10n.weekdayThu,
+      DateTime.friday => l10n.weekdayFri,
+      DateTime.saturday => l10n.weekdaySat,
+      DateTime.sunday => l10n.weekdaySun,
+      _ => l10n.weekdayMon,
     };
   }
 
@@ -408,7 +475,10 @@ class ComboUiMapper {
     return comboType == 'safe' ? ComboType.safe : ComboType.highOdds;
   }
 
-  static ComboMatchRowData toMatchRow(ComboMatchData match) {
+  static ComboMatchRowData toMatchRow(
+    BuildContext context,
+    ComboMatchData match,
+  ) {
     final matchResult = switch (match.matchResultType) {
       'hit' => ComboStatus.hit,
       'miss' => ComboStatus.miss,
@@ -417,11 +487,23 @@ class ComboUiMapper {
     };
 
     return ComboMatchRowData(
-      homeTeam: match.homeTeamKo,
-      awayTeam: match.awayTeamKo,
+      homeTeam: localizedTeamName(
+        context,
+        match.homeTeam,
+        match.homeTeamKo,
+      ),
+      awayTeam: localizedTeamName(
+        context,
+        match.awayTeam,
+        match.awayTeamKo,
+      ),
       homeLogoUrl: match.homeLogo.isEmpty ? null : match.homeLogo,
       awayLogoUrl: match.awayLogo.isEmpty ? null : match.awayLogo,
-      predictTeam: match.pickTeamKo,
+      predictTeam: localizedTeamName(
+        context,
+        match.pickTeam,
+        match.pickTeamKo,
+      ),
       predictDirection: match.pickPosition,
       odds: match.odds.toStringAsFixed(2),
       winRate: '${match.winProb}%',

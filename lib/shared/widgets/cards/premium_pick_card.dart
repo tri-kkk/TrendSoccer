@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/models/sport_type.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
@@ -10,6 +11,16 @@ import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/icons/sports_icon.dart';
+
+String _pickDirectionLabel(BuildContext context, String code) {
+  final l10n = context.l10n;
+  return switch (code) {
+    'home' => l10n.pickDirectionHome,
+    'draw' => l10n.pickDirectionDraw,
+    'away' => l10n.pickDirectionAway,
+    _ => code,
+  };
+}
 
 class RecentWinData {
   const RecentWinData({
@@ -21,7 +32,7 @@ class RecentWinData {
   final String homeTeam;
   final String awayTeam;
 
-  /// "홈" or "원정" (표시 라벨과 픽 배지 매핑)
+  /// `home`, `draw`, `away`, or display fallback.
   final String pickDirection;
 }
 
@@ -226,7 +237,7 @@ class _PremiumPickCardState extends State<PremiumPickCard>
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  data.pickDirection,
+                  _pickDirectionLabel(context, data.pickDirection),
                   style: TsType.labelSBold.copyWith(
                     color: semantic.interactivePrimary,
                   ),
@@ -299,6 +310,7 @@ class _PremiumPickCardState extends State<PremiumPickCard>
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     final wins = widget.recentWins;
     if (wins.isEmpty) {
       return const SizedBox.shrink();
@@ -335,7 +347,7 @@ class _PremiumPickCardState extends State<PremiumPickCard>
               ),
               const SizedBox(width: TsSpacing.sm),
               Text(
-                '오늘의 추천 경기',
+                l10n.cardTodayPick,
                 style: TsType.headingH3.copyWith(color: semantic.textPrimary),
               ),
             ],
@@ -355,7 +367,7 @@ class _PremiumPickCardState extends State<PremiumPickCard>
               Expanded(
                 child: _StatCell(
                   value: widget.winRate,
-                  label: widget.winRateLabel ?? '적중률',
+                  label: widget.winRateLabel ?? l10n.cardHitRate,
                   valueColor: semantic.interactivePrimary,
                   semantic: semantic,
                 ),
@@ -371,7 +383,7 @@ class _PremiumPickCardState extends State<PremiumPickCard>
                 child: _StatCell(
                   value: widget.countdown,
                   valueWidget: widget.countdownValue,
-                  label: widget.countdownLabel ?? '다음 업데이트까지',
+                  label: widget.countdownLabel ?? l10n.cardNextUpdate,
                   valueColor: semantic.textPrimary,
                   semantic: semantic,
                 ),
@@ -386,7 +398,7 @@ class _PremiumPickCardState extends State<PremiumPickCard>
               Expanded(
                 child: _StatCell(
                   value: widget.streak,
-                  label: widget.streakLabel ?? '현재 연승',
+                  label: widget.streakLabel ?? l10n.cardStreak,
                   valueColor: semantic.interactivePrimary,
                   semantic: semantic,
                 ),
@@ -401,7 +413,7 @@ class _PremiumPickCardState extends State<PremiumPickCard>
             ),
             const SizedBox(height: TsSpacing.lg),
             TsButton(
-              label: '오늘의 픽 확인하기 →',
+              label: l10n.cardCheckPick,
               variant: TsButtonVariant.primary,
               onPressed: widget.onCTATap,
             ),

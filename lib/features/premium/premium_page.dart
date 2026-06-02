@@ -10,6 +10,8 @@ import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_combo_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/utils/access_gate.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -58,13 +60,14 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
   }
 
   Widget _buildSoccerSection(BuildContext context) {
+    final l10n = context.l10n;
     final date = ref.watch(todayDateProvider);
     final picksAsync = ref.watch(premiumPicksProvider(date));
 
     ref.listen(premiumPicksProvider(date), (previous, next) {
       final wasLoading = previous?.isLoading ?? false;
       if (wasLoading && next.hasError && context.mounted) {
-        TsToast.error(context, '프리미엄 픽 목록을 불러오지 못했습니다.');
+        TsToast.error(context, l10n.premiumPickLoadFailed);
       }
     });
 
@@ -75,7 +78,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '프리미엄 픽 목록을 불러오지 못했습니다.',
+              l10n.premiumPickLoadFailed,
               style: TsType.bodyLRegular.copyWith(
                 color: Theme.of(context)
                     .extension<TsSemanticColors>()!
@@ -85,7 +88,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
             ),
             const SizedBox(height: 16),
             TsButton(
-              label: '다시 시도',
+              label: l10n.retry,
               variant: TsButtonVariant.primary,
               size: TsButtonSize.small,
               onPressed: () => ref.invalidate(premiumPicksProvider(date)),
@@ -95,11 +98,11 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
       ),
       data: (picks) {
         if (picks.isEmpty) {
-          return const Center(
+          return Center(
             child: TsEmptyState(
               type: TsEmptyStateType.premiumPickEmpty,
-              title: 'No High-Confidence Picks Today',
-              subtitle: '오전 6시 또는 오후 6시에 다시 확인해 주세요.',
+              title: l10n.premiumNoHighConfidence,
+              subtitle: l10n.emptyPremiumPickSubtitle,
             ),
           );
         }
@@ -122,11 +125,23 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                   ),
                   child: AnalysisCard(
                     leagueId: leagueId,
-                    leagueName: match.league.name,
+                    leagueName: localizedLeagueName(
+                      context,
+                      match.league.nameEn,
+                      match.league.name,
+                    ),
                     leagueLogoUrl: match.league.icon,
                     date: formatSoccerCardDate(match.matchDate),
-                    homeTeam: match.homeTeam.name,
-                    awayTeam: match.awayTeam.name,
+                    homeTeam: localizedTeamName(
+                      context,
+                      match.homeTeam.name,
+                      null,
+                    ),
+                    awayTeam: localizedTeamName(
+                      context,
+                      match.awayTeam.name,
+                      null,
+                    ),
                     matchTime: match.matchTime,
                     homeLogoUrl: match.homeTeam.logo,
                     awayLogoUrl: match.awayTeam.logo,
@@ -148,7 +163,8 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
     );
   }
 
-  Widget _buildBaseballSection() {
+  Widget _buildBaseballSection(BuildContext context) {
+    final l10n = context.l10n;
     final comboAsync = ref.watch(baseballComboPicksProvider);
 
     return comboAsync.when(
@@ -158,7 +174,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '야구 AI 조합을 불러오지 못했습니다.',
+              l10n.premiumComboLoadFailed,
               style: TsType.bodyLRegular.copyWith(
                 color: Theme.of(context)
                     .extension<TsSemanticColors>()!
@@ -168,7 +184,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
             ),
             const SizedBox(height: 16),
             TsButton(
-              label: '다시 시도',
+              label: l10n.retry,
               variant: TsButtonVariant.primary,
               size: TsButtonSize.small,
               onPressed: () => ref.invalidate(baseballComboPicksProvider),
@@ -177,10 +193,17 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
         ),
       ),
       data: (rawData) {
-        final dashboard =
-            ComboParser.parseDashboard(rawData, _selectedComboDateIndex);
+        final dashboard = ComboParser.parseDashboard(
+          rawData,
+          _selectedComboDateIndex,
+          l10n,
+        );
         final selectedDate = ComboParser.dateValueAt(_selectedComboDateIndex);
-        final comboCards = ComboParser.parseComboCards(rawData, selectedDate);
+        final comboCards = ComboParser.parseComboCards(
+          rawData,
+          selectedDate,
+          l10n,
+        );
         final hasData = comboCards.isNotEmpty;
 
         return SingleChildScrollView(
@@ -215,7 +238,9 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                           ComboUiMapper.comboCountFromLabel(combo.comboCount),
                       comboType: ComboUiMapper.typeFromComboType(combo.comboType),
                       status: ComboUiMapper.statusFromType(combo.statusType),
-                      matches: combo.matches.map(ComboUiMapper.toMatchRow).toList(),
+                      matches: combo.matches
+                          .map((m) => ComboUiMapper.toMatchRow(context, m))
+                          .toList(),
                       aiSections: combo.aiSections,
                       totalOdds: combo.totalOdd.toStringAsFixed(2),
                       confidence: combo.reliability,
@@ -262,6 +287,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
     final auth = ref.watch(authProvider);
 
     if (!AccessGate.canViewPremiumContent(planType: auth.planType)) {
+      final l10n = context.l10n;
       return Scaffold(
         backgroundColor: semantic.surfaceBase,
         body: SafeArea(
@@ -285,7 +311,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '프리미엄 전용 콘텐츠',
+                        l10n.premiumExclusiveShort,
                         style: TsType.displayHero.copyWith(
                           color: semantic.textPrimary,
                         ),
@@ -293,7 +319,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'PREMIUM PICK과 야구 AI 조합 분석을',
+                        l10n.premiumSubscribeBenefitsLine1,
                         style: TsType.bodyLBold.copyWith(
                           color: semantic.textSecondary,
                         ),
@@ -301,7 +327,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '구독 후 이용하실 수 있습니다.',
+                        l10n.premiumSubscribeAfter,
                         style: TsType.bodyLBold.copyWith(
                           color: semantic.textSecondary,
                         ),
@@ -321,22 +347,28 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '프리미엄 혜택',
+                          l10n.premiumBenefitsTitle,
                           style: TsType.bodyLRegular.copyWith(
                             color: semantic.interactivePrimary,
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _buildBenefitRow(semantic, '24시간 우선 분석 접근'),
+                        _buildBenefitRow(semantic, l10n.premiumBenefit24h),
                         const SizedBox(height: 16),
-                        _buildBenefitRow(semantic, 'PREMIUM PICK 무제한'),
+                        _buildBenefitRow(
+                          semantic,
+                          l10n.premiumBenefitPremiumPick,
+                        ),
                         const SizedBox(height: 16),
-                        _buildBenefitRow(semantic, '야구 AI Analysis'),
+                        _buildBenefitRow(
+                          semantic,
+                          l10n.premiumBenefitBaseballAi,
+                        ),
                         const SizedBox(height: 16),
                         SizedBox(
                           width: double.infinity,
                           child: TsButton(
-                            label: '지금 구독하기',
+                            label: l10n.premiumSubscribeNow,
                             variant: TsButtonVariant.primary,
                             onPressed: () => navigateToSubscribe(context, ref),
                           ),
@@ -377,7 +409,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
           if (_selectedSport == SportType.soccer)
             Expanded(child: _buildSoccerSection(context))
           else
-            Expanded(child: _buildBaseballSection()),
+            Expanded(child: _buildBaseballSection(context)),
         ],
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:trendsoccer/core/models/auth_state.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 
 /// Client-side gating for time-based analysis unlock and tier access (v3.1 §5-3).
 ///
@@ -34,7 +35,7 @@ abstract final class AccessGate {
     return false;
   }
 
-  /// Korean copy shown when [canViewStandardAnalysis] is false; `null` when unlocked.
+  /// Copy shown when [canViewStandardAnalysis] is false; `null` when unlocked.
   ///
   /// Message priority when locked:
   /// - Guest, **≥ 2h** before match: opens 1h before kickoff.
@@ -44,6 +45,7 @@ abstract final class AccessGate {
   static String? lockMessage({
     required DateTime matchTimestamp,
     required PlanType planType,
+    required AppLocalizations l10n,
   }) {
     if (canViewStandardAnalysis(
       matchTimestamp: matchTimestamp,
@@ -55,13 +57,13 @@ abstract final class AccessGate {
     final hours = _hoursUntilMatchUtc(matchTimestamp);
 
     if (planType == PlanType.none) {
-      if (hours >= 2) return '경기 시작 1시간 전에 오픈됩니다.';
-      if (hours >= 1) return '로그인 후 확인 가능합니다.';
+      if (hours >= 2) return l10n.accessLockOpensOneHourBefore;
+      if (hours >= 1) return l10n.accessLockLoginRequired;
     }
     if (planType == PlanType.free && hours >= 2 && hours < 24) {
-      return '프리미엄 구독 시 경기 시작 24시간 전부터 확인 가능합니다.';
+      return l10n.accessLockPremium24h;
     }
-    return '경기 시작 24시간 전에 오픈됩니다.';
+    return l10n.accessLockOpens24HoursBefore;
   }
 
   /// Time remaining until this tier’s standard-analysis window opens; `null` if already unlocked.
@@ -95,18 +97,27 @@ abstract final class AccessGate {
   }
 
   /// Countdown label for locked analysis cards (Figma copy).
-  static String formatTimeUntilUnlock(Duration duration) {
-    if (duration <= Duration.zero) return '분석보기';
+  static String formatTimeUntilUnlock(
+    Duration duration, {
+    required AppLocalizations l10n,
+  }) {
+    if (duration <= Duration.zero) return l10n.accessUnlockViewAnalysis;
     if (duration.inDays >= 1) {
-      return '${duration.inDays}일 ${duration.inHours % 24}시간 후 오픈';
+      return l10n.accessUnlockDaysHours(
+        duration.inDays,
+        duration.inHours % 24,
+      );
     }
     if (duration.inHours >= 1) {
-      return '${duration.inHours}시간 ${duration.inMinutes % 60}분 후 오픈';
+      return l10n.accessUnlockHoursMinutes(
+        duration.inHours,
+        duration.inMinutes % 60,
+      );
     }
     if (duration.inMinutes >= 1) {
-      return '${duration.inMinutes}분 후 오픈';
+      return l10n.accessUnlockMinutes(duration.inMinutes);
     }
-    return '분석보기';
+    return l10n.accessUnlockViewAnalysis;
   }
 
   /// Premium-only surfaces: H2H/deep analysis, PREMIUM PICK list, baseball AI/combos.

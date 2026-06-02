@@ -4,6 +4,7 @@ import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer/premium/h2h_section.dart';
 import 'package:trendsoccer/shared/widgets/premium/circle_badge.dart';
 import 'package:trendsoccer/shared/widgets/premium/insights_card.dart';
@@ -166,6 +167,7 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     final w = widget;
 
     return Container(
@@ -203,7 +205,7 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                   SizedBox(
                     width: double.infinity,
                     child: Text(
-                      '최근 10경기',
+                      l10n.soccerRecent10,
                       style: TsType.bodyLRegular.copyWith(
                         color: semantic.textSecondary,
                       ),
@@ -215,19 +217,19 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       CircleBadge(
-                        label: '승',
+                        label: l10n.soccerStatWins,
                         value: '${w.wins}',
                         type: CircleBadgeType.win,
                       ),
                       const SizedBox(width: 48),
                       CircleBadge(
-                        label: '무',
+                        label: l10n.labelDraw,
                         value: '${w.draws}',
                         type: CircleBadgeType.draw,
                       ),
                       const SizedBox(width: 48),
                       CircleBadge(
-                        label: '패',
+                        label: l10n.soccerStatLosses,
                         value: '${w.losses}',
                         type: CircleBadgeType.lose,
                       ),
@@ -237,7 +239,7 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                   SizedBox(
                     width: double.infinity,
                     child: Text(
-                      '최근 폼',
+                      l10n.soccerRecentForm,
                       style: TsType.bodyLRegular.copyWith(
                         color: semantic.textSecondary,
                       ),
@@ -261,19 +263,19 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                   Row(
                     children: [
                       Expanded(
-                        child: StatsCard(value: w.recordWins, label: '승'),
+                        child: StatsCard(value: w.recordWins, label: l10n.soccerStatWins),
                       ),
                       const SizedBox(width: TsSpacing.sm),
                       Expanded(
-                        child: StatsCard(value: w.recordDraws, label: '무'),
+                        child: StatsCard(value: w.recordDraws, label: l10n.labelDraw),
                       ),
                       const SizedBox(width: TsSpacing.sm),
                       Expanded(
-                        child: StatsCard(value: w.recordLosses, label: '패'),
+                        child: StatsCard(value: w.recordLosses, label: l10n.soccerStatLosses),
                       ),
                       const SizedBox(width: TsSpacing.sm),
                       Expanded(
-                        child: StatsCard(value: w.winRate, label: '승률'),
+                        child: StatsCard(value: w.winRate, label: l10n.soccerStatWinRate),
                       ),
                     ],
                   ),
@@ -281,7 +283,7 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                   SizedBox(
                     width: double.infinity,
                     child: Text(
-                      '골 라인',
+                      l10n.soccerStatGoalLine,
                       style: TsType.bodyLRegular.copyWith(
                         color: semantic.textSecondary,
                       ),
@@ -294,7 +296,7 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                       Expanded(
                         child: StatsCard(
                           value: w.goalLineO15,
-                          label: 'O 1.5',
+                          label: l10n.soccerStatOver15,
                           isHighlight: w.goalLineO15Highlight,
                         ),
                       ),
@@ -302,7 +304,7 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                       Expanded(
                         child: StatsCard(
                           value: w.goalLineO25,
-                          label: 'O 2.5',
+                          label: l10n.soccerStatOver25,
                           isHighlight: w.goalLineO25Highlight,
                         ),
                       ),
@@ -310,7 +312,7 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                       Expanded(
                         child: StatsCard(
                           value: w.goalLineO35,
-                          label: 'O 3.5',
+                          label: l10n.soccerStatOver35,
                           isHighlight: w.goalLineO35Highlight,
                         ),
                       ),
@@ -320,7 +322,7 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                   SizedBox(
                     width: double.infinity,
                     child: Text(
-                      '마켓 지표 (최근 10경기)',
+                      l10n.soccerMarketIndicators,
                       style: TsType.bodyLRegular.copyWith(
                         color: semantic.textSecondary,
                       ),
@@ -333,7 +335,7 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                       Expanded(
                         child: StatsCard(
                           value: w.marketO25,
-                          label: 'O 2.5',
+                          label: l10n.soccerStatOver25,
                           isHighlight: w.marketO25Highlight,
                         ),
                       ),
@@ -341,17 +343,17 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                       Expanded(
                         child: StatsCard(
                           value: w.marketBtts,
-                          label: 'BTTS',
+                          label: l10n.soccerMarketBtts,
                           isHighlight: w.marketBttsHighlight,
                         ),
                       ),
                       const SizedBox(width: TsSpacing.sm),
                       Expanded(
-                        child: StatsCard(value: w.marketCs, label: 'CS'),
+                        child: StatsCard(value: w.marketCs, label: l10n.soccerMarketCs),
                       ),
                       const SizedBox(width: TsSpacing.sm),
                       Expanded(
-                        child: StatsCard(value: w.marketFts, label: 'FTS'),
+                        child: StatsCard(value: w.marketFts, label: l10n.soccerMarketFts),
                       ),
                     ],
                   ),
@@ -359,7 +361,7 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                   SizedBox(
                     width: double.infinity,
                     child: Text(
-                      '팀 인사이트',
+                      l10n.soccerStatTeamInsights,
                       style: TsType.bodyLRegular.copyWith(
                         color: semantic.textSecondary,
                       ),
@@ -373,7 +375,7 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
                     TextButton(
                       onPressed: w.onRetry,
                       child: Text(
-                        '다시 시도',
+                        l10n.retry,
                         style: TsType.labelSRegular.copyWith(
                           color: semantic.interactivePrimary,
                         ),

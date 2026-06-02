@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
@@ -16,7 +17,8 @@ class SeasonChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final text = label ?? (isCurrent ? '이번시즌' : '이전시즌');
+    final l10n = context.l10n;
+    final text = label ?? (isCurrent ? l10n.seasonCurrent : l10n.seasonPrevious);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(

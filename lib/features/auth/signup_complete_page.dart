@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 
@@ -44,7 +45,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
       if (_countdown <= 0) {
         _countdownFinished = true;
         _cancelRedirect();
-        TsToast.success(context, '회원가입 완료! 프리미엄 체험을 시작합니다.');
+        TsToast.success(context, context.l10n.signupCompleteSuccessToast);
         context.go('/trend');
       }
     });
@@ -130,6 +131,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return PopScope(
       canPop: false,
@@ -148,7 +150,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
             onPressed: _goHome,
           ),
           title: Text(
-            '가입완료',
+            l10n.signupCompleteAppBarTitle,
             style: TsType.headingH3.copyWith(color: semantic.textPrimary),
           ),
           centerTitle: true,
@@ -179,13 +181,13 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
               ),
               const SizedBox(height: 16),
               Text(
-                '환영합니다 !',
+                l10n.signupCompleteTitle,
                 style: TsType.displayHero.copyWith(color: semantic.textPrimary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
-                '지금 트렌드사커를 시작해 보세요.',
+                l10n.signupCompleteStartPrompt,
                 style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
                 textAlign: TextAlign.center,
               ),
@@ -200,7 +202,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  '48시간 프리미엄 무료 체험이 시작되었습니다!',
+                  l10n.signupCompleteTrialBanner,
                   style: TsType.bodyLRegular.copyWith(color: semantic.interactivePrimary),
                   textAlign: TextAlign.center,
                 ),
@@ -208,32 +210,32 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
               const SizedBox(height: 16),
               _benefitsCard(
                 semantic: semantic,
-                header: '무료 혜택',
+                header: l10n.signupCompleteFreeBenefitsHeader,
                 headerColor: semantic.textPrimary,
                 iconColor: semantic.textSecondary,
                 textColor: semantic.textSecondary,
-                benefits: const [
-                  '경기 시작 2시간 전 분석 오픈',
-                  '기본 분석 데이터 제공',
-                  '실시간 스코어 및 경기 일정',
+                benefits: [
+                  l10n.signupCompleteFreeBenefit1,
+                  l10n.signupCompleteFreeBenefit2,
+                  l10n.signupCompleteFreeBenefit3,
                 ],
               ),
               const SizedBox(height: 16),
               _benefitsCard(
                 semantic: semantic,
-                header: '프리미엄 혜택',
+                header: l10n.signupCompletePremiumBenefitsHeader,
                 headerColor: semantic.interactivePrimary,
                 iconColor: semantic.interactivePrimary,
                 textColor: semantic.textPrimary,
-                benefits: const [
-                  '24시간 우선 분석 접근',
-                  'PREMIUM PICK 무제한',
-                  '야구 AI Analysis',
+                benefits: [
+                  l10n.signupCompletePremiumBenefit1,
+                  l10n.signupCompletePremiumBenefit2,
+                  l10n.signupCompletePremiumBenefit3,
                 ],
               ),
               const SizedBox(height: 16),
               TsButton(
-                label: '프리미엄 업그레이드',
+                label: l10n.signupCompletePremiumUpgrade,
                 variant: TsButtonVariant.primary,
                 onPressed: () {
                   _cancelRedirect();
@@ -243,13 +245,13 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
               const SizedBox(height: 16),
               if (_showManualHome)
                 TsButton(
-                  label: '홈으로 이동',
+                  label: l10n.signupCompleteGoHome,
                   variant: TsButtonVariant.secondary,
                   onPressed: _goHome,
                 )
               else
                 Text(
-                  '$_countdown초 후 자동으로 홈으로 이동합니다.',
+                  l10n.signupCompleteCountdown(_countdown),
                   style: TsType.labelSRegular.copyWith(
                     color: semantic.textTertiary,
                   ),

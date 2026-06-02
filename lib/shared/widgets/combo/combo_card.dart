@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
@@ -166,6 +167,7 @@ class ComboCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Container(
       padding: const EdgeInsets.all(TsSpacing.lg),
@@ -258,13 +260,13 @@ class ComboCard extends StatelessWidget {
             children: [
               _footerColumn(
                 semantic: semantic,
-                label: '총 배당',
+                label: l10n.comboTotalOdds,
                 value: totalOdds,
                 valueColor: semantic.interactivePrimary,
               ),
               _footerColumn(
                 semantic: semantic,
-                label: '신뢰도',
+                label: l10n.comboReliability,
                 value: confidence,
                 valueColor: semantic.textPrimary,
               ),
@@ -274,7 +276,7 @@ class ComboCard extends StatelessWidget {
           Opacity(
             opacity: 0.5,
             child: Text(
-              'AI 분석 결과는 참고용이며, 결과를 보장하지 않습니다.',
+              l10n.comboAiDisclaimer,
               style: TsType.labelSRegular.copyWith(color: semantic.textDisabled),
               textAlign: TextAlign.center,
             ),

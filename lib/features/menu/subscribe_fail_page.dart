@@ -6,6 +6,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 class SubscribeFailPage extends StatelessWidget {
@@ -14,6 +15,7 @@ class SubscribeFailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return PopScope(
       canPop: false,
@@ -33,7 +35,7 @@ class SubscribeFailPage extends StatelessWidget {
             onPressed: () => context.go('/menu/subscribe'),
           ),
           title: Text(
-            '결제 실패',
+            l10n.subscribeFailTitle,
             style: TsType.headingH3.copyWith(color: semantic.textPrimary),
           ),
           centerTitle: true,
@@ -66,13 +68,13 @@ class SubscribeFailPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 48),
                       Text(
-                        '결제에 실패했습니다.',
+                        l10n.subscribeFailMessage,
                         style: TsType.headingH2.copyWith(color: semantic.textPrimary),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '다시 시도하거나 다른 결제 수단을 이용해주세요.',
+                        l10n.subscribeFailDescription,
                         style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
                         textAlign: TextAlign.center,
                       ),
@@ -90,10 +92,13 @@ class SubscribeFailPage extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  '결제 시도 금액',
+                                  l10n.subscribeFailAttemptAmount,
                                   style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
                                 ),
-                                Text('₩ 4,900', style: TsType.headingH3.copyWith(color: semantic.textPrimary)),
+                                Text(
+                                  l10n.subscribePriceMonthly,
+                                  style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 16),
@@ -103,7 +108,7 @@ class SubscribeFailPage extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    '오류 코드',
+                                    l10n.subscribeFailErrorCode,
                                     style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
                                   ),
                                   Text(
@@ -120,7 +125,7 @@ class SubscribeFailPage extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: TsButton(
-                          label: '다시 시도하기',
+                          label: l10n.subscribeFailRetry,
                           variant: TsButtonVariant.primary,
                           onPressed: () => context.go('/menu/subscribe'),
                         ),
@@ -129,7 +134,7 @@ class SubscribeFailPage extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: TsButton(
-                          label: '홈으로 돌아가기',
+                          label: l10n.subscribeGoHome,
                           variant: TsButtonVariant.secondary,
                           onPressed: () => context.go('/trend'),
                         ),

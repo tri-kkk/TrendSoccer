@@ -4,6 +4,8 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 
 enum BaseballH2HWinner {
   home,
@@ -102,11 +104,12 @@ class BaseballH2HSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'H2H',
+          l10n.baseballSectionH2h,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
         const SizedBox(height: TsSpacing.sm),
@@ -119,14 +122,14 @@ class BaseballH2HSection extends StatelessWidget {
           ),
           child: isLoading
               ? Text(
-                  '상대 전적 데이터를 불러오는 중...',
+                  l10n.baseballH2hLoading,
                   style: TsType.bodyMRegular.copyWith(
                     color: semantic.textSecondary,
                   ),
                 )
               : matches.isEmpty
               ? Text(
-                  '상대 전적 데이터가 없습니다.',
+                  l10n.baseballH2hNoData,
                   style: TsType.bodyMRegular.copyWith(
                     color: semantic.textSecondary,
                   ),
@@ -215,7 +218,11 @@ class _H2HMatchRow extends StatelessWidget {
                           ],
                           Expanded(
                             child: Text(
-                              match.homeDisplayName,
+                              localizedTeamName(
+                                context,
+                                match.homeTeam,
+                                match.homeTeamKo,
+                              ),
                               style: labelStyle,
                               textAlign: TextAlign.right,
                               overflow: TextOverflow.ellipsis,
@@ -238,7 +245,11 @@ class _H2HMatchRow extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              match.awayDisplayName,
+                              localizedTeamName(
+                                context,
+                                match.awayTeam,
+                                match.awayTeamKo,
+                              ),
                               style: labelStyle,
                               textAlign: TextAlign.left,
                               overflow: TextOverflow.ellipsis,

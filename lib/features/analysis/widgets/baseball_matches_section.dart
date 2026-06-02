@@ -7,6 +7,8 @@ import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
@@ -53,7 +55,7 @@ class BaseballMatchesSection extends ConsumerWidget {
     ref.listen(baseballAnalysisMatchesProvider, (previous, next) {
       final wasLoading = previous?.isLoading ?? false;
       if (wasLoading && next.hasError && context.mounted) {
-        TsToast.error(context, '경기 목록을 불러오지 못했습니다.');
+        TsToast.error(context, context.l10n.analysisLoadMatchesFailed);
       }
     });
 
@@ -107,28 +109,23 @@ class BaseballMatchesSection extends ConsumerWidget {
         );
 
         if (filtered.isEmpty) {
+          final emptyState = TsEmptyState(
+            title: context.l10n.analysisNoBaseballScheduled,
+          );
           if (scrollable) {
             return _buildNestedScrollView(
               context,
-              slivers: const [
+              slivers: [
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: Center(
-                    child: TsEmptyState(
-                      title: '예정된 야구 경기가 없습니다.',
-                    ),
-                  ),
+                  child: Center(child: emptyState),
                 ),
               ],
             );
           }
           return SizedBox(
             height: MediaQuery.sizeOf(context).height * 0.4,
-            child: const Center(
-              child: TsEmptyState(
-                title: '예정된 야구 경기가 없습니다.',
-              ),
-            ),
+            child: Center(child: emptyState),
           );
         }
 
@@ -170,8 +167,8 @@ class _BaseballAnalysisCardItem extends StatelessWidget {
       leagueId: baseballLeagueIconId(card.league),
       leagueName: card.league,
       date: formatBaseballCardDate(card),
-      homeTeam: card.homeDisplayTeam,
-      awayTeam: card.awayDisplayTeam,
+      homeTeam: localizedTeamName(context, card.homeTeam, card.homeTeamKo),
+      awayTeam: localizedTeamName(context, card.awayTeam, card.awayTeamKo),
       matchTime: formatBaseballMatchTimeKst(card),
       homeLogoUrl: card.homeTeamLogo,
       awayLogoUrl: card.awayTeamLogo,
@@ -197,17 +194,19 @@ class _InlineError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          '경기 목록을 불러오지 못했습니다.',
+          l10n.analysisLoadMatchesFailed,
           style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),
         TsButton(
-          label: '다시 시도',
+          label: l10n.retry,
           variant: TsButtonVariant.primary,
           size: TsButtonSize.small,
           onPressed: onRetry,

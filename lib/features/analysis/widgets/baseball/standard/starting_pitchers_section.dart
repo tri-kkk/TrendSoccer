@@ -6,6 +6,8 @@ import 'package:trendsoccer/core/providers/baseball_match_report_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/shared/widgets/baseball/pitcher_comment_chip.dart';
 import 'package:trendsoccer/shared/widgets/baseball/position_chip.dart';
 import 'package:trendsoccer/shared/widgets/baseball/season_chip.dart';
@@ -92,6 +94,7 @@ class StartingPitchersSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     final defaultPrevSeason = previousSeasonYear(currentSeason);
     var homeDisplay = _withSeasonLabels(
@@ -117,10 +120,12 @@ class StartingPitchersSection extends ConsumerWidget {
         final homeRaw = statsData['homePitcher'];
         final awayRaw = statsData['awayPitcher'];
         homeDisplay = _mergeMlbPitcherStats(
+          l10n,
           homeDisplay,
           homeRaw is Map ? Map<String, dynamic>.from(homeRaw) : null,
         );
         awayDisplay = _mergeMlbPitcherStats(
+          l10n,
           awayDisplay,
           awayRaw is Map ? Map<String, dynamic>.from(awayRaw) : null,
         );
@@ -225,7 +230,7 @@ class StartingPitchersSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '선발 투수',
+          l10n.baseballSectionPitchersKo,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
         const SizedBox(height: TsSpacing.sm),
@@ -574,14 +579,14 @@ String mlbPitcherPhotoUrl(int pitcherId) {
   return 'https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_120,q_auto:best/v1/people/$pitcherId/headshot/67/current';
 }
 
-String _mlbThrowingHandLabel(Object? hand) {
+String _mlbThrowingHandLabel(AppLocalizations l10n, Object? hand) {
   switch (hand?.toString().trim().toUpperCase()) {
     case 'L':
-      return '좌완 투수';
+      return l10n.baseballPitcherLeftHand;
     case 'R':
-      return '우완 투수';
+      return l10n.baseballPitcherRightHand;
     default:
-      return '투수';
+      return l10n.baseballPitcherGeneric;
   }
 }
 
@@ -649,6 +654,7 @@ PitcherData _mergeKboPitcherStats(
 }
 
 PitcherData _mergeMlbPitcherStats(
+  AppLocalizations l10n,
   PitcherData base,
   Map<String, dynamic>? stats,
 ) {
@@ -666,7 +672,7 @@ PitcherData _mergeMlbPitcherStats(
 
   return PitcherData(
     name: name != null && name.isNotEmpty ? name : base.name,
-    pitcherType: _mlbThrowingHandLabel(stats['throwingHand']),
+    pitcherType: _mlbThrowingHandLabel(l10n, stats['throwingHand']),
     teamLogoUrl: base.teamLogoUrl,
     pitcherId: playerId ?? base.pitcherId,
     photoUrl: resolvedPhoto,

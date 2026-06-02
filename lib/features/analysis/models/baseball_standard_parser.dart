@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:trendsoccer/core/models/baseball_models.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/features/analysis/models/baseball_match_report_data.dart';
+import 'package:trendsoccer/features/analysis/models/parser_labels.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/standard/baseball_h2h_section.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/standard/baseball_odds_section.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/standard/starting_pitchers_section.dart';
@@ -49,10 +50,15 @@ class BaseballStandardPitcher {
     return name.trim().isEmpty ? '-' : name.trim();
   }
 
-  PitcherData toPitcherData({String? teamLogoUrl}) {
+  PitcherData toPitcherData({
+    required ParserLabels labels,
+    required String displayName,
+    String? teamLogoUrl,
+  }) {
     return PitcherData(
       name: displayName,
-      pitcherType: pitcherType.isEmpty ? '투수' : pitcherType,
+      pitcherType:
+          pitcherType.isEmpty ? labels.baseballPitcherGeneric : pitcherType,
       teamLogoUrl: teamLogoUrl,
       pitcherId: pitcherId,
       photoUrl: photoUrl,
@@ -82,6 +88,8 @@ class BaseballStandardParsed {
     this.awayTeamId,
     required this.homeTeam,
     required this.awayTeam,
+    this.homeTeamKo,
+    this.awayTeamKo,
     this.homeLogoUrl,
     this.awayLogoUrl,
     required this.matchDateDisplay,
@@ -111,6 +119,8 @@ class BaseballStandardParsed {
   final int? awayTeamId;
   final String homeTeam;
   final String awayTeam;
+  final String? homeTeamKo;
+  final String? awayTeamKo;
   final String? homeLogoUrl;
   final String? awayLogoUrl;
   final String matchDateDisplay;
@@ -176,7 +186,10 @@ class BaseballRelatedMatch {
 
 bool _loggedDetailKeys = false;
 
-BaseballStandardParsed parseBaseballStandardDetail(Map<String, dynamic> raw) {
+BaseballStandardParsed parseBaseballStandardDetail(
+  Map<String, dynamic> raw, {
+  required ParserLabels labels,
+}) {
   if (!_loggedDetailKeys) {
     _loggedDetailKeys = true;
     debugPrint('[BASEBALL] Match detail keys: ${raw.keys.toList()}');
@@ -201,8 +214,8 @@ BaseballStandardParsed parseBaseballStandardDetail(Map<String, dynamic> raw) {
       _readString(awaySide, const ['team', 'name']) ??
       '';
 
-  final homeTeam = _preferKo(homeTeamKo, homeTeamEn);
-  final awayTeam = _preferKo(awayTeamKo, awayTeamEn);
+  final homeTeam = homeTeamEn.isNotEmpty ? homeTeamEn : (homeTeamKo ?? '');
+  final awayTeam = awayTeamEn.isNotEmpty ? awayTeamEn : (awayTeamKo ?? '');
 
   final homeLogoUrl = _nonEmptyOrNull(
     match['homeLogo'] ?? match['home_logo'] ?? homeSide['logo'],
@@ -261,7 +274,7 @@ BaseballStandardParsed parseBaseballStandardDetail(Map<String, dynamic> raw) {
   final currentSeason = _parseMatchSeason(match);
 
   return BaseballStandardParsed(
-    league: league.isEmpty ? '야구' : league,
+    league: league.isEmpty ? labels.baseballLeagueFallback : league,
     leagueId: baseballLeagueIconId(league),
     leagueCode: leagueCode,
     apiMatchId: apiMatchId,
@@ -270,6 +283,8 @@ BaseballStandardParsed parseBaseballStandardDetail(Map<String, dynamic> raw) {
     awayTeamId: awayTeamId,
     homeTeam: homeTeam,
     awayTeam: awayTeam,
+    homeTeamKo: homeTeamKo,
+    awayTeamKo: awayTeamKo,
     homeLogoUrl: homeLogoUrl,
     awayLogoUrl: awayLogoUrl,
     matchDateDisplay: _formatMatchDateDisplay(
@@ -354,13 +369,6 @@ Map<String, dynamic> _unwrapDetail(Map<String, dynamic> raw) {
 
   final nested = _readMap(raw, const ['data', 'result']);
   return nested ?? raw;
-}
-
-String _preferKo(String? ko, String fallback) {
-  final trimmedKo = ko?.trim();
-  if (trimmedKo != null && trimmedKo.isNotEmpty) return trimmedKo;
-  final trimmedFallback = fallback.trim();
-  return trimmedFallback.isEmpty ? '-' : trimmedFallback;
 }
 
 String? _formatNullableScore(Object? value) {

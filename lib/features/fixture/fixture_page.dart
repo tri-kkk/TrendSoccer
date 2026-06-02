@@ -13,6 +13,8 @@ import 'package:trendsoccer/core/services/fixture_service.dart';
 import 'package:trendsoccer/core/services/notification_service.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/baseball_status.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/filter/ts_filter_chip.dart';
@@ -36,7 +38,6 @@ class FixturePage extends ConsumerStatefulWidget {
 class _FixturePageState extends ConsumerState<FixturePage>
     with WidgetsBindingObserver {
   static final _md = DateFormat('M.dd');
-  static const _weekdays = ['월', '화', '수', '목', '금', '토', '일'];
   static const _pageScrollPhysics = PageScrollPhysics(
     parent: ClampingScrollPhysics(),
   );
@@ -218,6 +219,16 @@ class _FixturePageState extends ConsumerState<FixturePage>
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
 
+  List<String> _weekdayLabels(AppLocalizations l10n) => [
+        l10n.weekdayMon,
+        l10n.weekdayTue,
+        l10n.weekdayWed,
+        l10n.weekdayThu,
+        l10n.weekdayFri,
+        l10n.weekdaySat,
+        l10n.weekdaySun,
+      ];
+
   SportType _selectedSport(String sport) =>
       sport == 'baseball' ? SportType.baseball : SportType.soccer;
 
@@ -349,31 +360,39 @@ class _FixturePageState extends ConsumerState<FixturePage>
   String? _statusTimeText(
     FixtureMatch match, {
     required bool isBaseball,
+    required AppLocalizations l10n,
     LiveMatchData? live,
   }) {
     if (isBaseball) {
-      return _baseballStatusTimeText(match);
+      return _baseballStatusTimeText(match, l10n);
     }
     if (live != null && live.isLive) {
-      return '${live.elapsed}분';
+      return l10n.liveMinutes(live.elapsed);
     }
     if (live != null && live.isFinished) {
-      return 'FT';
+      return l10n.fixtureStatusFinal;
     }
     switch (match.status) {
       case 'live':
-        return live != null && live.elapsed > 0 ? '${live.elapsed}분' : 'LIVE';
+        return live != null && live.elapsed > 0
+            ? l10n.liveMinutes(live.elapsed)
+            : l10n.fixtureLive;
       case 'finished':
-        return 'FT';
+        return l10n.fixtureStatusFinal;
       default:
         return fixtureMatchTimeKst(match);
     }
   }
 
-  String? _baseballStatusTimeText(FixtureMatch match) {
-    if (match.status == 'postponed') return '연기';
-    if (match.status == 'cancelled') return '취소';
-    if (BaseballStatus.isInterrupted(match.rawStatus)) return '중단';
+  String? _baseballStatusTimeText(
+    FixtureMatch match,
+    AppLocalizations l10n,
+  ) {
+    if (match.status == 'postponed') return l10n.fixturePostponed;
+    if (match.status == 'cancelled') return l10n.fixtureCancelled;
+    if (BaseballStatus.isInterrupted(match.rawStatus)) {
+      return l10n.fixtureInterrupted;
+    }
 
     if (BaseballStatus.isScheduled(match.rawStatus) ||
         match.status == 'scheduled') {
@@ -381,19 +400,21 @@ class _FixturePageState extends ConsumerState<FixturePage>
     }
 
     if (match.status == 'finished' || BaseballStatus.isFinished(match.rawStatus)) {
-      return 'Final';
+      return l10n.fixtureStatusFinal;
     }
 
     if (BaseballStatus.isLive(match.rawStatus)) {
       final display = BaseballStatus.displayStatus(match.rawStatus);
       if (display.isNotEmpty) return display;
-      return 'LIVE';
+      return l10n.fixtureLive;
     }
 
     return BaseballStatus.displayStatus(match.rawStatus);
   }
 
   Widget _buildDateNavStrip() {
+    final l10n = context.l10n;
+    final weekdays = _weekdayLabels(l10n);
     final today = DateTime.now();
     final todayDay = DateTime(today.year, today.month, today.day);
     final selectedDateStr = ref.watch(fixtureSelectedDateProvider);
@@ -423,8 +444,8 @@ class _FixturePageState extends ConsumerState<FixturePage>
                     ? DateNavChipType.today
                     : DateNavChipType.date,
                 dayLabel: _isSameDay(chipDates[i], todayDay)
-                    ? '오늘'
-                    : _weekdays[chipDates[i].weekday - 1],
+                    ? l10n.today
+                    : weekdays[chipDates[i].weekday - 1],
                 dateLabel: _md.format(chipDates[i]),
                 isActive: !isLiveFilter &&
                     selectedDateStr == fixtureDateString(chipDates[i]),
@@ -450,7 +471,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
         itemBuilder: (context, index) {
           if (index == 0) {
             return TsFilterChip(
-              label: '전체',
+              label: context.l10n.filterAll,
               isSelected: selectedLeague == null,
               type: TsFilterChipType.textOnly,
               onTap: () {
@@ -486,11 +507,17 @@ class _FixturePageState extends ConsumerState<FixturePage>
   Widget _buildMatchRow(
     FixtureMatch match, {
     required bool isBaseball,
+    required AppLocalizations l10n,
     LiveMatchData? live,
   }) {
     return FixtureMatchRow(
       status: _toFixtureStatus(match, isBaseball: isBaseball),
-      timeText: _statusTimeText(match, isBaseball: isBaseball, live: live),
+      timeText: _statusTimeText(
+        match,
+        isBaseball: isBaseball,
+        l10n: l10n,
+        live: live,
+      ),
       homeTeam: match.homeTeam,
       awayTeam: match.awayTeam,
       homeLogoUrl: match.homeTeamLogo,
@@ -506,6 +533,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
   List<Widget> _buildMatchWidgets(
     List<FixtureLeagueGroup> groups, {
     required bool isBaseball,
+    required AppLocalizations l10n,
     Map<String, LiveMatchData> liveMap = const {},
   }) {
     return groups.asMap().entries.expand((entry) {
@@ -525,6 +553,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
               _buildMatchRow(
                 match,
                 isBaseball: isBaseball,
+                l10n: l10n,
                 live: liveMap[match.matchId.toString()],
               ),
           ],
@@ -552,6 +581,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
   }
 
   Widget _buildEmptyDayState({required bool isLiveFilter}) {
+    final l10n = context.l10n;
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -562,14 +592,14 @@ class _FixturePageState extends ConsumerState<FixturePage>
               child: isLiveFilter
                   ? TsEmptyState(
                       type: TsEmptyStateType.withAction,
-                      title: '진행 중인 경기가 없습니다',
-                      buttonLabel: '오늘 경기 확인하기',
+                      title: l10n.fixtureLiveEmpty,
+                      buttonLabel: l10n.fixtureLiveEmptyAction,
                       onButtonPressed: _resetFromLiveEmpty,
                     )
-                  : const TsEmptyState(
+                  : TsEmptyState(
                       type: TsEmptyStateType.noData,
-                      title: '경기가 없습니다',
-                      subtitle: '선택한 날짜에 예정된 경기가 없습니다.',
+                      title: l10n.fixtureNoMatches,
+                      subtitle: l10n.fixtureNoMatchesOnDate,
                     ),
             ),
           ),
@@ -581,6 +611,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
   Widget _buildMatchScrollView(
     List<FixtureLeagueGroup> groups, {
     required bool isBaseball,
+    required AppLocalizations l10n,
     Map<String, LiveMatchData> liveMap = const {},
   }) {
     if (groups.isEmpty) {
@@ -590,6 +621,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
     final matchWidgets = _buildMatchWidgets(
       groups,
       isBaseball: isBaseball,
+      l10n: l10n,
       liveMap: liveMap,
     );
     return ListView(
@@ -607,6 +639,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
     required List<FixtureMatch> matches,
     required String? selectedLeague,
     required bool isBaseball,
+    required AppLocalizations l10n,
     Map<String, LiveMatchData> liveMap = const {},
   }) {
     final groups = _groupsForDate(
@@ -617,6 +650,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
     return _buildMatchScrollView(
       groups,
       isBaseball: isBaseball,
+      l10n: l10n,
       liveMap: liveMap,
     );
   }
@@ -634,12 +668,12 @@ class _FixturePageState extends ConsumerState<FixturePage>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '경기 일정을 불러오지 못했습니다.',
+              context.l10n.fixtureLoadFailed,
               style: TextStyle(color: semantic.textSecondary),
             ),
             const SizedBox(height: 16),
             TsButton(
-              label: '다시 시도',
+              label: context.l10n.retry,
               variant: TsButtonVariant.primary,
               size: TsButtonSize.small,
               onPressed: () => invalidateFixtureData(ref),
@@ -654,6 +688,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
         return _buildMatchScrollView(
           groups,
           isBaseball: isBaseball,
+          l10n: context.l10n,
           liveMap: liveMap,
         );
       },
@@ -665,6 +700,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
     required bool isBaseball,
     required String? selectedLeague,
     required List<DateTime> chipDates,
+    required AppLocalizations l10n,
     Map<String, LiveMatchData> liveMap = const {},
   }) {
     return PageView.builder(
@@ -679,6 +715,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
           matches: allMatches,
           selectedLeague: selectedLeague,
           isBaseball: isBaseball,
+          l10n: l10n,
           liveMap: liveMap,
         );
       },
@@ -708,7 +745,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
     ref.listen(rawFixturesProvider, (previous, next) {
       final wasLoading = previous?.isLoading ?? false;
       if (wasLoading && next.hasError && context.mounted) {
-        TsToast.error(context, '경기 일정을 불러오지 못했습니다.');
+        TsToast.error(context, context.l10n.fixtureLoadFailed);
       }
     });
 
@@ -797,12 +834,12 @@ class _FixturePageState extends ConsumerState<FixturePage>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            '경기 일정을 불러오지 못했습니다.',
+                            context.l10n.fixtureLoadFailed,
                             style: TextStyle(color: semantic.textSecondary),
                           ),
                           const SizedBox(height: 16),
                           TsButton(
-                            label: '다시 시도',
+                            label: context.l10n.retry,
                             variant: TsButtonVariant.primary,
                             size: TsButtonSize.small,
                             onPressed: () => invalidateFixtureData(ref),
@@ -815,6 +852,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
                       isBaseball: isBaseball,
                       selectedLeague: selectedLeague,
                       chipDates: chipDates,
+                      l10n: context.l10n,
                       liveMap: liveMap,
                     ),
                   ),

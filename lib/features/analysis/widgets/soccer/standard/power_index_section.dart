@@ -4,6 +4,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/report/ratio_bar.dart';
 
 class PowerIndexSection extends StatelessWidget {
@@ -23,6 +24,7 @@ class PowerIndexSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     final awayRatio = (1.0 - homeRatio).clamp(0.0, 1.0);
     final hr = homeRatio.clamp(0.0, 1.0);
 
@@ -31,7 +33,7 @@ class PowerIndexSection extends StatelessWidget {
       children: [
         if (showTitle) ...[
           Text(
-            '파워 인덱스',
+            l10n.soccerPowerIndex,
             style: TsType.headingH2.copyWith(color: semantic.textPrimary),
           ),
           const SizedBox(height: TsSpacing.sm),
@@ -65,12 +67,12 @@ class PowerIndexSection extends StatelessWidget {
                   RatioSegment(
                     flex: hr,
                     color: semantic.interactivePrimary,
-                    bottomLabel: '홈 파워',
+                    bottomLabel: l10n.soccerHomePower,
                   ),
                   RatioSegment(
                     flex: awayRatio,
                     color: TsColors.systemError500,
-                    bottomLabel: '원정 파워',
+                    bottomLabel: l10n.soccerAwayPower,
                   ),
                 ],
                 height: 8,

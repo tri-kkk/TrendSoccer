@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:trendsoccer/core/models/premium_pick_stats.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -30,11 +31,12 @@ class _PremiumPickStatsCardState extends ConsumerState<PremiumPickStatsCard> {
   Timer? _blinkTimer;
   bool _colonVisible = true;
   late String _countdown;
+  var _countdownInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _countdown = _formatLiveCountdown();
+    _countdown = '';
     _countdownTimer = Timer.periodic(const Duration(seconds: 60), (_) {
       _tickCountdown();
     });
@@ -48,6 +50,15 @@ class _PremiumPickStatsCardState extends ConsumerState<PremiumPickStatsCard> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_countdownInitialized) {
+      _countdownInitialized = true;
+      _countdown = _formatLiveCountdown(context);
+    }
+  }
+
+  @override
   void dispose() {
     _countdownTimer?.cancel();
     _blinkTimer?.cancel();
@@ -56,13 +67,13 @@ class _PremiumPickStatsCardState extends ConsumerState<PremiumPickStatsCard> {
 
   void _tickCountdown() {
     if (!mounted) return;
-    setState(() => _countdown = _formatLiveCountdown());
+    setState(() => _countdown = _formatLiveCountdown(context));
   }
 
-  String _formatLiveCountdown() {
+  String _formatLiveCountdown(BuildContext context) {
     final remaining = nextKstUpdateRemaining();
     if (remaining.isNegative || remaining.inSeconds <= 0) {
-      return '업데이트 중...';
+      return context.l10n.cardUpdating;
     }
     return formatCountdown(remaining);
   }
@@ -157,7 +168,7 @@ class _PremiumPickStatsCardState extends ConsumerState<PremiumPickStatsCard> {
       recentWins: stats.recentWins,
       teamLogoMap: teamLogoMap,
       onCTATap: widget.onCTATap,
-      streakLabel: '현재 연승',
+      streakLabel: context.l10n.cardStreak,
     );
 
     if (!isLoading) return card;

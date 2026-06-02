@@ -5,6 +5,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 class PlanTicket extends StatelessWidget {
@@ -21,21 +22,21 @@ class PlanTicket extends StatelessWidget {
   final VoidCallback? onButtonTap;
   final String? buttonLabel;
 
-  String get _title {
+  String _title(BuildContext context) {
+    final l10n = context.l10n;
     return switch (type) {
-      PlanType.none => '무료 플랜',
-      PlanType.free => '무료 플랜',
-      PlanType.trial => '무료 체험 플랜',
-      PlanType.premium => '프리미엄 플랜',
+      PlanType.none || PlanType.free => l10n.planTicketFree,
+      PlanType.trial => l10n.planTicketTrial,
+      PlanType.premium => l10n.planTicketPremium,
     };
   }
 
-  static String _defaultLabel(PlanType type) {
+  String _defaultLabel(BuildContext context, PlanType type) {
+    final l10n = context.l10n;
     return switch (type) {
-      PlanType.none => '구독 시작하기',
-      PlanType.free => '구독 시작하기',
-      PlanType.trial => '구독 업그레이드',
-      PlanType.premium => '구독 연장하기',
+      PlanType.none || PlanType.free => l10n.menuSubscribeFree,
+      PlanType.trial => l10n.planTicketUpgrade,
+      PlanType.premium => l10n.planTicketRenew,
     };
   }
 
@@ -67,7 +68,7 @@ class PlanTicket extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _title,
+                  _title(context),
                   style: TsType.headingH2.copyWith(color: semantic.textPrimary),
                 ),
                 const SizedBox(height: TsSpacing.sm),
@@ -79,7 +80,7 @@ class PlanTicket extends StatelessWidget {
                 ),
                 const SizedBox(height: TsSpacing.sm),
                 TsButton(
-                  label: buttonLabel ?? _defaultLabel(type),
+                  label: buttonLabel ?? _defaultLabel(context, type),
                   variant: TsButtonVariant.primary,
                   size: TsButtonSize.small,
                   onPressed: onButtonTap,

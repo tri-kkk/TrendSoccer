@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -15,6 +16,7 @@ class PositionChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     return Container(
       width: 56,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -24,7 +26,7 @@ class PositionChip extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: Text(
-        isHome ? '홈' : '원정',
+        isHome ? l10n.labelHome : l10n.labelAway,
         style: TsType.labelSRegular.copyWith(
           color: isHome ? semantic.interactivePrimary : TsColors.systemError500,
         ),

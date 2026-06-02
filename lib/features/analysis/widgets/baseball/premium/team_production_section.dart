@@ -3,21 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/premium/team_stat_gauge_card.dart';
 
 class TeamProductionSection extends StatelessWidget {
   const TeamProductionSection({
     required this.items,
-    this.comment = '최근 10경기 팀 공격 생산성 지표입니다.',
+    this.comment,
     super.key,
   });
 
   final List<GaugeData> items;
-  final String comment;
+  final String? comment;
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
+    final displayComment = comment ?? l10n.baseballTeamProductivityComment;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -26,11 +29,11 @@ class TeamProductionSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              '팀 생산성',
+              l10n.baseballTeamProductivity,
               style: TsType.headingH2.copyWith(color: semantic.textPrimary),
             ),
             Text(
-              '최근 10경기',
+              l10n.baseballRecent10,
               style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
             ),
           ],
@@ -59,7 +62,7 @@ class TeamProductionSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  comment,
+                  displayComment,
                   style: TsType.bodyMRegular.copyWith(
                     color: semantic.interactivePrimary,
                   ),

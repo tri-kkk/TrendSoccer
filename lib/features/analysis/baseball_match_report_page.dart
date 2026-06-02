@@ -8,7 +8,10 @@ import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_match_report_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/features/analysis/models/baseball_standard_parser.dart';
+import 'package:trendsoccer/features/analysis/models/parser_labels.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/premium/baseball_premium_tab.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/standard/baseball_standard_tab.dart';
 import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
@@ -49,9 +52,10 @@ class _BaseballMatchReportPageState
 
     if (matchId == null) return base;
 
+    final labels = ParserLabels.from(context.l10n);
     final apiHeader = ref.watch(baseballMatchDetailProvider(matchId)).maybeWhen(
           data: (raw) => MatchHeaderData.fromBaseballStandardParsed(
-            parseBaseballStandardDetail(raw),
+            parseBaseballStandardDetail(raw, labels: labels),
             matchId: matchId,
           ),
           orElse: () => null,
@@ -93,7 +97,7 @@ class _BaseballMatchReportPageState
       appBar: TsAppBar.preferred(
         context,
         location: TsAppBarLocation.backTitle,
-        title: '매치 리포트',
+        title: context.l10n.matchReportTitle,
         onBack: () => context.pop(),
       ),
       body: SingleChildScrollView(
@@ -107,8 +111,16 @@ class _BaseballMatchReportPageState
               leagueName: header.leagueName,
               leagueLogoUrl: header.leagueLogo,
               matchDate: header.displayDate,
-              homeTeam: header.homeTeam,
-              awayTeam: header.awayTeam,
+              homeTeam: localizedTeamName(
+                context,
+                header.homeTeam,
+                header.homeTeamKo,
+              ),
+              awayTeam: localizedTeamName(
+                context,
+                header.awayTeam,
+                header.awayTeamKo,
+              ),
               homeLogoUrl: header.homeTeamLogo,
               awayLogoUrl: header.awayTeamLogo,
               selectedTab: _selectedTab,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -20,6 +21,7 @@ class TodayPickCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Container(
       padding: const EdgeInsets.all(TsSpacing.lg),
@@ -59,7 +61,7 @@ class TodayPickCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        '픽 개수',
+                        l10n.cardPickCount,
                         style: TsType.labelSRegular.copyWith(
                           color: semantic.textTertiary,
                         ),
@@ -88,7 +90,7 @@ class TodayPickCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        '업데이트',
+                        l10n.cardUpdateLabel,
                         style: TsType.labelSRegular.copyWith(
                           color: semantic.textTertiary,
                         ),
@@ -113,7 +115,7 @@ class TodayPickCard extends StatelessWidget {
           ),
           const SizedBox(height: TsSpacing.lg),
           TsButton(
-            label: '확인하기 →',
+            label: l10n.cardCheckPickShort,
             variant: TsButtonVariant.secondary,
             onPressed: onTap,
           ),

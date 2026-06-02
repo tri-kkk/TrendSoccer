@@ -11,6 +11,7 @@ import 'package:trendsoccer/core/services/iap_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/navigation/ts_bottom_navigation.dart';
@@ -56,20 +57,21 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     }
   }
 
-  String _formatTrialRemaining(DateTime expiresAt) {
+  String _formatTrialRemaining(BuildContext context, DateTime expiresAt) {
+    final l10n = context.l10n;
     final remaining = expiresAt.difference(DateTime.now());
     if (remaining.isNegative) {
-      return '남은 시간: 0시간 0분';
+      return l10n.subscribeTrialRemainingZero;
     }
     final hours = remaining.inHours;
     final minutes = remaining.inMinutes.remainder(60);
-    return '남은 시간: $hours시간 $minutes분';
+    return l10n.subscribeTrialRemaining(hours, minutes);
   }
 
-  String _formatPremiumExpires(DateTime expiresAt) {
+  String _formatPremiumExpires(BuildContext context, DateTime expiresAt) {
     final month = expiresAt.month.toString().padLeft(2, '0');
     final day = expiresAt.day.toString().padLeft(2, '0');
-    return '만료일: ${expiresAt.year}.$month.$day';
+    return context.l10n.subscribePremiumExpiry('${expiresAt.year}.$month.$day');
   }
 
   Future<void> _openGooglePlaySubscriptions() async {
@@ -86,7 +88,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
   Future<void> _navigateIapSuccess() async {
     setState(() {
       _isLoading = true;
-      _loadingMessage = '구독 정보 업데이트 중...';
+      _loadingMessage = context.l10n.subscribeUpdating;
     });
     await ref.read(authProvider).loadProfile();
     if (!mounted) return;
@@ -101,9 +103,9 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     final messenger = ScaffoldMessenger.of(context);
     messenger.clearSnackBars();
     messenger.showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text(
-          '결제는 완료되었으나 검증 대기 중입니다. 잠시 후 앱을 재시작해주세요.',
+          context.l10n.subscribeIapVerifyPending,
         ),
         duration: Duration(seconds: 5),
         behavior: SnackBarBehavior.floating,
@@ -121,7 +123,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           if (mounted) {
             setState(() {
               _isLoading = true;
-              _loadingMessage = 'Google Play 결제 처리 중...';
+              _loadingMessage = context.l10n.subscribeIapProcessing;
             });
           }
         case IapPurchaseEventType.purchased:
@@ -133,13 +135,13 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           if (mounted) {
             setState(() {
               _isLoading = true;
-              _loadingMessage = '기존 구독 확인 중...';
+              _loadingMessage = context.l10n.subscribeIapRestoring;
             });
             final messenger = ScaffoldMessenger.of(context);
             messenger.clearSnackBars();
             messenger.showSnackBar(
-              const SnackBar(
-                content: Text('이미 구독 중입니다. 기존 구독을 확인합니다.'),
+              SnackBar(
+                content: Text(context.l10n.subscribeAlreadyOwned),
                 duration: Duration(seconds: 5),
                 behavior: SnackBarBehavior.floating,
               ),
@@ -153,13 +155,13 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
             if (mounted) {
               setState(() {
                 _isLoading = true;
-                _loadingMessage = '기존 구독 확인 중...';
+                _loadingMessage = context.l10n.subscribeIapRestoring;
               });
               final messenger = ScaffoldMessenger.of(context);
               messenger.clearSnackBars();
               messenger.showSnackBar(
-                const SnackBar(
-                  content: Text('이미 구독 중입니다. 기존 구독을 확인합니다.'),
+                SnackBar(
+                  content: Text(context.l10n.subscribeAlreadyOwned),
                   duration: Duration(seconds: 5),
                   behavior: SnackBarBehavior.floating,
                 ),
@@ -219,7 +221,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     if (mounted) {
       setState(() {
         _isLoading = true;
-        _loadingMessage = 'Google Play 결제 준비 중...';
+        _loadingMessage = context.l10n.subscribeIapPreparing;
       });
     }
 
@@ -231,8 +233,8 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
         final messenger = ScaffoldMessenger.of(context);
         messenger.clearSnackBars();
         messenger.showSnackBar(
-          const SnackBar(
-            content: Text('Google Play 결제를 시작할 수 없습니다.'),
+          SnackBar(
+            content: Text(context.l10n.subscribeIapCannotStart),
             duration: Duration(seconds: 5),
             behavior: SnackBarBehavior.floating,
           ),
@@ -283,8 +285,8 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           final messenger = ScaffoldMessenger.of(context);
           messenger.clearSnackBars();
           messenger.showSnackBar(
-            const SnackBar(
-              content: Text('Google Play 결제를 사용할 수 없습니다.'),
+            SnackBar(
+              content: Text(context.l10n.subscribeIapUnavailable),
               duration: Duration(seconds: 5),
               behavior: SnackBarBehavior.floating,
             ),
@@ -310,7 +312,10 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final auth = ref.watch(authProvider);
     final planType = auth.planType;
-    final appBarTitle = planType == PlanType.premium ? '구독 관리' : '구독';
+    final l10n = context.l10n;
+    final appBarTitle = planType == PlanType.premium
+        ? l10n.menuSubscribeManageTitle
+        : l10n.menuSubscribeTitle;
 
     return TsLoadingOverlay(
       isLoading: _isLoading,
@@ -355,7 +360,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
               PlanType.premium =>
                 _buildPremiumStatusContent(context, semantic, auth),
               PlanType.free || PlanType.none =>
-                _buildPurchaseContent(semantic),
+                _buildPurchaseContent(context, semantic),
             },
           ),
           bottomNavigationBar: SafeArea(
@@ -376,6 +381,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     SupabaseAuthProvider auth,
   ) {
     final trialExpiresAt = auth.trialExpiresAt;
+    final l10n = context.l10n;
 
     return Container(
       width: double.infinity,
@@ -398,20 +404,20 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           ),
           const SizedBox(height: 16),
           Text(
-            '48시간 프리미엄 체험 중',
+            l10n.subscribeTrialActive,
             style: TsType.headingH2.copyWith(color: semantic.textPrimary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
-            '체험 기간 종료 후 구독할 수 있습니다.',
+            l10n.subscribeTrialMessage,
             style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             textAlign: TextAlign.center,
           ),
           if (trialExpiresAt != null) ...[
             const SizedBox(height: 8),
             Text(
-              _formatTrialRemaining(trialExpiresAt),
+              _formatTrialRemaining(context, trialExpiresAt),
               style: TsType.bodyMBold.copyWith(
                 color: semantic.interactivePrimary,
               ),
@@ -422,7 +428,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           SizedBox(
             width: double.infinity,
             child: TsButton(
-              label: '돌아가기',
+              label: l10n.subscribeBack,
               variant: TsButtonVariant.secondary,
               onPressed: () => _handleBack(context),
             ),
@@ -438,6 +444,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     SupabaseAuthProvider auth,
   ) {
     final premiumExpiresAt = auth.premiumExpiresAt;
+    final l10n = context.l10n;
 
     return Container(
       width: double.infinity,
@@ -460,20 +467,20 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           ),
           const SizedBox(height: 16),
           Text(
-            '프리미엄 구독 중',
+            l10n.subscribePremiumActive,
             style: TsType.headingH2.copyWith(color: semantic.textPrimary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
-            '현재 프리미엄 구독을 이용 중입니다.',
+            l10n.subscribePremiumMessage,
             style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             textAlign: TextAlign.center,
           ),
           if (premiumExpiresAt != null) ...[
             const SizedBox(height: 8),
             Text(
-              _formatPremiumExpires(premiumExpiresAt),
+              _formatPremiumExpires(context, premiumExpiresAt),
               style: TsType.bodyMBold.copyWith(color: semantic.textSecondary),
               textAlign: TextAlign.center,
             ),
@@ -482,7 +489,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           SizedBox(
             width: double.infinity,
             child: TsButton(
-              label: 'Google Play에서 구독 관리',
+              label: l10n.subscribeManageOnPlay,
               variant: TsButtonVariant.primary,
               onPressed: _openGooglePlaySubscriptions,
             ),
@@ -491,7 +498,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           SizedBox(
             width: double.infinity,
             child: TsButton(
-              label: '돌아가기',
+              label: l10n.subscribeBack,
               variant: TsButtonVariant.secondary,
               onPressed: () => _handleBack(context),
             ),
@@ -501,69 +508,70 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     );
   }
 
-  Widget _buildPurchaseContent(TsSemanticColors semantic) {
+  Widget _buildPurchaseContent(BuildContext context, TsSemanticColors semantic) {
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Get Full Access To',
+          l10n.subscribeHeaderLine1,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
         const SizedBox(height: 8),
         Text(
-          'The AI Assistant !',
+          l10n.subscribeHeaderLine2,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
         const SizedBox(height: 16),
         _buildPlanCard(
           semantic: semantic,
-          title: '무료',
+          title: l10n.subscribePlanFree,
           titleColor: semantic.textPrimary,
           bgColor: semantic.surfaceRaised,
           borderColor: null,
           dividerColor: semantic.borderSubtle,
           benefits: [
-            '분석 카드 킥오프 2시간 전 공개',
-            '기본 경기 분석 및 통계',
-            '실시간 스코어 및 경기 일정',
-            '광고 포함',
+            l10n.subscribeFreeBenefit1,
+            l10n.subscribeFreeBenefit2,
+            l10n.subscribeFreeBenefit3,
+            l10n.subscribeFreeBenefit4,
           ],
         ),
         const SizedBox(height: 12),
         _buildPlanCard(
           semantic: semantic,
-          title: '프리미엄',
+          title: l10n.subscribePlanPremium,
           titleColor: semantic.interactivePrimary,
           bgColor: semantic.interactivePrimary.withValues(alpha: 0.1),
           borderColor: semantic.interactivePrimary,
           dividerColor: semantic.interactivePrimary.withValues(alpha: 0.2),
           benefits: [
-            '모든 분석 24시간 우선 접근',
-            '축구 프리미엄픽 무제한',
-            'AI 야구 분석 전체 공개',
-            '야구 조합 픽',
-            '광고 없는 경험',
+            l10n.subscribePremiumBenefit1,
+            l10n.subscribePremiumBenefit2,
+            l10n.subscribePremiumBenefit3,
+            l10n.subscribePremiumBenefit4,
+            l10n.subscribePremiumBenefit5,
           ],
         ),
         const SizedBox(height: 16),
         Text(
-          '구독 상품 선택',
+          l10n.subscribeSelectProduct,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
         const SizedBox(height: 12),
         _buildPlanOption(
           semantic: semantic,
-          price: '₩ 9,900',
-          period: '3개월',
+          price: l10n.subscribePriceQuarterly,
+          period: l10n.subscribePlanQuarterly,
           isSelected: _selectedPlanIndex == 0,
-          discountLabel: '33% OFF',
+          discountLabel: l10n.subscribeDiscount,
           onTap: () => setState(() => _selectedPlanIndex = 0),
         ),
         const SizedBox(height: 12),
         _buildPlanOption(
           semantic: semantic,
-          price: '₩ 4,900',
-          period: '1개월',
+          price: l10n.subscribePriceMonthly,
+          period: l10n.subscribePlanMonthly,
           isSelected: _selectedPlanIndex == 1,
           discountLabel: null,
           onTap: () => setState(() => _selectedPlanIndex = 1),
@@ -572,7 +580,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
         SizedBox(
           width: double.infinity,
           child: TsButton(
-            label: '프리미엄 구독 시작하기 →',
+            label: l10n.subscribeStartPremiumArrow,
             variant: TsButtonVariant.primary,
             onPressed: _startPremium,
           ),

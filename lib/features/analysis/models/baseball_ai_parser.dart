@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:trendsoccer/features/analysis/models/parser_labels.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/premium/team_stat_gauge_card.dart';
 import 'package:trendsoccer/shared/widgets/baseball/premium/confidence_chip.dart';
 
@@ -62,7 +63,15 @@ class BaseballTeamRecord {
   String get formatted {
     final preset = display?.trim();
     if (preset != null && preset.isNotEmpty) return preset;
-    if (wins != null && losses != null) return '$wins승 $losses패';
+    return '-';
+  }
+
+  String formattedWith(ParserLabels labels) {
+    final preset = display?.trim();
+    if (preset != null && preset.isNotEmpty) return preset;
+    if (wins != null && losses != null) {
+      return labels.baseballWinsLosses(wins!, losses!);
+    }
     return '-';
   }
 }
@@ -71,6 +80,9 @@ class BaseballAiAnalysisParsed {
   const BaseballAiAnalysisParsed({
     required this.homeTeam,
     required this.awayTeam,
+    this.homeTeamKo,
+    this.awayTeamKo,
+    required this.winProbabilityDescription,
     required this.winProbability,
     required this.overUnder,
     required this.homeLast10Record,
@@ -85,6 +97,9 @@ class BaseballAiAnalysisParsed {
 
   final String homeTeam;
   final String awayTeam;
+  final String? homeTeamKo;
+  final String? awayTeamKo;
+  final String winProbabilityDescription;
   final BaseballAiWinProbability winProbability;
   final BaseballAiOverUnder overUnder;
   final BaseballTeamRecord homeLast10Record;
@@ -99,18 +114,14 @@ class BaseballAiAnalysisParsed {
   String get homeLast10WinRateDisplay => _formatPercent(homeLast10WinRate);
   String get awayLast10WinRateDisplay => _formatPercent(awayLast10WinRate);
 
-  String get winProbabilityDescription {
-    final summary = aiSummary?.trim();
-    if (summary != null && summary.isNotEmpty) return summary;
-    final prediction = winProbability.prediction?.trim();
-    if (prediction != null && prediction.isNotEmpty) return prediction;
-    return 'AI 기반 승리 확률 분석입니다.';
-  }
 }
 
 bool _loggedAiKeys = false;
 
-BaseballAiAnalysisParsed parseBaseballAiAnalysis(Map<String, dynamic> raw) {
+BaseballAiAnalysisParsed parseBaseballAiAnalysis(
+  Map<String, dynamic> raw, {
+  required ParserLabels labels,
+}) {
   if (!_loggedAiKeys) {
     _loggedAiKeys = true;
     debugPrint('[BASEBALL] AI analysis keys: ${raw.keys.toList()}');
@@ -121,22 +132,33 @@ BaseballAiAnalysisParsed parseBaseballAiAnalysis(Map<String, dynamic> raw) {
     debugPrint('[BASEBALL] AI analysis data keys: ${data.keys.toList()}');
   }
 
-  final homeTeam = _readTeamName(data, isHome: true);
-  final awayTeam = _readTeamName(data, isHome: false);
+  final homeTeam = _readTeamNameEn(data, isHome: true);
+  final awayTeam = _readTeamNameEn(data, isHome: false);
+  final homeTeamKo = _readTeamNameKo(data, isHome: true);
+  final awayTeamKo = _readTeamNameKo(data, isHome: false);
+  final summary = _parseAiSummary(data);
+  final winProbability = _parseWinProbability(data);
 
   return BaseballAiAnalysisParsed(
-    homeTeam: homeTeam,
-    awayTeam: awayTeam,
-    winProbability: _parseWinProbability(data),
+    homeTeam: homeTeam.isEmpty ? labels.labelHome : homeTeam,
+    awayTeam: awayTeam.isEmpty ? labels.labelAway : awayTeam,
+    homeTeamKo: homeTeamKo,
+    awayTeamKo: awayTeamKo,
+    winProbabilityDescription: summary?.trim().isNotEmpty == true
+        ? summary!.trim()
+        : (winProbability.prediction?.trim().isNotEmpty == true
+            ? winProbability.prediction!.trim()
+            : labels.baseballAiWinProbabilityHint),
+    winProbability: winProbability,
     overUnder: _parseOverUnder(data),
     homeLast10Record: _parseTeamRecord(data, side: 'home', atHome: true),
     awayLast10Record: _parseTeamRecord(data, side: 'away', atHome: false),
     homeLast10WinRate: _parseLast10WinRate(data, side: 'home'),
     awayLast10WinRate: _parseLast10WinRate(data, side: 'away'),
-    confidence: _parseConfidence(data),
-    last10TeamProduction: _parseTeamProduction(data),
-    seasonTeamStats: _parseSeasonTeamStats(data),
-    aiSummary: _parseAiSummary(data),
+    confidence: _parseConfidence(data, labels: labels),
+    last10TeamProduction: _parseTeamProduction(data, labels: labels),
+    seasonTeamStats: _parseSeasonTeamStats(data, labels: labels),
+    aiSummary: summary,
   );
 }
 
@@ -149,27 +171,22 @@ Map<String, dynamic> _unwrapAi(Map<String, dynamic> raw) {
   return _readMap(raw, const ['data', 'analysis', 'result']) ?? raw;
 }
 
-String _readTeamName(Map<String, dynamic> data, {required bool isHome}) {
+String _readTeamNameEn(Map<String, dynamic> data, {required bool isHome}) {
   final match = _readMap(data, const ['match', 'game', 'fixture']);
   final source = match ?? data;
   final keys = isHome
-      ? const [
-          'homeTeamKo',
-          'home_team_ko',
-          'homeTeam',
-          'home_team',
-          'homeTeamName',
-          'home_team_name',
-        ]
-      : const [
-          'awayTeamKo',
-          'away_team_ko',
-          'awayTeam',
-          'away_team',
-          'awayTeamName',
-          'away_team_name',
-        ];
-  return _readString(source, keys) ?? (isHome ? '홈' : '원정');
+      ? const ['homeTeam', 'home_team', 'homeTeamName', 'home_team_name']
+      : const ['awayTeam', 'away_team', 'awayTeamName', 'away_team_name'];
+  return _readString(source, keys) ?? '';
+}
+
+String? _readTeamNameKo(Map<String, dynamic> data, {required bool isHome}) {
+  final match = _readMap(data, const ['match', 'game', 'fixture']);
+  final source = match ?? data;
+  final keys = isHome
+      ? const ['homeTeamKo', 'home_team_ko']
+      : const ['awayTeamKo', 'away_team_ko'];
+  return _readString(source, keys);
 }
 
 BaseballAiWinProbability _parseWinProbability(Map<String, dynamic> data) {
@@ -350,7 +367,10 @@ double? _parseLast10WinRate(Map<String, dynamic> data, {required String side}) {
   return _normalizePercent(value);
 }
 
-ConfidenceLevel _parseConfidence(Map<String, dynamic> data) {
+ConfidenceLevel _parseConfidence(
+  Map<String, dynamic> data, {
+  required ParserLabels labels,
+}) {
   final root = _readMap(data, const [
         'last10WinRate',
         'last10_win_rate',
@@ -382,7 +402,10 @@ ConfidenceLevel _parseConfidence(Map<String, dynamic> data) {
   return ConfidenceLevel.medium;
 }
 
-List<GaugeData> _parseTeamProduction(Map<String, dynamic> data) {
+List<GaugeData> _parseTeamProduction(
+  Map<String, dynamic> data, {
+  required ParserLabels labels,
+}) {
   final root = _readMap(data, const [
         'last10TeamProduction',
         'last10_team_production',
@@ -406,21 +429,24 @@ List<GaugeData> _parseTeamProduction(Map<String, dynamic> data) {
 
   return [
     _buildGauge(
-      '득점',
+      labels.baseballStatRunsScored,
       _sideValue(root, const ['runs', 'runsScored', 'runs_scored']),
     ),
     _buildGauge(
-      '실점',
+      labels.baseballStatRunsAllowed,
       _sideValue(root, const ['runsAllowed', 'runs_allowed', 'allowedRuns']),
     ),
     _buildGauge(
-      '안타',
+      labels.baseballStatHits,
       _sideValue(root, const ['hits', 'totalHits', 'total_hits']),
     ),
   ].where((gauge) => gauge.homeValue != '-' || gauge.awayValue != '-').toList();
 }
 
-List<GaugeData> _parseSeasonTeamStats(Map<String, dynamic> data) {
+List<GaugeData> _parseSeasonTeamStats(
+  Map<String, dynamic> data, {
+  required ParserLabels labels,
+}) {
   final root = _readMap(data, const [
         'seasonTeamStats',
         'season_team_stats',
@@ -446,19 +472,19 @@ List<GaugeData> _parseSeasonTeamStats(Map<String, dynamic> data) {
 
   return [
     _buildGauge(
-      '팀 타율',
+      labels.baseballTeamBattingAvg,
       _sideValue(batting, const ['avg', 'battingAverage', 'batting_average']),
     ),
     _buildGauge(
-      '팀 OPS',
+      labels.baseballTeamOps,
       _sideValue(batting, const ['ops', 'OPS']),
     ),
     _buildGauge(
-      '팀 방어율',
+      labels.baseballTeamEra,
       _sideValue(pitching, const ['era', 'ERA']),
     ),
     _buildGauge(
-      '팀 WHIP',
+      labels.baseballTeamWhip,
       _sideValue(pitching, const ['whip', 'WHIP']),
     ),
   ];

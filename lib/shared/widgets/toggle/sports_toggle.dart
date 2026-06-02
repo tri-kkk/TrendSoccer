@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/models/sport_type.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -16,16 +18,17 @@ class SportsToggle extends StatelessWidget {
   final SportType selectedSport;
   final ValueChanged<SportType> onChanged;
 
-  static String _label(SportType sport) {
+  static String _label(AppLocalizations l10n, SportType sport) {
     return switch (sport) {
-      SportType.soccer => '축구',
-      SportType.baseball => '야구',
+      SportType.soccer => l10n.sportSoccer,
+      SportType.baseball => l10n.sportBaseball,
     };
   }
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     Widget segment(SportType sport) {
       final selected = selectedSport == sport;
@@ -58,7 +61,7 @@ class SportsToggle extends StatelessWidget {
                 ),
                 const SizedBox(width: TsSpacing.sm),
                 Text(
-                  _label(sport),
+                  _label(l10n, sport),
                   style: TsType.bodyLBold.copyWith(
                     color: selected
                         ? semantic.interactiveOnPrimary

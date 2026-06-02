@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/badge/ts_badge.dart';
 
 class AnalysisResultSection extends StatelessWidget {
@@ -37,13 +38,14 @@ class AnalysisResultSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (showTitle) ...[
           Text(
-            '분석 결과',
+            l10n.soccerAnalysisResult,
             style: TsType.headingH2.copyWith(color: semantic.textPrimary),
           ),
           const SizedBox(height: TsSpacing.sm),
@@ -60,19 +62,19 @@ class AnalysisResultSection extends StatelessWidget {
               Row(
                 children: [
                   _ResultGridCell(
-                    label: '예측',
+                    label: l10n.labelPrediction,
                     value: prediction,
                     semantic: semantic,
                   ),
                   const SizedBox(width: TsSpacing.sm),
                   _ResultGridCell(
-                    label: '승리 확률',
+                    label: l10n.soccerStatWinProb,
                     value: winProbability,
                     semantic: semantic,
                   ),
                   const SizedBox(width: TsSpacing.sm),
                   _ResultGridCell(
-                    label: '파워차',
+                    label: l10n.soccerStatPowerDiff,
                     value: powerDiff,
                     semantic: semantic,
                   ),
@@ -82,19 +84,19 @@ class AnalysisResultSection extends StatelessWidget {
               Row(
                 children: [
                   _ResultGridCell(
-                    label: '분석 경기',
+                    label: l10n.soccerStatAnalyzedMatches,
                     value: analysisMatchCount,
                     semantic: semantic,
                   ),
                   const SizedBox(width: TsSpacing.sm),
                   _ResultGridCell(
-                    label: '패턴 통계',
+                    label: l10n.soccerStatPattern,
                     value: patternMatchCount,
                     semantic: semantic,
                   ),
                   const SizedBox(width: TsSpacing.sm),
                   _ResultGridCell(
-                    label: '추천',
+                    label: l10n.labelRecommend,
                     value: '',
                     semantic: semantic,
                     valueWidget: TsBadge(type: _badgeType(gradeBadgeType)),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -71,6 +72,7 @@ class _FixtureStatusState extends State<FixtureStatus> with TickerProviderStateM
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
     return SizedBox(
       width: 56,
       child: switch (widget.status) {
@@ -99,7 +101,7 @@ class _FixtureStatusState extends State<FixtureStatus> with TickerProviderStateM
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  widget.timeText ?? 'LIVE',
+                  widget.timeText ?? l10n.fixtureLive,
                   style: TsType.labelSRegular.copyWith(color: TsColors.systemError500),
                 ),
               ],
@@ -107,14 +109,14 @@ class _FixtureStatusState extends State<FixtureStatus> with TickerProviderStateM
           ),
         FixtureMatchStatus.finished => Center(
             child: Text(
-              widget.timeText ?? 'FT',
+              widget.timeText ?? l10n.fixtureStatusFinal,
               style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
               textAlign: TextAlign.center,
             ),
           ),
         FixtureMatchStatus.interrupted => Center(
             child: Text(
-              widget.timeText ?? '중단',
+              widget.timeText ?? l10n.fixtureInterrupted,
               style: TsType.labelSRegular.copyWith(
                 color: TsColors.systemWarning500,
               ),
@@ -123,14 +125,14 @@ class _FixtureStatusState extends State<FixtureStatus> with TickerProviderStateM
           ),
         FixtureMatchStatus.postponed => Center(
             child: Text(
-              widget.timeText ?? '연기',
+              widget.timeText ?? l10n.fixturePostponed,
               style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
               textAlign: TextAlign.center,
             ),
           ),
         FixtureMatchStatus.cancelled => Center(
             child: Text(
-              widget.timeText ?? '취소',
+              widget.timeText ?? l10n.fixtureCancelled,
               style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
               textAlign: TextAlign.center,
             ),

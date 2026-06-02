@@ -7,6 +7,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/access_gate.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/features/analysis/models/soccer_analysis_parser.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer/standard/standard_sections.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
@@ -24,6 +25,7 @@ class SoccerStandardTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final matchTimestamp = parsed.matchTimestampUtc;
     final canView = matchTimestamp == null
         ? true
@@ -35,6 +37,7 @@ class SoccerStandardTab extends StatelessWidget {
     final lockMessage = matchTimestamp == null
         ? null
         : _buildLockOverlayMessage(
+            context: context,
             matchTimestamp: matchTimestamp,
             planType: planType,
           );
@@ -66,7 +69,7 @@ class SoccerStandardTab extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         gatedSection(
-          title: '분석 결과',
+          title: l10n.soccerAnalysisResult,
           content: AnalysisResultSection(
             prediction: parsed.prediction,
             winProbability: parsed.winProbability,
@@ -79,7 +82,7 @@ class SoccerStandardTab extends StatelessWidget {
         ),
         const SizedBox(height: TsSpacing.xl),
         gatedSection(
-          title: '분석 근거',
+          title: l10n.soccerAnalysisReasoning,
           content: ReasoningSection(
             items: parsed.reasoningItems,
             showTitle: false,
@@ -93,7 +96,7 @@ class SoccerStandardTab extends StatelessWidget {
         ),
         const SizedBox(height: TsSpacing.xl),
         gatedSection(
-          title: '파워 인덱스',
+          title: l10n.soccerPowerIndex,
           content: PowerIndexSection(
             homeRatio: parsed.homePowerRatio,
             homePowerDisplay: parsed.homePowerDisplay,
@@ -103,7 +106,7 @@ class SoccerStandardTab extends StatelessWidget {
         ),
         const SizedBox(height: TsSpacing.xl),
         gatedSection(
-          title: '최종 예측 확률',
+          title: l10n.soccerFinalProbability,
           content: FinalProbabilitySection(
             homeProb: parsed.homeProb,
             drawProb: parsed.drawProb,
@@ -113,7 +116,7 @@ class SoccerStandardTab extends StatelessWidget {
         ),
         const SizedBox(height: TsSpacing.xl),
         gatedSection(
-          title: '팀 상세 통계',
+          title: l10n.soccerStatTeamStats,
           content: TeamStatisticsSection(
             stats: parsed.teamStats,
             showTitle: false,
@@ -121,7 +124,7 @@ class SoccerStandardTab extends StatelessWidget {
         ),
         const SizedBox(height: TsSpacing.xl),
         gatedSection(
-          title: '3-Method 분석',
+          title: l10n.soccerMethod3,
           content: ThreeMethodAnalysisSection(
             methods: parsed.threeMethods,
             showTitle: false,
@@ -133,12 +136,15 @@ class SoccerStandardTab extends StatelessWidget {
   }
 
   String? _buildLockOverlayMessage({
+    required BuildContext context,
     required DateTime matchTimestamp,
     required PlanType planType,
   }) {
+    final l10n = context.l10n;
     final message = AccessGate.lockMessage(
       matchTimestamp: matchTimestamp,
       planType: planType,
+      l10n: l10n,
     );
     if (message == null) return null;
 
@@ -147,18 +153,7 @@ class SoccerStandardTab extends StatelessWidget {
       planType: planType,
     );
     if (until == null || until <= Duration.zero) return message;
-    return '$message\n${_formatUnlockCountdown(until)} 후 오픈';
-  }
-
-  String _formatUnlockCountdown(Duration duration) {
-    if (duration.inDays > 0) {
-      return '${duration.inDays}일 ${duration.inHours % 24}시간';
-    }
-    if (duration.inHours > 0) {
-      return '${duration.inHours}시간 ${duration.inMinutes % 60}분';
-    }
-    final minutes = duration.inMinutes;
-    return minutes > 0 ? '$minutes분' : '1분';
+    return '$message\n${AccessGate.formatTimeUntilUnlock(until, l10n: l10n)}';
   }
 }
 
@@ -168,6 +163,7 @@ class SoccerStandardTabLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 64),
@@ -177,13 +173,13 @@ class SoccerStandardTabLoading extends StatelessWidget {
           CircularProgressIndicator(color: semantic.interactivePrimary),
           const SizedBox(height: TsSpacing.lg),
           Text(
-            'AI 분석 중...',
+            l10n.analysisAiAnalyzing,
             style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: TsSpacing.sm),
           Text(
-            '잠시만 기다려주세요 (약 5–10초)',
+            l10n.analysisAiWaitHint,
             style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
             textAlign: TextAlign.center,
           ),
@@ -204,6 +200,7 @@ class SoccerStandardTabError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 48),
@@ -211,13 +208,13 @@ class SoccerStandardTabError extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            '분석 데이터를 불러오지 못했습니다.',
+            l10n.analysisLoadFailed,
             style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: TsSpacing.lg),
           TsButton(
-            label: '다시 시도',
+            label: l10n.retry,
             variant: TsButtonVariant.primary,
             size: TsButtonSize.small,
             onPressed: onRetry,
@@ -255,13 +252,15 @@ class SoccerStandardMarkdownTab extends StatelessWidget {
     final lockMessage = matchTimestamp == null
         ? null
         : _buildLockOverlayMessage(
+            context: context,
             matchTimestamp: matchTimestamp,
             planType: planType,
           );
 
+    final l10n = context.l10n;
     final content = markdown.isEmpty
         ? Text(
-            '분석 결과가 없습니다.',
+            l10n.analysisNoResult,
             style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             textAlign: TextAlign.center,
           )
@@ -290,12 +289,15 @@ class SoccerStandardMarkdownTab extends StatelessWidget {
   }
 
   String? _buildLockOverlayMessage({
+    required BuildContext context,
     required DateTime matchTimestamp,
     required PlanType planType,
   }) {
+    final l10n = context.l10n;
     final message = AccessGate.lockMessage(
       matchTimestamp: matchTimestamp,
       planType: planType,
+      l10n: l10n,
     );
     if (message == null) return null;
 
@@ -304,18 +306,7 @@ class SoccerStandardMarkdownTab extends StatelessWidget {
       planType: planType,
     );
     if (until == null || until <= Duration.zero) return message;
-    return '$message\n${_formatUnlockCountdown(until)} 후 오픈';
-  }
-
-  String _formatUnlockCountdown(Duration duration) {
-    if (duration.inDays > 0) {
-      return '${duration.inDays}일 ${duration.inHours % 24}시간';
-    }
-    if (duration.inHours > 0) {
-      return '${duration.inHours}시간 ${duration.inMinutes % 60}분';
-    }
-    final minutes = duration.inMinutes;
-    return minutes > 0 ? '$minutes분' : '1분';
+    return '$message\n${AccessGate.formatTimeUntilUnlock(until, l10n: l10n)}';
   }
 }
 

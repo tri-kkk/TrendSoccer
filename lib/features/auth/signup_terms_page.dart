@@ -10,6 +10,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
@@ -47,7 +48,7 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
     setState(() => _isLoading = false);
 
     if (!ok) {
-      TsToast.error(context, '가입 처리 중 오류가 발생했습니다.');
+      TsToast.error(context, context.l10n.signupErrorProcessing);
     }
     context.push('/signup/complete');
   }
@@ -90,21 +91,22 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
     );
   }
 
-  Widget _requiredTag() {
+  Widget _requiredTag(BuildContext context) {
     return Text(
-      '[필수]',
+      context.l10n.signupRequired,
       style: TsType.labelSRegular.copyWith(color: TsColors.systemError500),
     );
   }
 
-  Widget _optionalTag(TsSemanticColors semantic) {
+  Widget _optionalTag(BuildContext context, TsSemanticColors semantic) {
     return Text(
-      '[선택]',
+      context.l10n.signupOptional,
       style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
     );
   }
 
   Widget _termsRow({
+    required BuildContext context,
     required TsSemanticColors semantic,
     required bool checked,
     required VoidCallback onToggle,
@@ -138,7 +140,7 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
             onTap: onView,
             behavior: HitTestBehavior.opaque,
             child: Text(
-              '보기',
+              context.l10n.signupView,
               style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
             ),
           ),
@@ -149,6 +151,7 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
 
     return PopScope(
       canPop: false,
@@ -164,7 +167,7 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
           onPressed: _cancelSignupAndGoLogin,
         ),
         title: Text(
-          '회원가입',
+          l10n.signupPageTitle,
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
         ),
         backgroundColor: semantic.surfaceBase,
@@ -200,19 +203,19 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '서비스 이용을 위해',
+                      l10n.signupTermsHeadingLine1,
                       style: TsType.headingH2.copyWith(color: semantic.textSecondary),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '약관에 동의해주세요.',
+                      l10n.signupTermsHeadingLine2,
                       style: TsType.headingH2.copyWith(color: semantic.textPrimary),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '필수 항목에 동의하시면 가입이 완료됩니다.',
+                      l10n.signupTermsHint,
                       style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
                       textAlign: TextAlign.center,
                     ),
@@ -243,7 +246,7 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
                               _radioIcon(_agreeAll, semantic),
                               const SizedBox(width: 8),
                               Text(
-                                '전체 동의',
+                                l10n.signupAgreeAll,
                                 style: TsType.bodyLRegular.copyWith(color: semantic.textPrimary),
                               ),
                             ],
@@ -254,11 +257,12 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
                       Container(height: 1, color: semantic.borderSubtle),
                       const SizedBox(height: 16),
                       _termsRow(
+                        context: context,
                         semantic: semantic,
                         checked: _termsAgreed,
                         onToggle: () => setState(() => _termsAgreed = !_termsAgreed),
-                        tag: _requiredTag(),
-                        label: '이용약관',
+                        tag: _requiredTag(context),
+                        label: l10n.signupTermsRequired,
                         onView: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -269,11 +273,12 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
                       ),
                       const SizedBox(height: 16),
                       _termsRow(
+                        context: context,
                         semantic: semantic,
                         checked: _privacyAgreed,
                         onToggle: () => setState(() => _privacyAgreed = !_privacyAgreed),
-                        tag: _requiredTag(),
-                        label: '개인정보처리방침',
+                        tag: _requiredTag(context),
+                        label: l10n.signupPrivacyRequired,
                         onView: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -284,18 +289,19 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
                       ),
                       const SizedBox(height: 16),
                       _termsRow(
+                        context: context,
                         semantic: semantic,
                         checked: _marketingAgreed,
                         onToggle: () => setState(() => _marketingAgreed = !_marketingAgreed),
-                        tag: _optionalTag(semantic),
-                        label: '마케팅 이메일 수신',
+                        tag: _optionalTag(context, semantic),
+                        label: l10n.signupMarketingOptional,
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 24),
                 TsButton(
-                  label: '가입하기',
+                  label: l10n.signupSubmit,
                   variant: TsButtonVariant.primary,
                   onPressed: _canSubmit && !_isLoading ? _onSubmit : null,
                 ),

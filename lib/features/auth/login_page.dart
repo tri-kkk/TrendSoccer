@@ -8,6 +8,7 @@ import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 
@@ -41,7 +42,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (e.code == 'ACCOUNT_DELETED') {
         TsToast.error(context, e.message);
       } else {
-        TsToast.error(context, '네이버 로그인에 실패했습니다. 다시 시도해주세요.');
+        TsToast.error(context, context.l10n.loginNaverFailed);
       }
     } catch (e) {
       if (!mounted) return;
@@ -74,7 +75,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (auth.needsConsent) {
         context.push('/signup/terms');
       } else {
-        TsToast.success(context, '로그인 성공');
+        TsToast.success(context, context.l10n.loginSuccess);
         context.go('/trend');
       }
     } catch (e) {
@@ -90,6 +91,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
+    final titleLines = l10n.loginTitle.split('\n');
+    final subtitleLines = l10n.loginSubtitle.split('\n');
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
@@ -103,7 +107,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         scrolledUnderElevation: 0,
         iconTheme: IconThemeData(color: semantic.textPrimary),
         title: Text(
-          '로그인',
+          l10n.loginAppBarTitle,
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
         ),
         centerTitle: true,
@@ -131,34 +135,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   height: 240,
                 ),
                 const SizedBox(height: 48),
-                Text(
-                  'Explore',
-                  style: TsType.displayHero.copyWith(color: semantic.textPrimary),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'new insights',
-                  style: TsType.displayHero.copyWith(color: semantic.textPrimary),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'in the data arena!',
-                  style: TsType.displayHero.copyWith(color: semantic.textPrimary),
-                  textAlign: TextAlign.center,
-                ),
+                for (var i = 0; i < titleLines.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 4),
+                  Text(
+                    titleLines[i],
+                    style: TsType.displayHero.copyWith(color: semantic.textPrimary),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
                 const SizedBox(height: 16),
-                Text(
-                  '프리미엄 AI가 읽어내는 축구와 야구의 흐름.',
-                  style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                  '정교한 데이터로 예측의 정확도를 높이세요.',
-                  style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
-                  textAlign: TextAlign.center,
-                ),
+                for (var i = 0; i < subtitleLines.length; i++)
+                  Text(
+                    subtitleLines[i],
+                    style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
+                    textAlign: TextAlign.center,
+                  ),
                 const SizedBox(height: 48),
                 GestureDetector(
                   onTap: _isLoading ? null : _onGoogleLoginTap,
@@ -180,7 +171,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Google로 시작하기',
+                          l10n.loginGoogle,
                           style: TsType.bodyLBold.copyWith(color: semantic.textPrimary),
                         ),
                       ],
@@ -208,7 +199,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Naver로 시작하기',
+                          l10n.loginNaver,
                           style: TsType.bodyLBold.copyWith(color: semantic.textPrimary),
                         ),
                       ],
