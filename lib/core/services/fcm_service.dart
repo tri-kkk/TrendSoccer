@@ -31,6 +31,10 @@ class FCMService {
     _fcmToken = await _messaging.getToken();
     debugPrint('[FCM] Token: $_fcmToken');
 
+    if (_fcmToken != null) {
+      await registerDevice(_fcmToken);
+    }
+
     _messaging.onTokenRefresh.listen((newToken) {
       debugPrint('[FCM] Token refreshed: $newToken');
       _fcmToken = newToken;
@@ -67,9 +71,13 @@ class FCMService {
     }
 
     final jwt = await _getJwt();
-    if (jwt == null) {
-      debugPrint('[FCM] registerDevice: no JWT, skipping');
-      return;
+    final headers = <String, String>{'Content-Type': 'application/json'};
+
+    if (jwt != null && jwt.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $jwt';
+      debugPrint('[FCM] registerDevice: with JWT (authenticated)');
+    } else {
+      debugPrint('[FCM] registerDevice: anonymous (no JWT)');
     }
 
     try {
@@ -82,6 +90,38 @@ class FCMService {
           'appVersion': '0.1.2',
           'locale': 'ko',
         },
+        options: Options(headers: headers),
+      );
+      var anonymous = false;
+      final data = response.data;
+      if (data is Map) {
+        final inner = data['data'];
+        if (inner is Map) {
+          anonymous = inner['anonymous'] == true;
+        }
+      }
+      debugPrint(
+        '[FCM] registerDevice: ${response.statusCode}, anonymous=$anonymous',
+      );
+    } catch (e) {
+      debugPrint('[FCM] registerDevice error: $e');
+    }
+  }
+
+  /// Call after login to migrate anonymous settings to user account
+  Future<void> migrateToUser() async {
+    final jwt = await _getJwt();
+    final fcmToken = _fcmToken;
+    if (jwt == null || fcmToken == null) {
+      debugPrint('[FCM] migrate: missing jwt or token');
+      return;
+    }
+
+    try {
+      final dio = Dio();
+      final response = await dio.post<dynamic>(
+        'https://www.trendsoccer.com/api/v1/mobile/notifications/migrate',
+        data: <String, String>{'token': fcmToken},
         options: Options(
           headers: <String, String>{
             'Content-Type': 'application/json',
@@ -89,9 +129,9 @@ class FCMService {
           },
         ),
       );
-      debugPrint('[FCM] registerDevice: ${response.statusCode}');
+      debugPrint('[FCM] migrate: ${response.data}');
     } catch (e) {
-      debugPrint('[FCM] registerDevice error: $e');
+      debugPrint('[FCM] migrate error: $e');
     }
   }
 

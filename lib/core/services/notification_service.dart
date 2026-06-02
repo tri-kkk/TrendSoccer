@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:trendsoccer/core/services/fcm_service.dart';
+import 'package:trendsoccer/core/services/token_service.dart';
+
 final notificationServiceProvider = Provider<NotificationService>((ref) {
   return NotificationService();
 });
@@ -14,17 +17,17 @@ class NotificationService {
     int matchId,
     String sport,
   ) async {
-    final jwt = await _getJwt();
-    if (jwt == null) return _defaultSettings(sport);
+    final headers = await _buildHeaders();
+    if (!_hasAuthHeaders(headers)) {
+      return _defaultSettings(sport);
+    }
 
     try {
       final dio = Dio();
       final response = await dio.get<dynamic>(
         'https://www.trendsoccer.com/api/v1/mobile/notifications/match/$matchId',
         queryParameters: <String, String>{'sport': sport},
-        options: Options(
-          headers: <String, String>{'Authorization': 'Bearer $jwt'},
-        ),
+        options: Options(headers: headers),
       );
       debugPrint(
         '[NOTIF] getAlarm: matchId=$matchId, sport=$sport, '
@@ -50,8 +53,11 @@ class NotificationService {
     bool enabled,
     Map<String, bool> events,
   ) async {
-    final jwt = await _getJwt();
-    if (jwt == null) return false;
+    final headers = await _buildHeaders();
+    if (!_hasAuthHeaders(headers)) {
+      debugPrint('[NOTIF] saveAlarm: no JWT or device token');
+      return false;
+    }
 
     try {
       final dio = Dio();
@@ -62,12 +68,7 @@ class NotificationService {
           'enabled': enabled,
           'events': events,
         },
-        options: Options(
-          headers: <String, String>{
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $jwt',
-          },
-        ),
+        options: Options(headers: headers),
       );
       debugPrint(
         '[NOTIF] saveAlarm: matchId=$matchId, enabled=$enabled, '
@@ -112,6 +113,29 @@ class NotificationService {
     };
   }
 
+  Future<Map<String, String>> _buildHeaders() async {
+    final headers = <String, String>{'Content-Type': 'application/json'};
+
+    final jwt = await _getJwt();
+    if (jwt != null && jwt.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $jwt';
+      return headers;
+    }
+
+    final fcmToken = FCMService().fcmToken;
+    if (fcmToken != null && fcmToken.isNotEmpty) {
+      headers['X-Device-Token'] = fcmToken;
+      debugPrint('[NOTIF] Using X-Device-Token for anonymous access');
+    }
+
+    return headers;
+  }
+
+  bool _hasAuthHeaders(Map<String, String> headers) {
+    return headers.containsKey('Authorization') ||
+        headers.containsKey('X-Device-Token');
+  }
+
   Future<String?> _getJwt() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -121,7 +145,14 @@ class NotificationService {
 
     try {
       final session = Supabase.instance.client.auth.currentSession;
-      if (session != null) return session.accessToken;
+      if (session != null && session.accessToken.isNotEmpty) {
+        return session.accessToken;
+      }
+    } catch (_) {}
+
+    try {
+      final token = await TokenService().getToken();
+      if (token != null && token.isNotEmpty) return token;
     } catch (_) {}
 
     return null;

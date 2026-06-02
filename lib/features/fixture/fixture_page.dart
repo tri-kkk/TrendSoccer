@@ -228,14 +228,6 @@ class _FixturePageState extends ConsumerState<FixturePage>
       match.status == 'scheduled' || match.status == 'live';
 
   Future<void> _refreshAlarmStates(List<FixtureMatch> matches) async {
-    if (!ref.read(authProvider).isLoggedIn) {
-      if (!mounted) return;
-      setState(() {
-        _alarmEnabledMatchIds.clear();
-      });
-      return;
-    }
-
     final generation = ++_alarmRefreshGeneration;
     final service = ref.read(notificationServiceProvider);
     final eligible = matches
@@ -269,11 +261,6 @@ class _FixturePageState extends ConsumerState<FixturePage>
 
   void _onNotificationTap(FixtureMatch match) {
     if (!_isAlarmEligible(match)) return;
-
-    if (!ref.read(authProvider).isLoggedIn) {
-      showLoginPromptSheet(context);
-      return;
-    }
 
     final sport = _sportApiValue(match.sport);
     showAlarmSheet(

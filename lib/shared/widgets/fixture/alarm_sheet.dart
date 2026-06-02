@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/services/notification_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
-import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 
 class AlarmSheet extends ConsumerStatefulWidget {
   const AlarmSheet({
@@ -257,76 +255,5 @@ void showAlarmSheet(
       sport: sport,
       onEnabledChanged: onEnabledChanged,
     ),
-  );
-}
-
-void showLoginPromptSheet(BuildContext context) {
-  final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-
-  showModalBottomSheet<void>(
-    context: context,
-    backgroundColor: Colors.transparent,
-    isScrollControlled: true,
-    builder: (sheetContext) {
-      return Container(
-        decoration: BoxDecoration(
-          color: semantic.surfaceOverlay,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        padding: EdgeInsets.only(
-          top: 12,
-          bottom: 24 + MediaQuery.of(sheetContext).padding.bottom,
-          left: 24,
-          right: 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 48,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: semantic.textTertiary,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '로그인이 필요합니다',
-              style: TsType.headingH3.copyWith(color: semantic.textPrimary),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '경기 알림을 설정하려면 로그인해 주세요.',
-              style: TsType.bodyLBold.copyWith(color: semantic.textSecondary),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: TsButton(
-                label: '로그인하기',
-                variant: TsButtonVariant.primary,
-                onPressed: () {
-                  Navigator.of(sheetContext).pop();
-                  sheetContext.push('/login');
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: TsButton(
-                label: '닫기',
-                variant: TsButtonVariant.secondary,
-                onPressed: () => Navigator.of(sheetContext).pop(),
-              ),
-            ),
-          ],
-        ),
-      );
-    },
   );
 }

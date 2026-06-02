@@ -638,8 +638,9 @@ class SupabaseAuthProvider extends ChangeNotifier {
       _applyMeUserJson(user);
       try {
         await FCMService().registerDevice();
+        await FCMService().migrateToUser();
       } catch (e) {
-        debugPrint('[Auth] FCM registerDevice failed: $e');
+        debugPrint('[Auth] FCM post-login failed: $e');
       }
     } on ApiException catch (e) {
       if (e.code == 'CONSENT_REQUIRED') {
