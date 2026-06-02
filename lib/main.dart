@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
@@ -17,11 +18,36 @@ import 'package:trendsoccer/core/providers/theme_provider.dart';
 import 'package:trendsoccer/core/router/app_router.dart';
 import 'package:trendsoccer/core/theme/app_theme.dart';
 
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  debugPrint('[FCM] background: ${message.messageId}');
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  debugPrint('[MAIN] app starting');
+
   await dotenv.load(fileName: '.env');
+
   await Firebase.initializeApp();
-  FcmService.configureForegroundListeners();
+  debugPrint('[MAIN] Firebase initialized');
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  try {
+    debugPrint('[MAIN] FCM init starting');
+    final fcmService = FCMService();
+    await fcmService.init();
+    debugPrint('[MAIN] FCM init complete, token=${fcmService.fcmToken}');
+  } catch (e, stackTrace) {
+    debugPrint('[MAIN] FCM init ERROR: $e');
+    final stack = stackTrace.toString();
+    debugPrint(
+      '[MAIN] FCM stack: ${stack.length > 500 ? stack.substring(0, 500) : stack}',
+    );
+  }
+
   await Supabase.initialize(
     url: AppConfig.supabaseUrl,
     anonKey: AppConfig.supabaseAnonKey,

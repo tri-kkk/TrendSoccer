@@ -214,12 +214,6 @@ class SupabaseAuthProvider extends ChangeNotifier {
     notifyListeners();
 
     unawaited(_persistUserEmail(user.email));
-
-    try {
-      await _ref.read(fcmServiceProvider).initialize();
-    } catch (e) {
-      debugPrint('[Auth] FCM initialize failed: $e');
-    }
   }
 
   Future<void> _persistUserEmail(String email) async {
@@ -530,12 +524,6 @@ class SupabaseAuthProvider extends ChangeNotifier {
       _resetToGuest();
       return;
     }
-
-    try {
-      await _ref.read(fcmServiceProvider).initialize();
-    } catch (e) {
-      debugPrint('[Auth] FCM initialize failed: $e');
-    }
   }
 
   Future<Map<String, String>> _buildMeRequestHeaders({String? jwt}) async {
@@ -648,6 +636,11 @@ class SupabaseAuthProvider extends ChangeNotifier {
       );
 
       _applyMeUserJson(user);
+      try {
+        await FCMService().registerDevice();
+      } catch (e) {
+        debugPrint('[Auth] FCM registerDevice failed: $e');
+      }
     } on ApiException catch (e) {
       if (e.code == 'CONSENT_REQUIRED') {
         print('[AUTH] loadProfile: CONSENT_REQUIRED');
@@ -676,6 +669,8 @@ class SupabaseAuthProvider extends ChangeNotifier {
   Future<void> signOut() async {
     final loginMethod = _state.loginMethod;
     try {
+      await FCMService().unregisterDevice();
+
       final dio = Dio();
       String? csrfToken;
       try {

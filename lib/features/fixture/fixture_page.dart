@@ -7,8 +7,10 @@ import 'package:intl/intl.dart';
 
 import 'package:trendsoccer/core/models/fixture_models_v2.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
+import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/services/fixture_service.dart';
+import 'package:trendsoccer/core/services/notification_service.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/baseball_status.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
@@ -46,7 +48,8 @@ class _FixturePageState extends ConsumerState<FixturePage>
   static const _dateChipGap = 8.0;
   static const _dateChipHorizontalPadding = 16.0;
 
-  final Set<String> _notificationMatchIds = {};
+  final Set<String> _alarmEnabledMatchIds = {};
+  int _alarmRefreshGeneration = 0;
   late final PageController _pageController;
   final ScrollController _dateChipScrollController = ScrollController();
   bool _syncingPage = false;
@@ -217,6 +220,78 @@ class _FixturePageState extends ConsumerState<FixturePage>
 
   SportType _selectedSport(String sport) =>
       sport == 'baseball' ? SportType.baseball : SportType.soccer;
+
+  String _sportApiValue(String sport) =>
+      sport == 'baseball' ? 'baseball' : 'soccer';
+
+  bool _isAlarmEligible(FixtureMatch match) =>
+      match.status == 'scheduled' || match.status == 'live';
+
+  Future<void> _refreshAlarmStates(List<FixtureMatch> matches) async {
+    if (!ref.read(authProvider).isLoggedIn) {
+      if (!mounted) return;
+      setState(() {
+        _alarmEnabledMatchIds.clear();
+      });
+      return;
+    }
+
+    final generation = ++_alarmRefreshGeneration;
+    final service = ref.read(notificationServiceProvider);
+    final eligible = matches
+        .where((match) => match.matchId != 0 && _isAlarmEligible(match))
+        .toList();
+
+    final enabledIds = <String>{};
+    await Future.wait(
+      eligible.map((match) async {
+        final settings = await service.getMatchAlarmSettings(
+          match.matchId,
+          _sportApiValue(match.sport),
+        );
+        if (settings['enabled'] == true) {
+          enabledIds.add(match.matchId.toString());
+        }
+      }),
+    );
+
+    if (!mounted || generation != _alarmRefreshGeneration) return;
+    setState(() {
+      _alarmEnabledMatchIds
+        ..clear()
+        ..addAll(enabledIds);
+    });
+  }
+
+  void _scheduleAlarmStateRefresh(List<FixtureMatch> matches) {
+    unawaited(_refreshAlarmStates(matches));
+  }
+
+  void _onNotificationTap(FixtureMatch match) {
+    if (!_isAlarmEligible(match)) return;
+
+    if (!ref.read(authProvider).isLoggedIn) {
+      showLoginPromptSheet(context);
+      return;
+    }
+
+    final sport = _sportApiValue(match.sport);
+    showAlarmSheet(
+      context,
+      matchId: match.matchId,
+      sport: sport,
+      onEnabledChanged: (enabled) {
+        setState(() {
+          final id = match.matchId.toString();
+          if (enabled) {
+            _alarmEnabledMatchIds.add(id);
+          } else {
+            _alarmEnabledMatchIds.remove(id);
+          }
+        });
+      },
+    );
+  }
 
   FixtureMatchStatus _toFixtureStatus(
     FixtureMatch match, {
@@ -425,20 +500,9 @@ class _FixturePageState extends ConsumerState<FixturePage>
       awayLogoUrl: match.awayTeamLogo,
       homeScore: _scoreText(match, isHome: true, isBaseball: isBaseball),
       awayScore: _scoreText(match, isHome: false, isBaseball: isBaseball),
-      isNotificationOn: _notificationMatchIds.contains(match.matchId.toString()),
-      onNotificationTap: (match.status == 'scheduled' || match.status == 'live')
-          ? () {
-              setState(() {
-                final id = match.matchId.toString();
-                if (_notificationMatchIds.contains(id)) {
-                  _notificationMatchIds.remove(id);
-                } else {
-                  _notificationMatchIds.add(id);
-                  showAlarmSheet(context, _selectedSport(match.sport));
-                }
-              });
-            }
-          : null,
+      isNotificationOn: _alarmEnabledMatchIds.contains(match.matchId.toString()),
+      onNotificationTap:
+          _isAlarmEligible(match) ? () => _onNotificationTap(match) : null,
     );
   }
 
@@ -648,6 +712,17 @@ class _FixturePageState extends ConsumerState<FixturePage>
       final wasLoading = previous?.isLoading ?? false;
       if (wasLoading && next.hasError && context.mounted) {
         TsToast.error(context, '경기 일정을 불러오지 못했습니다.');
+      }
+    });
+
+    ref.listen(allFixturesWithLiveProvider, (previous, next) {
+      next.whenData(_scheduleAlarmStateRefresh);
+    });
+
+    ref.listen(authProvider, (previous, next) {
+      final matches = ref.read(allFixturesWithLiveProvider).value;
+      if (matches != null) {
+        _scheduleAlarmStateRefresh(matches);
       }
     });
 
