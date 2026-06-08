@@ -1,17 +1,30 @@
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
 import 'package:trendsoccer/core/services/web_api_client.dart';
+import 'package:trendsoccer/core/utils/api_language_helper.dart';
 
 final baseballComboServiceProvider = Provider<BaseballComboService>((ref) {
-  return BaseballComboService(ref.watch(webDioProvider));
+  return BaseballComboService(
+    ref.watch(webDioProvider),
+    ref.watch(sharedPreferencesProvider),
+  );
 });
 
 class BaseballComboService {
-  BaseballComboService(this._dio);
+  BaseballComboService(this._dio, this._prefs);
 
   final Dio _dio;
+  final SharedPreferences _prefs;
+
+  String _apiLanguage() {
+    final lang = getApiLanguage(_prefs);
+    debugPrint('[BASEBALL] API language: $lang');
+    return lang;
+  }
 
   Future<Map<String, dynamic>> getTodayComboStats() async {
     final today = _formatApiDate(DateTime.now());
@@ -20,9 +33,13 @@ class BaseballComboService {
 
   Future<Map<String, dynamic>> getComboPicks({required String date}) async {
     try {
+      final language = _apiLanguage();
       final response = await _dio.get<dynamic>(
         '/api/baseball/combo-picks',
-        queryParameters: <String, String>{'date': date},
+        queryParameters: <String, String>{
+          'date': date,
+          'language': language,
+        },
       );
       final data = _adaptToMap(response.data);
       debugPrint('[BASEBALL] Combo picks response keys: ${data.keys.toList()}');

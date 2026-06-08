@@ -5,6 +5,7 @@ class BlogPostListItem {
     required this.description,
     required this.date,
     required this.thumbnailUrl,
+    this.language,
   });
 
   final String slug;
@@ -12,6 +13,7 @@ class BlogPostListItem {
   final String description;
   final String date;
   final String thumbnailUrl;
+  final String? language;
 }
 
 class BlogPostDetail {
@@ -22,6 +24,7 @@ class BlogPostDetail {
     required this.date,
     required this.thumbnailUrl,
     required this.tags,
+    this.language,
   });
 
   final String slug;
@@ -30,6 +33,7 @@ class BlogPostDetail {
   final String date;
   final String thumbnailUrl;
   final List<String> tags;
+  final String? language;
 }
 
 class BlogParser {
@@ -54,6 +58,7 @@ class BlogParser {
       date: formatPublishedDate(post['published_at']?.toString()),
       thumbnailUrl: _readThumbnail(post),
       tags: _readTags(post),
+      language: post['language']?.toString(),
     );
   }
 
@@ -64,6 +69,7 @@ class BlogParser {
       description: post['excerpt']?.toString() ?? '',
       date: formatPublishedDate(post['published_at']?.toString()),
       thumbnailUrl: _readThumbnail(post),
+      language: post['language']?.toString(),
     );
   }
 

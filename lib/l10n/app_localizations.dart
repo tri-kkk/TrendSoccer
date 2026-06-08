@@ -1436,18 +1436,6 @@ abstract class AppLocalizations {
   /// **'W'**
   String get labelWinShort;
 
-  /// No description provided for @languageEnglish.
-  ///
-  /// In ko, this message translates to:
-  /// **'English'**
-  String get languageEnglish;
-
-  /// No description provided for @languageKorean.
-  ///
-  /// In ko, this message translates to:
-  /// **'한국어'**
-  String get languageKorean;
-
   /// No description provided for @languageSettingsTitle.
   ///
   /// In ko, this message translates to:
@@ -1807,6 +1795,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'홈'**
   String get pickDirectionHome;
+
+  /// No description provided for @pitcherTbd.
+  ///
+  /// In ko, this message translates to:
+  /// **'미정'**
+  String get pitcherTbd;
 
   /// No description provided for @planTicketFree.
   ///

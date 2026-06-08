@@ -724,12 +724,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelWinShort => 'W';
 
   @override
-  String get languageEnglish => 'English';
-
-  @override
-  String get languageKorean => 'Korean';
-
-  @override
   String get languageSettingsTitle => 'Language';
 
   @override
@@ -920,6 +914,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pickDirectionHome => 'Home';
+
+  @override
+  String get pitcherTbd => 'TBD';
 
   @override
   String get planTicketFree => 'Free plan';

@@ -11,7 +11,6 @@ import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/shared/widgets/baseball/pitcher_comment_chip.dart';
 import 'package:trendsoccer/shared/widgets/baseball/position_chip.dart';
 import 'package:trendsoccer/shared/widgets/baseball/season_chip.dart';
-import 'package:trendsoccer/shared/widgets/report/info_cell.dart';
 
 class PitcherData {
   const PitcherData({
@@ -55,6 +54,30 @@ class PitcherData {
   final String? summary;
   final String? season;
   final String? prevSeason;
+}
+
+bool isPitcherNameTbd(String? name) {
+  final trimmed = name?.trim() ?? '';
+  if (trimmed.isEmpty || trimmed == '-') return true;
+  final upper = trimmed.toUpperCase();
+  return upper == 'TBD' || trimmed == '미정';
+}
+
+String displayPitcherName(AppLocalizations l10n, String name) {
+  if (isPitcherNameTbd(name)) return l10n.pitcherTbd;
+  return name;
+}
+
+bool shouldShowPitcherHandedness({
+  required String pitcherName,
+  required String pitcherType,
+  required AppLocalizations l10n,
+}) {
+  if (isPitcherNameTbd(pitcherName)) return false;
+  final type = pitcherType.trim();
+  if (type.isEmpty || type == '-') return false;
+  if (type == '투수' || type == l10n.baseballPitcherGeneric) return false;
+  return true;
 }
 
 class StartingPitchersSection extends ConsumerWidget {
@@ -241,28 +264,91 @@ class StartingPitchersSection extends ConsumerWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           clipBehavior: Clip.antiAlias,
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: _PitcherColumn(
-                    leagueCode: leagueCode,
-                    pitcher: homeDisplay,
-                    isHome: true,
-                    previousSeasonStatsRaw: homePrevRaw,
+          child: Column(
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _PitcherSide(
+                      leagueCode: leagueCode,
+                      pitcher: homeDisplay,
+                      isHome: true,
+                    ).buildProfile(context),
                   ),
-                ),
-                Expanded(
-                  child: _PitcherColumn(
-                    leagueCode: leagueCode,
-                    pitcher: awayDisplay,
-                    isHome: false,
-                    previousSeasonStatsRaw: awayPrevRaw,
+                  Expanded(
+                    child: _PitcherSide(
+                      leagueCode: leagueCode,
+                      pitcher: awayDisplay,
+                      isHome: false,
+                    ).buildProfile(context),
                   ),
+                ],
+              ),
+              _PitcherSide.sectionDivider(semantic),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _PitcherSide(
+                      leagueCode: leagueCode,
+                      pitcher: homeDisplay,
+                      isHome: true,
+                    ).buildCurrentStats(context),
+                  ),
+                  Expanded(
+                    child: _PitcherSide(
+                      leagueCode: leagueCode,
+                      pitcher: awayDisplay,
+                      isHome: false,
+                    ).buildCurrentStats(context),
+                  ),
+                ],
+              ),
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: _PitcherSide(
+                        leagueCode: leagueCode,
+                        pitcher: homeDisplay,
+                        isHome: true,
+                      ).buildCommentChips(context),
+                    ),
+                    Expanded(
+                      child: _PitcherSide(
+                        leagueCode: leagueCode,
+                        pitcher: awayDisplay,
+                        isHome: false,
+                      ).buildCommentChips(context),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              _PitcherSide.sectionDivider(semantic),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _PitcherSide(
+                      leagueCode: leagueCode,
+                      pitcher: homeDisplay,
+                      isHome: true,
+                      previousSeasonStatsRaw: homePrevRaw,
+                    ).buildPreviousSeason(context),
+                  ),
+                  Expanded(
+                    child: _PitcherSide(
+                      leagueCode: leagueCode,
+                      pitcher: awayDisplay,
+                      isHome: false,
+                      previousSeasonStatsRaw: awayPrevRaw,
+                    ).buildPreviousSeason(context),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ],
@@ -270,8 +356,47 @@ class StartingPitchersSection extends ConsumerWidget {
   }
 }
 
-class _PitcherColumn extends StatelessWidget {
-  const _PitcherColumn({
+class _PitcherStatsCard extends StatelessWidget {
+  const _PitcherStatsCard({
+    required this.value,
+    required this.label,
+  });
+
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+
+    return Container(
+      padding: const EdgeInsets.all(TsSpacing.sm),
+      decoration: BoxDecoration(
+        color: semantic.surfaceContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            value,
+            style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: TsSpacing.sm),
+          Text(
+            label,
+            style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PitcherSide {
+  const _PitcherSide({
     required this.leagueCode,
     required this.pitcher,
     required this.isHome,
@@ -283,12 +408,7 @@ class _PitcherColumn extends StatelessWidget {
   final bool isHome;
   final Map<String, dynamic>? previousSeasonStatsRaw;
 
-  String get _currentSeasonLabel =>
-      pitcher.season ?? '${DateTime.now().year}';
-
-  String get _previousSeasonLabel =>
-      pitcher.prevSeason ?? '${DateTime.now().year - 1}';
-
+  static const _handednessLineHeight = 17.0;
   static const _emblemSize = 80.0;
 
   bool get _isMlb => leagueCode == 'MLB';
@@ -297,23 +417,192 @@ class _PitcherColumn extends StatelessWidget {
 
   bool get _showCommentChips => _isMlb || _isAsianLeague;
 
-  static Widget _statsRowTriple({
-    required String v1,
-    required String l1,
-    required String v2,
-    required String l2,
-    required String v3,
-    required String l3,
-  }) {
-    return Row(
-      children: [
-        Expanded(child: InfoCell(value: v1, label: l1)),
-        const SizedBox(width: TsSpacing.sm),
-        Expanded(child: InfoCell(value: v2, label: l2)),
-        const SizedBox(width: TsSpacing.sm),
-        Expanded(child: InfoCell(value: v3, label: l3)),
-      ],
+  String get _currentSeasonLabel =>
+      pitcher.season ?? '${DateTime.now().year}';
+
+  String get _previousSeasonLabel =>
+      pitcher.prevSeason ?? '${DateTime.now().year - 1}';
+
+  bool get _isTbd => isPitcherNameTbd(pitcher.name);
+
+  static Widget sectionDivider(TsSemanticColors semantic) {
+    return Container(
+      height: 1,
+      width: double.infinity,
+      color: semantic.borderSubtle,
     );
+  }
+
+  Widget buildProfile(BuildContext context) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
+    final displayName = displayPitcherName(l10n, pitcher.name);
+    final showHandedness = shouldShowPitcherHandedness(
+      pitcherName: pitcher.name,
+      pitcherType: pitcher.pitcherType,
+      l10n: l10n,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          PositionChip(isHome: isHome),
+          const SizedBox(height: TsSpacing.md),
+          _pitcherEmblem(semantic),
+          const SizedBox(height: TsSpacing.md),
+          Text(
+            displayName,
+            style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: TsSpacing.xs),
+          SizedBox(
+            height: _handednessLineHeight,
+            child: showHandedness
+                ? Center(
+                    child: Text(
+                      pitcher.pitcherType,
+                      style: TsType.labelSRegular.copyWith(
+                        color: semantic.textTertiary,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+          const SizedBox(height: TsSpacing.md),
+          SeasonChip(isCurrent: true, label: _currentSeasonLabel),
+        ],
+      ),
+    );
+  }
+
+  Widget buildCurrentStats(BuildContext context) {
+    const dash = '-';
+    final era = _isTbd ? dash : pitcher.era;
+    final whip = _isTbd ? dash : pitcher.whip;
+    final k9 = _isTbd ? dash : pitcher.k9;
+    final wl = _isTbd ? dash : pitcher.wl;
+    final ip = _isTbd ? dash : pitcher.ip;
+    final k = _isTbd ? dash : pitcher.k;
+    final thirdStatValue = _isMlb ? k9 : k;
+    final thirdStatLabel = _isMlb ? 'K/9' : 'K';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _PitcherSideStatsRow.triple(
+            v1: era,
+            l1: 'ERA',
+            v2: whip,
+            l2: 'WHIP',
+            v3: thirdStatValue,
+            l3: thirdStatLabel,
+          ),
+          if (_isMlb) ...[
+            const SizedBox(height: TsSpacing.sm),
+            _PitcherSideStatsRow.triple(
+              v1: wl,
+              l1: 'W-L',
+              v2: ip,
+              l2: 'IP',
+              v3: k,
+              l3: 'K',
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget buildCommentChips(BuildContext context) {
+    final displayStrengths = _isTbd || !_showCommentChips
+        ? const <String>[]
+        : pitcher.strengths.map(stripParenthetical).toList();
+    final displayWeaknesses = _isTbd || !_showCommentChips
+        ? const <String>[]
+        : pitcher.weaknesses.map(stripParenthetical).toList();
+
+    final chipWidgets = <Widget>[
+      for (final text in displayStrengths)
+        PitcherCommentChip(text: text, isStrength: true),
+      for (final text in displayWeaknesses)
+        PitcherCommentChip(text: text, isStrength: false),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      child: chipWidgets.isEmpty
+          ? const SizedBox.shrink()
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < chipWidgets.length; i++) ...[
+                  if (i > 0) const SizedBox(height: TsSpacing.sm),
+                  chipWidgets[i],
+                ],
+              ],
+            ),
+    );
+  }
+
+  Widget buildPreviousSeason(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(child: SeasonChip(isCurrent: false, label: _previousSeasonLabel)),
+          const SizedBox(height: TsSpacing.md),
+          _buildPrevSeasonStats(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPrevSeasonStats() {
+    if (_isTbd) {
+      return _PitcherSideStatsRow.triple(
+        v1: '-',
+        l1: 'ERA',
+        v2: '-',
+        l2: 'WHIP',
+        v3: '-',
+        l3: 'K',
+      );
+    }
+
+    return _PitcherSideStatsRow.triple(
+      v1: _formatPrevEra(previousSeasonStatsRaw),
+      l1: 'ERA',
+      v2: _formatPrevWhip(previousSeasonStatsRaw),
+      l2: 'WHIP',
+      v3: _formatPrevK(previousSeasonStatsRaw),
+      l3: 'K',
+    );
+  }
+
+  String _formatPrevEra(Map<String, dynamic>? prevStats) {
+    if (prevStats == null) return '-';
+    return _formatMlbStat(prevStats['era'], decimals: 2);
+  }
+
+  String _formatPrevWhip(Map<String, dynamic>? prevStats) {
+    if (prevStats == null) return '-';
+    return _formatMlbStat(prevStats['whip'], decimals: 2);
+  }
+
+  String _formatPrevK(Map<String, dynamic>? prevStats) {
+    if (prevStats == null) return '-';
+    final k =
+        prevStats['strikeOuts'] ?? prevStats['strikeouts'] ?? prevStats['k'];
+    return _formatMlbK(k);
   }
 
   Widget _avatarPlaceholder(TsSemanticColors semantic) {
@@ -327,7 +616,7 @@ class _PitcherColumn extends StatelessWidget {
       alignment: Alignment.center,
       child: Icon(
         Icons.person,
-        size: 40,
+        size: 32,
         color: semantic.textTertiary,
       ),
     );
@@ -393,7 +682,16 @@ class _PitcherColumn extends StatelessWidget {
   }
 
   Widget _pitcherEmblem(TsSemanticColors semantic) {
+    if (_isTbd) {
+      debugPrint('[BASEBALL] Pitcher TBD: showing default avatar');
+      return _avatarPlaceholder(semantic);
+    }
+
     if (!_isMlb) {
+      final photoUrl = pitcher.photoUrl?.trim();
+      if (photoUrl != null && photoUrl.isNotEmpty) {
+        return _photoEmblem(photoUrl, semantic);
+      }
       return _avatarPlaceholder(semantic);
     }
 
@@ -413,154 +711,25 @@ class _PitcherColumn extends StatelessWidget {
     }
     return _avatarPlaceholder(semantic);
   }
+}
 
-  Widget? _buildCommentChips() {
-    if (!_showCommentChips) return null;
-
-    final displayStrengths =
-        pitcher.strengths.map(stripParenthetical).toList();
-    final displayWeaknesses =
-        pitcher.weaknesses.map(stripParenthetical).toList();
-    if (displayStrengths.isEmpty && displayWeaknesses.isEmpty) return null;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+abstract final class _PitcherSideStatsRow {
+  static Widget triple({
+    required String v1,
+    required String l1,
+    required String v2,
+    required String l2,
+    required String v3,
+    required String l3,
+  }) {
+    return Row(
       children: [
-        for (final text in displayStrengths)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: PitcherCommentChip(text: text, isStrength: true),
-          ),
-        for (final text in displayWeaknesses)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: PitcherCommentChip(text: text, isStrength: false),
-          ),
+        Expanded(child: _PitcherStatsCard(value: v1, label: l1)),
+        const SizedBox(width: TsSpacing.sm),
+        Expanded(child: _PitcherStatsCard(value: v2, label: l2)),
+        const SizedBox(width: TsSpacing.sm),
+        Expanded(child: _PitcherStatsCard(value: v3, label: l3)),
       ],
-    );
-  }
-
-  Widget _buildPrevSeasonStats(
-    Map<String, dynamic>? prevStats,
-    TsSemanticColors semantic,
-  ) {
-    final prevEra = _formatPrevEra(prevStats);
-    final prevWhip = _formatPrevWhip(prevStats);
-    final prevK = _formatPrevK(prevStats);
-
-    return _statsRowTriple(
-      v1: prevEra,
-      l1: 'ERA',
-      v2: prevWhip,
-      l2: 'WHIP',
-      v3: prevK,
-      l3: 'K',
-    );
-  }
-
-  String _formatPrevEra(Map<String, dynamic>? prevStats) {
-    if (prevStats == null) return '-';
-    return _formatMlbStat(prevStats['era'], decimals: 2);
-  }
-
-  String _formatPrevWhip(Map<String, dynamic>? prevStats) {
-    if (prevStats == null) return '-';
-    return _formatMlbStat(prevStats['whip'], decimals: 2);
-  }
-
-  String _formatPrevK(Map<String, dynamic>? prevStats) {
-    if (prevStats == null) return '-';
-    final k =
-        prevStats['strikeOuts'] ?? prevStats['strikeouts'] ?? prevStats['k'];
-    return _formatMlbK(k);
-  }
-
-  Widget _buildPreviousSeasonSection(TsSemanticColors semantic) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Container(
-          height: 1,
-          width: double.infinity,
-          color: semantic.borderSubtle,
-        ),
-        const SizedBox(height: TsSpacing.md),
-        Center(
-          child: SeasonChip(isCurrent: false, label: _previousSeasonLabel),
-        ),
-        const SizedBox(height: TsSpacing.md),
-        _buildPrevSeasonStats(previousSeasonStatsRaw, semantic),
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final thirdStatValue = _isMlb ? pitcher.k9 : pitcher.k;
-    final thirdStatLabel = _isMlb ? 'K/9' : 'K';
-    final commentChips = _buildCommentChips();
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          PositionChip(isHome: isHome),
-          const SizedBox(height: TsSpacing.md),
-          _pitcherEmblem(semantic),
-          const SizedBox(height: TsSpacing.md),
-          Text(
-            pitcher.name,
-            style: TsType.headingH3.copyWith(color: semantic.textPrimary),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: TsSpacing.xs),
-          Text(
-            pitcher.pitcherType.isNotEmpty && pitcher.pitcherType != '투수'
-                ? pitcher.pitcherType
-                : '-',
-            style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: TsSpacing.md),
-          SeasonChip(isCurrent: true, label: _currentSeasonLabel),
-          const SizedBox(height: TsSpacing.md),
-          Container(
-            height: 1,
-            width: double.infinity,
-            color: semantic.borderSubtle,
-          ),
-          const SizedBox(height: TsSpacing.md),
-          _statsRowTriple(
-            v1: pitcher.era,
-            l1: 'ERA',
-            v2: pitcher.whip,
-            l2: 'WHIP',
-            v3: thirdStatValue,
-            l3: thirdStatLabel,
-          ),
-          if (_isMlb) ...[
-            const SizedBox(height: TsSpacing.sm),
-            _statsRowTriple(
-              v1: pitcher.wl,
-              l1: 'W-L',
-              v2: pitcher.ip,
-              l2: 'IP',
-              v3: pitcher.k,
-              l3: 'K',
-            ),
-          ],
-          if (commentChips != null) ...[
-            const SizedBox(height: TsSpacing.md),
-            commentChips,
-          ],
-          const Spacer(),
-          const SizedBox(height: TsSpacing.md),
-          _buildPreviousSeasonSection(semantic),
-        ],
-      ),
     );
   }
 }

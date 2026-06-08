@@ -782,13 +782,13 @@ class _LanguageBottomSheetState extends ConsumerState<_LanguageBottomSheet> {
               ),
               const SizedBox(height: TsSpacing.sm),
               _LanguageOptionRow(
-                label: l10n.languageKorean,
+                label: '한국어',
                 selected: _selected == _LanguageCode.ko,
                 onTap: () => unawaited(_selectLanguage(_LanguageCode.ko)),
               ),
               const SizedBox(height: TsSpacing.sm),
               _LanguageOptionRow(
-                label: l10n.languageEnglish,
+                label: 'English',
                 selected: _selected == _LanguageCode.en,
                 onTap: () => unawaited(_selectLanguage(_LanguageCode.en)),
               ),

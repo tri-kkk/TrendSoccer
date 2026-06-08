@@ -1,18 +1,31 @@
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:trendsoccer/core/models/baseball_models.dart';
+import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
 import 'package:trendsoccer/core/services/web_api_client.dart';
+import 'package:trendsoccer/core/utils/api_language_helper.dart';
 
 final baseballServiceProvider = Provider<BaseballService>((ref) {
-  return BaseballService(ref.watch(webDioProvider));
+  return BaseballService(
+    ref.watch(webDioProvider),
+    ref.watch(sharedPreferencesProvider),
+  );
 });
 
 class BaseballService {
-  BaseballService(this._dio);
+  BaseballService(this._dio, this._prefs);
 
   final Dio _dio;
+  final SharedPreferences _prefs;
+
+  String _apiLanguage() {
+    final lang = getApiLanguage(_prefs);
+    debugPrint('[BASEBALL] API language: $lang');
+    return lang;
+  }
 
   Future<Map<String, dynamic>> getPitcherAnalysis({
     required int matchId,
@@ -23,9 +36,9 @@ class BaseballService {
     Map<String, dynamic>? homeStats,
     Map<String, dynamic>? awayStats,
     required String league,
-    String language = 'ko',
   }) async {
     try {
+      final language = _apiLanguage();
       final body = <String, dynamic>{
         'matchId': matchId,
         'homeTeam': homeTeam,
@@ -64,12 +77,14 @@ class BaseballService {
     String? league,
   }) async {
     try {
+      final language = _apiLanguage();
       final response = await _dio.get<dynamic>(
         '/api/baseball/matches',
         queryParameters: <String, String>{
           'date': date,
           'status': 'scheduled',
           'limit': '50',
+          'language': language,
         },
       );
       var matches = _parseAnalysisCards(response.data);
@@ -90,11 +105,13 @@ class BaseballService {
   Future<Map<String, dynamic>> getMatchDetail({required int matchId}) async {
     debugPrint('[BASEBALL] Match detail request: api_match_id=$matchId');
     try {
+      final language = _apiLanguage();
       final response = await _dio.get<dynamic>(
         '/api/baseball/matches',
         queryParameters: <String, dynamic>{
           'id': matchId,
           'skipML': true,
+          'language': language,
         },
       );
       final responseData = _adaptToMap(response.data);
@@ -306,8 +323,10 @@ class BaseballService {
     int days = 7,
   }) async {
     try {
+      final language = _apiLanguage();
       final params = <String, dynamic>{
         'days': days,
+        'language': language,
       };
       if (date != null) params['date'] = date;
       final response = await _dio.get<dynamic>(

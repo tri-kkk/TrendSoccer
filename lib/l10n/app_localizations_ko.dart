@@ -710,12 +710,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get labelWinShort => 'W';
 
   @override
-  String get languageEnglish => 'English';
-
-  @override
-  String get languageKorean => '한국어';
-
-  @override
   String get languageSettingsTitle => '언어 설정';
 
   @override
@@ -903,6 +897,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get pickDirectionHome => '홈';
+
+  @override
+  String get pitcherTbd => '미정';
 
   @override
   String get planTicketFree => '무료 플랜';
