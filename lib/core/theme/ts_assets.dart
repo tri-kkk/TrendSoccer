@@ -93,6 +93,8 @@ abstract final class TsAssets {
     return null;
   }
 
+  static const bgLoginStadium = 'assets/images/bg/bg_login_stadium.svg';
+
   static const socialGoogle = 'assets/images/social/google.svg';
   static const socialNaver = 'assets/images/social/naver.svg';
 

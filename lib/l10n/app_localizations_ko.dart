@@ -736,6 +736,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get loginNaverFailed => '네이버 로그인에 실패했습니다. 다시 시도해주세요.';
 
   @override
+  String get loginSheetDesc => 'H2H 상대전적부터 팀 심층 분석까지, 당신의 예측을 완성할 데이터를 확인하세요.';
+
+  @override
+  String get loginSheetTitle => '더 스마트한 선택의 시작.';
+
+  @override
+  String get loginStart => '시작하기';
+
+  @override
   String get loginSubtitle =>
       '프리미엄 AI가 읽어내는 축구와 야구의 흐름.\n정교한 데이터로 예측의 정확도를 높이세요.';
 
@@ -743,7 +752,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get loginSuccess => '로그인 성공';
 
   @override
-  String get loginTitle => 'Explore\nnew insights\nin the data arena!';
+  String get loginTitle => 'Better Data,\nSmarter Picks,\nFor Your Choice.';
 
   @override
   String get matchAlarmDisabledGoSettings => '설정으로 이동';

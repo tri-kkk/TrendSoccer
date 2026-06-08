@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:trendsoccer/core/providers/baseball_language_cache.dart';
 import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
+import 'package:trendsoccer/core/providers/soccer_language_cache.dart';
 import 'package:trendsoccer/core/services/fcm_service.dart';
 
 enum AppLanguage { ko, en }
@@ -30,6 +31,7 @@ class LanguageNotifier extends Notifier<AppLanguage> {
       newLocale: language.name,
     );
     invalidateBaseballLanguageDependentProviders(ref);
+    invalidateSoccerLanguageDependentProviders(ref);
     debugPrint('[LANG] Language changed to ${language.name}');
   }
 }

@@ -1484,6 +1484,24 @@ abstract class AppLocalizations {
   /// **'네이버 로그인에 실패했습니다. 다시 시도해주세요.'**
   String get loginNaverFailed;
 
+  /// No description provided for @loginSheetDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'H2H 상대전적부터 팀 심층 분석까지, 당신의 예측을 완성할 데이터를 확인하세요.'**
+  String get loginSheetDesc;
+
+  /// No description provided for @loginSheetTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'더 스마트한 선택의 시작.'**
+  String get loginSheetTitle;
+
+  /// No description provided for @loginStart.
+  ///
+  /// In ko, this message translates to:
+  /// **'시작하기'**
+  String get loginStart;
+
   /// No description provided for @loginSubtitle.
   ///
   /// In ko, this message translates to:
@@ -1499,7 +1517,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginTitle.
   ///
   /// In ko, this message translates to:
-  /// **'Explore\nnew insights\nin the data arena!'**
+  /// **'Better Data,\nSmarter Picks,\nFor Your Choice.'**
   String get loginTitle;
 
   /// No description provided for @matchAlarmDisabledGoSettings.

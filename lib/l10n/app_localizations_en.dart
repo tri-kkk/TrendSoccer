@@ -750,6 +750,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginNaverFailed => 'Naver sign-in failed. Please try again.';
 
   @override
+  String get loginSheetDesc =>
+      'From H2H records to in-depth team analysis, explore the data to complete your predictions.';
+
+  @override
+  String get loginSheetTitle => 'The smarter choice starts here.';
+
+  @override
+  String get loginStart => 'Get Started';
+
+  @override
   String get loginSubtitle =>
       'AI-powered soccer and baseball analysis.\nElevate your predictions with precision data.';
 
@@ -757,7 +767,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginSuccess => 'Signed in successfully';
 
   @override
-  String get loginTitle => 'Explore\nnew insights\nin the data arena!';
+  String get loginTitle => 'Better Data,\nSmarter Picks,\nFor Your Choice.';
 
   @override
   String get matchAlarmDisabledGoSettings => 'Go to Settings';

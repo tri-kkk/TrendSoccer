@@ -1,18 +1,31 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:trendsoccer/core/models/soccer_models.dart';
+import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
 import 'package:trendsoccer/core/services/web_api_client.dart';
+import 'package:trendsoccer/core/utils/api_language_helper.dart';
 
 final soccerServiceProvider = Provider<SoccerService>((ref) {
-  return SoccerService(ref.watch(webDioProvider));
+  return SoccerService(
+    ref.watch(webDioProvider),
+    ref.watch(sharedPreferencesProvider),
+  );
 });
 
 class SoccerService {
-  SoccerService(this._dio);
+  SoccerService(this._dio, this._prefs);
 
   final Dio _dio;
+  final SharedPreferences _prefs;
+
+  String _apiLanguage() {
+    final lang = getApiLanguage(_prefs);
+    debugPrint('[SOCCER] API language: $lang');
+    return lang;
+  }
 
   static const _analysisTimeout = Duration(seconds: 20);
 
@@ -217,6 +230,7 @@ class SoccerService {
     required String homeTeam,
     required String awayTeam,
   }) async {
+    final lang = _apiLanguage();
     debugPrint('[SOCCER] GET /api/h2h-analysis for $homeTeam vs $awayTeam');
     try {
       final response = await _dio.get<dynamic>(
@@ -224,6 +238,7 @@ class SoccerService {
         queryParameters: <String, String>{
           'homeTeam': homeTeam,
           'awayTeam': awayTeam,
+          'lang': lang,
         },
       );
       final data = response.data;
@@ -254,6 +269,7 @@ class SoccerService {
     required String leagueCode,
     required int teamId,
   }) async {
+    final lang = _apiLanguage();
     try {
       final response = await _dio.get<dynamic>(
         '/api/team-stats',
@@ -261,6 +277,7 @@ class SoccerService {
           'team': teamName,
           'league': leagueCode,
           'teamId': teamId,
+          'lang': lang,
         },
       );
       final data = response.data;
@@ -273,6 +290,30 @@ class SoccerService {
     } catch (e) {
       debugPrint('[SOCCER] team-stats error for $teamName: $e');
       return {};
+    }
+  }
+
+  Future<Map<String, dynamic>> postMatchAnalysis(
+    Map<String, dynamic> body,
+  ) async {
+    final language = _apiLanguage();
+    debugPrint('[SOCCER] POST /api/analysis');
+    try {
+      final requestBody = <String, dynamic>{
+        ...body,
+        'language': language,
+      };
+      final response = await _dio.post<dynamic>(
+        '/api/analysis',
+        data: requestBody,
+        options: Options(
+          receiveTimeout: _analysisTimeout,
+          sendTimeout: _analysisTimeout,
+        ),
+      );
+      return _adaptToMap(response.data);
+    } catch (e) {
+      rethrow;
     }
   }
 
