@@ -91,6 +91,9 @@ class _TrendSoccerAppState extends ConsumerState<TrendSoccerApp> {
   void initState() {
     super.initState();
     ref.read(authProvider).initFromStoredToken();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FCMService().handleInitialMessage();
+    });
   }
 
   @override

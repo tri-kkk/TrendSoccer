@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:trendsoccer/core/router/app_router.dart';
 import 'package:trendsoccer/core/services/token_service.dart';
 
 class FCMService {
@@ -17,6 +21,7 @@ class FCMService {
   static const String topicMarketing = 'marketing';
 
   static const String _prefPermissionAsked = 'fcm_permission_asked';
+  static const String _languageKey = 'language_code';
 
   static final FCMService _instance = FCMService._internal();
   factory FCMService() => _instance;
@@ -27,6 +32,14 @@ class FCMService {
   String? _fcmToken;
 
   String? get fcmToken => _fcmToken;
+
+  static String topicWithLocale(String baseTopic, String locale) =>
+      '${baseTopic}_$locale';
+
+  static String localeFromPrefs(SharedPreferences prefs) {
+    final code = prefs.getString(_languageKey);
+    return code == 'en' ? 'en' : 'ko';
+  }
 
   /// Initialize FCM: request permission, get token, setup handlers
   Future<void> init() async {
@@ -72,6 +85,10 @@ class FCMService {
       }
     }
 
+    if (prefs.containsKey(prefAppGeneral)) {
+      await _syncEnabledTopicsFromPrefs(prefs);
+    }
+
     _fcmToken = await _messaging.getToken();
     debugPrint('[FCM] Token: $_fcmToken');
 
@@ -87,7 +104,10 @@ class FCMService {
 
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const initSettings = InitializationSettings(android: androidSettings);
-    await _localNotifications.initialize(initSettings);
+    await _localNotifications.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: _onLocalNotificationTap,
+    );
 
     const channel = AndroidNotificationChannel(
       'trendsoccer_matches',
@@ -106,6 +126,15 @@ class FCMService {
     debugPrint('[FCM] init complete');
   }
 
+  /// Handle cold-start notification tap after the router is ready.
+  Future<void> handleInitialMessage() async {
+    final message = await _messaging.getInitialMessage();
+    if (message == null) return;
+
+    debugPrint('[FCM] Initial message: ${message.data}');
+    navigateFromPushData(message.data);
+  }
+
   /// Subscribe all topics and save prefs when permission is first granted (e.g. from menu).
   Future<void> subscribeAllTopicsOnFirstPermissionGrant() async {
     final prefs = await SharedPreferences.getInstance();
@@ -118,9 +147,7 @@ class FCMService {
   /// Unsubscribe all topics and save prefs as off.
   Future<void> unsubscribeAllTopics() async {
     final prefs = await SharedPreferences.getInstance();
-    await _messaging.unsubscribeFromTopic(topicAppGeneral);
-    await _messaging.unsubscribeFromTopic(topicMatchEvents);
-    await _messaging.unsubscribeFromTopic(topicMarketing);
+    await _unsubscribeAllTopicVariants();
     await _setAllTopicsOff(prefs);
     debugPrint('[FCM] All topics unsubscribed');
   }
@@ -132,13 +159,110 @@ class FCMService {
     debugPrint('[FCM] All topics subscribed');
   }
 
+  /// Toggle a single topic for the current locale.
+  Future<void> setTopicEnabled({
+    required String baseTopic,
+    required String prefKey,
+    required bool enabled,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final locale = localeFromPrefs(prefs);
+    final topic = topicWithLocale(baseTopic, locale);
+
+    if (enabled) {
+      await _messaging.subscribeToTopic(topic);
+      await prefs.setBool(prefKey, true);
+      debugPrint('[FCM] Subscribed: $topic');
+    } else {
+      await _messaging.unsubscribeFromTopic(topic);
+      await prefs.setBool(prefKey, false);
+      debugPrint('[FCM] Unsubscribed: $topic');
+    }
+  }
+
+  /// Re-subscribe enabled topics when the app language changes.
+  Future<void> onLocaleChanged({
+    required String previousLocale,
+    required String newLocale,
+  }) async {
+    if (previousLocale == newLocale) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final topicConfigs = <(String prefKey, String baseTopic)>[
+      (prefAppGeneral, topicAppGeneral),
+      (prefMatchEvents, topicMatchEvents),
+      (prefMarketing, topicMarketing),
+    ];
+
+    for (final (prefKey, baseTopic) in topicConfigs) {
+      if (prefs.getBool(prefKey) ?? false) {
+        await _messaging.unsubscribeFromTopic(
+          topicWithLocale(baseTopic, previousLocale),
+        );
+        await _messaging.subscribeToTopic(
+          topicWithLocale(baseTopic, newLocale),
+        );
+      }
+    }
+
+    debugPrint('[FCM] Locale changed: $previousLocale -> $newLocale');
+    if (_fcmToken != null) {
+      await registerDevice(_fcmToken);
+    }
+  }
+
   Future<void> _subscribeAllTopics(SharedPreferences prefs) async {
-    await _messaging.subscribeToTopic(topicAppGeneral);
-    await _messaging.subscribeToTopic(topicMatchEvents);
-    await _messaging.subscribeToTopic(topicMarketing);
+    final locale = localeFromPrefs(prefs);
+    await _unsubscribeLegacyTopics();
+    await _messaging.subscribeToTopic(topicWithLocale(topicAppGeneral, locale));
+    await _messaging.subscribeToTopic(topicWithLocale(topicMatchEvents, locale));
+    await _messaging.subscribeToTopic(topicWithLocale(topicMarketing, locale));
     await prefs.setBool(prefAppGeneral, true);
     await prefs.setBool(prefMatchEvents, true);
     await prefs.setBool(prefMarketing, true);
+    debugPrint('[FCM] Subscribed all topics for locale=$locale');
+  }
+
+  Future<void> _syncEnabledTopicsFromPrefs(SharedPreferences prefs) async {
+    final locale = localeFromPrefs(prefs);
+    await _unsubscribeLegacyTopics();
+
+    final topicConfigs = <(String prefKey, String baseTopic)>[
+      (prefAppGeneral, topicAppGeneral),
+      (prefMatchEvents, topicMatchEvents),
+      (prefMarketing, topicMarketing),
+    ];
+
+    for (final (prefKey, baseTopic) in topicConfigs) {
+      final enabled = prefs.getBool(prefKey) ?? false;
+      final topic = topicWithLocale(baseTopic, locale);
+      if (enabled) {
+        await _messaging.subscribeToTopic(topic);
+        debugPrint('[FCM] Sync subscribe: $topic');
+      } else {
+        await _messaging.unsubscribeFromTopic(topic);
+        debugPrint('[FCM] Sync unsubscribe: $topic');
+      }
+    }
+  }
+
+  Future<void> _unsubscribeLegacyTopics() async {
+    await _messaging.unsubscribeFromTopic(topicAppGeneral);
+    await _messaging.unsubscribeFromTopic(topicMatchEvents);
+    await _messaging.unsubscribeFromTopic(topicMarketing);
+  }
+
+  Future<void> _unsubscribeAllTopicVariants() async {
+    await _unsubscribeLegacyTopics();
+    for (final locale in const ['ko', 'en']) {
+      for (final base in const [
+        topicAppGeneral,
+        topicMatchEvents,
+        topicMarketing,
+      ]) {
+        await _messaging.unsubscribeFromTopic(topicWithLocale(base, locale));
+      }
+    }
   }
 
   Future<void> _setAllTopicsOff(SharedPreferences prefs) async {
@@ -157,6 +281,8 @@ class FCMService {
 
     final jwt = await _getJwt();
     final headers = <String, String>{'Content-Type': 'application/json'};
+    final prefs = await SharedPreferences.getInstance();
+    final locale = localeFromPrefs(prefs);
 
     if (jwt != null && jwt.isNotEmpty) {
       headers['Authorization'] = 'Bearer $jwt';
@@ -173,7 +299,7 @@ class FCMService {
           'token': fcmToken,
           'platform': 'android',
           'appVersion': '0.1.2',
-          'locale': 'ko',
+          'locale': locale,
         },
         options: Options(headers: headers),
       );
@@ -252,6 +378,8 @@ class FCMService {
     final notification = message.notification;
     if (notification == null) return;
 
+    final payload = message.data.isNotEmpty ? jsonEncode(message.data) : null;
+
     _localNotifications.show(
       notification.hashCode,
       notification.title,
@@ -265,13 +393,64 @@ class FCMService {
           priority: Priority.high,
         ),
       ),
+      payload: payload,
     );
   }
 
-  /// Handle notification tap (background/terminated)
+  void _onLocalNotificationTap(NotificationResponse response) {
+    final payload = response.payload;
+    if (payload == null || payload.isEmpty) return;
+
+    try {
+      final decoded = jsonDecode(payload);
+      if (decoded is Map) {
+        navigateFromPushData(Map<String, dynamic>.from(decoded));
+      }
+    } catch (e) {
+      debugPrint('[FCM] Failed to parse notification payload: $e');
+    }
+  }
+
+  /// Handle notification tap (background)
   void _handleMessageOpenedApp(RemoteMessage message) {
     debugPrint('[FCM] opened: ${message.data}');
-    // TODO: navigate to match detail based on message.data
+    navigateFromPushData(message.data);
+  }
+
+  void navigateFromPushData(Map<String, dynamic> data) {
+    final type = data['type']?.toString();
+    if (type == 'topic') {
+      debugPrint('[FCM] Deep link: topic notification, no navigation');
+      return;
+    }
+    if (type != 'match_event') {
+      debugPrint('[FCM] Deep link: unknown type=$type');
+      return;
+    }
+
+    final sport = data['sport']?.toString();
+    final matchId = data['matchId']?.toString();
+    if (sport == null ||
+        sport.isEmpty ||
+        matchId == null ||
+        matchId.isEmpty) {
+      debugPrint('[FCM] Deep link: incomplete data=$data');
+      return;
+    }
+
+    debugPrint('[FCM] Deep link: sport=$sport, matchId=$matchId');
+
+    final path = switch (sport) {
+      'soccer' => '/analysis/soccer/match-report/$matchId',
+      'baseball' => '/analysis/baseball/match-report/$matchId',
+      _ => null,
+    };
+    if (path == null) {
+      debugPrint('[FCM] Deep link: unsupported sport=$sport');
+      return;
+    }
+
+    AppRouter.router.go(path);
   }
 
   /// Get JWT from multiple sources

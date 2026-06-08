@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -879,7 +878,7 @@ class _NotificationBottomSheetState extends State<_NotificationBottomSheet> {
 
   Future<void> _onToggleChanged({
     required String prefKey,
-    required String topic,
+    required String baseTopic,
     required bool value,
     required void Function(bool) updateState,
   }) async {
@@ -890,14 +889,11 @@ class _NotificationBottomSheetState extends State<_NotificationBottomSheet> {
     });
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      if (value) {
-        await FirebaseMessaging.instance.subscribeToTopic(topic);
-        await prefs.setBool(prefKey, true);
-      } else {
-        await FirebaseMessaging.instance.unsubscribeFromTopic(topic);
-        await prefs.setBool(prefKey, false);
-      }
+      await FCMService().setTopicEnabled(
+        baseTopic: baseTopic,
+        prefKey: prefKey,
+        enabled: value,
+      );
     } catch (_) {
       if (mounted) {
         setState(() => updateState(!value));
@@ -955,7 +951,7 @@ class _NotificationBottomSheetState extends State<_NotificationBottomSheet> {
                   onChanged: togglesEnabled
                       ? (v) => _onToggleChanged(
                             prefKey: FCMService.prefAppGeneral,
-                            topic: FCMService.topicAppGeneral,
+                            baseTopic: FCMService.topicAppGeneral,
                             value: v,
                             updateState: (val) => _appGeneral = val,
                           )
@@ -970,7 +966,7 @@ class _NotificationBottomSheetState extends State<_NotificationBottomSheet> {
                   onChanged: togglesEnabled
                       ? (v) => _onToggleChanged(
                             prefKey: FCMService.prefMatchEvents,
-                            topic: FCMService.topicMatchEvents,
+                            baseTopic: FCMService.topicMatchEvents,
                             value: v,
                             updateState: (val) => _matchEvents = val,
                           )
@@ -985,7 +981,7 @@ class _NotificationBottomSheetState extends State<_NotificationBottomSheet> {
                   onChanged: togglesEnabled
                       ? (v) => _onToggleChanged(
                             prefKey: FCMService.prefMarketing,
-                            topic: FCMService.topicMarketing,
+                            baseTopic: FCMService.topicMarketing,
                             value: v,
                             updateState: (val) => _marketing = val,
                           )

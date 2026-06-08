@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
+import 'package:trendsoccer/core/services/fcm_service.dart';
 
 enum AppLanguage { ko, en }
 
@@ -15,8 +16,17 @@ class LanguageNotifier extends Notifier<AppLanguage> {
   AppLanguage build() => _readLanguage(ref.read(sharedPreferencesProvider));
 
   Future<void> setLanguage(AppLanguage language) async {
+    final previousLocale = state.name;
+    if (previousLocale == language.name) return;
+
     state = language;
-    await ref.read(sharedPreferencesProvider).setString(_languageKey, language.name);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setString(_languageKey, language.name);
+    await FCMService().onLocaleChanged(
+      previousLocale: previousLocale,
+      newLocale: language.name,
+    );
   }
 }
 
