@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 
+import 'package:trendsoccer/core/utils/analysis_text_formatter.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_card.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_status_badge.dart';
@@ -143,7 +144,7 @@ class ComboParser {
   ) {
     if (aiAnalysis == null || aiAnalysis.isEmpty) return [];
 
-    final sections = aiAnalysis.split('\n\n');
+    final sections = formatComboAnalysisText(aiAnalysis).split('\n\n');
     final result = <ComboAiSection>[];
 
     final bracketRegex = RegExp(r'^\[(.+?)\]\s*(.*)$', dotAll: true);

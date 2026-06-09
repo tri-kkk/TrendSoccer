@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/analysis_text_formatter.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
@@ -153,7 +154,7 @@ class ComboCard extends StatelessWidget {
           ),
           const SizedBox(height: TsSpacing.xs),
           Text(
-            section.content,
+            formatComboAnalysisText(section.content),
             style: TsType.bodyMRegular.copyWith(
               color: colors.textPrimary,
               height: 18 / 12,
