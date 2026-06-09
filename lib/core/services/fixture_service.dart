@@ -42,6 +42,17 @@ class FixtureService {
         }
       }
 
+      final hasKoTeamNames = matches.any(
+        (match) =>
+            (match.homeTeamKo?.isNotEmpty ?? false) ||
+            (match.awayTeamKo?.isNotEmpty ?? false),
+      );
+      if (matches.isNotEmpty && !hasKoTeamNames) {
+        debugPrint(
+          '[FIXTURE] Soccer has no KO team names — API field needed',
+        );
+      }
+
       debugPrint('[FIXTURE] Soccer fixtures loaded: ${matches.length} matches');
       final dates = matches
           .map((match) {

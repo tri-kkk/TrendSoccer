@@ -8,6 +8,8 @@ class FixtureMatch {
     this.apiMatchId,
     required this.homeTeam,
     required this.awayTeam,
+    this.homeTeamKo,
+    this.awayTeamKo,
     this.homeTeamLogo,
     this.awayTeamLogo,
     required this.leagueCode,
@@ -27,6 +29,8 @@ class FixtureMatch {
   final int? apiMatchId;
   final String homeTeam;
   final String awayTeam;
+  final String? homeTeamKo;
+  final String? awayTeamKo;
   final String? homeTeamLogo;
   final String? awayTeamLogo;
   final String leagueCode;
@@ -58,6 +62,8 @@ class FixtureMatch {
       apiMatchId: apiMatchId,
       homeTeam: homeTeam,
       awayTeam: awayTeam,
+      homeTeamKo: homeTeamKo,
+      awayTeamKo: awayTeamKo,
       homeTeamLogo: homeTeamLogo,
       awayTeamLogo: awayTeamLogo,
       leagueCode: live.leagueCode?.isNotEmpty == true ? live.leagueCode! : leagueCode,
@@ -103,6 +109,15 @@ class FixtureMatch {
       );
     }
 
+    final homeTeam =
+        _readString(json, const ['home_team', 'homeTeam']) ??
+            _readTeamName(json, isHome: true);
+    final awayTeam =
+        _readString(json, const ['away_team', 'awayTeam']) ??
+            _readTeamName(json, isHome: false);
+    final homeTeamKo = _readTeamNameKo(json, isHome: true);
+    final awayTeamKo = _readTeamNameKo(json, isHome: false);
+
     return FixtureMatch(
       matchId: _parseInt(
             json['match_id'] ?? json['matchId'] ?? json['id'] ?? json['fixtureId'],
@@ -114,12 +129,10 @@ class FixtureMatch {
             json['externalId'] ??
             json['external_id'],
       ),
-      homeTeam:
-          _readString(json, const ['home_team', 'homeTeam']) ??
-              _readTeamName(json, isHome: true),
-      awayTeam:
-          _readString(json, const ['away_team', 'awayTeam']) ??
-              _readTeamName(json, isHome: false),
+      homeTeam: homeTeam,
+      awayTeam: awayTeam,
+      homeTeamKo: homeTeamKo,
+      awayTeamKo: awayTeamKo,
       homeTeamLogo: _nonEmptyOrNull(
         json['home_team_logo'] ??
             json['home_crest'] ??
@@ -422,6 +435,44 @@ String _readTeamName(Map<String, dynamic> json, {required bool isHome}) {
         'away',
       ]) ??
       '';
+}
+
+String? _readTeamNameKo(Map<String, dynamic> json, {required bool isHome}) {
+  if (isHome) {
+    final nested = _readMap(json, const ['home']);
+    final nestedKo = nested == null
+        ? null
+        : _readString(
+            nested,
+            const ['nameKo', 'name_ko', 'teamKo', 'team_ko'],
+          );
+    return _nonEmptyOrNull(
+      nestedKo ??
+          _readString(json, const [
+            'homeTeamKo',
+            'home_team_ko',
+            'home_team_name_ko',
+            'homeTeamNameKo',
+          ]),
+    );
+  }
+
+  final nested = _readMap(json, const ['away']);
+  final nestedKo = nested == null
+      ? null
+      : _readString(
+          nested,
+          const ['nameKo', 'name_ko', 'teamKo', 'team_ko'],
+        );
+  return _nonEmptyOrNull(
+    nestedKo ??
+        _readString(json, const [
+          'awayTeamKo',
+          'away_team_ko',
+          'away_team_name_ko',
+          'awayTeamNameKo',
+        ]),
+  );
 }
 
 DateTime? _parseDateTimeFromParts(String? date, String? time) {

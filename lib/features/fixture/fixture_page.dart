@@ -15,6 +15,7 @@ import 'package:trendsoccer/core/services/notification_service.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/baseball_status.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
@@ -618,8 +619,16 @@ class _FixturePageState extends ConsumerState<FixturePage>
         l10n: l10n,
         live: live,
       ),
-      homeTeam: match.homeTeam,
-      awayTeam: match.awayTeam,
+      homeTeam: localizedTeamName(
+        context,
+        match.homeTeam,
+        match.homeTeamKo,
+      ),
+      awayTeam: localizedTeamName(
+        context,
+        match.awayTeam,
+        match.awayTeamKo,
+      ),
       homeLogoUrl: match.homeTeamLogo,
       awayLogoUrl: match.awayTeamLogo,
       homeScore: _scoreText(match, isHome: true, isBaseball: isBaseball),
