@@ -329,11 +329,51 @@ final mlbPitcherStatsProvider =
 
   final apiMatchId = (match['id'] as num?)?.toInt() ?? matchId;
   final service = ref.read(baseballServiceProvider);
-  return service.getMlbPitcherStats(
-    matchId: apiMatchId,
-    homePitcherId: homePitcherId,
-    awayPitcherId: awayPitcherId,
+  final response = Map<String, dynamic>.from(
+    await service.getMlbPitcherStats(
+      matchId: apiMatchId,
+      homePitcherId: homePitcherId,
+      awayPitcherId: awayPitcherId,
+    ),
   );
+  final currentSeason = _readMatchSeasonYear(match);
+
+  var homePitcher = response['homePitcher'];
+  var awayPitcher = response['awayPitcher'];
+  final needsHomeFallback =
+      response['homePitcher'] == null && homePitcherId != null;
+  final needsAwayFallback =
+      response['awayPitcher'] == null && awayPitcherId != null;
+
+  if (needsHomeFallback || needsAwayFallback) {
+    debugPrint(
+      '[BASEBALL] MLB pitcher-stats null — falling back to MLB Stats API '
+      '(home=$homePitcherId, away=$awayPitcherId, season=$currentSeason)',
+    );
+    final homeId = homePitcherId;
+    final awayId = awayPitcherId;
+    final fallbackResults = await Future.wait<Map<String, dynamic>?>([
+      needsHomeFallback && homeId != null
+          ? service.fetchMlbSeasonStats(homeId, currentSeason)
+          : Future<Map<String, dynamic>?>.value(null),
+      needsAwayFallback && awayId != null
+          ? service.fetchMlbSeasonStats(awayId, currentSeason)
+          : Future<Map<String, dynamic>?>.value(null),
+    ]);
+    if (needsHomeFallback && fallbackResults[0] != null) {
+      homePitcher = fallbackResults[0];
+    }
+    if (needsAwayFallback && fallbackResults[1] != null) {
+      awayPitcher = fallbackResults[1];
+    }
+  }
+
+  return {
+    ...response,
+    'season': response['season'] ?? currentSeason,
+    'homePitcher': homePitcher,
+    'awayPitcher': awayPitcher,
+  };
 });
 
 final mlbPitcherStatsPrevProvider =
@@ -397,6 +437,16 @@ Map<String, dynamic>? _readStatsMap(Object? value) {
   if (value is Map<String, dynamic>) return value;
   if (value is Map) return Map<String, dynamic>.from(value);
   return null;
+}
+
+int _readMatchSeasonYear(Map<String, dynamic> match) {
+  final season = match['season'];
+  if (season is num) return season.toInt();
+  if (season is String) {
+    final parsed = int.tryParse(season.trim());
+    if (parsed != null) return parsed;
+  }
+  return DateTime.now().year;
 }
 
 String _statToString(Object? value) => value?.toString() ?? '';

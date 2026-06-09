@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -49,44 +49,36 @@ class _MenuPageState extends ConsumerState<MenuPage> {
     };
   }
 
-  String _planSubtitle(BuildContext context, AuthState state) {
-    final l10n = context.l10n;
-    return switch (state.planType) {
-      PlanType.none || PlanType.free => l10n.menuSubscribePrompt,
-      PlanType.trial => _formatTrialRemaining(context, state.trialExpiresAt),
-      PlanType.premium => _formatPremiumExpiry(context, state.premiumExpiresAt),
-    };
-  }
-
-  String _formatTrialRemaining(BuildContext context, DateTime? expiresAt) {
-    if (expiresAt == null) return '';
-    final l10n = context.l10n;
-    final remaining = expiresAt.difference(DateTime.now());
-    if (remaining.isNegative) return l10n.menuTrialExpired;
-    final hours = remaining.inHours;
-    final minutes = remaining.inMinutes % 60;
-    return l10n.menuTrialRemaining(hours, minutes);
-  }
-
-  String _formatPremiumExpiry(BuildContext context, DateTime? expiresAt) {
-    if (expiresAt == null) return '';
-    return context.l10n.menuPremiumExpiryDate(
-      DateFormat('yyyy.MM.dd').format(expiresAt),
+  Future<void> _openGooglePlaySubscriptionManagement() async {
+    final url = Uri.parse(
+      'https://play.google.com/store/account/subscriptions?package=com.trendsoccer.app',
     );
-  }
-
-  String _subscribeButtonLabel(BuildContext context, PlanType planType) {
-    final l10n = context.l10n;
-    return switch (planType) {
-      PlanType.none || PlanType.free => l10n.menuSubscribeFree,
-      PlanType.trial => l10n.menuSubscribeTrial,
-      PlanType.premium => l10n.menuSubscribeManage,
-    };
+    await launchUrl(url, mode: LaunchMode.externalApplication);
   }
 
   VoidCallback? _subscribeButtonTap(PlanType planType) {
+    if (planType == PlanType.premium) {
+      return () => unawaited(_openGooglePlaySubscriptionManagement());
+    }
     if (planType == PlanType.trial) return null;
     return () => navigateToSubscribe(context, ref);
+  }
+
+  DateTime? _planStartDate(SupabaseAuthProvider auth, PlanType planType) {
+    return switch (planType) {
+      PlanType.trial => auth.trialStartAt,
+      PlanType.premium => auth.premiumStartAt,
+      PlanType.none || PlanType.free => null,
+    };
+  }
+
+  DateTime? _planExpiryDate(SupabaseAuthProvider auth, PlanType planType) {
+    return switch (planType) {
+      PlanType.trial => auth.trialExpiryAt,
+      PlanType.premium =>
+        auth.subscriptionInfo?.expiresAt ?? auth.premiumExpiresAt,
+      PlanType.none || PlanType.free => null,
+    };
   }
 
   void _showThemeSheet(BuildContext context) {
@@ -465,8 +457,10 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                 const SizedBox(height: 16),
                 PlanTicket(
                   type: _planTicketType(auth.planType),
-                  subtitle: _planSubtitle(context, auth.state),
-                  buttonLabel: _subscribeButtonLabel(context, auth.planType),
+                  startDate: _planStartDate(auth, auth.planType),
+                  expiryDate: _planExpiryDate(auth, auth.planType),
+                  isCancellationPending: auth.planType == PlanType.premium &&
+                      (auth.subscriptionInfo?.isCancellationPending ?? false),
                   onButtonTap: _subscribeButtonTap(auth.planType),
                 ),
                 const SizedBox(height: 16),

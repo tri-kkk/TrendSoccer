@@ -475,11 +475,6 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     final showBottomBannerArea =
         showBottomAds && (_loadingBanners || _bottomBanners.isNotEmpty);
 
-    debugPrint(
-      '[TREND] Bottom banner: hasFullAccess=${auth.hasFullAccess}, '
-      'ads=${_bottomBanners.length}',
-    );
-
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
       body: SingleChildScrollView(
@@ -581,8 +576,16 @@ class _TrendSoccerCard extends StatelessWidget {
       ),
       leagueLogoUrl: match.league.icon,
       date: formatSoccerCardDate(match.matchDate),
-      homeTeam: localizedTeamName(context, match.homeTeam.name, null),
-      awayTeam: localizedTeamName(context, match.awayTeam.name, null),
+      homeTeam: localizedTeamName(
+        context,
+        match.homeTeam.name,
+        match.homeTeam.nameKo,
+      ),
+      awayTeam: localizedTeamName(
+        context,
+        match.awayTeam.name,
+        match.awayTeam.nameKo,
+      ),
       matchTime: match.matchTime,
       homeLogoUrl: match.homeTeam.logo,
       awayLogoUrl: match.awayTeam.logo,

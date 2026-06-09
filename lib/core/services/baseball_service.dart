@@ -27,6 +27,25 @@ class BaseballService {
     return lang;
   }
 
+  void _logPitcherStatsRequest(
+    String path,
+    Map<String, String> queryParameters,
+  ) {
+    final query = queryParameters.entries
+        .map(
+          (entry) =>
+              '${Uri.encodeQueryComponent(entry.key)}=${Uri.encodeQueryComponent(entry.value)}',
+        )
+        .join('&');
+    final baseUrl = _dio.options.baseUrl;
+    final normalizedBase =
+        baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    final normalizedPath = path.startsWith('/') ? path : '/$path';
+    debugPrint(
+      '[PITCHER] Stats API call: $normalizedBase$normalizedPath?$query',
+    );
+  }
+
   Future<Map<String, dynamic>> getPitcherAnalysis({
     required int matchId,
     required String homeTeam,
@@ -228,21 +247,39 @@ class BaseballService {
     int? awayPitcherId,
   }) async {
     try {
-      final params = <String, dynamic>{};
-      if (homePitcherId != null) params['homePitcherId'] = homePitcherId;
-      if (awayPitcherId != null) params['awayPitcherId'] = awayPitcherId;
-      debugPrint(
-        '[BASEBALL] MLB pitcher-stats request: homePitcherId=$homePitcherId, awayPitcherId=$awayPitcherId',
-      );
+      final language = _apiLanguage();
+      final queryParameters = <String, String>{
+        'language': language,
+        'matchId': matchId.toString(),
+      };
+      if (homePitcherId != null) {
+        queryParameters['homePitcherId'] = homePitcherId.toString();
+      }
+      if (awayPitcherId != null) {
+        queryParameters['awayPitcherId'] = awayPitcherId.toString();
+      }
+      const path = '/api/baseball/pitcher-stats';
+      _logPitcherStatsRequest(path, queryParameters);
       final response = await _dio.get<dynamic>(
-        '/api/baseball/pitcher-stats',
-        queryParameters: params,
+        path,
+        queryParameters: queryParameters,
       );
-      debugPrint('[BASEBALL] MLB pitcher-stats: success=${response.data?['success']}');
       final data = response.data;
-      if (data is Map<String, dynamic>) return data;
-      if (data is Map) return Map<String, dynamic>.from(data);
-      return {};
+      final map = data is Map<String, dynamic>
+          ? data
+          : data is Map
+              ? Map<String, dynamic>.from(data)
+              : <String, dynamic>{};
+      final homePitcher = map['homePitcher'];
+      final homeStrengths = homePitcher is Map
+          ? homePitcher['strengths']
+          : null;
+      debugPrint(
+        '[PITCHER] Stats response language: ${map['language'] ?? 'not specified'} '
+        '(requested: $language), '
+        'strengths: ${map['strengths'] ?? map['data']?['strengths'] ?? homeStrengths}',
+      );
+      return map;
     } catch (e) {
       debugPrint('[BASEBALL] MLB pitcher-stats error: $e');
       return {};
@@ -296,22 +333,41 @@ class BaseballService {
     required String awayTeam,
   }) async {
     try {
+      final language = _apiLanguage();
+      const path = '/api/baseball/kbo-pitcher-stats';
+      final queryParameters = <String, String>{
+        'league': league.toLowerCase(),
+        'season': '2026',
+        'homePitcher': homePitcher,
+        'awayPitcher': awayPitcher,
+        'homeTeam': homeTeam,
+        'awayTeam': awayTeam,
+        'language': language,
+      };
+      _logPitcherStatsRequest(path, queryParameters);
       final response = await _dio.get<dynamic>(
-        '/api/baseball/kbo-pitcher-stats',
-        queryParameters: <String, String>{
-          'league': league.toLowerCase(),
-          'season': '2026',
-          'homePitcher': homePitcher,
-          'awayPitcher': awayPitcher,
-          'homeTeam': homeTeam,
-          'awayTeam': awayTeam,
-        },
+        path,
+        queryParameters: queryParameters,
       );
-      debugPrint('[BASEBALL] KBO/NPB pitcher stats: ${response.data?.keys}');
+      debugPrint(
+        '[BASEBALL] KBO/NPB pitcher stats (lang=$language): ${response.data?.keys}',
+      );
       final data = response.data;
-      if (data is Map<String, dynamic>) return data;
-      if (data is Map) return Map<String, dynamic>.from(data);
-      return {};
+      final map = data is Map<String, dynamic>
+          ? data
+          : data is Map
+              ? Map<String, dynamic>.from(data)
+              : <String, dynamic>{};
+      final homePitcherData = map['homePitcher'];
+      final homeStrengths = homePitcherData is Map
+          ? homePitcherData['strengths']
+          : null;
+      debugPrint(
+        '[PITCHER] Stats response language: ${map['language'] ?? 'not specified'} '
+        '(requested: $language), '
+        'strengths: ${map['strengths'] ?? map['data']?['strengths'] ?? homeStrengths}',
+      );
+      return map;
     } catch (e) {
       debugPrint('[BASEBALL] KBO/NPB pitcher stats error: $e');
       return {};

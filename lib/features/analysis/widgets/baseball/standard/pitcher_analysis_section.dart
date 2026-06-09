@@ -3,29 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/utils/analysis_text_formatter.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 
-String formatPitcherAnalysisParagraphs(String text) {
-  if (text.isEmpty) return text;
-
-  text = text.replaceAll(r'\n', '\n');
-
-  if (text.contains('\n') &&
-      text.split('\n').where((segment) => segment.trim().isNotEmpty).length >
-          1) {
-    return text.trim();
-  }
-
-  final formatted = text.replaceAllMapped(
-    RegExp(r'(다\.\s)(?=\S)'),
-    (match) => '다.\n\n',
-  );
-
-  return formatted.trim();
-}
-
 List<String> _splitAnalysisParagraphs(String text) {
-  return formatPitcherAnalysisParagraphs(text)
+  return formatAnalysisText(text)
       .split('\n')
       .map((part) => part.trim())
       .where((part) => part.isNotEmpty)

@@ -806,6 +806,18 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get subscriptionCancelPending => '구독 해지 예정';
+
+  @override
+  String get subscriptionExpiryDate => '만료 예정';
+
+  @override
+  String get subscriptionStartDate => '구독 시작';
+
+  @override
+  String get subscriptionNextBilling => '다음 결제일';
+
+  @override
   String get menuPrivacyPolicy => '개인정보처리방침';
 
   @override
@@ -911,16 +923,59 @@ class AppLocalizationsKo extends AppLocalizations {
   String get pitcherTbd => '미정';
 
   @override
+  String planTicketExpiryDate(String date) {
+    return '구독 만료일 : $date';
+  }
+
+  @override
+  String planTicketExpiryPendingDate(String date) {
+    return '만료 예정일 : $date';
+  }
+
+  @override
   String get planTicketFree => '무료 플랜';
+
+  @override
+  String get planTicketFreeTitle => '무료 플랜';
 
   @override
   String get planTicketPremium => '프리미엄 플랜';
 
   @override
+  String get planTicketPremiumTitle => '프리미엄 플랜';
+
+  @override
+  String get planTicketManage => '구독 관리하기';
+
+  @override
   String get planTicketRenew => '구독 연장하기';
 
   @override
+  String get planTicketStart => '구독 시작하기';
+
+  @override
+  String get planTicketTrialEnded => '체험 종료';
+
+  @override
+  String planTicketTrialRemaining(int hours, int minutes) {
+    return '$hours시간 $minutes분 남음';
+  }
+
+  @override
+  String planTicketStartDate(String date) {
+    return '구독 시작일 : $date';
+  }
+
+  @override
   String get planTicketTrial => '무료 체험 플랜';
+
+  @override
+  String planTicketTrialStartDate(String date) {
+    return '체험 시작일 : $date';
+  }
+
+  @override
+  String get planTicketTrialTitle => '체험 플랜';
 
   @override
   String get planTicketUpgrade => '구독 업그레이드';

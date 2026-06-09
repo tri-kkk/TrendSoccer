@@ -69,6 +69,7 @@ double? _flatPredictionConfidence(Map<String, dynamic> json) {
 class TeamInfo {
   const TeamInfo({
     required this.name,
+    this.nameKo,
     this.logo,
     this.id,
   });
@@ -82,6 +83,10 @@ class TeamInfo {
           json is Map<String, dynamic> ? json : Map<String, dynamic>.from(json);
       return TeamInfo(
         name: _readString(map, const ['name', 'teamName', 'team_name']) ?? '',
+        nameKo: _readString(
+          map,
+          const ['nameKo', 'name_ko', 'teamKo', 'team_ko'],
+        ),
         logo: _readString(map, const ['logo', 'logoUrl', 'logo_url', 'image']),
         id: _parseInt(
           map['id'] ?? map['teamId'] ?? map['team_id'],
@@ -92,6 +97,7 @@ class TeamInfo {
   }
 
   final String name;
+  final String? nameKo;
   final String? logo;
   final int? id;
 }
@@ -295,6 +301,10 @@ class SoccerMatch {
         apiMatchId: matchId,
         homeTeam: TeamInfo(
           name: homeValue is String ? homeValue : '',
+          nameKo: _readString(
+            json,
+            const ['home_team_ko', 'homeTeamKo', 'home_team_name_ko'],
+          ),
           logo: _readString(
             json,
             const ['home_team_logo', 'homeTeamLogo', 'homeLogo'],
@@ -303,6 +313,10 @@ class SoccerMatch {
         ),
         awayTeam: TeamInfo(
           name: awayValue is String ? awayValue : '',
+          nameKo: _readString(
+            json,
+            const ['away_team_ko', 'awayTeamKo', 'away_team_name_ko'],
+          ),
           logo: _readString(
             json,
             const ['away_team_logo', 'awayTeamLogo', 'awayLogo'],
@@ -389,19 +403,43 @@ class SoccerMatch {
         ) ??
         '';
 
-    return SoccerMatch(
-      matchId: matchId,
-      apiMatchId: apiMatchId,
-      homeTeam: homeJson == null
+    TeamInfo teamWithKoFallback(
+      TeamInfo team, {
+      required List<String> koKeys,
+    }) {
+      if (team.nameKo != null) return team;
+      final ko = _readString(json, koKeys);
+      if (ko == null) return team;
+      return TeamInfo(
+        name: team.name,
+        nameKo: ko,
+        logo: team.logo,
+        id: team.id,
+      );
+    }
+
+    final homeTeam = teamWithKoFallback(
+      homeJson == null
           ? (homeValue != null
               ? TeamInfo.fromJson(homeValue)
               : const TeamInfo(name: ''))
           : TeamInfo.fromJson(homeJson),
-      awayTeam: awayJson == null
+      koKeys: const ['home_team_ko', 'homeTeamKo', 'home_team_name_ko'],
+    );
+    final awayTeam = teamWithKoFallback(
+      awayJson == null
           ? (awayValue != null
               ? TeamInfo.fromJson(awayValue)
               : const TeamInfo(name: ''))
           : TeamInfo.fromJson(awayJson),
+      koKeys: const ['away_team_ko', 'awayTeamKo', 'away_team_name_ko'],
+    );
+
+    return SoccerMatch(
+      matchId: matchId,
+      apiMatchId: apiMatchId,
+      homeTeam: homeTeam,
+      awayTeam: awayTeam,
       league: leagueJson == null
           ? const LeagueInfo(id: 0, name: '')
           : LeagueInfo.fromJson(leagueJson),
@@ -516,4 +554,12 @@ class SoccerAnalysisCard {
   final SoccerOdds? odds;
   final String? grade;
   final SoccerPrediction? prediction;
+
+  String get homeTeam => match.homeTeam.name;
+
+  String get awayTeam => match.awayTeam.name;
+
+  String? get homeTeamKo => match.homeTeam.nameKo;
+
+  String? get awayTeamKo => match.awayTeam.nameKo;
 }

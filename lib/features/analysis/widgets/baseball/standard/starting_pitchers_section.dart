@@ -7,6 +7,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/shared/widgets/baseball/pitcher_comment_chip.dart';
 import 'package:trendsoccer/shared/widgets/baseball/position_chip.dart';
@@ -15,6 +16,7 @@ import 'package:trendsoccer/shared/widgets/baseball/season_chip.dart';
 class PitcherData {
   const PitcherData({
     required this.name,
+    this.nameKo,
     required this.pitcherType,
     this.teamLogoUrl,
     this.pitcherId,
@@ -36,6 +38,7 @@ class PitcherData {
   });
 
   final String name;
+  final String? nameKo;
   final String pitcherType;
   final String? teamLogoUrl;
   final int? pitcherId;
@@ -91,6 +94,10 @@ class StartingPitchersSection extends ConsumerWidget {
     required this.awayPitcherName,
     required this.awayPitcher,
     required this.homePitcher,
+    this.homePitcherLookupName,
+    this.awayPitcherLookupName,
+    this.homeTeamLookupName,
+    this.awayTeamLookupName,
     super.key,
   });
 
@@ -101,6 +108,10 @@ class StartingPitchersSection extends ConsumerWidget {
   final String awayTeam;
   final String homePitcherName;
   final String awayPitcherName;
+  final String? homePitcherLookupName;
+  final String? awayPitcherLookupName;
+  final String? homeTeamLookupName;
+  final String? awayTeamLookupName;
   final PitcherData awayPitcher;
   final PitcherData homePitcher;
 
@@ -133,6 +144,10 @@ class StartingPitchersSection extends ConsumerWidget {
 
     Map<String, dynamic>? homePrevRaw;
     Map<String, dynamic>? awayPrevRaw;
+    List<String> homeStrengths = const [];
+    List<String> homeWeaknesses = const [];
+    List<String> awayStrengths = const [];
+    List<String> awayWeaknesses = const [];
 
     if (_isMlb) {
       final statsData = switch (ref.watch(mlbPitcherStatsProvider(matchId))) {
@@ -140,17 +155,34 @@ class StartingPitchersSection extends ConsumerWidget {
         _ => null,
       };
       if (statsData != null) {
+        final home = statsData['homePitcher'];
+        final away = statsData['awayPitcher'];
+        if (home is Map) {
+          homeStrengths = (home['strengths'] as List?)?.cast<String>() ?? [];
+          homeWeaknesses = (home['weakness'] as List?)?.cast<String>() ??
+              (home['weaknesses'] as List?)?.cast<String>() ??
+              [];
+        }
+        if (away is Map) {
+          awayStrengths = (away['strengths'] as List?)?.cast<String>() ?? [];
+          awayWeaknesses = (away['weakness'] as List?)?.cast<String>() ??
+              (away['weaknesses'] as List?)?.cast<String>() ??
+              [];
+        }
+
         final homeRaw = statsData['homePitcher'];
         final awayRaw = statsData['awayPitcher'];
         homeDisplay = _mergeMlbPitcherStats(
           l10n,
           homeDisplay,
           homeRaw is Map ? Map<String, dynamic>.from(homeRaw) : null,
+          preferEnglishChips: !isKoreanLocale(context),
         );
         awayDisplay = _mergeMlbPitcherStats(
           l10n,
           awayDisplay,
           awayRaw is Map ? Map<String, dynamic>.from(awayRaw) : null,
+          preferEnglishChips: !isKoreanLocale(context),
         );
         final rootSeason = _readSeasonField(statsData['season']);
         if (rootSeason != null) {
@@ -184,15 +216,16 @@ class StartingPitchersSection extends ConsumerWidget {
         );
       }
     } else if (_isAsianLeague) {
+      final preferEnglishChips = !isKoreanLocale(context);
       final statsData = switch (
         ref.watch(
           baseballPitcherStatsProvider(
             (
               league: leagueCode.toLowerCase(),
-              homePitcher: homePitcherName,
-              awayPitcher: awayPitcherName,
-              homeTeam: homeTeam,
-              awayTeam: awayTeam,
+              homePitcher: homePitcherLookupName ?? homePitcherName,
+              awayPitcher: awayPitcherLookupName ?? awayPitcherName,
+              homeTeam: homeTeamLookupName ?? homeTeam,
+              awayTeam: awayTeamLookupName ?? awayTeam,
             ),
           ),
         )
@@ -201,6 +234,21 @@ class StartingPitchersSection extends ConsumerWidget {
         _ => null,
       };
       if (statsData != null) {
+        final home = statsData['homePitcher'];
+        final away = statsData['awayPitcher'];
+        if (home is Map) {
+          homeStrengths = (home['strengths'] as List?)?.cast<String>() ?? [];
+          homeWeaknesses = (home['weakness'] as List?)?.cast<String>() ??
+              (home['weaknesses'] as List?)?.cast<String>() ??
+              [];
+        }
+        if (away is Map) {
+          awayStrengths = (away['strengths'] as List?)?.cast<String>() ?? [];
+          awayWeaknesses = (away['weakness'] as List?)?.cast<String>() ??
+              (away['weaknesses'] as List?)?.cast<String>() ??
+              [];
+        }
+
         final homeCurrentRaw = statsData['homePitcher'];
         final awayCurrentRaw = statsData['awayPitcher'];
         homeDisplay = _mergeKboPitcherStats(
@@ -208,18 +256,14 @@ class StartingPitchersSection extends ConsumerWidget {
           homeCurrentRaw is Map
               ? Map<String, dynamic>.from(homeCurrentRaw)
               : null,
+          preferEnglishChips: preferEnglishChips,
         );
         awayDisplay = _mergeKboPitcherStats(
           awayDisplay,
           awayCurrentRaw is Map
               ? Map<String, dynamic>.from(awayCurrentRaw)
               : null,
-        );
-        debugPrint(
-          '[BASEBALL] KBO pitcher chips: home strengths=${homeDisplay.strengths.length}, weakness=${homeDisplay.weaknesses.length}',
-        );
-        debugPrint(
-          '[BASEBALL] KBO pitcher chips: away strengths=${awayDisplay.strengths.length}, weakness=${awayDisplay.weaknesses.length}',
+          preferEnglishChips: preferEnglishChips,
         );
 
         final homeRaw = statsData['homePitcherPrev'];
@@ -314,6 +358,8 @@ class StartingPitchersSection extends ConsumerWidget {
                         leagueCode: leagueCode,
                         pitcher: homeDisplay,
                         isHome: true,
+                        directStrengths: homeStrengths,
+                        directWeaknesses: homeWeaknesses,
                       ).buildCommentChips(context),
                     ),
                     Expanded(
@@ -321,6 +367,8 @@ class StartingPitchersSection extends ConsumerWidget {
                         leagueCode: leagueCode,
                         pitcher: awayDisplay,
                         isHome: false,
+                        directStrengths: awayStrengths,
+                        directWeaknesses: awayWeaknesses,
                       ).buildCommentChips(context),
                     ),
                   ],
@@ -401,12 +449,16 @@ class _PitcherSide {
     required this.pitcher,
     required this.isHome,
     this.previousSeasonStatsRaw,
+    this.directStrengths,
+    this.directWeaknesses,
   });
 
   final String leagueCode;
   final PitcherData pitcher;
   final bool isHome;
   final Map<String, dynamic>? previousSeasonStatsRaw;
+  final List<String>? directStrengths;
+  final List<String>? directWeaknesses;
 
   static const _handednessLineHeight = 17.0;
   static const _emblemSize = 80.0;
@@ -423,7 +475,8 @@ class _PitcherSide {
   String get _previousSeasonLabel =>
       pitcher.prevSeason ?? '${DateTime.now().year - 1}';
 
-  bool get _isTbd => isPitcherNameTbd(pitcher.name);
+  bool get _isTbd =>
+      isPitcherNameTbd(pitcher.name) && isPitcherNameTbd(pitcher.nameKo);
 
   static Widget sectionDivider(TsSemanticColors semantic) {
     return Container(
@@ -436,9 +489,14 @@ class _PitcherSide {
   Widget buildProfile(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final l10n = context.l10n;
-    final displayName = displayPitcherName(l10n, pitcher.name);
+    final localizedName = localizedPitcherName(
+      context,
+      pitcher.name,
+      pitcher.nameKo,
+    );
+    final displayName = displayPitcherName(l10n, localizedName);
     final showHandedness = shouldShowPitcherHandedness(
-      pitcherName: pitcher.name,
+      pitcherName: localizedName,
       pitcherType: pitcher.pitcherType,
       l10n: l10n,
     );
@@ -522,12 +580,14 @@ class _PitcherSide {
   }
 
   Widget buildCommentChips(BuildContext context) {
+    final strengthsSource = directStrengths ?? pitcher.strengths;
+    final weaknessesSource = directWeaknesses ?? pitcher.weaknesses;
     final displayStrengths = _isTbd || !_showCommentChips
         ? const <String>[]
-        : pitcher.strengths.map(stripParenthetical).toList();
+        : strengthsSource.map(stripParenthetical).toList();
     final displayWeaknesses = _isTbd || !_showCommentChips
         ? const <String>[]
-        : pitcher.weaknesses.map(stripParenthetical).toList();
+        : weaknessesSource.map(stripParenthetical).toList();
 
     final chipWidgets = <Widget>[
       for (final text in displayStrengths)
@@ -774,48 +834,191 @@ List<String> _mlbStringList(Object? raw) {
       .toList();
 }
 
+List<String> _englishChipKeys(String singularKey) {
+  return switch (singularKey) {
+    'strength' => const [
+        'strengthsEn',
+        'strengths_en',
+        'strengthEn',
+        'strength_en',
+      ],
+    'weakness' => const [
+        'weaknessesEn',
+        'weaknesses_en',
+        'weaknessEn',
+        'weakness_en',
+      ],
+    _ => <String>[
+        '${singularKey}sEn',
+        '${singularKey}s_en',
+        '${singularKey}En',
+        '${singularKey}_en',
+      ],
+  };
+}
+
+List<String> _localizedChipList(
+  Map<String, dynamic> stats, {
+  required String singularKey,
+  required bool preferEnglish,
+}) {
+  final localized = _mlbStringList(
+    stats['${singularKey}s'] ??
+        stats[singularKey] ??
+        stats['${singularKey}es'],
+  );
+
+  List<String> english = const [];
+  for (final key in _englishChipKeys(singularKey)) {
+    english = _mlbStringList(stats[key]);
+    if (english.isNotEmpty) break;
+  }
+
+  if (preferEnglish) {
+    if (english.isNotEmpty) return english;
+    return localized;
+  }
+  if (localized.isNotEmpty) return localized;
+  return english;
+}
+
+List<String> _mergePitcherChipList({
+  required List<String> fromStats,
+  required List<String> fromBase,
+}) {
+  if (fromStats.isNotEmpty) return fromStats;
+  return fromBase;
+}
+
+Map<String, dynamic> _normalizePitcherStatsMap(Map<String, dynamic>? stats) {
+  if (stats == null || stats.isEmpty) return const {};
+
+  var merged = Map<String, dynamic>.from(stats);
+  for (final key in const ['data', 'current', 'seasonStats', 'stats']) {
+    final nested = stats[key];
+    if (nested is Map) {
+      merged = {
+        ...Map<String, dynamic>.from(nested),
+        ...merged,
+      };
+    }
+  }
+  return merged;
+}
+
+List<String> _mlbPitcherChips(
+  Map<String, dynamic> stats, {
+  required String singularKey,
+  required bool preferEnglish,
+}) {
+  final normalized = _normalizePitcherStatsMap(stats);
+  final chips = _localizedChipList(
+    normalized,
+    singularKey: singularKey,
+    preferEnglish: preferEnglish,
+  );
+  if (chips.isNotEmpty) return chips;
+
+  // Preserve pre-i18n direct reads for flat pitcher-stats payloads.
+  return _localizedChipList(
+    stats,
+    singularKey: singularKey,
+    preferEnglish: preferEnglish,
+  );
+}
+
+Object? _readPitcherStatValue(Map<String, dynamic> stats, String key) {
+  final variants = switch (key) {
+    'era' => const ['era', 'ERA'],
+    'whip' => const ['whip', 'WHIP'],
+    'wins' => const ['wins', 'W'],
+    'losses' => const ['losses', 'L'],
+    'strikeouts' => const ['strikeouts', 'strikeOuts', 'k', 'K'],
+    'strikeoutsPer9Inn' => const [
+        'strikeoutsPer9Inn',
+        'k9',
+        'K9',
+        'strikeouts_per_9_inn',
+      ],
+    'inningsPitched' => const ['inningsPitched', 'ip', 'IP', 'innings_pitched'],
+    'strikeOuts' => const ['strikeOuts', 'strikeouts', 'k', 'K'],
+    _ => <String>[key],
+  };
+  for (final variant in variants) {
+    if (stats.containsKey(variant)) return stats[variant];
+  }
+  return null;
+}
+
 PitcherData _mergeKboPitcherStats(
   PitcherData base,
-  Map<String, dynamic>? stats,
-) {
+  Map<String, dynamic>? stats, {
+  bool preferEnglishChips = false,
+}) {
   if (stats == null || stats.isEmpty) return base;
 
-  final strengths = _mlbStringList(stats['strengths']);
-  final weaknesses = _mlbStringList(stats['weakness'] ?? stats['weaknesses']);
-  final name = (stats['name'] as String?)?.trim();
-  final summary = (stats['summary'] as String?)?.trim();
-  final wins = (stats['wins'] as num?)?.toInt();
-  final losses = (stats['losses'] as num?)?.toInt();
+  final normalized = _normalizePitcherStatsMap(stats);
+  final strengths = _mlbPitcherChips(
+    stats,
+    singularKey: 'strength',
+    preferEnglish: preferEnglishChips,
+  );
+  final weaknesses = _mlbPitcherChips(
+    stats,
+    singularKey: 'weakness',
+    preferEnglish: preferEnglishChips,
+  );
+  final name = (normalized['name'] as String?)?.trim();
+  final summary = (preferEnglishChips
+          ? (normalized['summaryEn'] ?? normalized['summary_en']) as String?
+          : null)
+      ?.trim() ??
+      (normalized['summary'] as String?)?.trim();
+  final wins = (_readPitcherStatValue(normalized, 'wins') as num?)?.toInt();
+  final losses = (_readPitcherStatValue(normalized, 'losses') as num?)?.toInt();
+  final eraRaw = _readPitcherStatValue(normalized, 'era');
+  final whipRaw = _readPitcherStatValue(normalized, 'whip');
+  final k9Raw = _readPitcherStatValue(normalized, 'strikeoutsPer9Inn') ??
+      _readPitcherStatValue(normalized, 'k9');
+  final ipRaw = _readPitcherStatValue(normalized, 'inningsPitched');
+  final kRaw = _readPitcherStatValue(normalized, 'strikeouts');
+
+  final mergedEra = eraRaw != null ? _formatMlbStat(eraRaw, decimals: 2) : base.era;
+  final mergedWhip =
+      whipRaw != null ? _formatMlbStat(whipRaw, decimals: 2) : base.whip;
+  final mergedK9 = k9Raw != null ? _formatMlbStat(k9Raw, decimals: 1) : base.k9;
+  final mergedWl = wins != null || losses != null
+      ? '${wins ?? 0}-${losses ?? 0}'
+      : base.wl;
+  final mergedIp = ipRaw != null ? _formatMlbIp(ipRaw) : base.ip;
+  final mergedK = kRaw != null ? _formatMlbK(kRaw) : base.k;
 
   return PitcherData(
-    name: name != null && name.isNotEmpty ? name : base.name,
+    name: preferEnglishChips
+        ? base.name
+        : (name != null && name.isNotEmpty ? name : base.name),
+    nameKo: base.nameKo,
     pitcherType: base.pitcherType,
     teamLogoUrl: base.teamLogoUrl,
     pitcherId: base.pitcherId,
     photoUrl: base.photoUrl,
-    era: stats.containsKey('era')
-        ? _formatMlbStat(stats['era'], decimals: 2)
-        : base.era,
-    whip: stats.containsKey('whip')
-        ? _formatMlbStat(stats['whip'], decimals: 2)
-        : base.whip,
-    k9: stats.containsKey('strikeoutsPer9Inn')
-        ? _formatMlbStat(stats['strikeoutsPer9Inn'], decimals: 1)
-        : base.k9,
-    wl: wins != null || losses != null
-        ? '${wins ?? 0}-${losses ?? 0}'
-        : base.wl,
-    ip: stats.containsKey('inningsPitched')
-        ? _formatMlbIp(stats['inningsPitched'])
-        : base.ip,
-    k: stats.containsKey('strikeouts')
-        ? _formatMlbK(stats['strikeouts'])
-        : base.k,
+    era: mergedEra,
+    whip: mergedWhip,
+    k9: mergedK9,
+    wl: mergedWl,
+    ip: mergedIp,
+    k: mergedK,
     prevWl: base.prevWl,
     prevIp: base.prevIp,
     prevK: base.prevK,
-    strengths: strengths.isNotEmpty ? strengths : base.strengths,
-    weaknesses: weaknesses.isNotEmpty ? weaknesses : base.weaknesses,
+    strengths: _mergePitcherChipList(
+      fromStats: strengths,
+      fromBase: base.strengths,
+    ),
+    weaknesses: _mergePitcherChipList(
+      fromStats: weaknesses,
+      fromBase: base.weaknesses,
+    ),
     summary: summary?.isNotEmpty == true ? summary : base.summary,
     season: base.season,
     prevSeason: base.prevSeason,
@@ -825,38 +1028,77 @@ PitcherData _mergeKboPitcherStats(
 PitcherData _mergeMlbPitcherStats(
   AppLocalizations l10n,
   PitcherData base,
-  Map<String, dynamic>? stats,
-) {
+  Map<String, dynamic>? stats, {
+  bool preferEnglishChips = false,
+}) {
   if (stats == null || stats.isEmpty) return base;
 
-  final strengths = _mlbStringList(stats['strengths']);
-  final weaknesses = _mlbStringList(stats['weakness'] ?? stats['weaknesses']);
-  final name = (stats['fullName'] as String?)?.trim();
-  final summary = (stats['summary'] as String?)?.trim();
-  final photo = (stats['photo'] as String?)?.trim();
-  final playerId = (stats['playerId'] as num?)?.toInt();
+  final normalized = _normalizePitcherStatsMap(stats);
+  final strengths = _mlbPitcherChips(
+    stats,
+    singularKey: 'strength',
+    preferEnglish: preferEnglishChips,
+  );
+  final weaknesses = _mlbPitcherChips(
+    stats,
+    singularKey: 'weakness',
+    preferEnglish: preferEnglishChips,
+  );
+  final name = (normalized['fullName'] as String?)?.trim();
+  final summary = (preferEnglishChips
+          ? (normalized['summaryEn'] ?? normalized['summary_en']) as String?
+          : null)
+      ?.trim() ??
+      (normalized['summary'] as String?)?.trim();
+  final photo = (normalized['photo'] as String?)?.trim();
+  final playerId = (normalized['playerId'] as num?)?.toInt();
   final resolvedPhoto = photo != null && photo.isNotEmpty
       ? optimizeMlbPhotoUrl(photo)
       : base.photoUrl;
 
+  final mergedEra =
+      _formatMlbStat(_readPitcherStatValue(normalized, 'era'), decimals: 2);
+  final mergedWhip =
+      _formatMlbStat(_readPitcherStatValue(normalized, 'whip'), decimals: 2);
+  final mergedK9 = _formatMlbStat(
+    _readPitcherStatValue(normalized, 'strikeoutsPer9Inn'),
+    decimals: 1,
+  );
+  final mergedWl =
+      '${(_readPitcherStatValue(normalized, 'wins') as num?)?.toInt() ?? 0}-${(_readPitcherStatValue(normalized, 'losses') as num?)?.toInt() ?? 0}';
+  final mergedIp =
+      _formatMlbIp(_readPitcherStatValue(normalized, 'inningsPitched'));
+  final mergedK = _formatMlbK(
+    _readPitcherStatValue(normalized, 'strikeOuts') ??
+        _readPitcherStatValue(normalized, 'strikeouts'),
+  );
+
   return PitcherData(
-    name: name != null && name.isNotEmpty ? name : base.name,
-    pitcherType: _mlbThrowingHandLabel(l10n, stats['throwingHand']),
+    name: preferEnglishChips
+        ? base.name
+        : (name != null && name.isNotEmpty ? name : base.name),
+    nameKo: base.nameKo,
+    pitcherType: _mlbThrowingHandLabel(l10n, normalized['throwingHand']),
     teamLogoUrl: base.teamLogoUrl,
     pitcherId: playerId ?? base.pitcherId,
     photoUrl: resolvedPhoto,
-    era: _formatMlbStat(stats['era'], decimals: 2),
-    whip: _formatMlbStat(stats['whip'], decimals: 2),
-    k9: _formatMlbStat(stats['strikeoutsPer9Inn'], decimals: 1),
-    wl:
-        '${(stats['wins'] as num?)?.toInt() ?? 0}-${(stats['losses'] as num?)?.toInt() ?? 0}',
-    ip: _formatMlbIp(stats['inningsPitched']),
-    k: _formatMlbK(stats['strikeOuts']),
+    era: mergedEra,
+    whip: mergedWhip,
+    k9: mergedK9,
+    wl: mergedWl,
+    ip: mergedIp,
+    k: mergedK,
     prevWl: base.prevWl,
     prevIp: base.prevIp,
     prevK: base.prevK,
-    strengths: strengths.isNotEmpty ? strengths : base.strengths,
-    weaknesses: weaknesses.isNotEmpty ? weaknesses : base.weaknesses,
+    strengths: _mergePitcherChipList(
+      fromStats: strengths,
+      fromBase: base.strengths,
+    ),
+    weaknesses: _mergePitcherChipList(
+      fromStats: weaknesses,
+      fromBase: base.weaknesses,
+    ),
     summary: summary?.isNotEmpty == true ? summary : base.summary,
     season: base.season,
     prevSeason: base.prevSeason,
@@ -876,6 +1118,7 @@ PitcherData _withSeasonLabels(
 }) {
   return PitcherData(
     name: base.name,
+    nameKo: base.nameKo,
     pitcherType: base.pitcherType,
     teamLogoUrl: base.teamLogoUrl,
     pitcherId: base.pitcherId,

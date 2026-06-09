@@ -14,6 +14,7 @@ void invalidateBaseballLanguageDependentProviders(Ref ref) {
   ref.invalidate(baseballHomeTeamStatsProvider);
   ref.invalidate(baseballAwayTeamStatsProvider);
   ref.invalidate(baseballH2HProvider);
+  // KBO/NPB + MLB pitcher stats (family providers; clears cached chip language).
   ref.invalidate(baseballPitcherStatsProvider);
   ref.invalidate(mlbPitcherStatsProvider);
   ref.invalidate(mlbPitcherStatsPrevProvider);

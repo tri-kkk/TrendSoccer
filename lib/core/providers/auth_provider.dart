@@ -24,24 +24,59 @@ final authProvider = ChangeNotifierProvider<SupabaseAuthProvider>(
   (ref) => SupabaseAuthProvider(ref),
 );
 
-class _ProfileSubscriptionInfo {
-  const _ProfileSubscriptionInfo({this.status, this.expiresAt});
+class SubscriptionInfo {
+  const SubscriptionInfo({
+    this.status,
+    this.expiresAt,
+    this.nextBillingDate,
+    this.startedAt,
+    this.autoRenewing = true,
+    this.cancelledAt,
+  });
 
   final String? status;
   final DateTime? expiresAt;
+  final DateTime? nextBillingDate;
+  final DateTime? startedAt;
+  final bool autoRenewing;
+  final DateTime? cancelledAt;
 
-  static _ProfileSubscriptionInfo? fromJson(Object? raw) {
+  bool get isCancellationPending =>
+      cancelledAt != null || !autoRenewing;
+
+  static SubscriptionInfo? fromJson(Object? raw) {
     if (raw is! Map) return null;
     final map = raw is Map<String, dynamic>
         ? raw
         : Map<String, dynamic>.from(raw);
+
     final expiresRaw = map['expiresAt'] ?? map['expires_at'];
-    return _ProfileSubscriptionInfo(
+    final nextBillingRaw = map['nextBillingDate'] ??
+        map['next_billing_date'] ??
+        map['nextBillingAt'] ??
+        map['next_billing_at'];
+    final startedAtRaw = map['startedAt'] ??
+        map['started_at'] ??
+        map['startDate'] ??
+        map['start_date'];
+    final cancelledAtRaw = map['cancelledAt'] ?? map['cancelled_at'];
+    final autoRenewingRaw = map['autoRenewing'] ?? map['auto_renewing'];
+
+    return SubscriptionInfo(
       status: map['status'] as String?,
-      expiresAt: expiresRaw is String && expiresRaw.isNotEmpty
-          ? DateTime.tryParse(expiresRaw)
-          : null,
+      expiresAt: _parseSubscriptionDate(expiresRaw),
+      nextBillingDate: _parseSubscriptionDate(nextBillingRaw),
+      startedAt: _parseSubscriptionDate(startedAtRaw),
+      autoRenewing: autoRenewingRaw is bool ? autoRenewingRaw : true,
+      cancelledAt: _parseSubscriptionDate(cancelledAtRaw),
     );
+  }
+
+  static DateTime? _parseSubscriptionDate(Object? raw) {
+    if (raw is String && raw.isNotEmpty) {
+      return DateTime.tryParse(raw);
+    }
+    return null;
   }
 }
 
@@ -89,7 +124,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
   AuthState _state = const AuthState();
   UserProfile? userProfile;
-  _ProfileSubscriptionInfo? _subscription;
+  SubscriptionInfo? _subscription;
   _ProfileTrialInfo? _trial;
 
   AuthState get state => _state;
@@ -125,7 +160,42 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
   DateTime? get trialExpiresAt => _state.trialExpiresAt;
 
+  DateTime? get trialExpiryAt =>
+      _subscription?.expiresAt ??
+      _trial?.endsAt ??
+      userProfile?.trialEndsAt ??
+      _state.trialExpiresAt;
+
+  DateTime? get trialStartAt {
+    final startedAt = _subscription?.startedAt;
+    if (startedAt != null) return startedAt;
+
+    final termsAgreed = userProfile?.termsAgreedAt;
+    if (termsAgreed != null) return termsAgreed;
+
+    final createdAt = userProfile?.createdAt;
+    if (createdAt != null) return createdAt;
+
+    final expiry = trialExpiryAt;
+    if (expiry != null) {
+      return expiry.subtract(const Duration(hours: 48));
+    }
+    return null;
+  }
+
   DateTime? get premiumExpiresAt => _state.premiumExpiresAt;
+
+  DateTime? get premiumStartAt {
+    final startedAt = _subscription?.startedAt;
+    if (startedAt != null) return startedAt;
+
+    final termsAgreed = userProfile?.termsAgreedAt;
+    if (termsAgreed != null) return termsAgreed;
+
+    return userProfile?.createdAt;
+  }
+
+  SubscriptionInfo? get subscriptionInfo => _subscription;
 
   bool get needsConsent {
     if (!isLoggedIn) return false;
@@ -355,7 +425,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
       'tier=${user['tier']}',
     );
 
-    _subscription = _ProfileSubscriptionInfo.fromJson(user['subscription']);
+    _subscription = SubscriptionInfo.fromJson(user['subscription']);
     _trial = _ProfileTrialInfo.fromJson(user['trial']);
     debugPrint(
       '[AUTH] loadProfile: tier=${user['tier']}, '

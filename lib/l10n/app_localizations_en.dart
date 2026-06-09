@@ -821,6 +821,18 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get subscriptionCancelPending => 'Cancellation pending';
+
+  @override
+  String get subscriptionExpiryDate => 'Expiry date';
+
+  @override
+  String get subscriptionStartDate => 'Start date';
+
+  @override
+  String get subscriptionNextBilling => 'Next billing';
+
+  @override
   String get menuPrivacyPolicy => 'Privacy Policy';
 
   @override
@@ -929,16 +941,59 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pitcherTbd => 'TBD';
 
   @override
+  String planTicketExpiryDate(String date) {
+    return 'Expiry date : $date';
+  }
+
+  @override
+  String planTicketExpiryPendingDate(String date) {
+    return 'Expiry date : $date';
+  }
+
+  @override
   String get planTicketFree => 'Free plan';
+
+  @override
+  String get planTicketFreeTitle => 'Free Plan';
 
   @override
   String get planTicketPremium => 'Premium plan';
 
   @override
+  String get planTicketPremiumTitle => 'Premium Plan';
+
+  @override
+  String get planTicketManage => 'Manage subscription';
+
+  @override
   String get planTicketRenew => 'Renew subscription';
 
   @override
+  String get planTicketStart => 'Start subscription';
+
+  @override
+  String get planTicketTrialEnded => 'Trial ended';
+
+  @override
+  String planTicketTrialRemaining(int hours, int minutes) {
+    return '${hours}h ${minutes}m remaining';
+  }
+
+  @override
+  String planTicketStartDate(String date) {
+    return 'Start date : $date';
+  }
+
+  @override
   String get planTicketTrial => 'Free trial plan';
+
+  @override
+  String planTicketTrialStartDate(String date) {
+    return 'Trial start : $date';
+  }
+
+  @override
+  String get planTicketTrialTitle => 'Trial Plan';
 
   @override
   String get planTicketUpgrade => 'Upgrade subscription';

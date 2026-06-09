@@ -109,14 +109,12 @@ class FixtureMatch {
       );
     }
 
-    final homeTeam =
-        _readString(json, const ['home_team', 'homeTeam']) ??
-            _readTeamName(json, isHome: true);
-    final awayTeam =
-        _readString(json, const ['away_team', 'awayTeam']) ??
-            _readTeamName(json, isHome: false);
-    final homeTeamKo = _readTeamNameKo(json, isHome: true);
-    final awayTeamKo = _readTeamNameKo(json, isHome: false);
+    final homeTeams = _readFixtureTeamNames(json, isHome: true);
+    final awayTeams = _readFixtureTeamNames(json, isHome: false);
+    final homeTeam = homeTeams.$1;
+    final homeTeamKo = homeTeams.$2;
+    final awayTeam = awayTeams.$1;
+    final awayTeamKo = awayTeams.$2;
 
     return FixtureMatch(
       matchId: _parseInt(
@@ -409,70 +407,89 @@ String _normalizeTimeString(String time) {
   return ('$month.$day', '$hour:$minute');
 }
 
-String _readTeamName(Map<String, dynamic> json, {required bool isHome}) {
-  if (isHome) {
-    final nested = _readMap(json, const ['home']);
-    final nestedName = nested == null
-        ? null
-        : _readString(nested, const ['name', 'teamName', 'team_name']);
-    return nestedName ??
-        _readString(json, const [
+(String, String?) _readFixtureTeamNames(
+  Map<String, dynamic> json, {
+  required bool isHome,
+}) {
+  final sideKeys = isHome
+      ? const ['homeTeam', 'home_team', 'home']
+      : const ['awayTeam', 'away_team', 'away'];
+  final enFlatKeys = isHome
+      ? const [
+          'home_team_en',
+          'homeTeamEn',
+          'homeTeamNameEn',
+          'home_team_name_en',
           'homeTeamName',
           'home_team_name',
-          'home',
-        ]) ??
-        '';
-  }
-
-  final nested = _readMap(json, const ['away']);
-  final nestedName = nested == null
-      ? null
-      : _readString(nested, const ['name', 'teamName', 'team_name']);
-  return nestedName ??
-      _readString(json, const [
-        'awayTeamName',
-        'away_team_name',
-        'away',
-      ]) ??
-      '';
-}
-
-String? _readTeamNameKo(Map<String, dynamic> json, {required bool isHome}) {
-  if (isHome) {
-    final nested = _readMap(json, const ['home']);
-    final nestedKo = nested == null
-        ? null
-        : _readString(
-            nested,
-            const ['nameKo', 'name_ko', 'teamKo', 'team_ko'],
-          );
-    return _nonEmptyOrNull(
-      nestedKo ??
-          _readString(json, const [
-            'homeTeamKo',
-            'home_team_ko',
-            'home_team_name_ko',
-            'homeTeamNameKo',
-          ]),
-    );
-  }
-
-  final nested = _readMap(json, const ['away']);
-  final nestedKo = nested == null
-      ? null
-      : _readString(
-          nested,
-          const ['nameKo', 'name_ko', 'teamKo', 'team_ko'],
-        );
-  return _nonEmptyOrNull(
-    nestedKo ??
-        _readString(json, const [
+        ]
+      : const [
+          'away_team_en',
+          'awayTeamEn',
+          'awayTeamNameEn',
+          'away_team_name_en',
+          'awayTeamName',
+          'away_team_name',
+        ];
+  final koFlatKeys = isHome
+      ? const [
+          'homeTeamKo',
+          'home_team_ko',
+          'home_team_name_ko',
+          'homeTeamNameKo',
+        ]
+      : const [
           'awayTeamKo',
           'away_team_ko',
           'away_team_name_ko',
           'awayTeamNameKo',
-        ]),
-  );
+        ];
+  final stringFlatKeys = isHome
+      ? const ['home_team', 'homeTeam']
+      : const ['away_team', 'awayTeam'];
+
+  String? nameEn = _readString(json, enFlatKeys);
+  String? nameKo = _nonEmptyOrNull(_readString(json, koFlatKeys));
+
+  final nested = _readMap(json, sideKeys);
+  if (nested != null) {
+    nameEn ??= _readString(
+      nested,
+      const [
+        'nameEn',
+        'name_en',
+        'en',
+        'name',
+        'teamName',
+        'team_name',
+      ],
+    );
+    nameKo ??= _nonEmptyOrNull(
+      _readString(
+        nested,
+        const ['nameKo', 'name_ko', 'ko', 'teamKo', 'team_ko'],
+      ),
+    );
+  }
+
+  final flatName = _readString(json, stringFlatKeys);
+  if (nameEn == null && flatName != null) {
+    nameEn = flatName;
+  }
+
+  final hasExplicitEnglish = _readString(
+        json,
+        isHome
+            ? const ['home_team_en', 'homeTeamEn', 'homeTeamNameEn']
+            : const ['away_team_en', 'awayTeamEn', 'awayTeamNameEn'],
+      ) !=
+      null;
+  if (nameKo == null && hasExplicitEnglish && flatName != null) {
+    nameKo = flatName;
+  }
+
+  nameEn ??= flatName ?? '';
+  return (nameEn, nameKo);
 }
 
 DateTime? _parseDateTimeFromParts(String? date, String? time) {

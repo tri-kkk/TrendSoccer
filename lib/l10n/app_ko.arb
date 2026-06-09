@@ -253,6 +253,10 @@
   "menuNotification": "알림",
   "menuOthers": "기타",
   "menuPremiumExpiryDate": "만료일 {date}",
+  "subscriptionCancelPending": "구독 해지 예정",
+  "subscriptionExpiryDate": "만료 예정",
+  "subscriptionStartDate": "구독 시작",
+  "subscriptionNextBilling": "다음 결제일",
   "menuPrivacyPolicy": "개인정보처리방침",
   "menuProfile": "프로필",
   "menuSettings": "설정",
@@ -287,10 +291,21 @@
   "pickDirectionDraw": "무",
   "pickDirectionHome": "홈",
   "pitcherTbd": "미정",
+  "planTicketExpiryDate": "구독 만료일 : {date}",
+  "planTicketExpiryPendingDate": "만료 예정일 : {date}",
   "planTicketFree": "무료 플랜",
+  "planTicketFreeTitle": "무료 플랜",
   "planTicketPremium": "프리미엄 플랜",
+  "planTicketPremiumTitle": "프리미엄 플랜",
+  "planTicketManage": "구독 관리하기",
   "planTicketRenew": "구독 연장하기",
+  "planTicketStart": "구독 시작하기",
+  "planTicketTrialEnded": "체험 종료",
+  "planTicketTrialRemaining": "{hours}시간 {minutes}분 남음",
+  "planTicketStartDate": "구독 시작일 : {date}",
   "planTicketTrial": "무료 체험 플랜",
+  "planTicketTrialStartDate": "체험 시작일 : {date}",
+  "planTicketTrialTitle": "체험 플랜",
   "planTicketUpgrade": "구독 업그레이드",
   "premiumBenefit24h": "24시간 우선 분석 접근",
   "premiumBenefitBaseballAi": "야구 AI Analysis",
@@ -645,6 +660,44 @@
     "placeholders": {
       "date": {
         "type": "String"
+      }
+    }
+  },
+  "@planTicketExpiryDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@planTicketExpiryPendingDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@planTicketStartDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@planTicketTrialStartDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@planTicketTrialRemaining": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
       }
     }
   },

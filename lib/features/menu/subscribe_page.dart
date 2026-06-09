@@ -15,8 +15,6 @@ import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/navigation/ts_bottom_navigation.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 class SubscribePage extends ConsumerStatefulWidget {
   const SubscribePage({super.key});
 
@@ -66,17 +64,6 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     final hours = remaining.inHours;
     final minutes = remaining.inMinutes.remainder(60);
     return l10n.subscribeTrialRemaining(hours, minutes);
-  }
-
-  String _formatPremiumExpires(BuildContext context, DateTime expiresAt) {
-    final month = expiresAt.month.toString().padLeft(2, '0');
-    final day = expiresAt.day.toString().padLeft(2, '0');
-    return context.l10n.subscribePremiumExpiry('${expiresAt.year}.$month.$day');
-  }
-
-  Future<void> _openGooglePlaySubscriptions() async {
-    final uri = Uri.parse('https://play.google.com/store/account/subscriptions');
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   bool _isVerifyPendingError(String message) {
@@ -313,9 +300,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     final auth = ref.watch(authProvider);
     final planType = auth.planType;
     final l10n = context.l10n;
-    final appBarTitle = planType == PlanType.premium
-        ? l10n.menuSubscribeManageTitle
-        : l10n.menuSubscribeTitle;
+    final appBarTitle = l10n.menuSubscribeTitle;
 
     return TsLoadingOverlay(
       isLoading: _isLoading,
@@ -357,9 +342,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
             ),
             child: switch (planType) {
               PlanType.trial => _buildTrialStatusContent(context, semantic, auth),
-              PlanType.premium =>
-                _buildPremiumStatusContent(context, semantic, auth),
-              PlanType.free || PlanType.none =>
+              PlanType.premium || PlanType.free || PlanType.none =>
                 _buildPurchaseContent(context, semantic),
             },
           ),
@@ -425,76 +408,6 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
             ),
           ],
           const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: TsButton(
-              label: l10n.subscribeBack,
-              variant: TsButtonVariant.secondary,
-              onPressed: () => _handleBack(context),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPremiumStatusContent(
-    BuildContext context,
-    TsSemanticColors semantic,
-    SupabaseAuthProvider auth,
-  ) {
-    final premiumExpiresAt = auth.premiumExpiresAt;
-    final l10n = context.l10n;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: semantic.surfaceRaised,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(
-            TsAssets.iconPremium,
-            width: 64,
-            height: 64,
-            colorFilter: ColorFilter.mode(
-              semantic.interactivePrimary,
-              BlendMode.srcIn,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            l10n.subscribePremiumActive,
-            style: TsType.headingH2.copyWith(color: semantic.textPrimary),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            l10n.subscribePremiumMessage,
-            style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
-            textAlign: TextAlign.center,
-          ),
-          if (premiumExpiresAt != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              _formatPremiumExpires(context, premiumExpiresAt),
-              style: TsType.bodyMBold.copyWith(color: semantic.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-          ],
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: TsButton(
-              label: l10n.subscribeManageOnPlay,
-              variant: TsButtonVariant.primary,
-              onPressed: _openGooglePlaySubscriptions,
-            ),
-          ),
-          const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
             child: TsButton(

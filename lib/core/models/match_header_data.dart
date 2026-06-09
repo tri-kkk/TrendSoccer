@@ -59,6 +59,8 @@ class MatchHeaderData {
       matchId: match.matchId,
       homeTeam: match.homeTeam.name,
       awayTeam: match.awayTeam.name,
+      homeTeamKo: match.homeTeam.nameKo,
+      awayTeamKo: match.awayTeam.nameKo,
       homeTeamLogo: match.homeTeam.logo,
       awayTeamLogo: match.awayTeam.logo,
       homeTeamId: match.homeTeam.id,

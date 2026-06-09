@@ -95,13 +95,11 @@ class _BaseballStandardContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final labels = ParserLabels.from(context.l10n);
     final analysisAsync = ref.watch(baseballPitcherAnalysisProvider(matchId));
-    final homePitcherName = localizedPitcherName(
-      context,
+    final homePitcherName = baseballAsianLeagueApiLookupName(
       parsed.homePitcher.name,
       parsed.homePitcher.nameKo,
     );
-    final awayPitcherName = localizedPitcherName(
-      context,
+    final awayPitcherName = baseballAsianLeagueApiLookupName(
       parsed.awayPitcher.name,
       parsed.awayPitcher.nameKo,
     );
@@ -123,16 +121,30 @@ class _BaseballStandardContent extends ConsumerWidget {
             parsed.awayTeam,
             parsed.awayTeamKo,
           ),
+          homePitcherLookupName: baseballAsianLeagueApiLookupName(
+            parsed.homePitcher.name,
+            parsed.homePitcher.nameKo,
+          ),
+          awayPitcherLookupName: baseballAsianLeagueApiLookupName(
+            parsed.awayPitcher.name,
+            parsed.awayPitcher.nameKo,
+          ),
+          homeTeamLookupName: baseballAsianLeagueApiLookupTeam(
+            parsed.homeTeam,
+            parsed.homeTeamKo,
+          ),
+          awayTeamLookupName: baseballAsianLeagueApiLookupTeam(
+            parsed.awayTeam,
+            parsed.awayTeamKo,
+          ),
           homePitcherName: homePitcherName,
           awayPitcherName: awayPitcherName,
           awayPitcher: parsed.awayPitcher.toPitcherData(
             labels: labels,
-            displayName: awayPitcherName,
             teamLogoUrl: parsed.awayLogoUrl,
           ),
           homePitcher: parsed.homePitcher.toPitcherData(
             labels: labels,
-            displayName: homePitcherName,
             teamLogoUrl: parsed.homeLogoUrl,
           ),
         ),

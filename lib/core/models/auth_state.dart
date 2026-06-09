@@ -148,6 +148,7 @@ class UserProfile {
     this.requiresConsent = false,
     this.trialUsed = false,
     this.termsAgreedAt,
+    this.createdAt,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -173,12 +174,14 @@ class UserProfile {
       'premium_expires_at',
     );
     final subscription = json['subscription'];
+    String? subscriptionTier;
     if (subscription is Map<String, dynamic>) {
       final subscriptionExpiresAt =
           _readJsonDateTime(subscription, 'expiresAt', 'expires_at');
       if (subscriptionExpiresAt != null) {
         premiumExpiresAt = subscriptionExpiresAt;
       }
+      subscriptionTier = subscription['tier'] as String?;
     } else if (subscription is Map) {
       final subscriptionMap = Map<String, dynamic>.from(subscription);
       final subscriptionExpiresAt =
@@ -186,6 +189,7 @@ class UserProfile {
       if (subscriptionExpiresAt != null) {
         premiumExpiresAt = subscriptionExpiresAt;
       }
+      subscriptionTier = subscriptionMap['tier'] as String?;
     }
 
     return UserProfile(
@@ -193,13 +197,14 @@ class UserProfile {
       email: json['email'] as String? ?? '',
       name: json['name'] as String? ?? '',
       avatarUrl: _readJsonString(json, 'avatarUrl', 'avatar_url'),
-      tier: json['tier'] as String? ?? 'free',
+      tier: json['tier'] as String? ?? subscriptionTier ?? 'free',
       premiumExpiresAt: premiumExpiresAt,
       trialEndsAt: trialEndsAt,
       isNewUser: _readJsonBool(json, 'isNewUser', 'is_new_user'),
       requiresConsent: _readJsonBool(json, 'requiresConsent', 'requires_consent'),
       trialUsed: trialUsed,
       termsAgreedAt: _readJsonDateTime(json, 'termsAgreedAt', 'terms_agreed_at'),
+      createdAt: _readJsonDateTime(json, 'createdAt', 'created_at'),
     );
   }
 
@@ -214,6 +219,7 @@ class UserProfile {
   final bool requiresConsent;
   final bool trialUsed;
   final DateTime? termsAgreedAt;
+  final DateTime? createdAt;
 }
 
 class AuthState {

@@ -478,12 +478,6 @@ class ComboParser {
 
     final value = pick['ai_analysis'] ?? pick['ai_comment'];
     if (value is String && value.trim().isNotEmpty) {
-      if (isEn) {
-        debugPrint(
-          '[COMBO] AI summary has no English field for combo id=${pick['id']}; '
-          'using Korean fallback (backend English support needed)',
-        );
-      }
       return value.trim();
     }
     return null;

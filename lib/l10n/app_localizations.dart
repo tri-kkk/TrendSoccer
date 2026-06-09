@@ -1616,6 +1616,30 @@ abstract class AppLocalizations {
   /// **'만료일 {date}'**
   String menuPremiumExpiryDate(String date);
 
+  /// No description provided for @subscriptionCancelPending.
+  ///
+  /// In ko, this message translates to:
+  /// **'구독 해지 예정'**
+  String get subscriptionCancelPending;
+
+  /// No description provided for @subscriptionExpiryDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'만료 예정'**
+  String get subscriptionExpiryDate;
+
+  /// No description provided for @subscriptionStartDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'구독 시작'**
+  String get subscriptionStartDate;
+
+  /// No description provided for @subscriptionNextBilling.
+  ///
+  /// In ko, this message translates to:
+  /// **'다음 결제일'**
+  String get subscriptionNextBilling;
+
   /// No description provided for @menuPrivacyPolicy.
   ///
   /// In ko, this message translates to:
@@ -1820,11 +1844,29 @@ abstract class AppLocalizations {
   /// **'미정'**
   String get pitcherTbd;
 
+  /// No description provided for @planTicketExpiryDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'구독 만료일 : {date}'**
+  String planTicketExpiryDate(String date);
+
+  /// No description provided for @planTicketExpiryPendingDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'만료 예정일 : {date}'**
+  String planTicketExpiryPendingDate(String date);
+
   /// No description provided for @planTicketFree.
   ///
   /// In ko, this message translates to:
   /// **'무료 플랜'**
   String get planTicketFree;
+
+  /// No description provided for @planTicketFreeTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'무료 플랜'**
+  String get planTicketFreeTitle;
 
   /// No description provided for @planTicketPremium.
   ///
@@ -1832,17 +1874,65 @@ abstract class AppLocalizations {
   /// **'프리미엄 플랜'**
   String get planTicketPremium;
 
+  /// No description provided for @planTicketPremiumTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 플랜'**
+  String get planTicketPremiumTitle;
+
+  /// No description provided for @planTicketManage.
+  ///
+  /// In ko, this message translates to:
+  /// **'구독 관리하기'**
+  String get planTicketManage;
+
   /// No description provided for @planTicketRenew.
   ///
   /// In ko, this message translates to:
   /// **'구독 연장하기'**
   String get planTicketRenew;
 
+  /// No description provided for @planTicketStart.
+  ///
+  /// In ko, this message translates to:
+  /// **'구독 시작하기'**
+  String get planTicketStart;
+
+  /// No description provided for @planTicketTrialEnded.
+  ///
+  /// In ko, this message translates to:
+  /// **'체험 종료'**
+  String get planTicketTrialEnded;
+
+  /// No description provided for @planTicketTrialRemaining.
+  ///
+  /// In ko, this message translates to:
+  /// **'{hours}시간 {minutes}분 남음'**
+  String planTicketTrialRemaining(int hours, int minutes);
+
+  /// No description provided for @planTicketStartDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'구독 시작일 : {date}'**
+  String planTicketStartDate(String date);
+
   /// No description provided for @planTicketTrial.
   ///
   /// In ko, this message translates to:
   /// **'무료 체험 플랜'**
   String get planTicketTrial;
+
+  /// No description provided for @planTicketTrialStartDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'체험 시작일 : {date}'**
+  String planTicketTrialStartDate(String date);
+
+  /// No description provided for @planTicketTrialTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'체험 플랜'**
+  String get planTicketTrialTitle;
 
   /// No description provided for @planTicketUpgrade.
   ///

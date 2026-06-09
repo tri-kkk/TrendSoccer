@@ -47,16 +47,18 @@ class BaseballStandardPitcher {
   String get displayName {
     final ko = nameKo?.trim();
     if (ko != null && ko.isNotEmpty) return ko;
-    return name.trim().isEmpty ? '-' : name.trim();
+    final en = name.trim();
+    if (en.isNotEmpty && en != '-') return en;
+    return '-';
   }
 
   PitcherData toPitcherData({
     required ParserLabels labels,
-    required String displayName,
     String? teamLogoUrl,
   }) {
     return PitcherData(
-      name: displayName,
+      name: name,
+      nameKo: nameKo,
       pitcherType:
           pitcherType.isEmpty ? labels.baseballPitcherGeneric : pitcherType,
       teamLogoUrl: teamLogoUrl,
@@ -383,21 +385,176 @@ DateTime? _parseDateTime(Object? value) {
   return DateTime.tryParse(value.toString());
 }
 
+Map<String, dynamic>? _resolvePitcherObject(
+  Map<String, dynamic> match,
+  Map<String, dynamic> sideMap, {
+  required String side,
+}) {
+  final prefix = side == 'home' ? 'home' : 'away';
+
+  final directObject = _readMap(match, ['${prefix}Pitcher', '${prefix}_pitcher']);
+  if (directObject != null &&
+      (directObject.containsKey('name') ||
+          directObject.containsKey('era') ||
+          directObject.containsKey('fullName'))) {
+    return directObject;
+  }
+
+  final fromSide = _readMap(
+    sideMap,
+    const ['pitcher', 'starter', 'startingPitcher', 'starting_pitcher'],
+  );
+  if (fromSide != null) return fromSide;
+
+  for (final rootKey in const [
+    'pitchers',
+    'startingPitchers',
+    'starting_pitchers',
+    'starters',
+  ]) {
+    final root = _readMap(match, [rootKey]);
+    if (root == null) continue;
+    final nested = _readMap(root, [
+      side,
+      '${prefix}Pitcher',
+      '${prefix}_pitcher',
+      '${prefix}Starter',
+      '${prefix}_starter',
+    ]);
+    if (nested != null) return nested;
+  }
+
+  return directObject;
+}
+
+Object? _readPitcherField(
+  Map<String, dynamic> match,
+  Map<String, dynamic>? pitcherMap, {
+  required String prefix,
+  required List<String> camelKeys,
+  required List<String> snakeKeys,
+}) {
+  if (pitcherMap != null) {
+    final fromMap = _readString(pitcherMap, [
+      ...camelKeys,
+      ...snakeKeys,
+      'name',
+      'fullName',
+      'full_name',
+    ]);
+    if (fromMap != null) return fromMap;
+
+    for (final key in [...camelKeys, ...snakeKeys]) {
+      if (pitcherMap.containsKey(key)) return pitcherMap[key];
+    }
+  }
+
+  for (final key in [
+    ...camelKeys.map((k) => '${prefix}Pitcher$k'),
+    ...snakeKeys.map((k) => '${prefix}_pitcher_$k'),
+    ...camelKeys.map((k) => '${prefix}Starter$k'),
+    ...snakeKeys.map((k) => '${prefix}_starter_$k'),
+  ]) {
+    if (match.containsKey(key)) return match[key];
+  }
+  return null;
+}
+
 BaseballStandardPitcher _parsePitcherFromMatchRoot(
   Map<String, dynamic> match, {
   required String side,
 }) {
   final prefix = side == 'home' ? 'home' : 'away';
-  final name = _readString(match, ['${prefix}Pitcher', '${prefix}_pitcher']) ?? '';
+  final sideMap = _readMap(match, [side]) ?? <String, dynamic>{};
+  final pitcherMap = _resolvePitcherObject(match, sideMap, side: side);
+  final cardFallback = BaseballAnalysisCard.fromJson(match);
+
+  final name = _readString(match, [
+        '${prefix}Pitcher',
+        '${prefix}_pitcher',
+        '${prefix}PitcherName',
+        '${prefix}_pitcher_name',
+        '${prefix}Starter',
+        '${prefix}_starter',
+      ]) ??
+      _readString(pitcherMap, const [
+        'name',
+        'fullName',
+        'full_name',
+        'pitcherName',
+        'pitcher_name',
+      ]) ??
+      _readString(sideMap, const [
+        'pitcher',
+        'pitcherName',
+        'starter',
+        'starterName',
+      ]) ??
+      (side == 'home' ? cardFallback.homePitcher : cardFallback.awayPitcher) ??
+      '';
   final nameKo = _readString(match, [
-    '${prefix}PitcherKo',
-    '${prefix}_pitcher_ko',
-  ]);
-  final kRaw = match['${prefix}PitcherK'] ?? match['${prefix}_pitcher_k'];
-  final ipRaw = match['${prefix}PitcherIp'] ?? match['${prefix}_pitcher_ip'];
-  final k9Raw = match['${prefix}PitcherK9'] ?? match['${prefix}_pitcher_k9'];
+        '${prefix}PitcherKo',
+        '${prefix}_pitcher_ko',
+      ]) ??
+      _readString(pitcherMap, const ['nameKo', 'name_ko']) ??
+      (side == 'home' ? cardFallback.homePitcherKo : cardFallback.awayPitcherKo);
+
+  final kRaw = _readPitcherField(
+    match,
+    pitcherMap,
+    prefix: prefix,
+    camelKeys: const ['K', 'StrikeOuts'],
+    snakeKeys: const ['k', 'strike_outs', 'strikeouts'],
+  );
+  final ipRaw = _readPitcherField(
+    match,
+    pitcherMap,
+    prefix: prefix,
+    camelKeys: const ['Ip', 'InningsPitched'],
+    snakeKeys: const ['ip', 'innings_pitched'],
+  );
+  final k9Raw = _readPitcherField(
+    match,
+    pitcherMap,
+    prefix: prefix,
+    camelKeys: const ['K9', 'StrikeoutsPer9Inn'],
+    snakeKeys: const ['k9', 'strikeouts_per_9_inn'],
+  );
+  final eraRaw = _readPitcherField(
+    match,
+    pitcherMap,
+    prefix: prefix,
+    camelKeys: const ['Era'],
+    snakeKeys: const ['era'],
+  );
+  final whipRaw = _readPitcherField(
+    match,
+    pitcherMap,
+    prefix: prefix,
+    camelKeys: const ['Whip'],
+    snakeKeys: const ['whip'],
+  );
+  final winsRaw = _readPitcherField(
+    match,
+    pitcherMap,
+    prefix: prefix,
+    camelKeys: const ['Wins'],
+    snakeKeys: const ['wins'],
+  );
+  final lossesRaw = _readPitcherField(
+    match,
+    pitcherMap,
+    prefix: prefix,
+    camelKeys: const ['Losses'],
+    snakeKeys: const ['losses'],
+  );
+
   final pitcherPhotoUrl = _nonEmptyOrNull(
-    match['${prefix}PitcherPhoto'] ??
+    pitcherMap?['photo'] ??
+        pitcherMap?['photoUrl'] ??
+        pitcherMap?['photo_url'] ??
+        pitcherMap?['image'] ??
+        match['${prefix}PitcherPhoto'] ??
         match['${prefix}_pitcher_photo'] ??
         match['${prefix}PitcherImage'] ??
         match['${prefix}_pitcher_image'] ??
@@ -405,18 +562,37 @@ BaseballStandardPitcher _parsePitcherFromMatchRoot(
         match['${prefix}_pitcher_logo'],
   );
 
-  final pitcherId = (match['${prefix}PitcherId'] as num?)?.toInt();
+  final pitcherId = _parseInt(
+    pitcherMap?['id'] ??
+        pitcherMap?['playerId'] ??
+        pitcherMap?['player_id'] ??
+        match['${prefix}PitcherId'] ??
+        match['${prefix}_pitcher_id'],
+  );
+
+  final wins = _parseInt(winsRaw);
+  final losses = _parseInt(lossesRaw);
+  final wl = wins != null || losses != null
+      ? '${wins ?? 0}-${losses ?? 0}'
+      : '-';
 
   return BaseballStandardPitcher(
-    name: name.isEmpty ? '-' : name,
+    name: name,
     nameKo: nameKo,
     pitcherId: pitcherId,
     photoUrl: pitcherPhotoUrl,
-    pitcherType: '투수',
-    era: _formatDecimalStat(match['${prefix}PitcherEra']),
-    whip: _formatDecimalStat(match['${prefix}PitcherWhip']),
+    pitcherType: _readString(pitcherMap, const [
+          'throwingHand',
+          'throwing_hand',
+          'hand',
+          'pitcherType',
+          'pitcher_type',
+        ]) ??
+        '투수',
+    era: _formatDecimalStat(eraRaw),
+    whip: _formatDecimalStat(whipRaw),
     k9: _formatK9(k9Raw, kRaw, ipRaw),
-    wl: '-',
+    wl: wl,
     ip: _formatStat(ipRaw),
     k: _formatStat(kRaw),
     prevWl: '-',

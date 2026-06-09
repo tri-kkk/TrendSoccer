@@ -42,7 +42,6 @@ class BaseballComboService {
         },
       );
       final data = _adaptToMap(response.data);
-      debugPrint('[COMBO] API response language: ${data['language']}');
       debugPrint('[BASEBALL] Combo picks response keys: ${data.keys.toList()}');
 
       final firstItem = _firstComboItem(data);
