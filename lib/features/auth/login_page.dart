@@ -172,7 +172,22 @@ class _LoginPageState extends ConsumerState<LoginPage>
   Widget _buildLoginSheet(TsSemanticColors semantic) {
     final l10n = context.l10n;
 
-    return Container(
+    return GestureDetector(
+      onVerticalDragUpdate: (details) {
+        if (details.primaryDelta != null && details.primaryDelta! > 0) {
+          final newValue = _controller.value - (details.primaryDelta! / 300);
+          _controller.value = newValue.clamp(0.0, 1.0);
+        }
+      },
+      onVerticalDragEnd: (details) {
+        if (_controller.value < 0.5 ||
+            (details.primaryVelocity != null && details.primaryVelocity! > 300)) {
+          _controller.reverse();
+        } else {
+          _controller.forward();
+        }
+      },
+      child: Container(
       decoration: BoxDecoration(
         color: semantic.surfaceOverlay,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
@@ -220,6 +235,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
             onTap: _isLoading ? null : _onNaverLoginTap,
           ),
         ],
+      ),
       ),
     );
   }

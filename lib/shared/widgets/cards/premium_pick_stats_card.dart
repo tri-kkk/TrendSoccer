@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:trendsoccer/core/models/premium_pick_stats.dart';
+import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
@@ -164,7 +165,7 @@ class _PremiumPickStatsCardState extends ConsumerState<PremiumPickStatsCard> {
       winRate: stats.winRate,
       countdown: _countdown,
       countdownValue: _buildCountdownValue(semantic),
-      streak: stats.streak,
+      streak: localizedStreak(context, stats.streak),
       recentWins: stats.recentWins,
       teamLogoMap: teamLogoMap,
       onCTATap: widget.onCTATap,

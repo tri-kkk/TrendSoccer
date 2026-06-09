@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import 'package:trendsoccer/core/models/fixture_models_v2.dart';
@@ -54,6 +55,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
   late final PageController _pageController;
   final ScrollController _dateChipScrollController = ScrollController();
   bool _syncingPage = false;
+  bool _deepLinkApplied = false;
   Timer? _livePollingTimer;
 
   @override
@@ -74,6 +76,43 @@ class _FixturePageState extends ConsumerState<FixturePage>
     _pageController.dispose();
     _dateChipScrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _applyFixtureDeepLinkIfNeeded();
+  }
+
+  void _applyFixtureDeepLinkIfNeeded() {
+    final params = GoRouterState.of(context).uri.queryParameters;
+    final sportParam = params['sport'];
+    final filterParam = params['filter'];
+
+    final hasDeepLink = sportParam == 'soccer' ||
+        sportParam == 'baseball' ||
+        filterParam == 'live';
+    if (!hasDeepLink) {
+      _deepLinkApplied = false;
+      return;
+    }
+    if (_deepLinkApplied) return;
+    _deepLinkApplied = true;
+
+    if (sportParam == 'soccer' || sportParam == 'baseball') {
+      ref.read(fixtureSelectedSportProvider.notifier).state = sportParam!;
+    }
+    if (filterParam == 'live') {
+      ref.read(fixtureLiveFilterProvider.notifier).state = true;
+      ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
+    }
+
+    _startLivePolling();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.go('/fixture');
+    });
   }
 
   @override

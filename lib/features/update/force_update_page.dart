@@ -6,6 +6,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:trendsoccer/core/services/app_config_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/core/utils/locale_data_helper.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
@@ -67,10 +70,21 @@ class _ForceUpdatePageState extends ConsumerState<ForceUpdatePage> {
     context.go('/trend');
   }
 
+  String _resolveUpdateMessage(BuildContext context, AppLocalizations l10n) {
+    final apiMessage = widget.updateMessage?.trim();
+    if (isKoreanLocale(context) &&
+        apiMessage != null &&
+        apiMessage.isNotEmpty) {
+      return apiMessage;
+    }
+    return l10n.forceUpdateMessage;
+  }
+
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final subtitle = widget.updateMessage ?? '최신 버전으로 업데이트해주세요.';
+    final l10n = context.l10n;
+    final subtitle = _resolveUpdateMessage(context, l10n);
 
     return PopScope(
       canPop: !_isForceUpdateRequired,
@@ -98,7 +112,7 @@ class _ForceUpdatePageState extends ConsumerState<ForceUpdatePage> {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    '업데이트가 필요합니다',
+                    l10n.forceUpdateTitle,
                     style: TsType.headingH2.copyWith(
                       color: semantic.textPrimary,
                     ),
@@ -114,7 +128,7 @@ class _ForceUpdatePageState extends ConsumerState<ForceUpdatePage> {
                   ),
                   const SizedBox(height: 32),
                   TsButton(
-                    label: '업데이트',
+                    label: l10n.forceUpdateButton,
                     variant: TsButtonVariant.primary,
                     onPressed: _openStore,
                   ),
@@ -123,7 +137,7 @@ class _ForceUpdatePageState extends ConsumerState<ForceUpdatePage> {
                     TextButton(
                       onPressed: _skipUpdate,
                       child: Text(
-                        '건너뛰기',
+                        l10n.forceUpdateSkip,
                         style: TsType.bodyLRegular.copyWith(
                           color: semantic.textSecondary,
                         ),

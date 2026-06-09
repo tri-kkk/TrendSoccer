@@ -475,6 +475,11 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     final showBottomBannerArea =
         showBottomAds && (_loadingBanners || _bottomBanners.isNotEmpty);
 
+    debugPrint(
+      '[TREND] Bottom banner: hasFullAccess=${auth.hasFullAccess}, '
+      'ads=${_bottomBanners.length}',
+    );
+
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
       body: SingleChildScrollView(

@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -372,27 +371,65 @@ class FCMService {
     }
   }
 
+  Future<Uint8List?> _downloadImage(String url) async {
+    try {
+      final dio = Dio(
+        BaseOptions(
+          connectTimeout: const Duration(seconds: 3),
+          receiveTimeout: const Duration(seconds: 5),
+          responseType: ResponseType.bytes,
+        ),
+      );
+      final response = await dio
+          .get<List<int>>(url)
+          .timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200 && response.data != null) {
+        return Uint8List.fromList(response.data!);
+      }
+    } catch (e) {
+      debugPrint('[FCM] Logo download failed: $e');
+    }
+    return null;
+  }
+
+  Future<AndroidNotificationDetails> _buildAndroidNotificationDetails(
+    Map<String, dynamic> data,
+  ) async {
+    final teamLogo = data['teamLogo']?.toString();
+    ByteArrayAndroidBitmap? largeIcon;
+
+    if (teamLogo != null && teamLogo.isNotEmpty) {
+      final imageBytes = await _downloadImage(teamLogo);
+      if (imageBytes != null) {
+        largeIcon = ByteArrayAndroidBitmap(imageBytes);
+        debugPrint('[FCM] largeIcon set for: $teamLogo');
+      }
+    }
+
+    return AndroidNotificationDetails(
+      'trendsoccer_matches',
+      '경기 알림',
+      icon: '@mipmap/ic_launcher',
+      importance: Importance.high,
+      priority: Priority.high,
+      largeIcon: largeIcon,
+    );
+  }
+
   /// Handle foreground message — show local notification
-  void _handleForegroundMessage(RemoteMessage message) {
+  Future<void> _handleForegroundMessage(RemoteMessage message) async {
     debugPrint('[FCM] foreground: ${message.notification?.title}');
     final notification = message.notification;
     if (notification == null) return;
 
     final payload = message.data.isNotEmpty ? jsonEncode(message.data) : null;
+    final androidDetails = await _buildAndroidNotificationDetails(message.data);
 
-    _localNotifications.show(
+    await _localNotifications.show(
       notification.hashCode,
       notification.title,
       notification.body,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'trendsoccer_matches',
-          '경기 알림',
-          icon: '@mipmap/ic_launcher',
-          importance: Importance.high,
-          priority: Priority.high,
-        ),
-      ),
+      NotificationDetails(android: androidDetails),
       payload: payload,
     );
   }
@@ -429,28 +466,13 @@ class FCMService {
     }
 
     final sport = data['sport']?.toString();
-    final matchId = data['matchId']?.toString();
-    if (sport == null ||
-        sport.isEmpty ||
-        matchId == null ||
-        matchId.isEmpty) {
+    if (sport != 'soccer' && sport != 'baseball') {
       debugPrint('[FCM] Deep link: incomplete data=$data');
       return;
     }
 
-    debugPrint('[FCM] Deep link: sport=$sport, matchId=$matchId');
-
-    final path = switch (sport) {
-      'soccer' => '/analysis/soccer/match-report/$matchId',
-      'baseball' => '/analysis/baseball/match-report/$matchId',
-      _ => null,
-    };
-    if (path == null) {
-      debugPrint('[FCM] Deep link: unsupported sport=$sport');
-      return;
-    }
-
-    AppRouter.router.go(path);
+    debugPrint('[FCM] Deep link: fixture tab, sport=$sport, filter=live');
+    AppRouter.router.go('/fixture?sport=$sport&filter=live');
   }
 
   /// Get JWT from multiple sources

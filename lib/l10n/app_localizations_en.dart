@@ -624,7 +624,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get forceUpdateMessage =>
-      'A new update with improvements is available.';
+      'An update with new features and stability improvements is available.';
 
   @override
   String get forceUpdateSkip => 'Skip';

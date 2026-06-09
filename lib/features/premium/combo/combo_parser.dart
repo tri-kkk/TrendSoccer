@@ -157,10 +157,13 @@ class ComboParser {
         final label = match.group(1)!;
         final content = match.group(2)?.trim() ?? '';
 
+        final normalizedLabel = label.toLowerCase();
         final String type;
-        if (label == '총평') {
+        if (label == '총평' || normalizedLabel == 'summary') {
           type = 'summary';
-        } else if (label == '주의') {
+        } else if (label == '주의' ||
+            normalizedLabel == 'warning' ||
+            normalizedLabel == 'caution') {
           type = 'warning';
         } else {
           type = 'game';
@@ -187,10 +190,15 @@ class ComboParser {
   }
 
   static String _localizedAiLabel(String apiLabel, AppLocalizations l10n) {
+    final normalized = apiLabel.toLowerCase();
     return switch (apiLabel) {
       '총평' => l10n.comboAiSummary,
       '주의' => l10n.comboAiWarning,
-      _ => apiLabel,
+      _ => switch (normalized) {
+          'summary' => l10n.comboAiSummary,
+          'warning' || 'caution' => l10n.comboAiWarning,
+          _ => apiLabel,
+        },
     };
   }
 
@@ -292,7 +300,7 @@ class ComboParser {
         'fold_count=$foldCount, type=$comboType',
       );
 
-      final aiSummary = _readAiSummary(pick);
+      final aiSummary = _readAiSummary(pick, l10n);
 
       return ComboCardData(
         id: (pick['id'] as num?)?.toInt() ?? 0,
@@ -370,7 +378,12 @@ class ComboParser {
       pickResult: l10n.comboWin,
       odds: (m['odds'] as num?)?.toDouble() ?? 0,
       winProb: _readWinProb(m),
-      reason: m['reason']?.toString() ?? '',
+      reason: _readLocalizedText(
+        m,
+        l10n,
+        koKeys: const ['reason', 'reason_ko'],
+        enKeys: const ['reason_en', 'reasonEn'],
+      ),
       matchResultLabel: matchResultLabel,
       matchResultType: matchResultType,
       homePosition: 'H',
@@ -444,10 +457,60 @@ class ComboParser {
     return 0;
   }
 
-  static String? _readAiSummary(Map<String, dynamic> pick) {
+  static String? _readAiSummary(
+    Map<String, dynamic> pick,
+    AppLocalizations l10n,
+  ) {
+    final isEn = l10n.localeName.startsWith('en');
+    if (isEn) {
+      for (final key in const [
+        'ai_analysis_en',
+        'aiAnalysisEn',
+        'ai_comment_en',
+        'aiCommentEn',
+      ]) {
+        final value = pick[key];
+        if (value is String && value.trim().isNotEmpty) {
+          return value.trim();
+        }
+      }
+    }
+
     final value = pick['ai_analysis'] ?? pick['ai_comment'];
-    if (value is String && value.trim().isNotEmpty) return value.trim();
+    if (value is String && value.trim().isNotEmpty) {
+      if (isEn) {
+        debugPrint(
+          '[COMBO] AI summary has no English field for combo id=${pick['id']}; '
+          'using Korean fallback (backend English support needed)',
+        );
+      }
+      return value.trim();
+    }
     return null;
+  }
+
+  static String _readLocalizedText(
+    Map<String, dynamic> map,
+    AppLocalizations l10n, {
+    required List<String> koKeys,
+    required List<String> enKeys,
+  }) {
+    final isEn = l10n.localeName.startsWith('en');
+    if (isEn) {
+      for (final key in enKeys) {
+        final value = map[key];
+        if (value is String && value.trim().isNotEmpty) {
+          return value.trim();
+        }
+      }
+    }
+    for (final key in koKeys) {
+      final value = map[key];
+      if (value is String && value.trim().isNotEmpty) {
+        return value.trim();
+      }
+    }
+    return '';
   }
 
   static int _readWinProb(Map<dynamic, dynamic> pick) {
