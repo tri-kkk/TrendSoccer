@@ -146,6 +146,11 @@ class _FixturePageState extends ConsumerState<FixturePage>
     if (!fixtureIsTodayDate(ref.read(fixtureSelectedDateProvider))) return;
 
     final today = fixtureTodayDateString();
+    debugPrint(
+      '[FIXTURE] Baseball poll fetch: date=$today, '
+      'timezone=${DateTime.now().timeZoneName}, '
+      'utcOffset=${DateTime.now().timeZoneOffset}',
+    );
     try {
       final service = ref.read(fixtureServiceProvider);
       final todayMatches = await service
@@ -153,13 +158,10 @@ class _FixturePageState extends ConsumerState<FixturePage>
           .timeout(const Duration(seconds: 10));
       if (!mounted) return;
 
-      for (final match in todayMatches) {
-        debugPrint(
-          '[FIXTURE] Baseball match: ${match.homeTeam} vs ${match.awayTeam} | '
-          'status: ${match.status} | statusShort: ${match.rawStatus} | '
-          'score: ${match.homeScore}-${match.awayScore}',
-        );
-      }
+      debugPrint(
+        '[FIXTURE] Baseball poll result: ${todayMatches.length} matches, '
+        'statuses=${todayMatches.map((m) => m.status).toSet().toList()}',
+      );
 
       final polled = ref.read(baseballPolledFixturesProvider);
       final base = polled ??
@@ -171,11 +173,13 @@ class _FixturePageState extends ConsumerState<FixturePage>
         return;
       }
 
-      ref.read(baseballPolledFixturesProvider.notifier).state =
+      final merged =
           mergeBaseballTodayFixtures(base, todayMatches, today);
       debugPrint(
-        '[FIXTURE] Baseball poll: ${todayMatches.length} matches',
+        '[FIXTURE] Merge: before=${base.where((m) => m.status == 'scheduled').length} NS, '
+        'after=${merged.where((m) => m.status == 'scheduled').length} NS',
       );
+      ref.read(baseballPolledFixturesProvider.notifier).state = merged;
     } catch (e) {
       debugPrint('[FIXTURE] Baseball poll error: $e');
     }
@@ -192,11 +196,17 @@ class _FixturePageState extends ConsumerState<FixturePage>
     _stopLivePolling();
 
     final sport = ref.read(fixtureSelectedSportProvider);
+    final isToday =
+        fixtureIsTodayDate(ref.read(fixtureSelectedDateProvider));
     if (sport == 'soccer') {
       unawaited(_fetchLiveNow());
       _livePollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
         unawaited(_fetchLiveNow());
       });
+      debugPrint(
+        '[FIXTURE] startPolling: sport=soccer, isToday=$isToday, '
+        'timerActive=${_livePollingTimer?.isActive}',
+      );
       return;
     }
 
@@ -205,6 +215,15 @@ class _FixturePageState extends ConsumerState<FixturePage>
       _livePollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
         unawaited(_fetchBaseballNow());
       });
+      debugPrint(
+        '[FIXTURE] startPolling: sport=baseball, isToday=$isToday, '
+        'timerActive=${_livePollingTimer?.isActive}',
+      );
+    } else {
+      debugPrint(
+        '[FIXTURE] startPolling: sport=baseball, isToday=$isToday, '
+        'timerActive=false',
+      );
     }
   }
 

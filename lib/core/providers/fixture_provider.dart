@@ -22,7 +22,25 @@ List<DateTime> fixtureDateChipDates([DateTime? anchor]) {
 
 bool matchIsOnDate(FixtureMatch match, String dateStr) {
   final local = match.matchTimestamp.toLocal();
-  return fixtureDateString(local) == dateStr;
+  if (fixtureDateString(local) == dateStr) return true;
+
+  // Fallback when timestamp parsing differs between range load and poll.
+  final segments = dateStr.split('-');
+  if (segments.length == 3) {
+    final expectedDisplay =
+        '${segments[1].padLeft(2, '0')}.${segments[2].padLeft(2, '0')}';
+    if (match.matchDate == expectedDisplay) return true;
+  }
+  return false;
+}
+
+String _baseballFixtureMergeKey(FixtureMatch match) {
+  if (match.matchId != 0) return 'mid:${match.matchId}';
+  if (match.apiMatchId != null && match.apiMatchId != 0) {
+    return 'api:${match.apiMatchId}';
+  }
+  return 'teams:${match.homeTeam}|${match.awayTeam}|'
+      '${match.leagueKey}|${match.matchDate}|${match.matchTime}';
 }
 
 bool fixtureIsTodayDate(String dateStr) =>
@@ -34,9 +52,15 @@ List<FixtureMatch> mergeBaseballTodayFixtures(
   List<FixtureMatch> todayFresh,
   String todayStr,
 ) {
-  final nonToday =
-      existing.where((match) => !matchIsOnDate(match, todayStr)).toList();
-  final merged = [...nonToday, ...todayFresh]
+  final freshKeys = todayFresh.map(_baseballFixtureMergeKey).toSet();
+
+  final kept = existing.where((match) {
+    if (freshKeys.contains(_baseballFixtureMergeKey(match))) return false;
+    if (matchIsOnDate(match, todayStr)) return false;
+    return true;
+  }).toList();
+
+  final merged = [...kept, ...todayFresh]
     ..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
   return merged;
 }
