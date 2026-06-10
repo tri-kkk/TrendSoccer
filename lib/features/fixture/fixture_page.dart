@@ -57,6 +57,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
   final ScrollController _dateChipScrollController = ScrollController();
   bool _syncingPage = false;
   bool _deepLinkApplied = false;
+  int _logoRenderLogCount = 0;
   Timer? _livePollingTimer;
 
   @override
@@ -162,6 +163,14 @@ class _FixturePageState extends ConsumerState<FixturePage>
         '[FIXTURE] Baseball poll result: ${todayMatches.length} matches, '
         'statuses=${todayMatches.map((m) => m.status).toSet().toList()}',
       );
+      if (todayMatches.isNotEmpty) {
+        final match = todayMatches.first;
+        debugPrint(
+          '[FIXTURE] Poll match logo: '
+          'home=${match.homeTeamLogo != null && match.homeTeamLogo!.isNotEmpty}, '
+          'away=${match.awayTeamLogo != null && match.awayTeamLogo!.isNotEmpty}',
+        );
+      }
 
       final polled = ref.read(baseballPolledFixturesProvider);
       final base = polled ??
@@ -624,12 +633,61 @@ class _FixturePageState extends ConsumerState<FixturePage>
     );
   }
 
+  FixtureMatch? _sourceSoccerFixture(FixtureMatch match) {
+    final raw = ref.read(soccerFixturesProvider).asData?.value;
+    if (raw == null) return null;
+    for (final source in raw) {
+      if (match.matchId != 0 && source.matchId == match.matchId) return source;
+      final apiId = match.apiMatchId;
+      final sourceApiId = source.apiMatchId;
+      if (apiId != null && sourceApiId != null && apiId == sourceApiId) {
+        return source;
+      }
+    }
+    return null;
+  }
+
+  String? _displayTeamLogo(
+    FixtureMatch match, {
+    required bool isHome,
+    required bool isBaseball,
+  }) {
+    final direct = isHome ? match.homeTeamLogo : match.awayTeamLogo;
+    if (direct != null && direct.isNotEmpty) return direct;
+    if (isBaseball) return direct;
+    final source = _sourceSoccerFixture(match);
+    if (source == null) return direct;
+    return isHome ? source.homeTeamLogo : source.awayTeamLogo;
+  }
+
+  LiveMatchData? _liveDataForMatch(
+    FixtureMatch match,
+    Map<String, LiveMatchData> liveMap,
+  ) {
+    final byMatchId = liveMap[match.matchId.toString()];
+    if (byMatchId != null) return byMatchId;
+    final apiMatchId = match.apiMatchId;
+    if (apiMatchId != null) return liveMap[apiMatchId.toString()];
+    return null;
+  }
+
   Widget _buildMatchRow(
     FixtureMatch match, {
     required bool isBaseball,
     required AppLocalizations l10n,
     LiveMatchData? live,
   }) {
+    if (!isBaseball &&
+        matchIsOnDate(match, fixtureTodayDateString()) &&
+        _logoRenderLogCount < 2 &&
+        (match.homeTeamLogo == null || match.homeTeamLogo!.isEmpty)) {
+      _logoRenderLogCount++;
+      debugPrint(
+        '[FIXTURE-LOGO] Missing at render: ${match.homeTeam}, '
+        'league=${match.leagueKey}',
+      );
+    }
+
     return FixtureMatchRow(
       status: _toFixtureStatus(match, isBaseball: isBaseball),
       timeText: _statusTimeText(
@@ -648,8 +706,8 @@ class _FixturePageState extends ConsumerState<FixturePage>
         match.awayTeam,
         match.awayTeamKo,
       ),
-      homeLogoUrl: match.homeTeamLogo,
-      awayLogoUrl: match.awayTeamLogo,
+      homeLogoUrl: _displayTeamLogo(match, isHome: true, isBaseball: isBaseball),
+      awayLogoUrl: _displayTeamLogo(match, isHome: false, isBaseball: isBaseball),
       homeScore: _scoreText(match, isHome: true, isBaseball: isBaseball),
       awayScore: _scoreText(match, isHome: false, isBaseball: isBaseball),
       isNotificationOn: _alarmEnabledMatchIds.contains(match.matchId.toString()),
@@ -682,7 +740,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
                 match,
                 isBaseball: isBaseball,
                 l10n: l10n,
-                live: liveMap[match.matchId.toString()],
+                live: _liveDataForMatch(match, liveMap),
               ),
           ],
         ),

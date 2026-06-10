@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
@@ -22,9 +23,13 @@ List<DateTime> fixtureDateChipDates([DateTime? anchor]) {
 
 bool matchIsOnDate(FixtureMatch match, String dateStr) {
   final local = match.matchTimestamp.toLocal();
-  if (fixtureDateString(local) == dateStr) return true;
+  return fixtureDateString(local) == dateStr;
+}
 
-  // Fallback when timestamp parsing differs between range load and poll.
+/// Baseball poll merge only: also match display date when timestamps differ.
+bool _matchIsOnDateForBaseballMerge(FixtureMatch match, String dateStr) {
+  if (matchIsOnDate(match, dateStr)) return true;
+
   final segments = dateStr.split('-');
   if (segments.length == 3) {
     final expectedDisplay =
@@ -43,8 +48,61 @@ String _baseballFixtureMergeKey(FixtureMatch match) {
       '${match.leagueKey}|${match.matchDate}|${match.matchTime}';
 }
 
+const _baseballMergeLeagueCodes = {'MLB', 'KBO', 'NPB', 'CPBL'};
+
+bool _isBaseballMergeLeague(FixtureMatch match) =>
+    _baseballMergeLeagueCodes.contains(match.leagueKey.toUpperCase());
+
+bool _shouldReplaceInBaseballMerge(
+  FixtureMatch match,
+  Set<String> freshKeys,
+  String todayStr,
+) {
+  if (!_isBaseballMergeLeague(match)) return false;
+  final key = _baseballFixtureMergeKey(match);
+  return freshKeys.contains(key) ||
+      _matchIsOnDateForBaseballMerge(match, todayStr);
+}
+
 bool fixtureIsTodayDate(String dateStr) =>
     dateStr == fixtureTodayDateString();
+
+String? _fixtureLogoOrFallback(String? preferred, String? fallback) {
+  if (preferred != null && preferred.isNotEmpty) return preferred;
+  return fallback;
+}
+
+LiveMatchData? _liveDataForFixture(
+  FixtureMatch match,
+  Map<String, LiveMatchData> liveMap,
+) {
+  final byMatchId = liveMap[match.matchId.toString()];
+  if (byMatchId != null) return byMatchId;
+  final apiMatchId = match.apiMatchId;
+  if (apiMatchId != null) {
+    return liveMap[apiMatchId.toString()];
+  }
+  return null;
+}
+
+(int, int) _todaySoccerLogoCounts(List<FixtureMatch> matches) {
+  final todayStr = fixtureTodayDateString();
+  final today = matches
+      .where((m) => m.sport == 'soccer' && matchIsOnDate(m, todayStr))
+      .toList();
+  final withLogo = today
+      .where((m) => m.homeTeamLogo != null && m.homeTeamLogo!.isNotEmpty)
+      .length;
+  return (today.length, withLogo);
+}
+
+void _logTodaySoccerLogosInChain(String stage, List<FixtureMatch> matches) {
+  final (todayCount, withLogo) = _todaySoccerLogoCounts(matches);
+  if (todayCount == 0) return;
+  debugPrint(
+    '[FIXTURE-LOGO] Chain $stage: today=$todayCount, withHomeLogo=$withLogo',
+  );
+}
 
 /// Replaces today's matches in [existing] with [todayFresh] from a live poll.
 List<FixtureMatch> mergeBaseballTodayFixtures(
@@ -54,13 +112,29 @@ List<FixtureMatch> mergeBaseballTodayFixtures(
 ) {
   final freshKeys = todayFresh.map(_baseballFixtureMergeKey).toSet();
 
-  final kept = existing.where((match) {
-    if (freshKeys.contains(_baseballFixtureMergeKey(match))) return false;
-    if (matchIsOnDate(match, todayStr)) return false;
-    return true;
+  final existingByKey = <String, FixtureMatch>{};
+  for (final match in existing) {
+    if (!_shouldReplaceInBaseballMerge(match, freshKeys, todayStr)) continue;
+    existingByKey[_baseballFixtureMergeKey(match)] = match;
+  }
+
+  final todayFreshPreserved = todayFresh.map((fresh) {
+    final prior = existingByKey[_baseballFixtureMergeKey(fresh)];
+    if (prior == null) return fresh;
+    return fresh.copyWith(
+      homeTeamLogo:
+          _fixtureLogoOrFallback(fresh.homeTeamLogo, prior.homeTeamLogo),
+      awayTeamLogo:
+          _fixtureLogoOrFallback(fresh.awayTeamLogo, prior.awayTeamLogo),
+      leagueLogo: _fixtureLogoOrFallback(fresh.leagueLogo, prior.leagueLogo),
+    );
   }).toList();
 
-  final merged = [...kept, ...todayFresh]
+  final kept = existing
+      .where((match) => !_shouldReplaceInBaseballMerge(match, freshKeys, todayStr))
+      .toList();
+
+  final merged = [...kept, ...todayFreshPreserved]
     ..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
   return merged;
 }
@@ -118,7 +192,9 @@ final rawFixturesProvider = Provider<AsyncValue<List<FixtureMatch>>>((ref) {
     }
     return ref.watch(baseballFixturesProvider);
   }
-  return ref.watch(soccerFixturesProvider);
+  final raw = ref.watch(soccerFixturesProvider);
+  raw.whenData((matches) => _logTodaySoccerLogosInChain('rawFixtures', matches));
+  return raw;
 });
 
 List<FixtureMatch> _scopeMatchesForFilters(
@@ -140,7 +216,7 @@ List<FixtureMatch> _scopeMatchesForFilters(
     }
     return matches
         .where((match) {
-          final live = liveMap[match.matchId.toString()];
+          final live = _liveDataForFixture(match, liveMap);
           return live != null && live.isLive;
         })
         .toList();
@@ -154,10 +230,32 @@ List<FixtureMatch> _mergeFixturesWithLive(
   List<FixtureMatch> matches,
   Map<String, LiveMatchData> liveMap,
 ) {
+  final logosByMatchId = <int, (String?, String?)>{
+    for (final match in matches)
+      if (match.matchId != 0)
+        match.matchId: (match.homeTeamLogo, match.awayTeamLogo),
+  };
+  final logosByApiId = <int, (String?, String?)>{
+    for (final match in matches)
+      if (match.apiMatchId != null && match.apiMatchId != 0)
+        match.apiMatchId!: (match.homeTeamLogo, match.awayTeamLogo),
+  };
+
   final merged = <FixtureMatch>[];
   for (final match in matches) {
-    final live = liveMap[match.matchId.toString()];
-    merged.add(live != null ? match.copyWithLive(live) : match);
+    final live = _liveDataForFixture(match, liveMap);
+    var updated = live != null ? match.copyWithLive(live) : match;
+    final catalog = logosByMatchId[match.matchId] ??
+        (match.apiMatchId != null ? logosByApiId[match.apiMatchId] : null);
+    if (catalog != null) {
+      updated = updated.copyWith(
+        homeTeamLogo:
+            _fixtureLogoOrFallback(updated.homeTeamLogo, catalog.$1),
+        awayTeamLogo:
+            _fixtureLogoOrFallback(updated.awayTeamLogo, catalog.$2),
+      );
+    }
+    merged.add(updated);
   }
   return merged;
 }
@@ -233,7 +331,7 @@ final filteredFixturesProvider =
   final liveMap = ref.watch(liveMatchesProvider);
 
   return rawAsync.whenData((matches) {
-    return _applyFixtureFilters(
+    final filtered = _applyFixtureFilters(
       matches: matches,
       selectedDate: selectedDate,
       liveFilter: liveFilter,
@@ -241,6 +339,10 @@ final filteredFixturesProvider =
       liveMap: liveMap,
       selectedLeague: selectedLeague,
     );
+    if (sport == 'soccer') {
+      _logTodaySoccerLogosInChain('filteredFixtures', filtered);
+    }
+    return filtered;
   });
 });
 
@@ -251,9 +353,14 @@ final allFixturesWithLiveProvider =
   final rawAsync = ref.watch(rawFixturesProvider);
   final liveMap = ref.watch(liveMatchesProvider);
 
-  return rawAsync.whenData(
-    (matches) => _mergeFixturesWithLive(matches, liveMap),
-  );
+  final sport = ref.watch(fixtureSelectedSportProvider);
+  return rawAsync.whenData((matches) {
+    final merged = _mergeFixturesWithLive(matches, liveMap);
+    if (sport == 'soccer') {
+      _logTodaySoccerLogosInChain('allFixturesWithLive', merged);
+    }
+    return merged;
+  });
 });
 
 final fixtureLeagueGroupsProvider =

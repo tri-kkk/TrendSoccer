@@ -16,13 +16,24 @@ class FixtureService {
 
   Future<List<FixtureMatch>> getSoccerFixtures() async {
     try {
+      const path = '/api/odds-from-db';
+      const queryParameters = <String, String>{
+        'league': 'ALL',
+        'daysBack': '3',
+        'daysAhead': '4',
+      };
+      final requestUri = Uri(
+        path: path,
+        queryParameters: queryParameters,
+      );
+      debugPrint(
+        '[FIXTURE] Soccer fixture API URL: '
+        '${_dio.options.baseUrl}$requestUri',
+      );
+
       final response = await _dio.get<dynamic>(
-        '/api/odds-from-db',
-        queryParameters: const <String, String>{
-          'league': 'ALL',
-          'daysBack': '3',
-          'daysAhead': '4',
-        },
+        path,
+        queryParameters: queryParameters,
       );
       final matches = _parseFixtures(
         response.data,
@@ -30,6 +41,21 @@ class FixtureService {
         label: 'Soccer fixtures (daysBack=3, daysAhead=4)',
         logSoccerFixtureStatusDebug: true,
       )..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
+
+      final todayStr = _fixtureDateString(DateTime.now());
+      final todaySoccer =
+          matches.where((m) => _matchIsOnDate(m, todayStr)).toList();
+      if (todaySoccer.isNotEmpty) {
+        final first = todaySoccer.first;
+        debugPrint(
+          '[FIXTURE] Initial load today soccer: ${first.homeTeam} '
+          'logo=${first.homeTeamLogo}',
+        );
+      }
+      debugPrint(
+        '[FIXTURE] Initial load: total=${matches.length}, '
+        'today=${todaySoccer.length}',
+      );
 
       var nonStandardStatusLogs = 0;
       for (final m in matches) {
@@ -94,6 +120,17 @@ class FixtureService {
       '[FIXTURE] Baseball fixtures range: ${merged.length} matches from 7 dates',
     );
     return merged;
+  }
+
+  String _fixtureDateString(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
+  }
+
+  bool _matchIsOnDate(FixtureMatch match, String dateStr) {
+    final local = match.matchTimestamp.toLocal();
+    return _fixtureDateString(local) == dateStr;
   }
 
   String _formatApiDate(DateTime date) {

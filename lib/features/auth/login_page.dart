@@ -281,7 +281,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                     fit: BoxFit.fitWidth,
                     width: double.infinity,
                     colorFilter: ColorFilter.mode(
-                      semantic.textPrimary.withValues(alpha: 0.12),
+                      semantic.textPrimary,
                       BlendMode.srcIn,
                     ),
                   ),

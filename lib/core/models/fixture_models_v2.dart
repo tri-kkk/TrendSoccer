@@ -55,6 +55,34 @@ class FixtureMatch {
           ? leagueCode
           : (leagueName.isNotEmpty ? leagueName : 'unknown');
 
+  FixtureMatch copyWith({
+    String? homeTeamLogo,
+    String? awayTeamLogo,
+    String? leagueLogo,
+  }) {
+    return FixtureMatch(
+      matchId: matchId,
+      apiMatchId: apiMatchId,
+      homeTeam: homeTeam,
+      awayTeam: awayTeam,
+      homeTeamKo: homeTeamKo,
+      awayTeamKo: awayTeamKo,
+      homeTeamLogo: homeTeamLogo ?? this.homeTeamLogo,
+      awayTeamLogo: awayTeamLogo ?? this.awayTeamLogo,
+      leagueCode: leagueCode,
+      leagueName: leagueName,
+      leagueLogo: leagueLogo ?? this.leagueLogo,
+      matchDate: matchDate,
+      matchTime: matchTime,
+      matchTimestamp: matchTimestamp,
+      status: status,
+      rawStatus: rawStatus,
+      homeScore: homeScore,
+      awayScore: awayScore,
+      sport: sport,
+    );
+  }
+
   FixtureMatch copyWithLive(LiveMatchData live) {
     final raw = live.status.trim().toUpperCase();
     return FixtureMatch(
@@ -131,24 +159,8 @@ class FixtureMatch {
       awayTeam: awayTeam,
       homeTeamKo: homeTeamKo,
       awayTeamKo: awayTeamKo,
-      homeTeamLogo: _nonEmptyOrNull(
-        json['home_team_logo'] ??
-            json['home_crest'] ??
-            json['homeCrest'] ??
-            json['homeTeamLogo'] ??
-            json['homeTeamLogoUrl'] ??
-            json['home_logo'] ??
-            json['homeLogo'],
-      ),
-      awayTeamLogo: _nonEmptyOrNull(
-        json['away_team_logo'] ??
-            json['away_crest'] ??
-            json['awayCrest'] ??
-            json['awayTeamLogo'] ??
-            json['awayTeamLogoUrl'] ??
-            json['away_logo'] ??
-            json['awayLogo'],
-      ),
+      homeTeamLogo: _readFixtureTeamLogo(json, isHome: true),
+      awayTeamLogo: _readFixtureTeamLogo(json, isHome: false),
       leagueCode: league.code,
       leagueName: league.name,
       leagueLogo: _nonEmptyOrNull(
@@ -490,6 +502,62 @@ String _normalizeTimeString(String time) {
 
   nameEn ??= flatName ?? '';
   return (nameEn, nameKo);
+}
+
+String? _readFixtureTeamLogo(
+  Map<String, dynamic> json, {
+  required bool isHome,
+}) {
+  final flat = _nonEmptyOrNull(
+    _readString(
+      json,
+      isHome
+          ? const [
+              'home_team_logo',
+              'home_crest',
+              'homeCrest',
+              'homeTeamLogo',
+              'homeTeamLogoUrl',
+              'home_logo',
+              'homeLogo',
+            ]
+          : const [
+              'away_team_logo',
+              'away_crest',
+              'awayCrest',
+              'awayTeamLogo',
+              'awayTeamLogoUrl',
+              'away_logo',
+              'awayLogo',
+            ],
+    ),
+  );
+  if (flat != null) return flat;
+
+  final nested = _readMap(
+    json,
+    isHome
+        ? const ['homeTeam', 'home_team', 'home']
+        : const ['awayTeam', 'away_team', 'away'],
+  );
+  if (nested == null) return null;
+
+  return _nonEmptyOrNull(
+    _readString(
+      nested,
+      const [
+        'logo',
+        'logoUrl',
+        'logo_url',
+        'crest',
+        'emblem',
+        'image',
+        'team_logo',
+        'teamLogo',
+        'icon',
+      ],
+    ),
+  );
 }
 
 DateTime? _parseDateTimeFromParts(String? date, String? time) {

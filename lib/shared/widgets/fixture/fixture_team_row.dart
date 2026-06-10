@@ -34,6 +34,9 @@ class FixtureTeamRow extends StatelessWidget {
     }
 
     final url = teamLogoUrl;
+    debugPrint(
+      '[LOGO] Rendering: team=$teamName, url=$url, isNull=${url == null}',
+    );
     if (url == null || url.isEmpty) {
       return ph();
     }
