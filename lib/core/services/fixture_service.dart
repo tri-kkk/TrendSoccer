@@ -42,21 +42,6 @@ class FixtureService {
         logSoccerFixtureStatusDebug: true,
       )..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
 
-      final todayStr = _fixtureDateString(DateTime.now());
-      final todaySoccer =
-          matches.where((m) => _matchIsOnDate(m, todayStr)).toList();
-      if (todaySoccer.isNotEmpty) {
-        final first = todaySoccer.first;
-        debugPrint(
-          '[FIXTURE] Initial load today soccer: ${first.homeTeam} '
-          'logo=${first.homeTeamLogo}',
-        );
-      }
-      debugPrint(
-        '[FIXTURE] Initial load: total=${matches.length}, '
-        'today=${todaySoccer.length}',
-      );
-
       var nonStandardStatusLogs = 0;
       for (final m in matches) {
         if (m.status != 'scheduled' && m.status != 'finished') {
@@ -120,17 +105,6 @@ class FixtureService {
       '[FIXTURE] Baseball fixtures range: ${merged.length} matches from 7 dates',
     );
     return merged;
-  }
-
-  String _fixtureDateString(DateTime date) {
-    final month = date.month.toString().padLeft(2, '0');
-    final day = date.day.toString().padLeft(2, '0');
-    return '${date.year}-$month-$day';
-  }
-
-  bool _matchIsOnDate(FixtureMatch match, String dateStr) {
-    final local = match.matchTimestamp.toLocal();
-    return _fixtureDateString(local) == dateStr;
   }
 
   String _formatApiDate(DateTime date) {

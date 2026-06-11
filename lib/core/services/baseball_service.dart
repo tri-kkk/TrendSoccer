@@ -58,6 +58,7 @@ class BaseballService {
   }) async {
     try {
       final language = _apiLanguage();
+      debugPrint('[BASEBALL] pitcher-analysis language: $language');
       final body = <String, dynamic>{
         'matchId': matchId,
         'homeTeam': homeTeam,

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
@@ -83,25 +82,6 @@ LiveMatchData? _liveDataForFixture(
     return liveMap[apiMatchId.toString()];
   }
   return null;
-}
-
-(int, int) _todaySoccerLogoCounts(List<FixtureMatch> matches) {
-  final todayStr = fixtureTodayDateString();
-  final today = matches
-      .where((m) => m.sport == 'soccer' && matchIsOnDate(m, todayStr))
-      .toList();
-  final withLogo = today
-      .where((m) => m.homeTeamLogo != null && m.homeTeamLogo!.isNotEmpty)
-      .length;
-  return (today.length, withLogo);
-}
-
-void _logTodaySoccerLogosInChain(String stage, List<FixtureMatch> matches) {
-  final (todayCount, withLogo) = _todaySoccerLogoCounts(matches);
-  if (todayCount == 0) return;
-  debugPrint(
-    '[FIXTURE-LOGO] Chain $stage: today=$todayCount, withHomeLogo=$withLogo',
-  );
 }
 
 /// Replaces today's matches in [existing] with [todayFresh] from a live poll.
@@ -192,9 +172,7 @@ final rawFixturesProvider = Provider<AsyncValue<List<FixtureMatch>>>((ref) {
     }
     return ref.watch(baseballFixturesProvider);
   }
-  final raw = ref.watch(soccerFixturesProvider);
-  raw.whenData((matches) => _logTodaySoccerLogosInChain('rawFixtures', matches));
-  return raw;
+  return ref.watch(soccerFixturesProvider);
 });
 
 List<FixtureMatch> _scopeMatchesForFilters(
@@ -339,9 +317,6 @@ final filteredFixturesProvider =
       liveMap: liveMap,
       selectedLeague: selectedLeague,
     );
-    if (sport == 'soccer') {
-      _logTodaySoccerLogosInChain('filteredFixtures', filtered);
-    }
     return filtered;
   });
 });
@@ -353,13 +328,8 @@ final allFixturesWithLiveProvider =
   final rawAsync = ref.watch(rawFixturesProvider);
   final liveMap = ref.watch(liveMatchesProvider);
 
-  final sport = ref.watch(fixtureSelectedSportProvider);
   return rawAsync.whenData((matches) {
-    final merged = _mergeFixturesWithLive(matches, liveMap);
-    if (sport == 'soccer') {
-      _logTodaySoccerLogosInChain('allFixturesWithLive', merged);
-    }
-    return merged;
+    return _mergeFixturesWithLive(matches, liveMap);
   });
 });
 

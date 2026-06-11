@@ -69,10 +69,18 @@ String extractLegalContent(String html) {
 
   content = content.replaceFirst(RegExp(r'^# .*\n\n'), '');
   content = content.replaceFirst(RegExp(r'버전:[\s\S]*?(?=##|$)'), '');
+  content = content.replaceFirst(
+    RegExp(r'Version:[\s\S]*?(?=##|$)', caseSensitive: false),
+    '',
+  );
 
   content = content.replaceAll(RegExp(r'←?\s*홈으로.*', multiLine: true), '');
   content = content.replaceAll(RegExp(r'← 홈으로'), '');
   content = content.replaceAll(RegExp(r'홈으로 돌아가기.*', multiLine: true), '');
+  content = content.replaceAll(
+    RegExp(r'←?\s*Back to home.*', caseSensitive: false, multiLine: true),
+    '',
+  );
 
   content = content.replaceAll(
     'trendsoccer.com',

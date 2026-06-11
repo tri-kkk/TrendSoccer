@@ -1,6 +1,8 @@
 {
   "@@locale": "ko",
+  "aboutContactEmail": "tikilab2025@gmail.com",
   "aboutContactSection": "컨택 & 서포트",
+  "aboutContactWebsite": "trendsoccer.com",
   "aboutDescription": "TrendSoccer는 AI 기반 실시간 분석으로 경기 흐름을 예측합니다. 프리미어리그부터 챔피언스리그까지, 모든 빅매치를 전문가 수준의 인사이트로 경험하세요.",
   "aboutFeatureAiDesc": "4시즌 방대한 경기 데이터를 기반으로 구축",
   "aboutFeatureAiTitle": "AI 기반 분석",
@@ -9,7 +11,7 @@
   "aboutFeatureOddsDesc": "배당 무브먼트에 따른 마켓 모니터링",
   "aboutFeatureOddsTitle": "실시간 배당 분석",
   "aboutFeaturesSection": "주요 기능",
-  "aboutTagline": "Reading the Flow of Football Through Data",
+  "aboutTagline": "데이터로 읽는 축구의 흐름",
   "aboutVisionSection": "비전",
   "aboutVisionText": "축구 팬들이 경기를 더 깊이 이해하고 즐길 수 있도록 돕습니다.",
   "accessLockLoginRequired": "로그인 후 확인 가능합니다.",

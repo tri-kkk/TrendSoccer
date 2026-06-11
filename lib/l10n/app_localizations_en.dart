@@ -9,7 +9,13 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get aboutContactEmail => 'tikilab2025@gmail.com';
+
+  @override
   String get aboutContactSection => 'Contact & Support';
+
+  @override
+  String get aboutContactWebsite => 'trendsoccer.com';
 
   @override
   String get aboutDescription =>

@@ -9,7 +9,13 @@ class AppLocalizationsKo extends AppLocalizations {
   AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
   @override
+  String get aboutContactEmail => 'tikilab2025@gmail.com';
+
+  @override
   String get aboutContactSection => '컨택 & 서포트';
+
+  @override
+  String get aboutContactWebsite => 'trendsoccer.com';
 
   @override
   String get aboutDescription =>
@@ -37,7 +43,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get aboutFeaturesSection => '주요 기능';
 
   @override
-  String get aboutTagline => 'Reading the Flow of Football Through Data';
+  String get aboutTagline => '데이터로 읽는 축구의 흐름';
 
   @override
   String get aboutVisionSection => '비전';

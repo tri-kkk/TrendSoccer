@@ -98,11 +98,23 @@ abstract class AppLocalizations {
     Locale('en'),
   ];
 
+  /// No description provided for @aboutContactEmail.
+  ///
+  /// In ko, this message translates to:
+  /// **'tikilab2025@gmail.com'**
+  String get aboutContactEmail;
+
   /// No description provided for @aboutContactSection.
   ///
   /// In ko, this message translates to:
   /// **'컨택 & 서포트'**
   String get aboutContactSection;
+
+  /// No description provided for @aboutContactWebsite.
+  ///
+  /// In ko, this message translates to:
+  /// **'trendsoccer.com'**
+  String get aboutContactWebsite;
 
   /// No description provided for @aboutDescription.
   ///
@@ -155,7 +167,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutTagline.
   ///
   /// In ko, this message translates to:
-  /// **'Reading the Flow of Football Through Data'**
+  /// **'데이터로 읽는 축구의 흐름'**
   String get aboutTagline;
 
   /// No description provided for @aboutVisionSection.

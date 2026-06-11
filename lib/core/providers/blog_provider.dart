@@ -49,3 +49,10 @@ final termsContentProvider = FutureProvider<String>((ref) async {
   final service = ref.read(blogServiceProvider);
   return _loadLegalMarkdown(service, 'terms', 'terms of service');
 });
+
+/// Clears cached legal pages so the next read uses the updated API language.
+void invalidateLegalLanguageDependentProviders(Ref ref) {
+  debugPrint('[LEGAL] Invalidating providers after language change');
+  ref.invalidate(privacyContentProvider);
+  ref.invalidate(termsContentProvider);
+}

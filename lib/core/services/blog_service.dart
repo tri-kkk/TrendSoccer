@@ -78,12 +78,13 @@ class BlogService {
 
   Future<String> fetchLegalContent(String type) async {
     try {
+      final locale = _apiLanguage();
       final response = await _dio.get<dynamic>(
-        '/ko/$type',
+        '/$locale/$type',
         options: Options(responseType: ResponseType.plain),
       );
       final html = response.data?.toString() ?? '';
-      debugPrint('[LEGAL] Fetched $type: ${html.length} chars');
+      debugPrint('[LEGAL] Fetched $type ($locale): ${html.length} chars');
       return html;
     } catch (e) {
       debugPrint('[LEGAL] Error fetching $type: $e');

@@ -116,7 +116,7 @@ class AboutPage extends StatelessWidget {
                 Icon(Icons.mail_outline, size: 24, color: semantic.textSecondary),
                 const SizedBox(width: 16),
                 Text(
-                  'tikilab2025@gmail.com',
+                  l10n.aboutContactEmail,
                   style: TsType.bodyLRegular.copyWith(color: semantic.interactivePrimary),
                 ),
               ],
@@ -135,7 +135,7 @@ class AboutPage extends StatelessWidget {
                 ),
                 const SizedBox(width: 16),
                 Text(
-                  'trendsoccer.com',
+                  l10n.aboutContactWebsite,
                   style: TsType.bodyLRegular.copyWith(color: semantic.interactivePrimary),
                 ),
               ],

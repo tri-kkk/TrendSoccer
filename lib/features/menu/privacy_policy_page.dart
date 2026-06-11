@@ -38,6 +38,7 @@ class PrivacyPolicyPage extends ConsumerWidget {
         ),
       ),
       body: contentAsync.when(
+        skipLoadingOnRefresh: false,
         loading: () => Center(
           child: CircularProgressIndicator(color: semantic.interactivePrimary),
         ),

@@ -1,6 +1,8 @@
 {
   "@@locale": "en",
+  "aboutContactEmail": "tikilab2025@gmail.com",
   "aboutContactSection": "Contact & Support",
+  "aboutContactWebsite": "trendsoccer.com",
   "aboutDescription": "TrendSoccer predicts match flow with AI-powered real-time analysis. From the Premier League to the Champions League, experience every big match with expert-level insights.",
   "aboutFeatureAiDesc": "Built on four seasons of extensive match data",
   "aboutFeatureAiTitle": "AI-powered analysis",

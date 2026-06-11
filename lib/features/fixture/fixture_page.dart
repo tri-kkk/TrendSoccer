@@ -57,7 +57,6 @@ class _FixturePageState extends ConsumerState<FixturePage>
   final ScrollController _dateChipScrollController = ScrollController();
   bool _syncingPage = false;
   bool _deepLinkApplied = false;
-  int _logoRenderLogCount = 0;
   Timer? _livePollingTimer;
 
   @override
@@ -677,17 +676,6 @@ class _FixturePageState extends ConsumerState<FixturePage>
     required AppLocalizations l10n,
     LiveMatchData? live,
   }) {
-    if (!isBaseball &&
-        matchIsOnDate(match, fixtureTodayDateString()) &&
-        _logoRenderLogCount < 2 &&
-        (match.homeTeamLogo == null || match.homeTeamLogo!.isEmpty)) {
-      _logoRenderLogCount++;
-      debugPrint(
-        '[FIXTURE-LOGO] Missing at render: ${match.homeTeam}, '
-        'league=${match.leagueKey}',
-      );
-    }
-
     return FixtureMatchRow(
       status: _toFixtureStatus(match, isBaseball: isBaseball),
       timeText: _statusTimeText(
