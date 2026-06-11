@@ -194,14 +194,17 @@ class BaseballService {
     bool quick = false,
   }) async {
     try {
+      final language = _apiLanguage();
+      final body = <String, dynamic>{
+        'matchId': matchId,
+        'homeTeam': homeTeam,
+        'awayTeam': awayTeam,
+        'quick': quick,
+        'language': language,
+      };
       final response = await _dio.post<dynamic>(
         '/api/baseball/predict',
-        data: <String, dynamic>{
-          'matchId': matchId,
-          'homeTeam': homeTeam,
-          'awayTeam': awayTeam,
-          'quick': quick,
-        },
+        data: body,
         options: Options(
           sendTimeout: const Duration(seconds: 30),
           receiveTimeout: const Duration(seconds: 30),

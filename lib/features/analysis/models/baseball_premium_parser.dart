@@ -195,7 +195,7 @@ BaseballPremiumParsed parseBaseballPremium({
       : 'PASS';
 
   final summaryRaw =
-      _readString(insights, const ['summary']) ?? labels.baseballAiSummaryDefault;
+      _readInsightsSummary(insights, labels) ?? labels.baseballAiSummaryDefault;
   final summary = _localizeTeamNamesInSummary(
     _formatPremiumSummary(summaryRaw),
     homeTeamEn: homeTeamEn,
@@ -614,6 +614,21 @@ String? _readString(Map<String, dynamic> map, List<String> keys) {
     if (value is num) return value.toString();
   }
   return null;
+}
+
+String? _readInsightsSummary(
+  Map<String, dynamic> insights,
+  ParserLabels labels,
+) {
+  final isEn = labels.l10n.localeName.startsWith('en');
+  if (isEn) {
+    final english = _readString(
+      insights,
+      const ['summaryEn', 'summary_en', 'summaryEN'],
+    );
+    if (english != null) return english;
+  }
+  return _readString(insights, const ['summary']);
 }
 
 double? _parseDouble(Object? value) {
