@@ -9,6 +9,8 @@ import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/blog_provider.dart';
+import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
+import 'package:trendsoccer/core/utils/api_language_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
@@ -241,10 +243,11 @@ class SoccerReportDetailPage extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     final hasFullAccess = auth.hasFullAccess;
     final postAsync = ref.watch(blogPostDetailProvider(slug));
+    final locale = getApiLanguage(ref.read(sharedPreferencesProvider));
     final bottomPadding = TsSpacing.lg + MediaQuery.paddingOf(context).bottom;
     final appBarTitle = postAsync.when(
       data: (response) {
-        final post = BlogParser.parsePostDetail(response);
+        final post = BlogParser.parsePostDetail(response, locale: locale);
         if (post != null) {
           return extractMatchupTitle(post.content, post.title);
         }
@@ -284,7 +287,7 @@ class SoccerReportDetailPage extends ConsumerWidget {
           ),
         ),
         data: (response) {
-          final post = BlogParser.parsePostDetail(response);
+          final post = BlogParser.parsePostDetail(response, locale: locale);
           if (post == null) {
             return Padding(
               padding: EdgeInsets.only(bottom: bottomPadding),

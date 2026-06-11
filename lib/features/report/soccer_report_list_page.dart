@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/providers/blog_provider.dart';
+import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
+import 'package:trendsoccer/core/utils/api_language_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/report/blog_parser.dart';
@@ -50,7 +52,8 @@ class SoccerReportListPage extends ConsumerWidget {
           ),
         ),
         data: (response) {
-          final posts = BlogParser.parsePostsList(response);
+          final locale = getApiLanguage(ref.read(sharedPreferencesProvider));
+          final posts = BlogParser.parsePostsList(response, locale: locale);
           if (posts.isEmpty) {
             return TsEmptyState(
               title: l10n.reportEmptyTitle,

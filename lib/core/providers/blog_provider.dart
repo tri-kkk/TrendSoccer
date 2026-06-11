@@ -55,4 +55,6 @@ void invalidateLegalLanguageDependentProviders(Ref ref) {
   debugPrint('[LEGAL] Invalidating providers after language change');
   ref.invalidate(privacyContentProvider);
   ref.invalidate(termsContentProvider);
+  ref.invalidate(blogPostsProvider);
+  ref.invalidate(blogPostDetailProvider);
 }

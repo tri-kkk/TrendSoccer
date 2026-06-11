@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class BlogPostListItem {
   const BlogPostListItem({
     required this.slug,
@@ -39,12 +41,27 @@ class BlogPostDetail {
 class BlogParser {
   BlogParser._();
 
-  static List<BlogPostListItem> parsePostsList(Map<String, dynamic> response) {
+  static List<BlogPostListItem> parsePostsList(
+    Map<String, dynamic> response, {
+    required String locale,
+  }) {
     final raw = _extractPosts(response);
-    return raw.map(_parseListItem).where((item) => item.slug.isNotEmpty).toList();
+    if (raw.isNotEmpty) {
+      final first = raw.first;
+      debugPrint(
+        '[BLOG] First item: title=${first['title']}, title_kr=${first['title_kr']}',
+      );
+    }
+    return raw
+        .map((post) => _parseListItem(post, locale: locale))
+        .where((item) => item.slug.isNotEmpty)
+        .toList();
   }
 
-  static BlogPostDetail? parsePostDetail(Map<String, dynamic> response) {
+  static BlogPostDetail? parsePostDetail(
+    Map<String, dynamic> response, {
+    required String locale,
+  }) {
     final post = _extractPost(response);
     if (post == null || post.isEmpty) return null;
 
@@ -53,7 +70,7 @@ class BlogParser {
 
     return BlogPostDetail(
       slug: slug,
-      title: post['title_kr']?.toString() ?? post['title']?.toString() ?? '',
+      title: localizedBlogTitle(locale, post),
       content: post['content']?.toString() ?? '',
       date: formatPublishedDate(post['published_at']?.toString()),
       thumbnailUrl: _readThumbnail(post),
@@ -62,11 +79,34 @@ class BlogParser {
     );
   }
 
-  static BlogPostListItem _parseListItem(Map<String, dynamic> post) {
+  static String localizedBlogTitle(String locale, Map<String, dynamic> json) {
+    if (locale == 'en') {
+      return json['title']?.toString() ?? json['title_kr']?.toString() ?? '';
+    }
+    return json['title_kr']?.toString() ?? json['title']?.toString() ?? '';
+  }
+
+  static String localizedBlogExcerpt(String locale, Map<String, dynamic> json) {
+    if (locale == 'en') {
+      final english = json['excerpt_en']?.toString() ?? json['excerptEn']?.toString();
+      if (english != null && english.trim().isNotEmpty) {
+        return english.trim();
+      }
+      return json['excerpt']?.toString() ?? '';
+    }
+    return json['excerpt_kr']?.toString() ??
+        json['excerpt']?.toString() ??
+        '';
+  }
+
+  static BlogPostListItem _parseListItem(
+    Map<String, dynamic> post, {
+    required String locale,
+  }) {
     return BlogPostListItem(
       slug: post['slug']?.toString() ?? '',
-      title: post['title_kr']?.toString() ?? post['title']?.toString() ?? '',
-      description: post['excerpt']?.toString() ?? '',
+      title: localizedBlogTitle(locale, post),
+      description: localizedBlogExcerpt(locale, post),
       date: formatPublishedDate(post['published_at']?.toString()),
       thumbnailUrl: _readThumbnail(post),
       language: post['language']?.toString(),

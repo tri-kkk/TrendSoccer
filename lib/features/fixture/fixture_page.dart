@@ -134,8 +134,22 @@ class _FixturePageState extends ConsumerState<FixturePage>
     if (ref.read(fixtureSelectedSportProvider) != 'soccer') return;
 
     final service = ref.read(fixtureServiceProvider);
-    final liveData = await service.getLiveMatches();
+    var liveData = await service.getLiveMatches();
     if (!mounted) return;
+
+    if (liveData.isEmpty) {
+      debugPrint('[FIXTURE] Soccer live: empty response, retrying in 3s');
+      await Future.delayed(const Duration(seconds: 3));
+      if (!mounted) return;
+      final retryData = await service.getLiveMatches();
+      if (!mounted) return;
+      if (retryData.isNotEmpty) {
+        debugPrint('[FIXTURE] Soccer live retry: ${retryData.length} matches');
+        liveData = retryData;
+      } else {
+        debugPrint('[FIXTURE] Soccer live retry: still empty');
+      }
+    }
 
     ref.read(liveMatchesProvider.notifier).state = liveData;
   }
