@@ -100,6 +100,7 @@ class _SoccerMatchReportPageState extends ConsumerState<SoccerMatchReportPage> {
         final parsed = parseSoccerStandardAnalysis(
           raw,
           labels: ParserLabels.from(context.l10n),
+          locale: Localizations.localeOf(context).languageCode,
           fallbackMatchTimestamp: matchTimestamp,
           headerFallback: header,
         );
@@ -145,7 +146,9 @@ class _SoccerMatchReportPageState extends ConsumerState<SoccerMatchReportPage> {
                 header.leagueName,
               ),
               leagueLogoUrl: header.leagueLogo,
-              matchDate: header.displayDate,
+              matchDate: header.displayDateFor(
+                Localizations.localeOf(context).languageCode,
+              ),
               homeTeam: localizedTeamName(
                 context,
                 header.homeTeam,

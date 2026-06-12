@@ -536,7 +536,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get errorDeleteConfirmation => '계정 삭제에 실패했습니다';
 
   @override
+  String get errorAccountDeleted => '탈퇴한 계정입니다. 다른 계정으로 로그인해주세요.';
+
+  @override
   String get errorEmailRequired => '이메일이 필요합니다';
+
+  @override
+  String get errorNaverLoginFailed => '네이버 로그인에 실패했습니다. 다시 시도해주세요.';
 
   @override
   String get errorNetworkTimeout => '네트워크 연결을 확인해주세요';
@@ -585,6 +591,16 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get fixtureInterrupted => '중단';
+
+  @override
+  String baseballInningTop(int inning) {
+    return '$inning회 초';
+  }
+
+  @override
+  String baseballInningBottom(int inning) {
+    return '$inning회 말';
+  }
 
   @override
   String get fixtureLive => 'LIVE';
@@ -723,6 +739,18 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get languageSettingsTitle => '언어 설정';
+
+  @override
+  String get languageKorean => '한국어';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get maintenanceTitle => '서비스 점검 중';
+
+  @override
+  String get maintenanceSubtitle => '잠시 후 다시 시도해주세요.';
 
   @override
   String get legalLoadError => '내용을 불러오지 못했습니다.';
@@ -1052,6 +1080,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get premiumSubscribeNow => '지금 구독하기';
 
   @override
+  String get subscribeNow => '지금 구독하기';
+
+  @override
+  String get subscribeToUnlock => '프리미엄 구독으로 전체 예측을 확인하세요';
+
+  @override
   String get premiumSubscribeSheetBaseballDesc =>
       '승리 확률, 오버&언더, 시즌 통계 등 AI 분석 데이터를 이용해보세요.';
 
@@ -1127,6 +1161,39 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get signupAgreeAll => '전체 동의';
+
+  @override
+  String get signupTermsAgree => '이용약관 동의';
+
+  @override
+  String get signupPrivacyAgree => '개인정보처리방침 동의';
+
+  @override
+  String get signupMarketingAgree => '마케팅 이메일 수신 동의';
+
+  @override
+  String get signupRequiredBadge => '필수';
+
+  @override
+  String get signupOptionalBadge => '선택';
+
+  @override
+  String get signupFreeBenefit1 => '기본 분석 데이터 확인';
+
+  @override
+  String get signupFreeBenefit2 => '실시간 스코어 및 경기 일정';
+
+  @override
+  String get signupFreeBenefit3 => '야구 Standard 분석 열람';
+
+  @override
+  String get signupTrialBannerSubtitle => '가입 즉시 프리미엄 기능 48시간 무료 체험';
+
+  @override
+  String get signupWhatsNextBenefit1 => '48시간 무료 체험 종료 후 자동 무료 전환';
+
+  @override
+  String get signupWhatsNextBenefit2 => '프리미엄 구독으로 모든 기능 이용 가능';
 
   @override
   String get signupCompleteAppBarTitle => '가입완료';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -21,10 +22,12 @@ class PlanOption extends StatelessWidget {
 
   String get _price => type == PlanOptionType.oneMonth ? '￦ 4,900' : '￦ 9,900';
 
-  String get _period => type == PlanOptionType.oneMonth ? '1개월' : '3개월';
-
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final period = type == PlanOptionType.oneMonth
+        ? l10n.subscribePlanMonthly
+        : l10n.subscribePlanQuarterly;
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     return GestureDetector(
       onTap: onTap,
@@ -56,7 +59,7 @@ class PlanOption extends StatelessWidget {
                     ),
                     const SizedBox(width: TsSpacing.sm),
                     Text(
-                      _period,
+                      period,
                       style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
                     ),
                   ],

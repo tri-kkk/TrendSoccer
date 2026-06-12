@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -10,6 +11,7 @@ class FreeBenefitsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     return Container(
       width: double.infinity,
@@ -26,11 +28,11 @@ class FreeBenefitsCard extends StatelessWidget {
             style: TsType.headingH3.copyWith(color: semantic.textPrimary),
           ),
           const SizedBox(height: TsSpacing.md),
-          const BenefitText(text: '기본 분석 데이터 확인'),
+          BenefitText(text: l10n.signupFreeBenefit1),
           const SizedBox(height: TsSpacing.md),
-          const BenefitText(text: '실시간 스코어 및 경기 일정'),
+          BenefitText(text: l10n.signupFreeBenefit2),
           const SizedBox(height: TsSpacing.md),
-          const BenefitText(text: '야구 Standard 분석 열람'),
+          BenefitText(text: l10n.signupFreeBenefit3),
         ],
       ),
     );

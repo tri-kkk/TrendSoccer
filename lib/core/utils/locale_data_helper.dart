@@ -79,7 +79,11 @@ String baseballAsianLeagueApiLookupTeam(String? nameEn, String? nameKo) {
 String localizedStreak(BuildContext context, String? streak) {
   if (streak == null || streak.isEmpty) return '';
   if (streak == '-') return streak;
-  if (isKoreanLocale(context)) return streak;
+  if (isKoreanLocale(context)) {
+    final winMatch = RegExp(r'^(\d+) Win$').firstMatch(streak);
+    if (winMatch != null) return '${winMatch.group(1)}연승';
+    return streak;
+  }
 
   final match = RegExp(r'(\d+)(연승|연패|무)').firstMatch(streak);
   if (match != null) {

@@ -165,7 +165,9 @@
   "errorContactFailed": "문의 전송에 실패했습니다",
   "errorCooldownActive": "{daysLeft}일 후 다시 시도해주세요",
   "errorDeleteConfirmation": "계정 삭제에 실패했습니다",
+  "errorAccountDeleted": "탈퇴한 계정입니다. 다른 계정으로 로그인해주세요.",
   "errorEmailRequired": "이메일이 필요합니다",
+  "errorNaverLoginFailed": "네이버 로그인에 실패했습니다. 다시 시도해주세요.",
   "errorNetworkTimeout": "네트워크 연결을 확인해주세요",
   "errorNotFound": "요청한 정보를 찾을 수 없습니다",
   "errorPaymentPending": "결제 처리 중입니다. 잠시 후 다시 시도해주세요",
@@ -182,6 +184,8 @@
   "fixtureCancelled": "취소",
   "fixtureEmpty": "경기 일정이 없습니다.",
   "fixtureInterrupted": "중단",
+  "baseballInningTop": "{inning}회 초",
+  "baseballInningBottom": "{inning}회 말",
   "fixtureLive": "LIVE",
   "fixtureLiveEmpty": "진행 중인 경기가 없습니다.",
   "fixtureLiveEmptyAction": "오늘 경기 확인하기",
@@ -228,6 +232,10 @@
   "labelWin": "승",
   "labelWinShort": "W",
   "languageSettingsTitle": "언어 설정",
+  "languageKorean": "한국어",
+  "languageEnglish": "English",
+  "maintenanceTitle": "서비스 점검 중",
+  "maintenanceSubtitle": "잠시 후 다시 시도해주세요.",
   "legalLoadError": "내용을 불러오지 못했습니다.",
   "liveMinutes": "{minutes}분",
   "loadMatchesFailed": "경기 목록을 불러오지 못했습니다.",
@@ -329,6 +337,8 @@
   "premiumSubscribeAfter": "구독 후 이용하실 수 있습니다.",
   "premiumSubscribeBenefitsLine1": "PREMIUM PICK과 야구 AI 조합 분석을",
   "premiumSubscribeNow": "지금 구독하기",
+  "subscribeNow": "지금 구독하기",
+  "subscribeToUnlock": "프리미엄 구독으로 전체 예측을 확인하세요",
   "premiumSubscribeSheetBaseballDesc": "승리 확률, 오버&언더, 시즌 통계 등 AI 분석 데이터를 이용해보세요.",
   "premiumSubscribeSheetSoccerDesc": "H2H 상대전적, 팀 심층 분석 등 프리미엄 혜택을 이용해보세요.",
   "reportAuthorRole": "축구 데이터 분석가",
@@ -354,6 +364,17 @@
   "signOutSuccess": "로그아웃 되었습니다.",
   "signOutTitle": "로그아웃",
   "signupAgreeAll": "전체 동의",
+  "signupTermsAgree": "이용약관 동의",
+  "signupPrivacyAgree": "개인정보처리방침 동의",
+  "signupMarketingAgree": "마케팅 이메일 수신 동의",
+  "signupRequiredBadge": "필수",
+  "signupOptionalBadge": "선택",
+  "signupFreeBenefit1": "기본 분석 데이터 확인",
+  "signupFreeBenefit2": "실시간 스코어 및 경기 일정",
+  "signupFreeBenefit3": "야구 Standard 분석 열람",
+  "signupTrialBannerSubtitle": "가입 즉시 프리미엄 기능 48시간 무료 체험",
+  "signupWhatsNextBenefit1": "48시간 무료 체험 종료 후 자동 무료 전환",
+  "signupWhatsNextBenefit2": "프리미엄 구독으로 모든 기능 이용 가능",
   "signupCompleteAppBarTitle": "가입완료",
   "signupCompleteCountdown": "{seconds}초 후 자동으로 홈으로 이동합니다.",
   "signupCompleteFreeBenefit1": "경기 시작 2시간 전 분석 오픈",
@@ -773,6 +794,20 @@
   "@errorCooldownActive": {
     "placeholders": {
       "daysLeft": {
+        "type": "int"
+      }
+    }
+  },
+  "@baseballInningTop": {
+    "placeholders": {
+      "inning": {
+        "type": "int"
+      }
+    }
+  },
+  "@baseballInningBottom": {
+    "placeholders": {
+      "inning": {
         "type": "int"
       }
     }

@@ -122,7 +122,7 @@ class AuthService {
       'user': <String, dynamic>{
         'userId': 'stub-uuid',
         'email': 'user@naver.com',
-        'name': '네이버 사용자',
+        'name': 'Naver User',
         'avatarUrl': null,
         'tier': 'free',
         'premiumExpiresAt': null,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -17,6 +18,7 @@ class AgreeToAllRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     return Container(
       decoration: BoxDecoration(
@@ -31,7 +33,7 @@ class AgreeToAllRow extends StatelessWidget {
           const SizedBox(width: TsSpacing.md),
           Expanded(
             child: Text(
-              '전체 동의',
+              l10n.signupAgreeAll,
               style: TsType.bodyLBold.copyWith(color: semantic.textPrimary),
             ),
           ),

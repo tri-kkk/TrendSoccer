@@ -107,6 +107,9 @@ String? _exceptionMessage(dynamic error) {
 }
 
 String? _messageFromExceptionText(AppLocalizations l10n, String message) {
+  final fromCode = _messageFromErrorCode(l10n, message);
+  if (fromCode != null) return fromCode;
+
   if (message.contains('Purchase verification failed')) {
     return l10n.errorPurchaseVerifyFailed;
   }
@@ -133,6 +136,25 @@ String? _messageFromExceptionText(AppLocalizations l10n, String message) {
     return l10n.errorUnauthorized;
   }
   return null;
+}
+
+String? _messageFromErrorCode(AppLocalizations l10n, String message) {
+  final trimmed = message.trim();
+  if (trimmed.isEmpty) return null;
+
+  var code = trimmed;
+  Map<String, dynamic>? extra;
+  final colonIndex = trimmed.indexOf(':');
+  if (colonIndex > 0) {
+    code = trimmed.substring(0, colonIndex).trim();
+    final daysLeft = int.tryParse(trimmed.substring(colonIndex + 1).trim());
+    if (daysLeft != null) {
+      extra = <String, dynamic>{'daysLeft': daysLeft};
+    }
+  }
+
+  if (!RegExp(r'^[A-Z_]+$').hasMatch(code)) return null;
+  return _messageForCode(l10n, code, extra: extra);
 }
 
 String _messageForCode(
@@ -171,6 +193,16 @@ String _messageForCode(
     case 'DELETE_ACCOUNT_FAILED':
     case 'ACCOUNT_DELETE_FAILED':
       return l10n.errorDeleteConfirmation;
+    case 'LOGIN_FAILED':
+      return l10n.errorLogin;
+    case 'NAVER_LOGIN_FAILED':
+      return l10n.errorNaverLoginFailed;
+    case 'NAVER_AUTH_EXPIRED':
+      return l10n.errorUnauthorized;
+    case 'ACCOUNT_DELETED':
+      return l10n.errorAccountDeleted;
+    case 'USER_NOT_FOUND':
+      return l10n.errorNotFound;
     case 'CONTACT_FAILED':
       return l10n.errorContactFailed;
     case 'PURCHASE_VERIFY_FAILED':

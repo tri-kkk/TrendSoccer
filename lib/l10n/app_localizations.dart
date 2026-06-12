@@ -1088,11 +1088,23 @@ abstract class AppLocalizations {
   /// **'계정 삭제에 실패했습니다'**
   String get errorDeleteConfirmation;
 
+  /// No description provided for @errorAccountDeleted.
+  ///
+  /// In ko, this message translates to:
+  /// **'탈퇴한 계정입니다. 다른 계정으로 로그인해주세요.'**
+  String get errorAccountDeleted;
+
   /// No description provided for @errorEmailRequired.
   ///
   /// In ko, this message translates to:
   /// **'이메일이 필요합니다'**
   String get errorEmailRequired;
+
+  /// No description provided for @errorNaverLoginFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'네이버 로그인에 실패했습니다. 다시 시도해주세요.'**
+  String get errorNaverLoginFailed;
 
   /// No description provided for @errorNetworkTimeout.
   ///
@@ -1189,6 +1201,18 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'중단'**
   String get fixtureInterrupted;
+
+  /// No description provided for @baseballInningTop.
+  ///
+  /// In ko, this message translates to:
+  /// **'{inning}회 초'**
+  String baseballInningTop(int inning);
+
+  /// No description provided for @baseballInningBottom.
+  ///
+  /// In ko, this message translates to:
+  /// **'{inning}회 말'**
+  String baseballInningBottom(int inning);
 
   /// No description provided for @fixtureLive.
   ///
@@ -1465,6 +1489,30 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'언어 설정'**
   String get languageSettingsTitle;
+
+  /// No description provided for @languageKorean.
+  ///
+  /// In ko, this message translates to:
+  /// **'한국어'**
+  String get languageKorean;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In ko, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @maintenanceTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'서비스 점검 중'**
+  String get maintenanceTitle;
+
+  /// No description provided for @maintenanceSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'잠시 후 다시 시도해주세요.'**
+  String get maintenanceSubtitle;
 
   /// No description provided for @legalLoadError.
   ///
@@ -2072,6 +2120,18 @@ abstract class AppLocalizations {
   /// **'지금 구독하기'**
   String get premiumSubscribeNow;
 
+  /// No description provided for @subscribeNow.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금 구독하기'**
+  String get subscribeNow;
+
+  /// No description provided for @subscribeToUnlock.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 구독으로 전체 예측을 확인하세요'**
+  String get subscribeToUnlock;
+
   /// No description provided for @premiumSubscribeSheetBaseballDesc.
   ///
   /// In ko, this message translates to:
@@ -2221,6 +2281,72 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'전체 동의'**
   String get signupAgreeAll;
+
+  /// No description provided for @signupTermsAgree.
+  ///
+  /// In ko, this message translates to:
+  /// **'이용약관 동의'**
+  String get signupTermsAgree;
+
+  /// No description provided for @signupPrivacyAgree.
+  ///
+  /// In ko, this message translates to:
+  /// **'개인정보처리방침 동의'**
+  String get signupPrivacyAgree;
+
+  /// No description provided for @signupMarketingAgree.
+  ///
+  /// In ko, this message translates to:
+  /// **'마케팅 이메일 수신 동의'**
+  String get signupMarketingAgree;
+
+  /// No description provided for @signupRequiredBadge.
+  ///
+  /// In ko, this message translates to:
+  /// **'필수'**
+  String get signupRequiredBadge;
+
+  /// No description provided for @signupOptionalBadge.
+  ///
+  /// In ko, this message translates to:
+  /// **'선택'**
+  String get signupOptionalBadge;
+
+  /// No description provided for @signupFreeBenefit1.
+  ///
+  /// In ko, this message translates to:
+  /// **'기본 분석 데이터 확인'**
+  String get signupFreeBenefit1;
+
+  /// No description provided for @signupFreeBenefit2.
+  ///
+  /// In ko, this message translates to:
+  /// **'실시간 스코어 및 경기 일정'**
+  String get signupFreeBenefit2;
+
+  /// No description provided for @signupFreeBenefit3.
+  ///
+  /// In ko, this message translates to:
+  /// **'야구 Standard 분석 열람'**
+  String get signupFreeBenefit3;
+
+  /// No description provided for @signupTrialBannerSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'가입 즉시 프리미엄 기능 48시간 무료 체험'**
+  String get signupTrialBannerSubtitle;
+
+  /// No description provided for @signupWhatsNextBenefit1.
+  ///
+  /// In ko, this message translates to:
+  /// **'48시간 무료 체험 종료 후 자동 무료 전환'**
+  String get signupWhatsNextBenefit1;
+
+  /// No description provided for @signupWhatsNextBenefit2.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 구독으로 모든 기능 이용 가능'**
+  String get signupWhatsNextBenefit2;
 
   /// No description provided for @signupCompleteAppBarTitle.
   ///

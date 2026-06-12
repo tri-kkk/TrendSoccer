@@ -63,7 +63,7 @@ class SubscriptionInfo {
     final autoRenewingRaw = map['autoRenewing'] ?? map['auto_renewing'];
 
     return SubscriptionInfo(
-      status: map['status'] as String?,
+      status: (map['status'] ?? map['tier']) as String?,
       expiresAt: _parseSubscriptionDate(expiresRaw),
       nextBillingDate: _parseSubscriptionDate(nextBillingRaw),
       startedAt: _parseSubscriptionDate(startedAtRaw),
@@ -207,8 +207,9 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
   PlanType _planTypeFromProfile(UserProfile profile) {
     final tier = profile.tier;
-    final hasActiveSubscription =
-        _subscription != null && _subscription!.status == 'active';
+    final subscriptionStatus = _subscription?.status;
+    final hasActiveSubscription = _subscription != null &&
+        (subscriptionStatus == 'active' || subscriptionStatus == 'premium');
     final active = _trial?.active ?? false;
     final trialEndsAt = _trial?.endsAt ?? profile.trialEndsAt;
     final isTrialActive = active ||
@@ -299,29 +300,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
     await prefs.setString(_authProviderKey, 'naver');
   }
 
-  ApiException _mapAuthException(ApiException e) {
-    if (e.code == 'COOLDOWN_ACTIVE') {
-      final daysLeft = _daysLeftFromMessage(e.message);
-      final message = daysLeft != null
-          ? '탈퇴 후 재가입 대기 중입니다. ($daysLeft일 남음)'
-          : '탈퇴 후 재가입 대기 중입니다.';
-      return ApiException(code: e.code, message: message, messageEn: e.messageEn);
-    }
-    if (e.code == 'ACCOUNT_DELETED') {
-      return ApiException(
-        code: e.code,
-        message: '탈퇴한 계정입니다. 다른 계정으로 로그인해주세요.',
-        messageEn: e.messageEn,
-      );
-    }
-    return e;
-  }
-
-  int? _daysLeftFromMessage(String message) {
-    final match = RegExp(r'(\d+)').firstMatch(message);
-    if (match == null) return null;
-    return int.tryParse(match.group(1)!);
-  }
+  ApiException _mapAuthException(ApiException e) => e;
 
   Never _handleMobileAuthDioException(DioException e, {required String logLabel}) {
     final statusCode = e.response?.statusCode;
@@ -336,7 +315,6 @@ class SupabaseAuthProvider extends ChangeNotifier {
         final errorMap =
             error is Map<String, dynamic> ? error : Map<String, dynamic>.from(error);
         final errorCode = errorMap['code'] ?? '';
-        final message = errorMap['message'] ?? '';
         final daysLeft = errorMap['daysLeft'];
 
         debugPrint(
@@ -344,28 +322,23 @@ class SupabaseAuthProvider extends ChangeNotifier {
         );
 
         if (errorCode == 'COOLDOWN_ACTIVE') {
-          throw Exception(
-            message is String && message.isNotEmpty
-                ? message
-                : '재가입은 탈퇴 후 7일이 지난 뒤 가능합니다.',
-          );
+          final days = daysLeft is num ? daysLeft.toInt() : 7;
+          throw Exception('COOLDOWN_ACTIVE:$days');
         }
       }
     }
 
     if (statusCode == 401) {
-      throw Exception('네이버 인증이 만료되었습니다. 다시 시도해주세요.');
+      throw Exception('NAVER_AUTH_EXPIRED');
     }
 
     if (statusCode == 400) {
-      throw Exception('이메일 정보가 필요합니다. 네이버 계정 설정을 확인해주세요.');
+      throw Exception('EMAIL_REQUIRED');
     }
 
     debugPrint('[AUTH] $logLabel login DioException: ${e.message}');
     throw Exception(
-      logLabel == 'Google'
-          ? '로그인에 실패했습니다. 다시 시도해주세요.'
-          : '네이버 로그인에 실패했습니다. 다시 시도해주세요.',
+      logLabel == 'Google' ? 'LOGIN_FAILED' : 'NAVER_LOGIN_FAILED',
     );
   }
 
@@ -985,7 +958,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
   Future<void> deleteAccount() async {
     final email = userEmail;
     if (email.isEmpty) {
-      throw Exception('이메일 정보가 없습니다.');
+      throw Exception('EMAIL_REQUIRED');
     }
 
     final loginMethod = _state.loginMethod;
@@ -1002,7 +975,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
       final raw = response.data;
       if (raw is! Map<String, dynamic>) {
-        throw Exception('회원 탈퇴에 실패했습니다.');
+        throw Exception('DELETE_ACCOUNT_FAILED');
       }
 
       debugPrint('[AUTH] Delete account response: $raw');
@@ -1016,10 +989,10 @@ class SupabaseAuthProvider extends ChangeNotifier {
       if (raw['code'] == 'COOLDOWN_ACTIVE') {
         final daysLeft = raw['daysLeft'] ?? 7;
         debugPrint('[AUTH] Delete account cooldown: $daysLeft days left');
-        throw Exception('탈퇴 후 $daysLeft일간 재가입이 불가합니다. 쿨다운 기간입니다.');
+        throw Exception('COOLDOWN_ACTIVE:$daysLeft');
       }
 
-      throw Exception(raw['message'] as String? ?? '회원 탈퇴에 실패했습니다.');
+      throw Exception('DELETE_ACCOUNT_FAILED');
     } on DioException catch (e) {
       final statusCode = e.response?.statusCode;
       final responseData = e.response?.data;
@@ -1034,14 +1007,14 @@ class SupabaseAuthProvider extends ChangeNotifier {
           dataMap?['code'] == 'COOLDOWN_ACTIVE') {
         final daysLeft = dataMap?['daysLeft'] ?? 7;
         debugPrint('[AUTH] Delete account cooldown: $daysLeft days left');
-        throw Exception('탈퇴 후 $daysLeft일간 재가입이 불가합니다. 쿨다운 기간입니다.');
+        throw Exception('COOLDOWN_ACTIVE:$daysLeft');
       }
       if (statusCode == 404) {
-        throw Exception('사용자를 찾을 수 없습니다.');
+        throw Exception('USER_NOT_FOUND');
       }
 
       debugPrint('[AUTH] Delete account error: ${e.message}');
-      throw Exception('회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
+      throw Exception('DELETE_ACCOUNT_FAILED');
     } catch (e) {
       debugPrint('[AUTH] Delete account error: $e');
       rethrow;

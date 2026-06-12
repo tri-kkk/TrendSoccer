@@ -6,6 +6,7 @@ import 'package:trendsoccer/features/analysis/models/parser_labels.dart';
 import 'package:trendsoccer/features/analysis/models/soccer_match_report_data.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer/standard/reasoning_section.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer/standard/team_statistics_section.dart';
+import 'package:trendsoccer/core/utils/match_date_formatter.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer/standard/three_method_section.dart';
 
 /// Parsed Standard-tab fields from `/api/predict-v2`.
@@ -75,6 +76,7 @@ class SoccerStandardAnalysisParsed {
 SoccerStandardAnalysisParsed parseSoccerStandardAnalysis(
   Map<String, dynamic> raw, {
   required ParserLabels labels,
+  String locale = 'ko',
   DateTime? fallbackMatchTimestamp,
   MatchHeaderData? headerFallback,
 }) {
@@ -148,7 +150,8 @@ SoccerStandardAnalysisParsed parseSoccerStandardAnalysis(
             : leagueIdForCard(
                 LeagueInfo.fromJson(leagueMap),
               )),
-    matchDateDisplay: headerFallback?.displayDate ?? _formatMatchDateDisplay(match),
+    matchDateDisplay: headerFallback?.displayDateFor(locale) ??
+        _formatMatchDateDisplay(match, locale),
     homeTeam: homeName.isEmpty ? labels.labelHome : homeName,
     awayTeam: awayName.isEmpty ? labels.labelAway : awayName,
     homeLogoUrl: headerFallback?.homeTeamLogo ??
@@ -623,15 +626,14 @@ DateTime? _parseDateTime(Object? value) {
   return null;
 }
 
-String _formatMatchDateDisplay(Map<String, dynamic> match) {
+String _formatMatchDateDisplay(Map<String, dynamic> match, String locale) {
   final date = _readString(match, const ['matchDate', 'match_date', 'date']);
   final time = _readString(match, const ['matchTime', 'match_time', 'time']);
   if (date != null && time != null) return '$date $time';
   if (date != null) return date;
   final ts = _parseMatchTimestamp(match);
   if (ts != null) {
-    final local = ts.toUtc();
-    return '${local.month}월 ${local.day}일 ${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
+    return formatMatchDateMonthDayTime(locale, ts.toLocal());
   }
   return '-';
 }
@@ -689,7 +691,7 @@ SoccerStandardAnalysisParsed fallbackFromDummy(SoccerMatchReportData dummy) {
     analysisMatchCount: dummy.analyzedMatches,
     patternMatchCount: dummy.patternStats,
     reasoningItems: dummy.reasoningItems
-        .map((item) => ReasoningDisplayItem(label: '근거', value: item))
+        .map((item) => ReasoningDisplayItem(label: 'Basis', value: item))
         .toList(),
     homeOdds: dummy.homeOdds,
     drawOdds: dummy.drawOdds,
@@ -713,19 +715,19 @@ SoccerStandardAnalysisParsed fallbackFromDummy(SoccerMatchReportData dummy) {
         .toList(),
     threeMethods: [
       ThreeMethodData(
-        label: 'P/A비교',
+        label: 'P/A compare',
         win: dummy.paHomeRatio,
         draw: null,
         lose: dummy.paAwayRatio,
       ),
       ThreeMethodData(
-        label: 'MIN-MAX 비교',
+        label: 'MIN-MAX',
         win: dummy.minMaxHomeRatio,
         draw: null,
         lose: dummy.minMaxAwayRatio,
       ),
       ThreeMethodData(
-        label: '선제골',
+        label: 'First goal',
         win: dummy.firstGoalHomeRatio,
         draw: null,
         lose: dummy.firstGoalAwayRatio,

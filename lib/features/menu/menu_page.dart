@@ -455,13 +455,26 @@ class _MenuPageState extends ConsumerState<MenuPage> {
               if (isLoggedIn) ...[
                 TsSectionHeader(title: l10n.menuSubscribeInfoSection),
                 const SizedBox(height: 16),
-                PlanTicket(
-                  type: _planTicketType(auth.planType),
-                  startDate: _planStartDate(auth, auth.planType),
-                  expiryDate: _planExpiryDate(auth, auth.planType),
-                  isCancellationPending: auth.planType == PlanType.premium &&
-                      (auth.subscriptionInfo?.isCancellationPending ?? false),
-                  onButtonTap: _subscribeButtonTap(auth.planType),
+                Builder(
+                  builder: (context) {
+                    final sub = auth.subscriptionInfo;
+                    if (sub != null) {
+                      debugPrint(
+                        '[MENU] Subscription: expires=${sub.expiresAt}, '
+                        'nextBilling=${sub.nextBillingDate}, '
+                        'autoRenew=${sub.autoRenewing}',
+                      );
+                    }
+                    return PlanTicket(
+                      type: _planTicketType(auth.planType),
+                      startDate: _planStartDate(auth, auth.planType),
+                      expiryDate: _planExpiryDate(auth, auth.planType),
+                      isCancellationPending: auth.planType == PlanType.premium &&
+                          (auth.subscriptionInfo?.isCancellationPending ??
+                              false),
+                      onButtonTap: _subscribeButtonTap(auth.planType),
+                    );
+                  },
                 ),
                 const SizedBox(height: 16),
               ],
@@ -776,13 +789,13 @@ class _LanguageBottomSheetState extends ConsumerState<_LanguageBottomSheet> {
               ),
               const SizedBox(height: TsSpacing.sm),
               _LanguageOptionRow(
-                label: '한국어',
+                label: l10n.languageKorean,
                 selected: _selected == _LanguageCode.ko,
                 onTap: () => unawaited(_selectLanguage(_LanguageCode.ko)),
               ),
               const SizedBox(height: TsSpacing.sm),
               _LanguageOptionRow(
-                label: 'English',
+                label: l10n.languageEnglish,
                 selected: _selected == _LanguageCode.en,
                 onTap: () => unawaited(_selectLanguage(_LanguageCode.en)),
               ),

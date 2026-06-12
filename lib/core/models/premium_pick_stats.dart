@@ -154,7 +154,7 @@ String _formatStreak(Object? value, [Object? streakType]) {
   if (count <= 0) return '-';
   if (!type.contains('win')) return '-';
 
-  return '$count연승';
+  return '$count Win';
 }
 
 /// Remaining time until the next premium-pick update (KST 06:00 / 18:00).

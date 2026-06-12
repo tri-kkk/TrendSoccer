@@ -65,16 +65,58 @@ class SoccerReportDetailPage extends ConsumerWidget {
     return content;
   }
 
-  static (String body, String? analysis) splitAnalysisSection(String cleanContent) {
-    const analysisSplit = '## TrendSoccer 분석';
-    final splitIndex = cleanContent.indexOf(analysisSplit);
-    if (splitIndex >= 0) {
-      return (
-        cleanContent.substring(0, splitIndex).trim(),
-        cleanContent.substring(splitIndex).trim(),
-      );
+  static const _predictionSectionMarkers = [
+    '## TrendSoccer Prediction',
+    '## TrendSoccer 분석',
+    '## 트렌드사커 예측',
+    '## Prediction',
+    '## 예측',
+  ];
+
+  static (String body, String? heading, String? predictionBody)
+      splitAnalysisSection(String cleanContent) {
+    int? splitIndex;
+    String? matchedMarker;
+    for (final marker in _predictionSectionMarkers) {
+      final index = cleanContent.indexOf(marker);
+      if (index >= 0 && (splitIndex == null || index < splitIndex)) {
+        splitIndex = index;
+        matchedMarker = marker;
+      }
     }
-    return (cleanContent, null);
+    if (splitIndex == null || matchedMarker == null) {
+      return (cleanContent, null, null);
+    }
+
+    final headingStart = splitIndex;
+    final afterMarker = splitIndex + matchedMarker.length;
+    final newlineIndex = cleanContent.indexOf('\n', afterMarker);
+    final headingEnd = newlineIndex >= 0 ? newlineIndex : cleanContent.length;
+    final headingLine = cleanContent.substring(headingStart, headingEnd).trim();
+    final bodyAfterHeading = newlineIndex >= 0
+        ? cleanContent.substring(newlineIndex + 1).trim()
+        : '';
+
+    return (
+      cleanContent.substring(0, headingStart).trim(),
+      headingLine,
+      bodyAfterHeading.isEmpty ? null : bodyAfterHeading,
+    );
+  }
+
+  static String _predictionHeadingDisplayText(String headingLine) {
+    final trimmed = headingLine.trimLeft();
+    if (trimmed.startsWith('## ')) {
+      return trimmed.substring(3).trim();
+    }
+    return headingLine;
+  }
+
+  Widget _predictionHeading(String headingLine, TsSemanticColors semantic) {
+    return Text(
+      _predictionHeadingDisplayText(headingLine),
+      style: TsType.headingH2.copyWith(color: semantic.textPrimary),
+    );
   }
 
   Widget _markdownBody(String data, TsSemanticColors semantic) {
@@ -101,7 +143,7 @@ class SoccerReportDetailPage extends ConsumerWidget {
       children: [
         ClipRect(
           child: ImageFiltered(
-            imageFilter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+            imageFilter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
             child: IgnorePointer(
               child: MarkdownBody(
                 data: analysisContent,
@@ -114,65 +156,35 @@ class SoccerReportDetailPage extends ConsumerWidget {
         ),
         Positioned.fill(
           child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  colors.surfaceBase.withValues(alpha: 0.3),
-                  colors.surfaceBase.withValues(alpha: 0.95),
-                ],
-              ),
-            ),
-          ),
-        ),
-        Positioned.fill(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: TsSpacing.xl),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.lock_outline,
-                    color: colors.textTertiary,
-                    size: 32,
-                  ),
-                  const SizedBox(height: TsSpacing.sm),
-                  Text(
-                    context.l10n.reportPremiumOnlyTitle,
-                    style: TsType.bodyLBold.copyWith(color: colors.textPrimary),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: TsSpacing.xs),
-                  Text(
-                    context.l10n.reportPremiumOnlyMessage,
-                    style: TsType.bodyMRegular.copyWith(color: colors.textTertiary),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: TsSpacing.lg),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => navigateToSubscribe(context, ref),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colors.interactivePrimary,
-                        foregroundColor: colors.interactiveOnPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: TsSpacing.md),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(TsSpacing.sm),
-                        ),
-                      ),
-                      child: Text(
-                        context.l10n.premiumSubscribeNow,
-                        style: TsType.bodyLBold.copyWith(
-                          color: colors.interactiveOnPrimary,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            color: colors.surfaceBase.withValues(alpha: 0.3),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.lock_outline,
+                  size: 32,
+                  color: colors.textSecondary,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  context.l10n.premiumExclusiveContent,
+                  style: TsType.headingH3.copyWith(color: colors.textSecondary),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  context.l10n.subscribeToUnlock,
+                  style: TsType.labelSRegular.copyWith(color: colors.textTertiary),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                TsButton(
+                  label: context.l10n.subscribeNow,
+                  variant: TsButtonVariant.primary,
+                  size: TsButtonSize.small,
+                  onPressed: () => navigateToSubscribe(context, ref),
+                ),
+              ],
             ),
           ),
         ),
@@ -300,7 +312,8 @@ class SoccerReportDetailPage extends ConsumerWidget {
 
           final leagueLogoId = TsAssets.leagueLogoIdFromBlogTags(post.tags);
           final cleanContent = cleanMarkdownContent(post.content);
-          final (bodyContent, analysisContent) = splitAnalysisSection(cleanContent);
+          final (bodyContent, predictionHeading, predictionBody) =
+              splitAnalysisSection(cleanContent);
 
           return SingleChildScrollView(
             padding: EdgeInsets.only(
@@ -391,17 +404,27 @@ class SoccerReportDetailPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: TsSpacing.lg),
                 if (bodyContent.isNotEmpty) _markdownBody(bodyContent, semantic),
-                if (analysisContent != null) ...[
+                if (predictionHeading != null) ...[
                   const SizedBox(height: TsSpacing.lg),
                   if (hasFullAccess)
-                    _markdownBody(analysisContent, semantic)
-                  else
-                    _buildBlurredAnalysis(
-                      context,
-                      ref,
-                      analysisContent,
+                    _markdownBody(
+                      predictionBody != null && predictionBody.isNotEmpty
+                          ? '$predictionHeading\n\n$predictionBody'
+                          : predictionHeading,
                       semantic,
-                    ),
+                    )
+                  else ...[
+                    _predictionHeading(predictionHeading, semantic),
+                    if (predictionBody != null && predictionBody.isNotEmpty) ...[
+                      const SizedBox(height: TsSpacing.lg),
+                      _buildBlurredAnalysis(
+                        context,
+                        ref,
+                        predictionBody,
+                        semantic,
+                      ),
+                    ],
+                  ],
                 ],
               ],
             ),

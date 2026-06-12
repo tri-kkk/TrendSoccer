@@ -1,5 +1,6 @@
 import 'package:trendsoccer/core/models/baseball_models.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
+import 'package:trendsoccer/core/utils/match_date_formatter.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/features/analysis/models/baseball_standard_parser.dart';
@@ -144,17 +145,22 @@ class MatchHeaderData {
     );
   }
 
-  String get displayDate {
-    if (matchDate.contains('월') && matchDate.contains('요일')) {
-      return matchDate;
-    }
+  String get displayDate => displayDateFor('ko');
+
+  String displayDateFor(String locale) {
     if (matchTimestamp != null) {
-      return _formatKstDateTime(matchTimestamp!.toLocal());
+      return formatMatchDateWithWeekdayAndTime(
+        locale,
+        matchTimestamp!.toLocal(),
+      );
+    }
+    if (matchDate.contains('월') && matchDate.contains('요일')) {
+      if (isKoreanLocaleCode(locale)) return matchDate;
     }
     if (matchDate.isNotEmpty && matchTime.isNotEmpty) {
       final parsed = DateTime.tryParse('$matchDate $matchTime');
       if (parsed != null) {
-        return _formatKstDateTime(parsed.toLocal());
+        return formatMatchDateWithWeekdayAndTime(locale, parsed.toLocal());
       }
       return '$matchDate $matchTime';
     }
@@ -263,11 +269,4 @@ class MatchHeaderData {
     return trimmed;
   }
 
-  static String _formatKstDateTime(DateTime local) {
-    const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
-    final weekday = weekdays[local.weekday - 1];
-    final hour = local.hour.toString().padLeft(2, '0');
-    final minute = local.minute.toString().padLeft(2, '0');
-    return '${local.month}월 ${local.day}일 $weekday요일 $hour:$minute';
-  }
 }

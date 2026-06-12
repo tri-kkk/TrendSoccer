@@ -97,9 +97,15 @@ class BaseballStatus {
     if (isCancelled(status)) return 'Cancelled';
     if (isPostponed(status)) return 'Postponed';
     if (isFinished(status)) return 'Final';
-    if (status == 'INTR') return '중단';
-    final inning = extractInningNumber(status);
-    if (inning != null) return '$inning회';
+    if (status == 'INTR') return 'INT';
+    if (_liveInnings.contains(status)) {
+      final inning = extractInningNumber(status);
+      if (inning != null) return '${inning}T';
+    }
+    if (_halfInnings.contains(status)) {
+      final inning = extractInningNumber(status);
+      if (inning != null) return '${inning}B';
+    }
     if (_liveBreaks.contains(status)) return 'LIVE';
     return status;
   }

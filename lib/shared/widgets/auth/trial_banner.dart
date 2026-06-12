@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -9,6 +10,7 @@ class TrialBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     return Container(
       width: double.infinity,
@@ -28,7 +30,7 @@ class TrialBanner extends StatelessWidget {
           ),
           const SizedBox(height: TsSpacing.xs),
           Text(
-            '가입 즉시 프리미엄 기능 48시간 무료 체험',
+            l10n.signupTrialBannerSubtitle,
             style: TsType.labelSRegular.copyWith(color: semantic.textSecondary),
           ),
         ],

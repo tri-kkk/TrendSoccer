@@ -43,7 +43,11 @@ class BaseballStandardTab extends ConsumerWidget {
       ),
       data: (raw) {
         final labels = ParserLabels.from(context.l10n);
-        final parsed = parseBaseballStandardDetail(raw, labels: labels);
+        final parsed = parseBaseballStandardDetail(
+          raw,
+          labels: labels,
+          locale: Localizations.localeOf(context).languageCode,
+        );
         return KeyedSubtree(
           key: const ValueKey<Object>('baseball_report_standard'),
           child: Padding(

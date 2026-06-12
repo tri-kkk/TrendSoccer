@@ -125,14 +125,10 @@ class _PlanTicketState extends State<PlanTicket> {
         if (widget.startDate != null) {
           lines.add(l10n.planTicketStartDate(_formatDate(widget.startDate!)));
         }
-        if (widget.expiryDate != null) {
-          if (widget.isCancellationPending) {
-            lines.add(
-              l10n.planTicketExpiryPendingDate(_formatDate(widget.expiryDate!)),
-            );
-          } else {
-            lines.add(l10n.planTicketExpiryDate(_formatDate(widget.expiryDate!)));
-          }
+        if (widget.isCancellationPending) {
+          lines.add(l10n.subscriptionCancelPending);
+        } else if (widget.expiryDate != null) {
+          lines.add(l10n.planTicketExpiryDate(_formatDate(widget.expiryDate!)));
         }
       case PlanType.none:
       case PlanType.free:

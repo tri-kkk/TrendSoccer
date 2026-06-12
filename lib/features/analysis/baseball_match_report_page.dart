@@ -53,9 +53,10 @@ class _BaseballMatchReportPageState
     if (matchId == null) return base;
 
     final labels = ParserLabels.from(context.l10n);
+    final locale = Localizations.localeOf(context).languageCode;
     final apiHeader = ref.watch(baseballMatchDetailProvider(matchId)).maybeWhen(
           data: (raw) => MatchHeaderData.fromBaseballStandardParsed(
-            parseBaseballStandardDetail(raw, labels: labels),
+            parseBaseballStandardDetail(raw, labels: labels, locale: locale),
             matchId: matchId,
           ),
           orElse: () => null,
@@ -110,7 +111,9 @@ class _BaseballMatchReportPageState
               leagueId: header.resolvedLeagueIconId,
               leagueName: header.leagueName,
               leagueLogoUrl: header.leagueLogo,
-              matchDate: header.displayDate,
+              matchDate: header.displayDateFor(
+                Localizations.localeOf(context).languageCode,
+              ),
               homeTeam: localizedTeamName(
                 context,
                 header.homeTeam,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -23,6 +24,7 @@ class TermsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -39,7 +41,7 @@ class TermsRow extends StatelessWidget {
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(
-            isRequired ? '필수' : '선택',
+            isRequired ? l10n.signupRequiredBadge : l10n.signupOptionalBadge,
             style: TsType.labelSBold.copyWith(
               color: isRequired ? semantic.surfaceBase : semantic.textTertiary,
             ),
@@ -57,7 +59,7 @@ class TermsRow extends StatelessWidget {
             onTap: onViewTap,
             behavior: HitTestBehavior.opaque,
             child: Text(
-              '보기',
+              l10n.signupView,
               style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
             ),
           ),

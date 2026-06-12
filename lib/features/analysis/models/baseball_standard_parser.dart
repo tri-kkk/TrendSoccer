@@ -5,6 +5,7 @@ import 'package:trendsoccer/features/analysis/models/baseball_match_report_data.
 import 'package:trendsoccer/features/analysis/models/parser_labels.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/standard/baseball_h2h_section.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/standard/baseball_odds_section.dart';
+import 'package:trendsoccer/core/utils/match_date_formatter.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/standard/starting_pitchers_section.dart';
 
 class BaseballStandardPitcher {
@@ -191,6 +192,7 @@ bool _loggedDetailKeys = false;
 BaseballStandardParsed parseBaseballStandardDetail(
   Map<String, dynamic> raw, {
   required ParserLabels labels,
+  String locale = 'ko',
 }) {
   if (!_loggedDetailKeys) {
     _loggedDetailKeys = true;
@@ -293,6 +295,7 @@ BaseballStandardParsed parseBaseballStandardDetail(
       timestamp ?? cardFallback.matchTimestamp,
       dateStr,
       timeStr,
+      locale,
     ),
     matchTimeDisplay: _formatMatchTimeDisplay(
       timestamp ?? cardFallback.matchTimestamp,
@@ -668,7 +671,7 @@ double? _parseDouble(Object? value) {
 BaseballStandardPitcher _emptyPitcher() {
   return const BaseballStandardPitcher(
     name: '-',
-    pitcherType: '투수',
+    pitcherType: '',
     era: '-',
     whip: '-',
     k9: '-',
@@ -1069,6 +1072,7 @@ String _formatMatchDateDisplay(
   DateTime timestamp,
   String dateStr,
   String timeStr,
+  String locale,
 ) {
   var local = timestamp.toLocal();
   if (local.millisecondsSinceEpoch == 0) {
@@ -1076,11 +1080,7 @@ String _formatMatchDateDisplay(
     if (parsed != null) local = parsed.toLocal();
   }
 
-  const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
-  final weekday = weekdays[local.weekday - 1];
-  final hour = local.hour.toString().padLeft(2, '0');
-  final minute = local.minute.toString().padLeft(2, '0');
-  return '${local.month}월 ${local.day}일 $weekday요일 $hour:$minute';
+  return formatMatchDateWithWeekdayAndTime(locale, local);
 }
 
 String _formatMatchTimeDisplay(DateTime timestamp, String timeStr) {

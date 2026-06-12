@@ -572,12 +572,32 @@ class _FixturePageState extends ConsumerState<FixturePage>
     }
 
     if (BaseballStatus.isLive(match.rawStatus)) {
-      final display = BaseballStatus.displayStatus(match.rawStatus);
+      final display = _localizeBaseballStatusCode(
+        BaseballStatus.displayStatus(match.rawStatus),
+        l10n,
+      );
       if (display.isNotEmpty) return display;
       return l10n.fixtureLive;
     }
 
-    return BaseballStatus.displayStatus(match.rawStatus);
+    return _localizeBaseballStatusCode(
+      BaseballStatus.displayStatus(match.rawStatus),
+      l10n,
+    );
+  }
+
+  String _localizeBaseballStatusCode(String code, AppLocalizations l10n) {
+    if (code.isEmpty) return code;
+    if (code == 'INT') return l10n.fixtureInterrupted;
+    final topMatch = RegExp(r'^(\d+)T$').firstMatch(code);
+    if (topMatch != null) {
+      return l10n.baseballInningTop(int.parse(topMatch.group(1)!));
+    }
+    final bottomMatch = RegExp(r'^(\d+)B$').firstMatch(code);
+    if (bottomMatch != null) {
+      return l10n.baseballInningBottom(int.parse(bottomMatch.group(1)!));
+    }
+    return code;
   }
 
   Widget _buildDateNavStrip() {

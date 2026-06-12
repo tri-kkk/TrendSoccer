@@ -110,8 +110,8 @@ class FCMService {
 
     const channel = AndroidNotificationChannel(
       'trendsoccer_matches',
-      '경기 알림',
-      description: '경기 이벤트 알림',
+      'Match Notifications',
+      description: 'Match event notifications',
       importance: Importance.high,
     );
     await _localNotifications
@@ -408,7 +408,7 @@ class FCMService {
 
     return AndroidNotificationDetails(
       'trendsoccer_matches',
-      '경기 알림',
+      'Match Notifications',
       icon: '@mipmap/ic_launcher',
       importance: Importance.high,
       priority: Priority.high,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -15,9 +16,9 @@ class MaintenancePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final subtitle =
-        maintenanceMessage ?? '잠시 후 다시 시도해주세요.';
+    final subtitle = maintenanceMessage ?? l10n.maintenanceSubtitle;
 
     return Scaffold(
       backgroundColor: semantic.surfaceBase,
@@ -39,7 +40,7 @@ class MaintenancePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  '서비스 점검 중',
+                  l10n.maintenanceTitle,
                   style: TsType.headingH2.copyWith(color: semantic.textPrimary),
                   textAlign: TextAlign.center,
                 ),

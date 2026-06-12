@@ -547,7 +547,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorDeleteConfirmation => 'Account deletion failed';
 
   @override
+  String get errorAccountDeleted =>
+      'This account was deleted. Please sign in with another account.';
+
+  @override
   String get errorEmailRequired => 'Email is required';
+
+  @override
+  String get errorNaverLoginFailed => 'Naver login failed. Please try again.';
 
   @override
   String get errorNetworkTimeout => 'Please check your network connection';
@@ -597,6 +604,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fixtureInterrupted => 'Interrupted';
+
+  @override
+  String baseballInningTop(int inning) {
+    return 'Top $inning';
+  }
+
+  @override
+  String baseballInningBottom(int inning) {
+    return 'Bot $inning';
+  }
 
   @override
   String get fixtureLive => 'LIVE';
@@ -737,6 +754,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageSettingsTitle => 'Language';
+
+  @override
+  String get languageKorean => '한국어';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get maintenanceTitle => 'Under Maintenance';
+
+  @override
+  String get maintenanceSubtitle => 'Please try again later.';
 
   @override
   String get legalLoadError => 'Could not load content.';
@@ -1072,6 +1101,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumSubscribeNow => 'Subscribe Now';
 
   @override
+  String get subscribeNow => 'Subscribe now';
+
+  @override
+  String get subscribeToUnlock => 'Subscribe to unlock full predictions';
+
+  @override
   String get premiumSubscribeSheetBaseballDesc =>
       'Try AI analysis data including win probability, over/under, and season stats.';
 
@@ -1149,6 +1184,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signupAgreeAll => 'Agree to All';
+
+  @override
+  String get signupTermsAgree => 'Terms of Service Agreement';
+
+  @override
+  String get signupPrivacyAgree => 'Privacy Policy Agreement';
+
+  @override
+  String get signupMarketingAgree => 'Marketing Email Agreement';
+
+  @override
+  String get signupRequiredBadge => 'Required';
+
+  @override
+  String get signupOptionalBadge => 'Optional';
+
+  @override
+  String get signupFreeBenefit1 => 'View basic analysis data';
+
+  @override
+  String get signupFreeBenefit2 => 'Live scores and match schedules';
+
+  @override
+  String get signupFreeBenefit3 => 'Browse baseball Standard analysis';
+
+  @override
+  String get signupTrialBannerSubtitle =>
+      '48-hour premium trial starts immediately after sign-up';
+
+  @override
+  String get signupWhatsNextBenefit1 =>
+      'Auto switch to free plan after 48-hour trial';
+
+  @override
+  String get signupWhatsNextBenefit2 => 'Subscribe to premium for full access';
 
   @override
   String get signupCompleteAppBarTitle => 'Sign-up complete';

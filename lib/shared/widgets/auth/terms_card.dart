@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/auth/agree_to_all_row.dart';
@@ -33,6 +34,7 @@ class TermsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -42,7 +44,7 @@ class TermsCard extends StatelessWidget {
         Container(height: 1, color: semantic.borderSubtle),
         const SizedBox(height: TsSpacing.lg),
         TermsRow(
-          title: '이용약관 동의',
+          title: l10n.signupTermsAgree,
           isRequired: true,
           isChecked: termsChecked,
           onChanged: onTermsChanged,
@@ -50,7 +52,7 @@ class TermsCard extends StatelessWidget {
         ),
         const SizedBox(height: TsSpacing.md),
         TermsRow(
-          title: '개인정보처리방침 동의',
+          title: l10n.signupPrivacyAgree,
           isRequired: true,
           isChecked: privacyChecked,
           onChanged: onPrivacyChanged,
@@ -58,7 +60,7 @@ class TermsCard extends StatelessWidget {
         ),
         const SizedBox(height: TsSpacing.md),
         TermsRow(
-          title: '마케팅 이메일 수신 동의',
+          title: l10n.signupMarketingAgree,
           isRequired: false,
           isChecked: marketingChecked,
           onChanged: onMarketingChanged,

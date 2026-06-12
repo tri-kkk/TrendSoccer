@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -16,6 +17,7 @@ class WhatsNextCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     return Container(
       width: double.infinity,
@@ -32,13 +34,13 @@ class WhatsNextCard extends StatelessWidget {
             style: TsType.headingH3.copyWith(color: semantic.textPrimary),
           ),
           const SizedBox(height: TsSpacing.md),
-          const BenefitText(
-            text: '48시간 무료 체험 종료 후 자동 무료 전환',
+          BenefitText(
+            text: l10n.signupWhatsNextBenefit1,
             isPremium: true,
           ),
           const SizedBox(height: TsSpacing.md),
-          const BenefitText(
-            text: '프리미엄 구독으로 모든 기능 이용 가능',
+          BenefitText(
+            text: l10n.signupWhatsNextBenefit2,
             isPremium: true,
           ),
           const SizedBox(height: TsSpacing.xs),
