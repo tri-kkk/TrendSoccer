@@ -10,6 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
+import 'package:trendsoccer/core/services/analytics_service.dart';
 import 'package:trendsoccer/core/services/token_service.dart';
 
 enum IapPurchaseEventType {
@@ -157,6 +158,39 @@ class IAPService {
       return null;
     }
     return offers[subscriptionIndex].basePlanId;
+  }
+
+  String _basePlanIdForPurchase(
+    PurchaseDetails purchase, {
+    Map<String, dynamic>? verifyData,
+  }) {
+    final planFromApi = verifyData?['plan'];
+    if (planFromApi is String && planFromApi.isNotEmpty) {
+      return planFromApi;
+    }
+
+    final matchingProducts = _products
+        .where((product) => product.id == purchase.productID)
+        .toList();
+    if (matchingProducts.length == 1) {
+      final basePlanId = _basePlanIdForProduct(matchingProducts.first);
+      if (basePlanId != null && basePlanId.isNotEmpty) {
+        return basePlanId;
+      }
+    }
+
+    return monthlyPlan;
+  }
+
+  Future<void> _logPurchaseAnalytics(
+    PurchaseDetails purchase, {
+    Map<String, dynamic>? verifyData,
+  }) async {
+    final basePlanId = _basePlanIdForPurchase(
+      purchase,
+      verifyData: verifyData,
+    );
+    await AnalyticsService.logPurchase(basePlanId: basePlanId);
   }
 
   Future<bool> buySubscription([String? basePlanId]) async {
@@ -474,6 +508,7 @@ class IAPService {
       debugPrint(
         '[IAP] verify: alreadyProcessed=${data?['alreadyProcessed']}',
       );
+      await _logPurchaseAnalytics(purchase, verifyData: data);
       return true;
     } on DioException catch (e) {
       final statusCode = e.response?.statusCode;
@@ -497,6 +532,7 @@ class IAPService {
         debugPrint(
           '[IAP] verify: alreadyProcessed=${data?['alreadyProcessed'] ?? true}',
         );
+        await _logPurchaseAnalytics(purchase, verifyData: data);
         return true;
       }
 

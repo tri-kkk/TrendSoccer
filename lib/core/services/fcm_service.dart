@@ -101,7 +101,8 @@ class FCMService {
       registerDevice(newToken);
     });
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings =
+        AndroidInitializationSettings('@drawable/ic_notification');
     const initSettings = InitializationSettings(android: androidSettings);
     await _localNotifications.initialize(
       initSettings,
@@ -409,7 +410,7 @@ class FCMService {
     return AndroidNotificationDetails(
       'trendsoccer_matches',
       'Match Notifications',
-      icon: '@mipmap/ic_launcher',
+      icon: '@drawable/ic_notification',
       importance: Importance.high,
       priority: Priority.high,
       largeIcon: largeIcon,

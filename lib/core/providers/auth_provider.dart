@@ -15,6 +15,7 @@ import 'package:trendsoccer/core/config/app_config.dart';
 import 'package:trendsoccer/core/models/api_response.dart';
 import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
+import 'package:trendsoccer/core/services/analytics_service.dart';
 import 'package:trendsoccer/core/services/api_client.dart';
 import 'package:trendsoccer/core/services/auth_service.dart';
 import 'package:trendsoccer/core/services/fcm_service.dart';
@@ -927,6 +928,13 @@ class SupabaseAuthProvider extends ChangeNotifier {
       }
 
       _applyPostSignupPlanFromAgreeTerms(result.isTrial);
+
+      final signupMethod = switch (_state.loginMethod) {
+        LoginMethod.google => 'google',
+        LoginMethod.naver => 'naver',
+        LoginMethod.none => 'unknown',
+      };
+      await AnalyticsService.logSignUp(method: signupMethod);
 
       final storedToken = await _ref.read(tokenServiceProvider).getToken();
       final prefs = _ref.read(sharedPreferencesProvider);
