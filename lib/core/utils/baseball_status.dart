@@ -37,11 +37,20 @@ class BaseballStatus {
   static const _finished = {
     'FT',
     'AET',
-    'POST',
-    'CANC',
-    'ABD',
     'AWD',
     'WO',
+  };
+  static const _cancelled = {
+    'CANC',
+    'CANCELLED',
+    'CANCELED',
+    'ABD',
+    'ABANDONED',
+  };
+  static const _postponed = {
+    'PST',
+    'POSTPONED',
+    'POST',
   };
   static const _scheduled = {'NS', 'SCHEDULED', 'TBD'};
 
@@ -55,6 +64,16 @@ class BaseballStatus {
   static bool isFinished(String? status) {
     if (status == null) return false;
     return _finished.contains(status);
+  }
+
+  static bool isCancelled(String? status) {
+    if (status == null) return false;
+    return _cancelled.contains(status);
+  }
+
+  static bool isPostponed(String? status) {
+    if (status == null) return false;
+    return _postponed.contains(status);
   }
 
   static bool isScheduled(String? status) {
@@ -75,6 +94,8 @@ class BaseballStatus {
   static String displayStatus(String? status) {
     if (status == null) return '';
     if (isScheduled(status)) return ''; // show time instead
+    if (isCancelled(status)) return 'Cancelled';
+    if (isPostponed(status)) return 'Postponed';
     if (isFinished(status)) return 'Final';
     if (status == 'INTR') return '중단';
     final inning = extractInningNumber(status);

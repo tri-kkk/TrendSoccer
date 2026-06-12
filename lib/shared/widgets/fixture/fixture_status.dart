@@ -125,14 +125,14 @@ class _FixtureStatusState extends State<FixtureStatus> with TickerProviderStateM
           ),
         FixtureMatchStatus.postponed => Center(
             child: Text(
-              widget.timeText ?? l10n.fixturePostponed,
+              widget.timeText ?? l10n.matchPostponed,
               style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
               textAlign: TextAlign.center,
             ),
           ),
         FixtureMatchStatus.cancelled => Center(
             child: Text(
-              widget.timeText ?? l10n.fixtureCancelled,
+              widget.timeText ?? l10n.matchCancelled,
               style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
               textAlign: TextAlign.center,
             ),

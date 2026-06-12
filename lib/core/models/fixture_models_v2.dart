@@ -14,6 +14,7 @@ class FixtureMatch {
     this.awayTeamLogo,
     required this.leagueCode,
     required this.leagueName,
+    this.leagueNameEn,
     this.leagueLogo,
     required this.matchDate,
     required this.matchTime,
@@ -35,6 +36,7 @@ class FixtureMatch {
   final String? awayTeamLogo;
   final String leagueCode;
   final String leagueName;
+  final String? leagueNameEn;
   final String? leagueLogo;
   final String matchDate;
   final String matchTime;
@@ -71,6 +73,7 @@ class FixtureMatch {
       awayTeamLogo: awayTeamLogo ?? this.awayTeamLogo,
       leagueCode: leagueCode,
       leagueName: leagueName,
+      leagueNameEn: leagueNameEn,
       leagueLogo: leagueLogo ?? this.leagueLogo,
       matchDate: matchDate,
       matchTime: matchTime,
@@ -96,6 +99,7 @@ class FixtureMatch {
       awayTeamLogo: awayTeamLogo,
       leagueCode: live.leagueCode?.isNotEmpty == true ? live.leagueCode! : leagueCode,
       leagueName: leagueName,
+      leagueNameEn: leagueNameEn,
       leagueLogo: leagueLogo,
       matchDate: matchDate,
       matchTime: matchTime,
@@ -163,6 +167,7 @@ class FixtureMatch {
       awayTeamLogo: _readFixtureTeamLogo(json, isHome: false),
       leagueCode: league.code,
       leagueName: league.name,
+      leagueNameEn: league.nameEn,
       leagueLogo: _nonEmptyOrNull(
         json['leagueLogo'] ?? json['league_logo'] ?? league.logo,
       ),
@@ -236,12 +241,14 @@ class FixtureLeagueGroup {
   const FixtureLeagueGroup({
     required this.leagueCode,
     required this.leagueName,
+    this.leagueNameEn,
     this.leagueLogo,
     required this.matches,
   });
 
   final String leagueCode;
   final String leagueName;
+  final String? leagueNameEn;
   final String? leagueLogo;
   final List<FixtureMatch> matches;
 }
@@ -250,6 +257,7 @@ class FixtureLeagueGroup {
 List<FixtureLeagueGroup> groupMatchesByLeague(List<FixtureMatch> matches) {
   final grouped = <String, List<FixtureMatch>>{};
   final leagueNames = <String, String>{};
+  final leagueNamesEn = <String, String?>{};
   final leagueLogos = <String, String?>{};
 
   for (final match in matches) {
@@ -258,6 +266,7 @@ List<FixtureLeagueGroup> groupMatchesByLeague(List<FixtureMatch> matches) {
     leagueNames[code] = match.leagueName.isNotEmpty
         ? match.leagueName
         : leagueNames[code] ?? code;
+    leagueNamesEn[code] ??= match.leagueNameEn;
     leagueLogos[code] ??= match.leagueLogo;
   }
 
@@ -266,6 +275,7 @@ List<FixtureLeagueGroup> groupMatchesByLeague(List<FixtureMatch> matches) {
         (entry) => FixtureLeagueGroup(
           leagueCode: entry.key,
           leagueName: leagueNames[entry.key] ?? entry.key,
+          leagueNameEn: leagueNamesEn[entry.key],
           leagueLogo: leagueLogos[entry.key],
           matches: List<FixtureMatch>.from(entry.value),
         ),
@@ -330,10 +340,12 @@ String normalizeMatchStatus(String raw) {
     case 'PEN':
     case 'FINISHED':
     case 'FIN':
-    case 'ABD':
     case 'AWD':
     case 'WO':
       return 'finished';
+    case 'ABD':
+    case 'ABANDONED':
+      return 'cancelled';
     case 'PST':
     case 'POSTPONED':
     case 'POST':
@@ -650,7 +662,7 @@ String _resolveLeagueCode({required String code, required String name}) {
   return trimmedCode;
 }
 
-({String code, String name, String? logo}) _readLeagueFields(
+({String code, String name, String? nameEn, String? logo}) _readLeagueFields(
   Map<String, dynamic> json,
 ) {
   final leagueValue = json['league'];
@@ -663,9 +675,14 @@ String _resolveLeagueCode({required String code, required String name}) {
           'league_name',
         ]) ??
         leagueValue;
+    final nameEn = _readString(json, const [
+      'leagueNameEn',
+      'league_name_en',
+    ]);
     return (
       code: _resolveLeagueCode(code: code, name: name),
       name: name,
+      nameEn: nameEn,
       logo: _nonEmptyOrNull(json['leagueLogo'] ?? json['league_logo']),
     );
   }
@@ -693,9 +710,16 @@ String _resolveLeagueCode({required String code, required String name}) {
           'league_name',
         ]) ??
         '';
+    final nameEn = _readString(leagueMap, const [
+      'nameEn',
+      'leagueNameEn',
+      'league_name_en',
+      'name_en',
+    ]);
     return (
       code: _resolveLeagueCode(code: code, name: name),
       name: name,
+      nameEn: nameEn,
       logo: _nonEmptyOrNull(
         leagueMap['logo'] ??
             leagueMap['leagueLogo'] ??
@@ -721,10 +745,15 @@ String _resolveLeagueCode({required String code, required String name}) {
         'competition',
       ]) ??
       code;
+  final nameEn = _readString(json, const [
+    'leagueNameEn',
+    'league_name_en',
+  ]);
 
   return (
     code: _resolveLeagueCode(code: code, name: name),
     name: name,
+    nameEn: nameEn,
     logo: _nonEmptyOrNull(
       json['leagueLogo'] ??
           json['league_logo'] ??

@@ -1232,6 +1232,18 @@ abstract class AppLocalizations {
   /// **'연기'**
   String get fixturePostponed;
 
+  /// No description provided for @matchCancelled.
+  ///
+  /// In ko, this message translates to:
+  /// **'취소'**
+  String get matchCancelled;
+
+  /// No description provided for @matchPostponed.
+  ///
+  /// In ko, this message translates to:
+  /// **'연기'**
+  String get matchPostponed;
+
   /// No description provided for @fixtureStatusFinal.
   ///
   /// In ko, this message translates to:
@@ -3175,6 +3187,24 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'야구 분석'**
   String get trendBaseballAnalysis;
+
+  /// No description provided for @trendEmptySubtitle1.
+  ///
+  /// In ko, this message translates to:
+  /// **'현재 진행 중인 공식 리그 일정이 없습니다.'**
+  String get trendEmptySubtitle1;
+
+  /// No description provided for @trendEmptySubtitle2.
+  ///
+  /// In ko, this message translates to:
+  /// **'시즌 재개 시 더욱 스마트한 데이터를 제공해 드립니다.'**
+  String get trendEmptySubtitle2;
+
+  /// No description provided for @trendEmptyTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'다음 경기를 기다리고 있습니다.'**
+  String get trendEmptyTitle;
 
   /// No description provided for @trendNoBaseballScheduled.
   ///

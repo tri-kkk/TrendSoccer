@@ -32,6 +32,14 @@ abstract final class TsAssets {
           ? 'assets/images/league/logo/dark/$leagueId.svg'
           : 'assets/images/league/logo/light/$leagueId.svg';
 
+  static const leagueIcon26fwcDark =
+      'assets/images/league/icon/dark/26fwc.svg';
+  static const leagueIcon26fwcLight =
+      'assets/images/league/icon/light/26fwc.svg';
+
+  static String leagueIcon26fwc(Brightness brightness) =>
+      brightness == Brightness.dark ? leagueIcon26fwcDark : leagueIcon26fwcLight;
+
   /// Maps API [league_code] values to local league icon asset ids.
   static String? leagueIconIdFromApiCode(String? apiCode) {
     if (apiCode == null || apiCode.isEmpty) return null;

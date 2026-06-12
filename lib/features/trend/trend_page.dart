@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/core/models/baseball_models.dart';
 import 'package:trendsoccer/core/models/match_header_data.dart';
@@ -14,6 +15,7 @@ import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/services/ad_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
@@ -372,6 +374,47 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     );
   }
 
+  Widget _buildAnalysisEmptyCard(BuildContext context) {
+    final sem = Theme.of(context).extension<TsSemanticColors>()!;
+    return Container(
+      constraints: const BoxConstraints(minHeight: 207),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: sem.surfaceRaised,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SvgPicture.asset(
+            TsAssets.iconHourglassEmpty,
+            width: 48,
+            height: 48,
+            colorFilter: ColorFilter.mode(sem.textTertiary, BlendMode.srcIn),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            context.l10n.trendEmptyTitle,
+            style: TsType.headingH3.copyWith(color: sem.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            context.l10n.trendEmptySubtitle1,
+            style: TsType.labelSRegular.copyWith(color: sem.textTertiary),
+            textAlign: TextAlign.center,
+          ),
+          Text(
+            context.l10n.trendEmptySubtitle2,
+            style: TsType.labelSRegular.copyWith(color: sem.textTertiary),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSoccerCards() {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final matchesAsync = ref.watch(analysisSoccerMatchesProvider);
@@ -392,13 +435,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
         data: (matches) {
           final preview = matches.take(_maxSoccerPreviewCards).toList();
           if (preview.isEmpty) {
-            return Center(
-              child: Text(
-                context.l10n.trendNoSoccerScheduled,
-                style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
-                textAlign: TextAlign.center,
-              ),
-            );
+            return _buildAnalysisEmptyCard(context);
           }
           return PageView.builder(
             controller: _soccerCardsPageController,
@@ -439,13 +476,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
         data: (matches) {
           final preview = matches.take(_maxBaseballPreviewCards).toList();
           if (preview.isEmpty) {
-            return Center(
-              child: Text(
-                context.l10n.trendNoBaseballScheduled,
-                style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
-                textAlign: TextAlign.center,
-              ),
-            );
+            return _buildAnalysisEmptyCard(context);
           }
           return PageView.builder(
             controller: _baseballCardsPageController,
@@ -496,19 +527,6 @@ class _TrendPageState extends ConsumerState<TrendPage> {
                 onMoreTap: () => context.go('/analysis'),
               ),
               const SizedBox(height: 16),
-              _buildSoccerCards(),
-              const SizedBox(height: 16),
-              _buildSectionHeader(
-                title: context.l10n.trendBaseballAnalysis,
-                onMoreTap: () => context.go('/analysis?sport=baseball'),
-              ),
-              const SizedBox(height: 16),
-              _buildBaseballCards(),
-              const SizedBox(height: 16),
-              _buildSectionHeader(
-                title: context.l10n.trendPremiumAnalysis,
-              ),
-              const SizedBox(height: 16),
               PremiumPickStatsCard(
                 showCTA: true,
                 onCTATap: () {
@@ -520,7 +538,16 @@ class _TrendPageState extends ConsumerState<TrendPage> {
                 },
               ),
               const SizedBox(height: 16),
+              _buildSoccerCards(),
+              const SizedBox(height: 16),
+              _buildSectionHeader(
+                title: context.l10n.trendBaseballAnalysis,
+                onMoreTap: () => context.go('/analysis?sport=baseball'),
+              ),
+              const SizedBox(height: 16),
               const BaseballTodayComboCard(),
+              const SizedBox(height: 16),
+              _buildBaseballCards(),
               const SizedBox(height: 24),
             ],
           ),

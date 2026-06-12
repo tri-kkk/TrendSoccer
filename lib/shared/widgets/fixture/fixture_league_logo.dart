@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
@@ -56,7 +57,19 @@ class FixtureLeagueLogo extends StatelessWidget {
     );
   }
 
+  Widget _worldCupIcon(BuildContext context) {
+    return SvgPicture.asset(
+      TsAssets.leagueIcon26fwc(Theme.of(context).brightness),
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+    );
+  }
+
   Widget _assetFallback(BuildContext context, TsSemanticColors semantic) {
+    if (leagueCode.trim().toUpperCase() == 'WC') {
+      return _worldCupIcon(context);
+    }
     final iconId = TsAssets.leagueIconIdFromApiCode(leagueCode);
     if (iconId != null) {
       return TsLeagueIcon(leagueId: iconId, size: size);
@@ -67,6 +80,10 @@ class FixtureLeagueLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    if (leagueCode.trim().toUpperCase() == 'WC') {
+      return _worldCupIcon(context);
+    }
+
     final url = leagueLogoUrl?.trim();
 
     if (url != null && url.isNotEmpty) {

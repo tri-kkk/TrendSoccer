@@ -620,6 +620,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fixturePostponed => 'Postponed';
 
   @override
+  String get matchCancelled => 'Cancelled';
+
+  @override
+  String get matchPostponed => 'Postponed';
+
+  @override
   String get fixtureStatusFinal => 'FT';
 
   @override
@@ -1654,6 +1660,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get trendBaseballAnalysis => 'Baseball Analysis';
+
+  @override
+  String get trendEmptySubtitle1 =>
+      'Official leagues are currently on a break.';
+
+  @override
+  String get trendEmptySubtitle2 =>
+      'Stay tuned for our smarter picks when the season resumes.';
+
+  @override
+  String get trendEmptyTitle => 'Awaiting the Next Match';
 
   @override
   String get trendNoBaseballScheduled => 'No baseball games scheduled.';

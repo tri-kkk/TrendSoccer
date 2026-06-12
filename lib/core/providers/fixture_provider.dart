@@ -127,11 +127,13 @@ class FixtureLeagueOption {
   const FixtureLeagueOption({
     required this.code,
     required this.name,
+    this.nameEn,
     this.logo,
   });
 
   final String code;
   final String name;
+  final String? nameEn;
   final String? logo;
 }
 
@@ -288,10 +290,12 @@ List<FixtureLeagueOption> _extractLeagueOptions(List<FixtureMatch> matches) {
   final byCode = <String, FixtureLeagueOption>{};
   for (final match in matches) {
     if (match.leagueKey == 'unknown') continue;
+    final existing = byCode[match.leagueKey];
     byCode[match.leagueKey] = FixtureLeagueOption(
       code: match.leagueKey,
       name: match.leagueName.isNotEmpty ? match.leagueName : match.leagueKey,
-      logo: match.leagueLogo,
+      nameEn: match.leagueNameEn ?? existing?.nameEn,
+      logo: match.leagueLogo ?? existing?.logo,
     );
   }
   final options = byCode.values.toList()

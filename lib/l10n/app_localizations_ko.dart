@@ -608,6 +608,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fixturePostponed => '연기';
 
   @override
+  String get matchCancelled => '취소';
+
+  @override
+  String get matchPostponed => '연기';
+
+  @override
   String get fixtureStatusFinal => 'FT';
 
   @override
@@ -1620,6 +1626,15 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get trendBaseballAnalysis => '야구 분석';
+
+  @override
+  String get trendEmptySubtitle1 => '현재 진행 중인 공식 리그 일정이 없습니다.';
+
+  @override
+  String get trendEmptySubtitle2 => '시즌 재개 시 더욱 스마트한 데이터를 제공해 드립니다.';
+
+  @override
+  String get trendEmptyTitle => '다음 경기를 기다리고 있습니다.';
 
   @override
   String get trendNoBaseballScheduled => '예정된 야구 경기가 없습니다.';

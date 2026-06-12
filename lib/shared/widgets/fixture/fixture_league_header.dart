@@ -8,19 +8,24 @@ import 'package:trendsoccer/shared/widgets/fixture/fixture_league_logo.dart';
 class FixtureLeagueHeader extends StatelessWidget {
   const FixtureLeagueHeader({
     required this.leagueName,
+    this.leagueNameEn,
     required this.leagueCode,
     this.leagueLogoUrl,
     super.key,
   });
 
   final String leagueName;
+  final String? leagueNameEn;
   final String leagueCode;
   final String? leagueLogoUrl;
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final displayName = fixtureDisplayLeagueName(leagueName, leagueCode);
+    final locale = Localizations.localeOf(context).languageCode;
+    final displayName = locale == 'en'
+        ? (leagueNameEn ?? leagueName)
+        : fixtureDisplayLeagueName(leagueName, leagueCode);
 
     return Row(
       children: [

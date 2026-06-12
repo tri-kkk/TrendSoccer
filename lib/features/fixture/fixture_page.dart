@@ -455,6 +455,12 @@ class _FixturePageState extends ConsumerState<FixturePage>
         return FixtureMatchStatus.live;
       case 'finished':
         return FixtureMatchStatus.finished;
+      case 'postponed':
+        return FixtureMatchStatus.postponed;
+      case 'cancelled':
+        return FixtureMatchStatus.cancelled;
+      case 'interrupted':
+        return FixtureMatchStatus.interrupted;
       default:
         return FixtureMatchStatus.scheduled;
     }
@@ -463,6 +469,14 @@ class _FixturePageState extends ConsumerState<FixturePage>
   FixtureMatchStatus _baseballFixtureStatus(FixtureMatch match) {
     if (BaseballStatus.isInterrupted(match.rawStatus)) {
       return FixtureMatchStatus.interrupted;
+    }
+    if (BaseballStatus.isCancelled(match.rawStatus) ||
+        match.status == 'cancelled') {
+      return FixtureMatchStatus.cancelled;
+    }
+    if (BaseballStatus.isPostponed(match.rawStatus) ||
+        match.status == 'postponed') {
+      return FixtureMatchStatus.postponed;
     }
     if (BaseballStatus.isLive(match.rawStatus)) {
       return FixtureMatchStatus.live;
@@ -521,6 +535,12 @@ class _FixturePageState extends ConsumerState<FixturePage>
             : l10n.fixtureLive;
       case 'finished':
         return l10n.fixtureStatusFinal;
+      case 'postponed':
+        return l10n.matchPostponed;
+      case 'cancelled':
+        return l10n.matchCancelled;
+      case 'interrupted':
+        return l10n.fixtureInterrupted;
       default:
         return fixtureMatchTimeKst(match);
     }
@@ -530,8 +550,14 @@ class _FixturePageState extends ConsumerState<FixturePage>
     FixtureMatch match,
     AppLocalizations l10n,
   ) {
-    if (match.status == 'postponed') return l10n.fixturePostponed;
-    if (match.status == 'cancelled') return l10n.fixtureCancelled;
+    if (match.status == 'postponed' ||
+        BaseballStatus.isPostponed(match.rawStatus)) {
+      return l10n.matchPostponed;
+    }
+    if (match.status == 'cancelled' ||
+        BaseballStatus.isCancelled(match.rawStatus)) {
+      return l10n.matchCancelled;
+    }
     if (BaseballStatus.isInterrupted(match.rawStatus)) {
       return l10n.fixtureInterrupted;
     }
@@ -623,8 +649,10 @@ class _FixturePageState extends ConsumerState<FixturePage>
           }
 
           final league = leagues[index - 1];
-          final displayName =
-              fixtureDisplayLeagueName(league.name, league.code);
+          final locale = Localizations.localeOf(context).languageCode;
+          final displayName = locale == 'en'
+              ? (league.nameEn ?? league.name)
+              : league.name;
 
           return TsFilterChip(
             label: displayName,
@@ -713,6 +741,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
       homeScore: _scoreText(match, isHome: true, isBaseball: isBaseball),
       awayScore: _scoreText(match, isHome: false, isBaseball: isBaseball),
       isNotificationOn: _alarmEnabledMatchIds.contains(match.matchId.toString()),
+      showNotification: _isAlarmEligible(match),
       onNotificationTap:
           _isAlarmEligible(match) ? () => _onNotificationTap(match) : null,
     );
@@ -731,6 +760,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
       return [
         FixtureLeagueHeader(
           leagueName: group.leagueName,
+          leagueNameEn: group.leagueNameEn,
           leagueCode: group.leagueCode,
           leagueLogoUrl: group.leagueLogo,
         ),
