@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +11,7 @@ import 'package:trendsoccer/core/services/notification_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 
 class AlarmSheet extends ConsumerStatefulWidget {
   const AlarmSheet({
@@ -28,9 +31,11 @@ class AlarmSheet extends ConsumerStatefulWidget {
 
 class _AlarmSheetState extends ConsumerState<AlarmSheet> {
   bool _isLoading = true;
-  bool _isSaving = false;
-  bool _enabled = false;
   Map<String, bool> _events = {};
+  Timer? _saveDebounceTimer;
+  bool _savePending = false;
+
+  bool get _isEnabled => _events.values.any((value) => value);
 
   Map<String, String> _eventLabels(BuildContext context) {
     final l10n = context.l10n;
@@ -55,10 +60,29 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
     };
   }
 
+  bool _defaultEventValue(String key, bool serviceDefault) {
+    if (widget.sport != 'soccer') return serviceDefault;
+    return switch (key) {
+      'kickoff' => true,
+      'goal' => true,
+      'fulltime' => true,
+      _ => false,
+    };
+  }
+
   @override
   void initState() {
     super.initState();
     _loadSettings();
+  }
+
+  @override
+  void dispose() {
+    _saveDebounceTimer?.cancel();
+    if (_savePending) {
+      unawaited(_saveAlarmToServer());
+    }
+    super.dispose();
   }
 
   Future<void> _loadSettings() async {
@@ -75,10 +99,11 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
 
     final labels = _eventLabels(context);
     setState(() {
-      _enabled = settings['enabled'] == true;
       _events = {
         for (final key in labels.keys)
-          key: loadedEvents[key] ?? defaultEvents[key] ?? false,
+          key: loadedEvents.containsKey(key)
+              ? loadedEvents[key]!
+              : _defaultEventValue(key, defaultEvents[key] ?? false),
       };
       _isLoading = false;
     });
@@ -91,24 +116,58 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
     );
   }
 
-  Future<void> _save() async {
-    if (_isSaving || _isLoading) return;
-    setState(() => _isSaving = true);
+  Future<void> _reloadSettingsFromServer() async {
+    final settings = await ref
+        .read(notificationServiceProvider)
+        .getMatchAlarmSettings(widget.matchId, widget.sport);
+    if (!mounted) return;
+
+    final defaults = ref
+        .read(notificationServiceProvider)
+        .defaultSettings(widget.sport);
+    final defaultEvents = _parseEvents(defaults['events']);
+    final loadedEvents = _parseEvents(settings['events']);
+
+    final labels = _eventLabels(context);
+    setState(() {
+      _events = {
+        for (final key in labels.keys)
+          key: loadedEvents.containsKey(key)
+              ? loadedEvents[key]!
+              : _defaultEventValue(key, defaultEvents[key] ?? false),
+      };
+    });
+  }
+
+  void _scheduleSave() {
+    _savePending = true;
+    _saveDebounceTimer?.cancel();
+    _saveDebounceTimer = Timer(const Duration(milliseconds: 500), () {
+      _savePending = false;
+      unawaited(_saveAlarmToServer());
+    });
+  }
+
+  Future<void> _saveAlarmToServer() async {
+    if (!mounted || _isLoading) return;
 
     final ok = await ref.read(notificationServiceProvider).saveMatchAlarmSettings(
           widget.matchId,
           widget.sport,
-          _enabled,
+          _isEnabled,
           _events,
         );
 
+    if (!mounted) return;
+
     if (ok) {
-      widget.onEnabledChanged?.call(_enabled);
+      widget.onEnabledChanged?.call(_isEnabled);
+      return;
     }
 
-    if (mounted) {
-      setState(() => _isSaving = false);
-    }
+    await _reloadSettingsFromServer();
+    if (!mounted) return;
+    TsToast.error(context, context.l10n.errorUnauthorized);
   }
 
   Widget _styledSwitch({
@@ -179,37 +238,6 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  l10n.alarmToggleTitle,
-                  style: TsType.bodyLRegular.copyWith(
-                    color: semantic.textPrimary,
-                  ),
-                ),
-              ),
-              _styledSwitch(
-                semantic: semantic,
-                value: _enabled,
-                onChanged: _isLoading || _isSaving
-                    ? null
-                    : (value) {
-                        setState(() {
-                          _enabled = value;
-                          if (value) {
-                            _events = _events.map(
-                              (key, _) => MapEntry(key, true),
-                            );
-                          }
-                        });
-                        _save();
-                      },
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
           Container(height: 1, color: semantic.borderSubtle),
           const SizedBox(height: 16),
           if (_isLoading)
@@ -235,23 +263,17 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
                       child: Text(
                         event.value,
                         style: TsType.bodyLRegular.copyWith(
-                          color: _enabled
-                              ? semantic.textPrimary
-                              : semantic.textTertiary,
+                          color: semantic.textPrimary,
                         ),
                       ),
                     ),
                     _styledSwitch(
                       semantic: semantic,
                       value: _events[eventKey] ?? false,
-                      onChanged: _enabled && !_isSaving
-                          ? (value) {
-                              setState(() {
-                                _events[eventKey] = value;
-                              });
-                              _save();
-                            }
-                          : null,
+                      onChanged: (value) {
+                        setState(() => _events[eventKey] = value);
+                        _scheduleSave();
+                      },
                     ),
                   ],
                 ),

@@ -681,17 +681,26 @@ class _FixturePageState extends ConsumerState<FixturePage>
       context,
       matchId: match.matchId,
       sport: sport,
-      onEnabledChanged: (enabled) {
-        setState(() {
-          final id = match.matchId.toString();
-          if (enabled) {
-            _alarmEnabledMatchIds.add(id);
-          } else {
-            _alarmEnabledMatchIds.remove(id);
-          }
-        });
-      },
     );
+
+    if (!mounted) return;
+
+    final settings = await ref
+        .read(notificationServiceProvider)
+        .getMatchAlarmSettings(match.matchId, sport);
+    if (!mounted) return;
+
+    setState(() {
+      final id = match.matchId.toString();
+      final events = settings['events'];
+      final isActive = settings['enabled'] == true ||
+          (events is Map && events.values.any((value) => value == true));
+      if (isActive) {
+        _alarmEnabledMatchIds.add(id);
+      } else {
+        _alarmEnabledMatchIds.remove(id);
+      }
+    });
   }
 
   FixtureMatchStatus _toFixtureStatus(
