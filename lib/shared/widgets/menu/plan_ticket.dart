@@ -103,7 +103,8 @@ class _PlanTicketState extends State<PlanTicket> {
     };
   }
 
-  String _formatDate(DateTime date) => DateFormat('yyyy.MM.dd').format(date);
+  String _formatDate(DateTime date) =>
+      DateFormat('yyyy.MM.dd').format(date.toLocal());
 
   List<String> _dateLines(BuildContext context) {
     final l10n = context.l10n;
@@ -194,7 +195,8 @@ class _PlanTicketState extends State<PlanTicket> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Expanded(
+          SizedBox(
+            width: 232,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -220,7 +222,7 @@ class _PlanTicketState extends State<PlanTicket> {
               ],
             ),
           ),
-          const SizedBox(width: TsSpacing.lg),
+          const Spacer(),
           Image.asset(
             _imageAsset,
             width: 100,

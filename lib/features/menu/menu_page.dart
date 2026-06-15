@@ -67,7 +67,8 @@ class _MenuPageState extends ConsumerState<MenuPage> {
   DateTime? _planStartDate(SupabaseAuthProvider auth, PlanType planType) {
     return switch (planType) {
       PlanType.trial => auth.trialStartAt,
-      PlanType.premium => auth.premiumStartAt,
+      PlanType.premium =>
+        auth.subscriptionInfo?.startedAt ?? auth.premiumStartAt,
       PlanType.none || PlanType.free => null,
     };
   }
@@ -457,22 +458,17 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                 const SizedBox(height: 16),
                 Builder(
                   builder: (context) {
+                    final planType = _planTicketType(auth.planType);
+                    final startDate = _planStartDate(auth, planType);
+                    final expiryDate = _planExpiryDate(auth, planType);
                     final sub = auth.subscriptionInfo;
-                    if (sub != null) {
-                      debugPrint(
-                        '[MENU] Subscription: expires=${sub.expiresAt}, '
-                        'nextBilling=${sub.nextBillingDate}, '
-                        'autoRenew=${sub.autoRenewing}',
-                      );
-                    }
                     return PlanTicket(
-                      type: _planTicketType(auth.planType),
-                      startDate: _planStartDate(auth, auth.planType),
-                      expiryDate: _planExpiryDate(auth, auth.planType),
-                      isCancellationPending: auth.planType == PlanType.premium &&
-                          (auth.subscriptionInfo?.isCancellationPending ??
-                              false),
-                      onButtonTap: _subscribeButtonTap(auth.planType),
+                      type: planType,
+                      startDate: startDate,
+                      expiryDate: expiryDate,
+                      isCancellationPending: planType == PlanType.premium &&
+                          (sub?.isCancellationPending ?? false),
+                      onButtonTap: _subscribeButtonTap(planType),
                     );
                   },
                 ),
