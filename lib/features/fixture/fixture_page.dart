@@ -57,6 +57,8 @@ class _FixturePageState extends ConsumerState<FixturePage>
   final Map<String, Map<String, dynamic>> _lastKnownSoccerLiveStates = {};
   final Map<String, DateTime> _soccerFinishedCacheAt = {};
   static const _soccerFinishedCacheTtl = Duration(minutes: 5);
+  final Map<String, List<FixtureMatch>> _baseballDateCache = {};
+  final Set<String> _baseballDateLoading = {};
   late final PageController _pageController;
   final ScrollController _dateChipScrollController = ScrollController();
   bool _syncingPage = false;
@@ -71,6 +73,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollDateChipToIndex(_dateChipIndexForPage(_todayChipIndex()));
       _startLivePolling();
+      _ensureBaseballDateLoaded();
     });
   }
 
@@ -250,6 +253,100 @@ class _FixturePageState extends ConsumerState<FixturePage>
     }
   }
 
+  void _clearBaseballDateCache() {
+    _baseballDateCache.clear();
+    _baseballDateLoading.clear();
+    clearBaseballFixtureLazyCache(ref);
+  }
+
+  void _onFixtureRefresh() {
+    if (ref.read(fixtureSelectedSportProvider) == 'baseball') {
+      _clearBaseballDateCache();
+    }
+    invalidateFixtureData(ref);
+    if (ref.read(fixtureSelectedSportProvider) == 'baseball') {
+      unawaited(_loadBaseballDate(ref.read(fixtureSelectedDateProvider)));
+    }
+  }
+
+  List<FixtureMatch> _mergedBaseballCache() {
+    final byMatchId = <int, FixtureMatch>{};
+    final withoutId = <FixtureMatch>[];
+
+    for (final matches in _baseballDateCache.values) {
+      for (final match in matches) {
+        if (match.matchId != 0) {
+          byMatchId[match.matchId] = match;
+        } else {
+          withoutId.add(match);
+        }
+      }
+    }
+
+    final merged = [...byMatchId.values, ...withoutId]
+      ..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
+    return merged;
+  }
+
+  void _publishBaseballCache() {
+    ref.read(baseballLazyFixturesProvider.notifier).state =
+        _mergedBaseballCache();
+  }
+
+  void _ensureBaseballDateLoaded() {
+    if (ref.read(fixtureSelectedSportProvider) != 'baseball') return;
+    unawaited(_loadBaseballDate(ref.read(fixtureSelectedDateProvider)));
+  }
+
+  void _preloadAdjacentBaseballDates(String centerDate) {
+    final chipDates = _chipDates().map(fixtureDateString).toList();
+    final index = chipDates.indexOf(centerDate);
+    if (index < 0) return;
+
+    if (index > 0) {
+      unawaited(_loadBaseballDate(chipDates[index - 1], background: true));
+    }
+    if (index < chipDates.length - 1) {
+      unawaited(_loadBaseballDate(chipDates[index + 1], background: true));
+    }
+  }
+
+  Future<void> _loadBaseballDate(
+    String date, {
+    bool background = false,
+  }) async {
+    if (_baseballDateCache.containsKey(date) ||
+        _baseballDateLoading.contains(date)) {
+      return;
+    }
+
+    _baseballDateLoading.add(date);
+    if (!background) {
+      ref.read(baseballFixturesLoadingProvider.notifier).state =
+          _baseballDateCache.isEmpty;
+    }
+
+    try {
+      final service = ref.read(fixtureServiceProvider);
+      final matches = await service.getBaseballFixtures(date: date);
+      if (!mounted) return;
+
+      _baseballDateCache[date] = matches;
+      _publishBaseballCache();
+
+      if (!background) {
+        _preloadAdjacentBaseballDates(date);
+      }
+    } catch (e) {
+      debugPrint('[FIXTURE] Baseball date load failed ($date): $e');
+    } finally {
+      _baseballDateLoading.remove(date);
+      if (!background && mounted) {
+        ref.read(baseballFixturesLoadingProvider.notifier).state = false;
+      }
+    }
+  }
+
   Future<void> _fetchBaseballNow() async {
     if (!mounted) return;
     if (ref.read(fixtureSelectedSportProvider) != 'baseball') return;
@@ -281,9 +378,9 @@ class _FixturePageState extends ConsumerState<FixturePage>
       }
 
       final polled = ref.read(baseballPolledFixturesProvider);
-      final base = polled ??
-          ref.read(baseballFixturesProvider).asData?.value;
-      if (base == null) {
+      final List<FixtureMatch> base =
+          polled ?? ref.read(baseballLazyFixturesProvider);
+      if (base.isEmpty) {
         debugPrint(
           '[FIXTURE] Baseball poll: skipped merge (initial load not ready)',
         );
@@ -292,6 +389,8 @@ class _FixturePageState extends ConsumerState<FixturePage>
 
       final merged =
           mergeBaseballTodayFixtures(base, dateMatches, selectedDate);
+      _baseballDateCache[selectedDate] = dateMatches;
+      _publishBaseballCache();
       debugPrint(
         '[FIXTURE] Merge: before=${base.where((m) => m.status == 'scheduled').length} NS, '
         'after=${merged.where((m) => m.status == 'scheduled').length} NS',
@@ -401,6 +500,9 @@ class _FixturePageState extends ConsumerState<FixturePage>
     ref.read(fixtureLiveFilterProvider.notifier).state = false;
     _scrollDateChipToIndex(_dateChipIndexForPage(index));
     _startLivePolling();
+    if (ref.read(fixtureSelectedSportProvider) == 'baseball') {
+      unawaited(_loadBaseballDate(dateStr));
+    }
   }
 
   void _resetFixtureToTodayOnSportChange() {
@@ -420,6 +522,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
         _syncingPage = false;
       }
       _scrollDateChipToIndex(todayChipIndex);
+      _ensureBaseballDateLoaded();
     });
   }
 
@@ -438,6 +541,10 @@ class _FixturePageState extends ConsumerState<FixturePage>
     ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
     ref.read(fixtureSelectedDateProvider.notifier).state =
         fixtureDateString(_chipDates()[index]);
+
+    if (ref.read(fixtureSelectedSportProvider) == 'baseball') {
+      unawaited(_loadBaseballDate(fixtureDateString(_chipDates()[index])));
+    }
 
     if (!_pageController.hasClients) {
       _syncingPage = false;
@@ -1079,7 +1186,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
               label: context.l10n.retry,
               variant: TsButtonVariant.primary,
               size: TsButtonSize.small,
-              onPressed: () => invalidateFixtureData(ref),
+              onPressed: _onFixtureRefresh,
             ),
           ],
         ),
@@ -1221,6 +1328,9 @@ class _FixturePageState extends ConsumerState<FixturePage>
                         sport == SportType.baseball ? 'baseball' : 'soccer';
                     _resetFixtureToTodayOnSportChange();
                     _startLivePolling();
+                    if (sport == SportType.baseball) {
+                      _ensureBaseballDateLoaded();
+                    }
                   },
                 ),
                 const SizedBox(height: 16),
@@ -1254,7 +1364,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
                             label: context.l10n.retry,
                             variant: TsButtonVariant.primary,
                             size: TsButtonSize.small,
-                            onPressed: () => invalidateFixtureData(ref),
+                            onPressed: _onFixtureRefresh,
                           ),
                         ],
                       ),

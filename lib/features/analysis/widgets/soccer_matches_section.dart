@@ -97,7 +97,10 @@ class SoccerMatchesSection extends ConsumerWidget {
           child: Center(
             child: _InlineError(
               semantic: semantic,
-              onRetry: () => ref.invalidate(analysisSoccerMatchesProvider),
+              onRetry: () {
+                clearSoccerAnalysisEmptyCache();
+                ref.invalidate(analysisSoccerMatchesProvider);
+              },
             ),
           ),
         );

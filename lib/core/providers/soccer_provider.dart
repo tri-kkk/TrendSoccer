@@ -11,6 +11,19 @@ import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/features/analysis/analysis_dummy_data.dart';
 import 'package:trendsoccer/shared/widgets/cards/pick_direction_badge.dart';
 
+DateTime? _lastSoccerAnalysisEmptyCheck;
+const _soccerEmptyCheckInterval = Duration(minutes: 30);
+
+bool _shouldSkipSoccerAnalysisFetch() {
+  final lastCheck = _lastSoccerAnalysisEmptyCheck;
+  if (lastCheck == null) return false;
+  return DateTime.now().difference(lastCheck) < _soccerEmptyCheckInterval;
+}
+
+void clearSoccerAnalysisEmptyCache() {
+  _lastSoccerAnalysisEmptyCheck = null;
+}
+
 /// Today's date in UTC (YYYY-MM-DD) for match list queries.
 final todayDateProvider = Provider<String>((ref) {
   final now = DateTime.now().toUtc();
@@ -109,8 +122,19 @@ final soccerMatchesProvider =
 /// Upcoming analysis matches for Analysis page (no date, or 7-day fallback).
 final analysisSoccerMatchesProvider =
     FutureProvider<List<SoccerAnalysisCard>>((ref) async {
+  if (_shouldSkipSoccerAnalysisFetch()) {
+    debugPrint('[SOCCER] Skipping analysis fetch — off-season cache active');
+    return const [];
+  }
+
   final service = ref.read(soccerServiceProvider);
   final matches = await _fetchAnalysisSoccerMatches(service);
+
+  if (matches.isEmpty) {
+    _lastSoccerAnalysisEmptyCheck = DateTime.now();
+  } else {
+    _lastSoccerAnalysisEmptyCheck = null;
+  }
 
   if (matches.isNotEmpty) return matches;
 

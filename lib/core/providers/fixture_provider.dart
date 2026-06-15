@@ -183,6 +183,18 @@ final baseballFixturesProvider =
   return service.getBaseballFixturesRange();
 });
 
+/// Lazily loaded baseball fixtures merged from per-date fetches (Fixture tab).
+final baseballLazyFixturesProvider =
+    StateProvider<List<FixtureMatch>>((ref) => []);
+
+final baseballFixturesLoadingProvider = StateProvider<bool>((ref) => false);
+
+void clearBaseballFixtureLazyCache(WidgetRef ref) {
+  ref.read(baseballPolledFixturesProvider.notifier).state = null;
+  ref.read(baseballLazyFixturesProvider.notifier).state = [];
+  ref.read(baseballFixturesLoadingProvider.notifier).state = false;
+}
+
 final rawFixturesProvider = Provider<AsyncValue<List<FixtureMatch>>>((ref) {
   final sport = ref.watch(fixtureSelectedSportProvider);
 
@@ -191,7 +203,12 @@ final rawFixturesProvider = Provider<AsyncValue<List<FixtureMatch>>>((ref) {
     if (polled != null) {
       return AsyncValue.data(polled);
     }
-    return ref.watch(baseballFixturesProvider);
+    final lazy = ref.watch(baseballLazyFixturesProvider);
+    final loading = ref.watch(baseballFixturesLoadingProvider);
+    if (loading && lazy.isEmpty) {
+      return const AsyncValue.loading();
+    }
+    return AsyncValue.data(lazy);
   }
   final polled = ref.watch(soccerPolledFixturesProvider);
   if (polled != null) {
@@ -369,8 +386,7 @@ void invalidateFixtureData(WidgetRef ref) {
   final sport = ref.read(fixtureSelectedSportProvider);
 
   if (sport == 'baseball') {
-    ref.read(baseballPolledFixturesProvider.notifier).state = null;
-    ref.invalidate(baseballFixturesProvider);
+    clearBaseballFixtureLazyCache(ref);
   } else {
     ref.read(soccerPolledFixturesProvider.notifier).state = null;
     ref.invalidate(soccerFixturesProvider);

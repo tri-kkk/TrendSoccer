@@ -27,10 +27,10 @@ class PremiumPickStatsCard extends ConsumerStatefulWidget {
       _PremiumPickStatsCardState();
 }
 
-class _PremiumPickStatsCardState extends ConsumerState<PremiumPickStatsCard> {
+class _PremiumPickStatsCardState extends ConsumerState<PremiumPickStatsCard>
+    with SingleTickerProviderStateMixin {
   Timer? _countdownTimer;
-  Timer? _blinkTimer;
-  bool _colonVisible = true;
+  late AnimationController _blinkController;
   late String _countdown;
   var _countdownInitialized = false;
 
@@ -38,15 +38,12 @@ class _PremiumPickStatsCardState extends ConsumerState<PremiumPickStatsCard> {
   void initState() {
     super.initState();
     _countdown = '';
+    _blinkController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
     _countdownTimer = Timer.periodic(const Duration(seconds: 60), (_) {
       _tickCountdown();
-    });
-    _blinkTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
-      if (mounted) {
-        setState(() {
-          _colonVisible = !_colonVisible;
-        });
-      }
     });
   }
 
@@ -62,7 +59,7 @@ class _PremiumPickStatsCardState extends ConsumerState<PremiumPickStatsCard> {
   @override
   void dispose() {
     _countdownTimer?.cancel();
-    _blinkTimer?.cancel();
+    _blinkController.dispose();
     super.dispose();
   }
 
@@ -105,23 +102,29 @@ class _PremiumPickStatsCardState extends ConsumerState<PremiumPickStatsCard> {
     final hours = parts[0];
     final minutes = parts[1];
 
-    return Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(text: hours),
+    return AnimatedBuilder(
+      animation: _blinkController,
+      builder: (context, child) {
+        final colonVisible = _blinkController.value > 0.5;
+        return Text.rich(
           TextSpan(
-            text: ':',
-            style: countdownStyle.copyWith(
-              color: _colonVisible
-                  ? countdownStyle.color
-                  : Colors.transparent,
-            ),
+            children: [
+              TextSpan(text: hours),
+              TextSpan(
+                text: ':',
+                style: countdownStyle.copyWith(
+                  color: colonVisible
+                      ? countdownStyle.color
+                      : Colors.transparent,
+                ),
+              ),
+              TextSpan(text: minutes),
+            ],
+            style: countdownStyle,
           ),
-          TextSpan(text: minutes),
-        ],
-        style: countdownStyle,
-      ),
-      textAlign: TextAlign.center,
+          textAlign: TextAlign.center,
+        );
+      },
     );
   }
 
