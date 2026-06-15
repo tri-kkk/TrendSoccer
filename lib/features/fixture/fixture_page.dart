@@ -54,6 +54,9 @@ class _FixturePageState extends ConsumerState<FixturePage>
 
   final Set<String> _alarmEnabledMatchIds = {};
   int _alarmRefreshGeneration = 0;
+  final Map<String, Map<String, dynamic>> _lastKnownSoccerLiveStates = {};
+  final Map<String, DateTime> _soccerFinishedCacheAt = {};
+  static const _soccerFinishedCacheTtl = Duration(minutes: 5);
   late final PageController _pageController;
   final ScrollController _dateChipScrollController = ScrollController();
   bool _syncingPage = false;
@@ -130,6 +133,82 @@ class _FixturePageState extends ConsumerState<FixturePage>
     }
   }
 
+  bool _isSoccerFinishedLiveStatus(String status) {
+    final raw = status.trim().toUpperCase();
+    return raw == 'FT' ||
+        raw == 'AET' ||
+        raw == 'PEN' ||
+        normalizeMatchStatus(raw) == 'finished';
+  }
+
+  void _cacheSoccerLiveStates(Map<String, LiveMatchData> liveData) {
+    final now = DateTime.now();
+    for (final entry in liveData.entries) {
+      final id = entry.key;
+      final live = entry.value;
+      final cached = <String, dynamic>{
+        'status': live.status,
+        'homeScore': live.homeScore,
+        'awayScore': live.awayScore,
+        'elapsed': live.elapsed,
+        'statusLong': live.statusLong,
+      };
+      if (_isSoccerFinishedLiveStatus(live.status)) {
+        cached['finished'] = true;
+        _soccerFinishedCacheAt[id] = now;
+      }
+      _lastKnownSoccerLiveStates[id] = cached;
+    }
+
+    _soccerFinishedCacheAt.removeWhere((id, finishedAt) {
+      if (now.difference(finishedAt) > _soccerFinishedCacheTtl) {
+        _lastKnownSoccerLiveStates.remove(id);
+        return true;
+      }
+      return false;
+    });
+  }
+
+  LiveMatchData _soccerLiveDataFromCache(
+    String id,
+    Map<String, dynamic> cached,
+  ) {
+    return LiveMatchData(
+      matchId: id,
+      status: cached['status']?.toString() ?? '',
+      statusLong: cached['statusLong']?.toString() ?? '',
+      elapsed: (cached['elapsed'] as num?)?.toInt() ?? 0,
+      homeScore: (cached['homeScore'] as num?)?.toInt() ?? 0,
+      awayScore: (cached['awayScore'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  Map<String, LiveMatchData> _effectiveSoccerLiveMap(
+    Map<String, LiveMatchData> pollData,
+  ) {
+    _cacheSoccerLiveStates(pollData);
+
+    final effective = Map<String, LiveMatchData>.from(pollData);
+    final now = DateTime.now();
+
+    for (final entry in _lastKnownSoccerLiveStates.entries) {
+      if (effective.containsKey(entry.key)) continue;
+
+      final cached = entry.value;
+      if (cached['finished'] == true) {
+        final finishedAt = _soccerFinishedCacheAt[entry.key];
+        if (finishedAt != null &&
+            now.difference(finishedAt) > _soccerFinishedCacheTtl) {
+          continue;
+        }
+      }
+
+      effective[entry.key] = _soccerLiveDataFromCache(entry.key, cached);
+    }
+
+    return effective;
+  }
+
   Future<void> _fetchLiveNow() async {
     if (!mounted) return;
     if (ref.read(fixtureSelectedSportProvider) != 'soccer') return;
@@ -152,7 +231,23 @@ class _FixturePageState extends ConsumerState<FixturePage>
       }
     }
 
-    ref.read(liveMatchesProvider.notifier).state = liveData;
+    final effective = _effectiveSoccerLiveMap(liveData);
+    if (liveData.isEmpty && effective.isNotEmpty) {
+      debugPrint(
+        '[FIXTURE] Soccer live: empty poll, using ${effective.length} cached states',
+      );
+    }
+
+    ref.read(liveMatchesProvider.notifier).state = effective;
+
+    if (effective.values.any((live) => live.isFinished)) {
+      final base = ref.read(soccerPolledFixturesProvider) ??
+          ref.read(soccerFixturesProvider).asData?.value;
+      if (base != null) {
+        ref.read(soccerPolledFixturesProvider.notifier).state =
+            mergeSoccerFinishedFromLive(base, effective);
+      }
+    }
   }
 
   Future<void> _fetchBaseballNow() async {

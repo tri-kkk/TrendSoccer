@@ -123,6 +123,25 @@ List<FixtureMatch> mergeBaseballTodayFixtures(
 final baseballPolledFixturesProvider =
     StateProvider<List<FixtureMatch>?>((ref) => null);
 
+/// Latest soccer fixture list after live FT patches; `null` uses [soccerFixturesProvider].
+final soccerPolledFixturesProvider =
+    StateProvider<List<FixtureMatch>?>((ref) => null);
+
+List<FixtureMatch> mergeSoccerFinishedFromLive(
+  List<FixtureMatch> existing,
+  Map<String, LiveMatchData> liveMap,
+) {
+  if (liveMap.isEmpty) return existing;
+
+  return existing.map((match) {
+    final live = _liveDataForFixture(match, liveMap);
+    if (live != null && live.isFinished) {
+      return match.copyWithLive(live);
+    }
+    return match;
+  }).toList();
+}
+
 class FixtureLeagueOption {
   const FixtureLeagueOption({
     required this.code,
@@ -173,6 +192,10 @@ final rawFixturesProvider = Provider<AsyncValue<List<FixtureMatch>>>((ref) {
       return AsyncValue.data(polled);
     }
     return ref.watch(baseballFixturesProvider);
+  }
+  final polled = ref.watch(soccerPolledFixturesProvider);
+  if (polled != null) {
+    return AsyncValue.data(polled);
   }
   return ref.watch(soccerFixturesProvider);
 });
@@ -349,6 +372,7 @@ void invalidateFixtureData(WidgetRef ref) {
     ref.read(baseballPolledFixturesProvider.notifier).state = null;
     ref.invalidate(baseballFixturesProvider);
   } else {
+    ref.read(soccerPolledFixturesProvider.notifier).state = null;
     ref.invalidate(soccerFixturesProvider);
   }
 }

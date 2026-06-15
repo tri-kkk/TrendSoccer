@@ -93,6 +93,7 @@ class FixtureService {
       7,
       (index) => todayDay.add(Duration(days: index - 2)),
     );
+    debugPrint('[FIXTURE] Baseball date range: dates=${dates.toList()}');
 
     final results = await Future.wait(
       dates.map(
@@ -102,6 +103,11 @@ class FixtureService {
         ),
       ),
     );
+
+    for (var i = 0; i < dates.length; i++) {
+      final date = _formatApiDate(dates[i]);
+      debugPrint('[FIXTURE] Baseball date $date: ${results[i].length} matches');
+    }
 
     final merged = results.expand((matches) => matches).toList()
       ..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
@@ -158,12 +164,32 @@ class FixtureService {
         'includeAllStatuses=$includeAllStatuses',
       );
 
+      const path = '/api/baseball/matches';
+      final queryParams = _baseballQueryParametersForDate(
+        date,
+        includeAllStatuses: includeAllStatuses,
+      );
+      debugPrint(
+        '[FIXTURE] Baseball API call: '
+        '${_dio.options.baseUrl}$path?${Uri(queryParameters: queryParams).query}',
+      );
+
       final response = await _dio.get<dynamic>(
-        '/api/baseball/matches',
-        queryParameters: _baseballQueryParametersForDate(
-          date,
-          includeAllStatuses: includeAllStatuses,
-        ),
+        path,
+        queryParameters: queryParams,
+      );
+
+      final responseData = response.data;
+      final dataLength = responseData is List
+          ? responseData.length
+          : (responseData is Map
+              ? (responseData['data']?.length ??
+                  responseData['matches']?.length ??
+                  'unknown')
+              : 'unknown');
+      debugPrint(
+        '[FIXTURE] Baseball API response for $date: '
+        'status=${response.statusCode}, dataLength=$dataLength',
       );
 
       // Temporary: check for postponed matches
