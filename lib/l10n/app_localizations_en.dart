@@ -89,6 +89,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alarmToggleTitle => 'Receive Alerts';
 
   @override
+  String get alarmSecondHalf => '2nd Half Start';
+
+  @override
   String get analysisAiAnalyzing => 'AI analysis in progress...';
 
   @override

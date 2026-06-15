@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -157,27 +158,26 @@ class _FixturePageState extends ConsumerState<FixturePage>
   Future<void> _fetchBaseballNow() async {
     if (!mounted) return;
     if (ref.read(fixtureSelectedSportProvider) != 'baseball') return;
-    if (!fixtureIsTodayDate(ref.read(fixtureSelectedDateProvider))) return;
 
-    final today = fixtureTodayDateString();
+    final selectedDate = ref.read(fixtureSelectedDateProvider);
     debugPrint(
-      '[FIXTURE] Baseball poll fetch: date=$today, '
+      '[FIXTURE] Baseball poll fetch: date=$selectedDate, '
       'timezone=${DateTime.now().timeZoneName}, '
       'utcOffset=${DateTime.now().timeZoneOffset}',
     );
     try {
       final service = ref.read(fixtureServiceProvider);
-      final todayMatches = await service
-          .getBaseballFixtures(date: today)
+      final dateMatches = await service
+          .getBaseballFixtures(date: selectedDate)
           .timeout(const Duration(seconds: 10));
       if (!mounted) return;
 
       debugPrint(
-        '[FIXTURE] Baseball poll result: ${todayMatches.length} matches, '
-        'statuses=${todayMatches.map((m) => m.status).toSet().toList()}',
+        '[FIXTURE] Baseball poll result: ${dateMatches.length} matches, '
+        'statuses=${dateMatches.map((m) => m.status).toSet().toList()}',
       );
-      if (todayMatches.isNotEmpty) {
-        final match = todayMatches.first;
+      if (dateMatches.isNotEmpty) {
+        final match = dateMatches.first;
         debugPrint(
           '[FIXTURE] Poll match logo: '
           'home=${match.homeTeamLogo != null && match.homeTeamLogo!.isNotEmpty}, '
@@ -196,7 +196,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
       }
 
       final merged =
-          mergeBaseballTodayFixtures(base, todayMatches, today);
+          mergeBaseballTodayFixtures(base, dateMatches, selectedDate);
       debugPrint(
         '[FIXTURE] Merge: before=${base.where((m) => m.status == 'scheduled').length} NS, '
         'after=${merged.where((m) => m.status == 'scheduled').length} NS',
@@ -208,8 +208,13 @@ class _FixturePageState extends ConsumerState<FixturePage>
   }
 
   bool _shouldPollBaseball() {
-    return ref.read(fixtureSelectedSportProvider) == 'baseball' &&
-        fixtureIsTodayDate(ref.read(fixtureSelectedDateProvider));
+    return ref.read(fixtureSelectedSportProvider) == 'baseball';
+  }
+
+  bool _isHalftimeStatus(String? status) {
+    if (status == null || status.isEmpty) return false;
+    final normalized = status.trim().toUpperCase();
+    return normalized == 'HT' || normalized.contains('HALFTIME');
   }
 
   void _startLivePolling() {
@@ -377,28 +382,79 @@ class _FixturePageState extends ConsumerState<FixturePage>
   String _sportApiValue(String sport) =>
       sport == 'baseball' ? 'baseball' : 'soccer';
 
-  bool _isAlarmEligible(FixtureMatch match) =>
-      match.status == 'scheduled' || match.status == 'live';
+  bool _isAlarmEligible(FixtureMatch match, {LiveMatchData? live}) {
+    var status = match.status;
+    var rawStatus = match.rawStatus;
+    if (live != null) {
+      rawStatus = live.status.trim().toUpperCase();
+      status = normalizeMatchStatus(rawStatus);
+    }
 
-  Future<void> _refreshAlarmStates(List<FixtureMatch> matches) async {
+    if (status == 'scheduled' || status == 'live') return true;
+
+    if (match.sport == 'baseball') {
+      return BaseballStatus.isLive(rawStatus) ||
+          BaseballStatus.isScheduled(rawStatus);
+    }
+
+    return live?.isLive ?? false;
+  }
+
+  List<FixtureMatch> _matchesForSelectedDate(
+    List<FixtureMatch> matches,
+    String selectedDate,
+  ) {
+    return matches.where((m) => matchIsOnDate(m, selectedDate)).toList();
+  }
+
+  Future<void> _refreshAlarmStatesForDate(
+    List<FixtureMatch> allMatches,
+    String selectedDate,
+  ) async {
     final generation = ++_alarmRefreshGeneration;
     final service = ref.read(notificationServiceProvider);
-    final eligible = matches
-        .where((match) => match.matchId != 0 && _isAlarmEligible(match))
+    final selectedSport = ref.read(fixtureSelectedSportProvider);
+    final sport = _sportApiValue(selectedSport);
+    final eligible = _matchesForSelectedDate(allMatches, selectedDate)
+        .where(
+          (match) =>
+              match.matchId != 0 &&
+              match.sport == selectedSport &&
+              _isAlarmEligible(match),
+        )
         .toList();
 
+    final matchIds = eligible.map((m) => m.matchId.toString()).toList();
+    if (matchIds.isEmpty) {
+      if (!mounted || generation != _alarmRefreshGeneration) return;
+      setState(() {
+        _alarmEnabledMatchIds.clear();
+      });
+      return;
+    }
+
+    final results = <String, dynamic>{};
+    const chunkSize = 50;
+    for (var i = 0; i < matchIds.length; i += chunkSize) {
+      final chunk = matchIds.sublist(
+        i,
+        math.min(i + chunkSize, matchIds.length),
+      );
+      final chunkResult = await service.getMatchAlarmsBatch(
+        matchIds: chunk,
+        sport: sport,
+      );
+      results.addAll(chunkResult);
+    }
+
     final enabledIds = <String>{};
-    await Future.wait(
-      eligible.map((match) async {
-        final settings = await service.getMatchAlarmSettings(
-          match.matchId,
-          _sportApiValue(match.sport),
-        );
-        if (settings['enabled'] == true) {
-          enabledIds.add(match.matchId.toString());
-        }
-      }),
-    );
+    for (final match in eligible) {
+      final id = match.matchId.toString();
+      final alarm = results[id];
+      if (alarm is Map && alarm['enabled'] == true) {
+        enabledIds.add(id);
+      }
+    }
 
     if (!mounted || generation != _alarmRefreshGeneration) return;
     setState(() {
@@ -411,15 +467,18 @@ class _FixturePageState extends ConsumerState<FixturePage>
   void _scheduleAlarmStateRefresh(
     List<FixtureMatch> matches, {
     Duration delay = Duration.zero,
+    String? selectedDate,
   }) {
+    final String date =
+        selectedDate ?? ref.read(fixtureSelectedDateProvider);
     if (delay > Duration.zero) {
       Future<void>.delayed(delay, () {
         if (!mounted) return;
-        unawaited(_refreshAlarmStates(matches));
+        unawaited(_refreshAlarmStatesForDate(matches, date));
       });
       return;
     }
-    unawaited(_refreshAlarmStates(matches));
+    unawaited(_refreshAlarmStatesForDate(matches, date));
   }
 
   Future<void> _onNotificationTap(FixtureMatch match) async {
@@ -522,6 +581,12 @@ class _FixturePageState extends ConsumerState<FixturePage>
     if (isBaseball) {
       return _baseballStatusTimeText(match, l10n);
     }
+    if (live != null && _isHalftimeStatus(live.status)) {
+      return 'HT';
+    }
+    if (_isHalftimeStatus(match.rawStatus)) {
+      return 'HT';
+    }
     if (live != null && live.isLive) {
       return l10n.liveMinutes(live.elapsed);
     }
@@ -530,6 +595,10 @@ class _FixturePageState extends ConsumerState<FixturePage>
     }
     switch (match.status) {
       case 'live':
+        if (_isHalftimeStatus(match.rawStatus) ||
+            (live != null && _isHalftimeStatus(live.status))) {
+          return 'HT';
+        }
         return live != null && live.elapsed > 0
             ? l10n.liveMinutes(live.elapsed)
             : l10n.fixtureLive;
@@ -761,9 +830,10 @@ class _FixturePageState extends ConsumerState<FixturePage>
       homeScore: _scoreText(match, isHome: true, isBaseball: isBaseball),
       awayScore: _scoreText(match, isHome: false, isBaseball: isBaseball),
       isNotificationOn: _alarmEnabledMatchIds.contains(match.matchId.toString()),
-      showNotification: _isAlarmEligible(match),
-      onNotificationTap:
-          _isAlarmEligible(match) ? () => _onNotificationTap(match) : null,
+      showNotification: _isAlarmEligible(match, live: live),
+      onNotificationTap: _isAlarmEligible(match, live: live)
+          ? () => _onNotificationTap(match)
+          : null,
     );
   }
 
@@ -988,7 +1058,12 @@ class _FixturePageState extends ConsumerState<FixturePage>
     });
 
     ref.listen(allFixturesWithLiveProvider, (previous, next) {
-      next.whenData(_scheduleAlarmStateRefresh);
+      next.whenData((matches) {
+        _scheduleAlarmStateRefresh(
+          matches,
+          selectedDate: ref.read(fixtureSelectedDateProvider),
+        );
+      });
     });
 
     ref.listen(authProvider, (previous, next) {
@@ -1016,6 +1091,10 @@ class _FixturePageState extends ConsumerState<FixturePage>
     ref.listen(fixtureSelectedDateProvider, (previous, next) {
       if (previous != next) {
         _startLivePolling();
+        final matches = ref.read(allFixturesWithLiveProvider).value;
+        if (matches != null) {
+          _scheduleAlarmStateRefresh(matches, selectedDate: next);
+        }
       }
 
       if (_syncingPage || ref.read(fixtureLiveFilterProvider)) return;

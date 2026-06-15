@@ -236,6 +236,12 @@ abstract class AppLocalizations {
   /// **'알림 받기'**
   String get alarmToggleTitle;
 
+  /// No description provided for @alarmSecondHalf.
+  ///
+  /// In ko, this message translates to:
+  /// **'후반전 시작'**
+  String get alarmSecondHalf;
+
   /// No description provided for @analysisAiAnalyzing.
   ///
   /// In ko, this message translates to:
@@ -2207,13 +2213,13 @@ abstract class AppLocalizations {
   /// No description provided for @reportTabPremium.
   ///
   /// In ko, this message translates to:
-  /// **'Premium'**
+  /// **'프리미엄'**
   String get reportTabPremium;
 
   /// No description provided for @reportTabStandard.
   ///
   /// In ko, this message translates to:
-  /// **'Standard'**
+  /// **'스탠다드'**
   String get reportTabStandard;
 
   /// No description provided for @retry.

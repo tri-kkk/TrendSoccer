@@ -23,6 +23,7 @@
   "accessUnlockMinutes": "Opens in {minutes}m",
   "accessUnlockViewAnalysis": "View analysis",
   "alarmToggleTitle": "Receive Alerts",
+  "alarmSecondHalf": "2nd Half Start",
   "analysisAiAnalyzing": "AI analysis in progress...",
   "analysisAiWaitHint": "Please wait (about 5–10 seconds)",
   "analysisCardView": "View analysis",

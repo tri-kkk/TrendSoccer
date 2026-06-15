@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show ImageFilter;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -376,39 +377,185 @@ class _TrendPageState extends ConsumerState<TrendPage> {
 
   Widget _buildAnalysisEmptyCard(BuildContext context) {
     final sem = Theme.of(context).extension<TsSemanticColors>()!;
-    return Container(
-      constraints: const BoxConstraints(minHeight: 207),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final overlayColor = isDark
+        ? const Color(0xBF212726)
+        : const Color(0xD9FDFCFB);
+
+    return SizedBox(
+      height: 207,
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: sem.surfaceRaised,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Stack(
         children: [
-          SvgPicture.asset(
-            TsAssets.iconHourglassEmpty,
-            width: 48,
-            height: 48,
-            colorFilter: ColorFilter.mode(sem.textTertiary, BlendMode.srcIn),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              height: 207,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: sem.surfaceRaised,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: sem.surfaceContainer,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 60,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: sem.surfaceContainer,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        width: 40,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: sem.surfaceContainer,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Column(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: sem.surfaceContainer,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Container(
+                            width: 50,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: sem.surfaceContainer,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: sem.surfaceContainer,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            width: 32,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: sem.surfaceContainer,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: sem.surfaceContainer,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Container(
+                            width: 50,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: sem.surfaceContainer,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  Container(
+                    height: 48,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: sem.interactivePrimary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            context.l10n.trendEmptyTitle,
-            style: TsType.headingH3.copyWith(color: sem.textSecondary),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            context.l10n.trendEmptySubtitle1,
-            style: TsType.labelSRegular.copyWith(color: sem.textTertiary),
-            textAlign: TextAlign.center,
-          ),
-          Text(
-            context.l10n.trendEmptySubtitle2,
-            style: TsType.labelSRegular.copyWith(color: sem.textTertiary),
-            textAlign: TextAlign.center,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+              child: Container(
+                height: 207,
+                width: double.infinity,
+                color: overlayColor,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      TsAssets.iconHourglassEmpty,
+                      width: 48,
+                      height: 48,
+                      colorFilter:
+                          ColorFilter.mode(sem.textPrimary, BlendMode.srcIn),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      context.l10n.trendEmptyTitle,
+                      style: TsType.headingH3.copyWith(color: sem.textPrimary),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      context.l10n.trendEmptySubtitle1,
+                      style:
+                          TsType.labelSRegular.copyWith(color: sem.textTertiary),
+                      textAlign: TextAlign.center,
+                    ),
+                    Text(
+                      context.l10n.trendEmptySubtitle2,
+                      style:
+                          TsType.labelSRegular.copyWith(color: sem.textTertiary),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -422,9 +569,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     return SizedBox(
       height: 220,
       child: matchesAsync.when(
-        loading: () => Center(
-          child: CircularProgressIndicator(color: semantic.interactivePrimary),
-        ),
+        loading: () => _buildAnalysisEmptyCard(context),
         error: (error, stackTrace) => Center(
           child: Text(
             context.l10n.loadMatchesFailed,
@@ -463,8 +608,13 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     return SizedBox(
       height: 220,
       child: matchesAsync.when(
-        loading: () => Center(
-          child: CircularProgressIndicator(color: semantic.interactivePrimary),
+        loading: () => SizedBox(
+          height: 207,
+          child: Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+            ),
+          ),
         ),
         error: (error, stackTrace) => Center(
           child: Text(

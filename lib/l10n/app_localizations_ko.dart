@@ -85,6 +85,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get alarmToggleTitle => '알림 받기';
 
   @override
+  String get alarmSecondHalf => '후반전 시작';
+
+  @override
   String get analysisAiAnalyzing => 'AI 분석 중...';
 
   @override
@@ -1124,10 +1127,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get reportTabAiAnalysis => 'AI Analysis';
 
   @override
-  String get reportTabPremium => 'Premium';
+  String get reportTabPremium => '프리미엄';
 
   @override
-  String get reportTabStandard => 'Standard';
+  String get reportTabStandard => '스탠다드';
 
   @override
   String get retry => '다시 시도';

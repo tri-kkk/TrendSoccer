@@ -46,6 +46,58 @@ class NotificationService {
     }
   }
 
+  Future<Map<String, dynamic>> getMatchAlarmsBatch({
+    required List<String> matchIds,
+    required String sport,
+  }) async {
+    if (matchIds.isEmpty) return {};
+
+    final headers = await _buildHeaders();
+    if (!_hasAuthHeaders(headers)) {
+      return {};
+    }
+
+    try {
+      final dio = Dio();
+      final idsParam = matchIds.join(',');
+      final response = await dio.get<dynamic>(
+        'https://www.trendsoccer.com/api/v1/mobile/notifications/matches',
+        queryParameters: <String, String>{
+          'sport': sport,
+          'ids': idsParam,
+        },
+        options: Options(headers: headers),
+      );
+      debugPrint(
+        '[NOTIF] getAlarmsBatch: sport=$sport, count=${matchIds.length}, '
+        'status=${response.statusCode}',
+      );
+
+      final data = response.data;
+      if (data is! Map) return {};
+
+      final inner = data['data'];
+      if (inner is! Map) return {};
+
+      final results = inner['results'];
+      if (results is! Map) return {};
+
+      return results.map(
+        (id, value) => MapEntry(
+          id.toString(),
+          value is Map<String, dynamic>
+              ? value
+              : value is Map
+                  ? Map<String, dynamic>.from(value)
+                  : <String, dynamic>{},
+        ),
+      );
+    } catch (e) {
+      debugPrint('[NOTIF] getAlarmsBatch error: $e');
+      return {};
+    }
+  }
+
   /// Save alarm settings for a match
   Future<bool> saveMatchAlarmSettings(
     int matchId,
@@ -93,6 +145,7 @@ class NotificationService {
           'kickoff': true,
           'goal': true,
           'halftime': false,
+          'secondHalf': true,
           'fulltime': true,
           'yellowCard': false,
           'redCard': true,

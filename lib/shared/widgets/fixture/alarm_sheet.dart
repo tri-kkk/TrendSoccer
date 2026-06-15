@@ -47,6 +47,7 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
       'kickoff': l10n.soccerEventKickoff,
       'goal': l10n.soccerEventGoal,
       'halftime': l10n.soccerEventHalftime,
+      'secondHalf': l10n.alarmSecondHalf,
       'fulltime': l10n.soccerEventFulltime,
       'yellowCard': l10n.soccerEventYellowCard,
       'redCard': l10n.soccerEventRedCard,

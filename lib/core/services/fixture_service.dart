@@ -95,7 +95,12 @@ class FixtureService {
     );
 
     final results = await Future.wait(
-      dates.map((date) => getBaseballFixtures(date: _formatApiDate(date))),
+      dates.map(
+        (date) => getBaseballFixtures(
+          date: _formatApiDate(date),
+          includeAllStatuses: true,
+        ),
+      ),
     );
 
     final merged = results.expand((matches) => matches).toList()
@@ -125,32 +130,58 @@ class FixtureService {
     return 'all';
   }
 
-  Map<String, String> _baseballQueryParametersForDate(String dateStr) {
-    final status = _baseballStatusForDate(dateStr);
+  Map<String, String> _baseballQueryParametersForDate(
+    String dateStr, {
+    bool includeAllStatuses = true,
+  }) {
     final params = <String, String>{
       'date': dateStr,
-      'status': status,
       'limit': '50',
     };
-    if (status == 'finished') {
-      params['skipML'] = 'true';
+    if (!includeAllStatuses) {
+      final status = _baseballStatusForDate(dateStr);
+      params['status'] = status;
+      if (status == 'finished') {
+        params['skipML'] = 'true';
+      }
     }
     return params;
   }
 
-  Future<List<FixtureMatch>> getBaseballFixtures({required String date}) async {
+  Future<List<FixtureMatch>> getBaseballFixtures({
+    required String date,
+    bool includeAllStatuses = true,
+  }) async {
     try {
-      final status = _baseballStatusForDate(date);
-      debugPrint('[FIXTURE] Baseball call: date=$date, status=$status');
+      debugPrint(
+        '[FIXTURE] Baseball call: date=$date, '
+        'includeAllStatuses=$includeAllStatuses',
+      );
 
       final response = await _dio.get<dynamic>(
         '/api/baseball/matches',
-        queryParameters: _baseballQueryParametersForDate(date),
+        queryParameters: _baseballQueryParametersForDate(
+          date,
+          includeAllStatuses: includeAllStatuses,
+        ),
       );
+
+      // Temporary: check for postponed matches
+      final rawData = response.data;
+      final rawList = rawData is List
+          ? rawData
+          : (rawData is Map ? rawData['data'] : null) ?? [];
+      if (rawList is List) {
+        debugPrint(
+          '[FIXTURE] Baseball API: ${rawList.length} matches, '
+          'statuses=${rawList.map((m) => m is Map ? m['status'] : null).toSet().toList()}',
+        );
+      }
+
       final matches = _parseFixtures(
         response.data,
         sport: 'baseball',
-        label: 'Baseball fixtures for $date (status=$status)',
+        label: 'Baseball fixtures for $date',
       );
       debugPrint('[FIXTURE] Baseball fixtures for $date: ${matches.length} matches');
       return matches;
