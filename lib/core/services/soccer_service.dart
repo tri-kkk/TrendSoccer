@@ -15,11 +15,50 @@ final soccerServiceProvider = Provider<SoccerService>((ref) {
   );
 });
 
+class _CachedResponse {
+  _CachedResponse(this.data) : timestamp = DateTime.now();
+
+  final dynamic data;
+  final DateTime timestamp;
+
+  bool get isExpired =>
+      DateTime.now().difference(timestamp) > const Duration(minutes: 5);
+}
+
 class SoccerService {
   SoccerService(this._dio, this._prefs);
 
   final Dio _dio;
   final SharedPreferences _prefs;
+  final Map<String, _CachedResponse> _responseCache = {};
+
+  void clearResponseCache() {
+    _responseCache.clear();
+  }
+
+  String _cacheKey(String path, Map<String, dynamic> params) {
+    final entries = params.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    if (entries.isEmpty) return path;
+    return '$path?${entries.map((e) => '${e.key}=${e.value}').join('&')}';
+  }
+
+  Future<dynamic> _fetchOddsFromDb(Map<String, String> queryParameters) async {
+    const path = '/api/odds-from-db';
+    final key = _cacheKey(path, Map<String, dynamic>.from(queryParameters));
+    final cached = _responseCache[key];
+    if (cached != null && !cached.isExpired) {
+      debugPrint('[SOCCER] odds-from-db cache hit: $key');
+      return cached.data;
+    }
+
+    final response = await _dio.get<dynamic>(
+      path,
+      queryParameters: queryParameters.isEmpty ? null : queryParameters,
+    );
+    _responseCache[key] = _CachedResponse(response.data);
+    return response.data;
+  }
 
   String _apiLanguage() {
     final lang = getApiLanguage(_prefs);
@@ -82,11 +121,7 @@ class SoccerService {
       if (date != null && date.isNotEmpty) {
         queryParameters['date'] = date;
       }
-      final response = await _dio.get<dynamic>(
-        '/api/odds-from-db',
-        queryParameters: queryParameters.isEmpty ? null : queryParameters,
-      );
-      final raw = response.data;
+      final raw = await _fetchOddsFromDb(queryParameters);
       debugPrint('[SOCCER] Raw response type: ${raw.runtimeType}');
       if (raw is Map) {
         debugPrint('[SOCCER] Raw response keys: ${raw.keys.toList()}');

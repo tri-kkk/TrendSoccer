@@ -5,6 +5,7 @@ import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/core/services/baseball_combo_service.dart';
 import 'package:trendsoccer/core/services/baseball_service.dart';
 
+/// 30-day combo history for Premium tab (`days=30`, no single-date filter).
 final baseballComboPicksProvider =
     FutureProvider<Map<String, dynamic>>((ref) async {
   final service = ref.read(baseballServiceProvider);
@@ -199,6 +200,9 @@ List<Map<String, dynamic>> _extractComboMaps(Map<String, dynamic> response) {
   return const [];
 }
 
+/// Today's combo summary for Analysis tab (`date=today` via [BaseballComboService]).
+/// Same `/api/baseball/combo-picks` path as [baseballComboPicksProvider] but different
+/// query params (`date` vs `days`), so both providers are kept intentionally.
 final baseballComboStatsProvider =
     FutureProvider.autoDispose<BaseballComboStatsView>((ref) async {
   final raw =

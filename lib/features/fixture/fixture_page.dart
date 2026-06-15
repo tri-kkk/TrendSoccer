@@ -5,7 +5,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import 'package:trendsoccer/core/models/fixture_models_v2.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
@@ -17,14 +16,15 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/baseball_status.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
+import 'package:trendsoccer/features/fixture/fixture_baseball_content.dart';
+import 'package:trendsoccer/features/fixture/fixture_date_navigation.dart';
+import 'package:trendsoccer/features/fixture/fixture_league_filters.dart';
+import 'package:trendsoccer/features/fixture/fixture_soccer_content.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
-import 'package:trendsoccer/shared/widgets/filter/ts_filter_chip.dart';
 import 'package:trendsoccer/shared/widgets/fixture/alarm_sheet.dart';
-import 'package:trendsoccer/shared/widgets/fixture/date_nav_chip.dart';
 import 'package:trendsoccer/shared/widgets/fixture/fixture_league_header.dart';
-import 'package:trendsoccer/shared/widgets/fixture/fixture_league_logo.dart';
 import 'package:trendsoccer/shared/widgets/fixture/fixture_match_row.dart';
 import 'package:trendsoccer/shared/widgets/fixture/fixture_matches_card.dart';
 import 'package:trendsoccer/shared/widgets/fixture/fixture_status.dart';
@@ -40,7 +40,6 @@ class FixturePage extends ConsumerStatefulWidget {
 
 class _FixturePageState extends ConsumerState<FixturePage>
     with WidgetsBindingObserver {
-  static final _md = DateFormat('M.dd');
   static const _pageScrollPhysics = PageScrollPhysics(
     parent: ClampingScrollPhysics(),
   );
@@ -405,12 +404,6 @@ class _FixturePageState extends ConsumerState<FixturePage>
     return ref.read(fixtureSelectedSportProvider) == 'baseball';
   }
 
-  bool _isHalftimeStatus(String? status) {
-    if (status == null || status.isEmpty) return false;
-    final normalized = status.trim().toUpperCase();
-    return normalized == 'HT' || normalized.contains('HALFTIME');
-  }
-
   void _startLivePolling() {
     if (!mounted) return;
 
@@ -565,9 +558,6 @@ class _FixturePageState extends ConsumerState<FixturePage>
     });
   }
 
-  bool _isSameDay(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month && a.day == b.day;
-
   List<String> _weekdayLabels(AppLocalizations l10n) => [
         l10n.weekdayMon,
         l10n.weekdayTue,
@@ -709,51 +699,9 @@ class _FixturePageState extends ConsumerState<FixturePage>
     required bool isBaseball,
   }) {
     if (isBaseball) {
-      return _baseballFixtureStatus(match);
+      return FixtureBaseballContent.toFixtureStatus(match);
     }
-    switch (match.status) {
-      case 'live':
-        return FixtureMatchStatus.live;
-      case 'finished':
-        return FixtureMatchStatus.finished;
-      case 'postponed':
-        return FixtureMatchStatus.postponed;
-      case 'cancelled':
-        return FixtureMatchStatus.cancelled;
-      case 'interrupted':
-        return FixtureMatchStatus.interrupted;
-      default:
-        return FixtureMatchStatus.scheduled;
-    }
-  }
-
-  FixtureMatchStatus _baseballFixtureStatus(FixtureMatch match) {
-    if (BaseballStatus.isInterrupted(match.rawStatus)) {
-      return FixtureMatchStatus.interrupted;
-    }
-    if (BaseballStatus.isCancelled(match.rawStatus) ||
-        match.status == 'cancelled') {
-      return FixtureMatchStatus.cancelled;
-    }
-    if (BaseballStatus.isPostponed(match.rawStatus) ||
-        match.status == 'postponed') {
-      return FixtureMatchStatus.postponed;
-    }
-    if (BaseballStatus.isLive(match.rawStatus)) {
-      return FixtureMatchStatus.live;
-    }
-    switch (match.status) {
-      case 'finished':
-        return FixtureMatchStatus.finished;
-      case 'postponed':
-        return FixtureMatchStatus.postponed;
-      case 'cancelled':
-        return FixtureMatchStatus.cancelled;
-      case 'interrupted':
-        return FixtureMatchStatus.interrupted;
-      default:
-        return FixtureMatchStatus.scheduled;
-    }
+    return FixtureSoccerContent.toFixtureStatus(match);
   }
 
   String? _scoreText(
@@ -762,16 +710,9 @@ class _FixturePageState extends ConsumerState<FixturePage>
     required bool isBaseball,
   }) {
     if (isBaseball) {
-      if (match.status == 'scheduled' ||
-          match.status == 'postponed' ||
-          match.status == 'cancelled') {
-        return null;
-      }
-    } else if (match.status == 'scheduled') {
-      return null;
+      return FixtureBaseballContent.scoreText(match, isHome: isHome);
     }
-    final score = isHome ? match.homeScore : match.awayScore;
-    return score?.toString();
+    return FixtureSoccerContent.scoreText(match, isHome: isHome);
   }
 
   String? _statusTimeText(
@@ -781,187 +722,49 @@ class _FixturePageState extends ConsumerState<FixturePage>
     LiveMatchData? live,
   }) {
     if (isBaseball) {
-      return _baseballStatusTimeText(match, l10n);
+      return FixtureBaseballContent.statusTimeText(match, l10n);
     }
-    if (live != null && _isHalftimeStatus(live.status)) {
-      return 'HT';
-    }
-    if (_isHalftimeStatus(match.rawStatus)) {
-      return 'HT';
-    }
-    if (live != null && live.isLive) {
-      return l10n.liveMinutes(live.elapsed);
-    }
-    if (live != null && live.isFinished) {
-      return l10n.fixtureStatusFinal;
-    }
-    switch (match.status) {
-      case 'live':
-        if (_isHalftimeStatus(match.rawStatus) ||
-            (live != null && _isHalftimeStatus(live.status))) {
-          return 'HT';
-        }
-        return live != null && live.elapsed > 0
-            ? l10n.liveMinutes(live.elapsed)
-            : l10n.fixtureLive;
-      case 'finished':
-        return l10n.fixtureStatusFinal;
-      case 'postponed':
-        return l10n.matchPostponed;
-      case 'cancelled':
-        return l10n.matchCancelled;
-      case 'interrupted':
-        return l10n.fixtureInterrupted;
-      default:
-        return fixtureMatchTimeKst(match);
-    }
-  }
-
-  String? _baseballStatusTimeText(
-    FixtureMatch match,
-    AppLocalizations l10n,
-  ) {
-    if (match.status == 'postponed' ||
-        BaseballStatus.isPostponed(match.rawStatus)) {
-      return l10n.matchPostponed;
-    }
-    if (match.status == 'cancelled' ||
-        BaseballStatus.isCancelled(match.rawStatus)) {
-      return l10n.matchCancelled;
-    }
-    if (BaseballStatus.isInterrupted(match.rawStatus)) {
-      return l10n.fixtureInterrupted;
-    }
-
-    if (BaseballStatus.isScheduled(match.rawStatus) ||
-        match.status == 'scheduled') {
-      return fixtureMatchTimeKst(match);
-    }
-
-    if (match.status == 'finished' || BaseballStatus.isFinished(match.rawStatus)) {
-      return l10n.fixtureStatusFinal;
-    }
-
-    if (BaseballStatus.isLive(match.rawStatus)) {
-      final display = _localizeBaseballStatusCode(
-        BaseballStatus.displayStatus(match.rawStatus),
-        l10n,
-      );
-      if (display.isNotEmpty) return display;
-      return l10n.fixtureLive;
-    }
-
-    return _localizeBaseballStatusCode(
-      BaseballStatus.displayStatus(match.rawStatus),
-      l10n,
+    return FixtureSoccerContent.statusTimeText(
+      match,
+      l10n: l10n,
+      live: live,
     );
-  }
-
-  String _localizeBaseballStatusCode(String code, AppLocalizations l10n) {
-    if (code.isEmpty) return code;
-    if (code == 'INT') return l10n.fixtureInterrupted;
-    final topMatch = RegExp(r'^(\d+)T$').firstMatch(code);
-    if (topMatch != null) {
-      return l10n.baseballInningTop(int.parse(topMatch.group(1)!));
-    }
-    final bottomMatch = RegExp(r'^(\d+)B$').firstMatch(code);
-    if (bottomMatch != null) {
-      return l10n.baseballInningBottom(int.parse(bottomMatch.group(1)!));
-    }
-    return code;
   }
 
   Widget _buildDateNavStrip() {
     final l10n = context.l10n;
-    final weekdays = _weekdayLabels(l10n);
     final today = DateTime.now();
     final todayDay = DateTime(today.year, today.month, today.day);
-    final selectedDateStr = ref.watch(fixtureSelectedDateProvider);
-    final isLiveFilter = ref.watch(fixtureLiveFilterProvider);
-    final chipDates = _chipDates();
 
-    return SizedBox(
-      height: 40,
-      child: SingleChildScrollView(
-        controller: _dateChipScrollController,
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            DateNavChip(
-              type: DateNavChipType.live,
-              isActive: isLiveFilter,
-              onTap: () {
-                ref.read(fixtureLiveFilterProvider.notifier).state = true;
-                ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
-              },
-            ),
-            const SizedBox(width: _dateChipGap),
-            for (var i = 0; i < chipDates.length; i++) ...[
-              if (i > 0) const SizedBox(width: _dateChipGap),
-              DateNavChip(
-                type: _isSameDay(chipDates[i], todayDay)
-                    ? DateNavChipType.today
-                    : DateNavChipType.date,
-                dayLabel: _isSameDay(chipDates[i], todayDay)
-                    ? l10n.today
-                    : weekdays[chipDates[i].weekday - 1],
-                dateLabel: _md.format(chipDates[i]),
-                isActive: !isLiveFilter &&
-                    selectedDateStr == fixtureDateString(chipDates[i]),
-                onTap: () => _selectDateAtIndex(i),
-              ),
-            ],
-          ],
-        ),
-      ),
+    return FixtureDateNavigation(
+      scrollController: _dateChipScrollController,
+      chipDates: _chipDates(),
+      selectedDateStr: ref.watch(fixtureSelectedDateProvider),
+      isLiveFilter: ref.watch(fixtureLiveFilterProvider),
+      todayDay: todayDay,
+      weekdayLabels: _weekdayLabels(l10n),
+      todayLabel: l10n.today,
+      chipGap: _dateChipGap,
+      onLiveTap: () {
+        ref.read(fixtureLiveFilterProvider.notifier).state = true;
+        ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
+      },
+      onDateTap: _selectDateAtIndex,
     );
   }
 
   Widget _buildLeagueFilters(List<FixtureLeagueOption> leagues) {
-    final selectedLeague = ref.watch(fixtureSelectedLeagueProvider);
-
-    return SizedBox(
-      height: 32,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.zero,
-        itemCount: leagues.length + 1,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return TsFilterChip(
-              label: context.l10n.filterAll,
-              isSelected: selectedLeague == null,
-              type: TsFilterChipType.textOnly,
-              onTap: () {
-                ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
-              },
-            );
-          }
-
-          final league = leagues[index - 1];
-          final locale = Localizations.localeOf(context).languageCode;
-          final displayName = locale == 'en'
-              ? (league.nameEn ?? league.name)
-              : league.name;
-
-          return TsFilterChip(
-            label: displayName,
-            isSelected: selectedLeague == league.code,
-            type: TsFilterChipType.withIcon,
-            iconWidget: FixtureLeagueLogo(
-              leagueName: displayName,
-              leagueCode: league.code,
-              leagueLogoUrl: league.logo,
-              size: 16,
-            ),
-            onTap: () {
-              ref.read(fixtureSelectedLeagueProvider.notifier).state =
-                  league.code;
-            },
-          );
-        },
-      ),
+    return FixtureLeagueFilters(
+      leagues: leagues,
+      selectedLeague: ref.watch(fixtureSelectedLeagueProvider),
+      filterAllLabel: context.l10n.filterAll,
+      locale: Localizations.localeOf(context).languageCode,
+      onSelectAll: () {
+        ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
+      },
+      onSelectLeague: (code) {
+        ref.read(fixtureSelectedLeagueProvider.notifier).state = code;
+      },
     );
   }
 
