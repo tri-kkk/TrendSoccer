@@ -42,10 +42,6 @@ class TodayComboCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: semantic.surfaceRaised,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: semantic.interactivePrimary,
-          width: 2,
-        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

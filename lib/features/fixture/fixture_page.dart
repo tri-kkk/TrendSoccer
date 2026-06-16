@@ -49,7 +49,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
     parent: ClampingScrollPhysics(),
   );
 
-  static const _dateChipWidth = 72.0;
+  static const _dateChipWidth = 80.0;
   static const _dateChipGap = 8.0;
   static const _dateChipHorizontalPadding = 16.0;
 
@@ -448,7 +448,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
     _livePollingTimer = null;
   }
 
-  int _dateChipIndexForPage(int pageIndex) => pageIndex + 1;
+  int _dateChipIndexForPage(int pageIndex) => pageIndex;
 
   void _scrollDateChipToIndex(int chipIndex) {
     if (!_dateChipScrollController.hasClients) return;
@@ -777,29 +777,55 @@ class _FixturePageState extends ConsumerState<FixturePage>
       scrollController: _dateChipScrollController,
       chipDates: _chipDates(),
       selectedDateStr: ref.watch(fixtureSelectedDateProvider),
-      isLiveFilter: ref.watch(fixtureLiveFilterProvider),
       todayDay: todayDay,
       weekdayLabels: _weekdayLabels(l10n),
       todayLabel: l10n.today,
-      chipGap: _dateChipGap,
-      onLiveTap: () {
-        ref.read(fixtureLiveFilterProvider.notifier).state = true;
-        ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
-      },
       onDateTap: _selectDateAtIndex,
     );
   }
 
-  Widget _buildLeagueFilters(List<FixtureLeagueOption> leagues) {
+  bool _hasAnyLiveMatches(
+    List<FixtureMatch> matches, {
+    required bool isBaseball,
+    required Map<String, LiveMatchData> liveMap,
+  }) {
+    if (isBaseball) {
+      return matches.any(
+        (match) =>
+            BaseballStatus.isLive(match.rawStatus) ||
+            BaseballStatus.isInterrupted(match.rawStatus),
+      );
+    }
+
+    return matches.any((match) {
+      final live = _liveDataForMatch(match, liveMap);
+      return live != null && live.isLive;
+    });
+  }
+
+  Widget _buildLeagueFilters(
+    List<FixtureLeagueOption> leagues, {
+    required bool showLiveChip,
+    required bool isLiveFilter,
+  }) {
     return FixtureLeagueFilters(
       leagues: leagues,
       selectedLeague: ref.watch(fixtureSelectedLeagueProvider),
       filterAllLabel: context.l10n.filterAll,
+      liveLabel: context.l10n.fixtureLive,
       locale: Localizations.localeOf(context).languageCode,
+      showLiveChip: showLiveChip,
+      isLiveFilter: isLiveFilter,
       onSelectAll: () {
+        ref.read(fixtureLiveFilterProvider.notifier).state = false;
+        ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
+      },
+      onLiveTap: () {
+        ref.read(fixtureLiveFilterProvider.notifier).state = true;
         ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
       },
       onSelectLeague: (code) {
+        ref.read(fixtureLiveFilterProvider.notifier).state = false;
         ref.read(fixtureSelectedLeagueProvider.notifier).state = code;
       },
     );
@@ -1091,6 +1117,14 @@ class _FixturePageState extends ConsumerState<FixturePage>
     final allMatchesAsync = ref.watch(allFixturesWithLiveProvider);
     final liveMap = ref.watch(liveMatchesProvider);
     final chipDates = _chipDates();
+    final hasLiveMatches = allMatchesAsync.maybeWhen(
+      data: (matches) => _hasAnyLiveMatches(
+        matches,
+        isBaseball: isBaseball,
+        liveMap: liveMap,
+      ),
+      orElse: () => false,
+    );
 
     ref.listen(rawFixturesProvider, (previous, next) {
       final wasLoading = previous?.isLoading ?? false;
@@ -1176,7 +1210,11 @@ class _FixturePageState extends ConsumerState<FixturePage>
                 const SizedBox(height: 16),
                 _buildDateNavStrip(),
                 const SizedBox(height: 16),
-                _buildLeagueFilters(leagues),
+                _buildLeagueFilters(
+                  leagues,
+                  showLiveChip: hasLiveMatches,
+                  isLiveFilter: isLiveFilter,
+                ),
               ],
             ),
           ),

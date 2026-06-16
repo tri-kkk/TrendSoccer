@@ -29,7 +29,7 @@ class TsFilterChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final backgroundColor =
-        isSelected ? semantic.interactivePrimary : semantic.surfaceContainer;
+        isSelected ? semantic.textPrimary : semantic.surfaceContainer;
     final textColor = isSelected ? semantic.surfaceBase : semantic.textSecondary;
     final textStyle = TsType.labelSRegular.copyWith(color: textColor);
 

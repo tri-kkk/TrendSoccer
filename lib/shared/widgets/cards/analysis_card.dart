@@ -155,7 +155,7 @@ class AnalysisCard extends StatelessWidget {
       child: Container(
           padding: const EdgeInsets.all(TsSpacing.lg),
           decoration: BoxDecoration(
-            color: semantic.surfaceRaised,
+            color: semantic.surfaceBase,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Column(

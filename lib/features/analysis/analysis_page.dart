@@ -1,43 +1,32 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:intl/intl.dart';
 
+import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
-
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
-
 import 'package:trendsoccer/core/providers/auth_provider.dart';
-import 'package:trendsoccer/core/providers/language_provider.dart';
-
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
+import 'package:trendsoccer/core/providers/language_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
-
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
-import 'package:trendsoccer/l10n/app_localizations.dart';
-
 import 'package:trendsoccer/features/analysis/analysis_dummy_data.dart';
-
 import 'package:trendsoccer/features/analysis/widgets/baseball_matches_section.dart';
-
 import 'package:trendsoccer/features/analysis/widgets/soccer_matches_section.dart';
-
+import 'package:trendsoccer/l10n/app_localizations.dart';
+import 'package:trendsoccer/shared/widgets/badge/ts_badge.dart';
+import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/cards/baseball_today_combo_card.dart';
-
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
-
 import 'package:trendsoccer/shared/widgets/filter/ts_filter_chip.dart';
-
-import 'package:trendsoccer/shared/widgets/fixture/date_nav_chip.dart';
-
 import 'package:trendsoccer/shared/widgets/league/ts_league_icon.dart';
-
+import 'package:trendsoccer/shared/widgets/logo/ts_logo.dart';
+import 'package:trendsoccer/shared/widgets/navigation/date_tab_bar.dart';
 import 'package:trendsoccer/shared/widgets/toggle/sports_toggle.dart';
 
 class AnalysisPage extends ConsumerStatefulWidget {
@@ -50,34 +39,24 @@ class AnalysisPage extends ConsumerStatefulWidget {
 class _AnalysisPageState extends ConsumerState<AnalysisPage> {
   static final _md = DateFormat('M.dd');
 
-  static const _pageScrollPhysics = PageScrollPhysics(
-    parent: ClampingScrollPhysics(),
-  );
-
-  static const _dateChipGap = 8.0;
-
   SportType _selectedSport = SportType.soccer;
-
-  late final PageController _baseballPageController;
-  late final PageController _soccerPageController;
-
-  bool _syncingBaseballPage = false;
-  bool _syncingSoccerPage = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _baseballPageController = PageController(initialPage: 0);
-    _soccerPageController = PageController(initialPage: 0);
-  }
+  final ScrollController _scrollController = ScrollController();
+  double _dragStartX = 0;
+  double _dragEndX = 0;
 
   @override
   void dispose() {
-    _baseballPageController.dispose();
-    _soccerPageController.dispose();
-
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _scrollToTop() {
+    if (!_scrollController.hasClients) return;
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
   }
 
   @override
@@ -88,7 +67,6 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
 
     if (sportParam == 'baseball' && _selectedSport != SportType.baseball) {
       setState(() => _selectedSport = SportType.baseball);
-
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           _resetBaseballToToday();
@@ -101,129 +79,55 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
     ref.read(selectedLeagueProvider.notifier).state = null;
     ref.read(soccerAnalysisDateProvider.notifier).state =
         fixtureTodayDateString();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-
-      if (_soccerPageController.hasClients) {
-        _syncingSoccerPage = true;
-        _soccerPageController.jumpToPage(0);
-        _syncingSoccerPage = false;
-      }
-    });
   }
 
   void _resetBaseballToToday() {
     ref.read(selectedBaseballLeagueProvider.notifier).state = null;
-
     ref.read(baseballAnalysisDateProvider.notifier).state =
         baseballTodayDateString();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-
-      if (_baseballPageController.hasClients) {
-        _syncingBaseballPage = true;
-
-        _baseballPageController.jumpToPage(0);
-
-        _syncingBaseballPage = false;
-      }
-    });
-  }
-
-  void _onSoccerPageChanged(int index) {
-    if (_syncingSoccerPage) return;
-
-    final dates = ref.read(soccerAnalysisDatesProvider);
-    if (index < 0 || index >= dates.length) return;
-
-    ref.read(soccerAnalysisDateProvider.notifier).state = dates[index];
-    ref.read(selectedLeagueProvider.notifier).state = null;
   }
 
   void _selectSoccerDateAtIndex(int index) {
     final dates = ref.read(soccerAnalysisDatesProvider);
     if (index < 0 || index >= dates.length) return;
 
-    _syncingSoccerPage = true;
     ref.read(selectedLeagueProvider.notifier).state = null;
     ref.read(soccerAnalysisDateProvider.notifier).state = dates[index];
-
-    if (!_soccerPageController.hasClients) {
-      _syncingSoccerPage = false;
-      return;
-    }
-
-    _soccerPageController
-        .animateToPage(
-          index,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        )
-        .whenComplete(() {
-          if (mounted) _syncingSoccerPage = false;
-        });
-  }
-
-  void _jumpSoccerToPageIndex(int index) {
-    if (!_soccerPageController.hasClients) return;
-
-    _syncingSoccerPage = true;
-    _soccerPageController.jumpToPage(index);
-    _syncingSoccerPage = false;
-  }
-
-  void _onBaseballPageChanged(int index) {
-    if (_syncingBaseballPage) return;
-
-    final dates = ref.read(baseballAnalysisDatesProvider);
-
-    if (index < 0 || index >= dates.length) return;
-
-    ref.read(baseballAnalysisDateProvider.notifier).state = dates[index];
-
-    ref.read(selectedBaseballLeagueProvider.notifier).state = null;
+    _scrollToTop();
   }
 
   void _selectBaseballDateAtIndex(int index) {
     final dates = ref.read(baseballAnalysisDatesProvider);
-
     if (index < 0 || index >= dates.length) return;
 
-    _syncingBaseballPage = true;
-
     ref.read(selectedBaseballLeagueProvider.notifier).state = null;
-
     ref.read(baseballAnalysisDateProvider.notifier).state = dates[index];
-
-    if (!_baseballPageController.hasClients) {
-      _syncingBaseballPage = false;
-
-      return;
-    }
-
-    _baseballPageController
-        .animateToPage(
-          index,
-
-          duration: const Duration(milliseconds: 300),
-
-          curve: Curves.easeInOut,
-        )
-        .whenComplete(() {
-          if (mounted) _syncingBaseballPage = false;
-        });
+    _scrollToTop();
   }
 
-  void _jumpBaseballToPageIndex(int index) {
-    if (!_baseballPageController.hasClients) return;
+  void _goToNextDate({
+    required bool isSoccer,
+    required int selectedIndex,
+    required int dateCount,
+  }) {
+    if (selectedIndex >= dateCount - 1) return;
+    if (isSoccer) {
+      _selectSoccerDateAtIndex(selectedIndex + 1);
+    } else {
+      _selectBaseballDateAtIndex(selectedIndex + 1);
+    }
+  }
 
-    _syncingBaseballPage = true;
-
-    _baseballPageController.jumpToPage(index);
-
-    _syncingBaseballPage = false;
+  void _goToPreviousDate({
+    required bool isSoccer,
+    required int selectedIndex,
+  }) {
+    if (selectedIndex <= 0) return;
+    if (isSoccer) {
+      _selectSoccerDateAtIndex(selectedIndex - 1);
+    } else {
+      _selectBaseballDateAtIndex(selectedIndex - 1);
+    }
   }
 
   bool _isSameDay(DateTime a, DateTime b) =>
@@ -238,6 +142,37 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
         l10n.weekdaySat,
         l10n.weekdaySun,
       ];
+
+  List<DateTabItem> _buildDateItems({
+    required List<DateTime> chipDates,
+    required AppLocalizations l10n,
+  }) {
+    final weekdays = _weekdayLabels(l10n);
+    final today = DateTime.now();
+    final todayDay = DateTime(today.year, today.month, today.day);
+
+    return [
+      for (final date in chipDates)
+        DateTabItem(
+          dayLabel: _isSameDay(date, todayDay)
+              ? l10n.analysisToday
+              : weekdays[date.weekday - 1],
+          dateLabel: _md.format(date),
+          isToday: _isSameDay(date, todayDay),
+        ),
+    ];
+  }
+
+  int _selectedDateIndex({
+    required List<DateTime> chipDates,
+    required String selectedDateStr,
+    required String Function(DateTime) dateStringFor,
+  }) {
+    final index = chipDates.indexWhere(
+      (date) => dateStringFor(date) == selectedDateStr,
+    );
+    return index < 0 ? 0 : index;
+  }
 
   String _leagueChipLabel({
     required bool isAll,
@@ -257,17 +192,12 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
 
     return SizedBox(
       height: 32,
-
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-
         itemCount: soccerAnalysisLeagueChips.length,
-
         separatorBuilder: (_, _) => const SizedBox(width: 8),
-
         itemBuilder: (context, index) {
           final chip = soccerAnalysisLeagueChips[index];
-
           final isSelected = chip.isAll
               ? selectedSoccerLeague == null
               : selectedSoccerLeague == chip.id;
@@ -280,21 +210,16 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
               language: language,
               l10n: l10n,
             ),
-
             isSelected: isSelected,
-
             type: chip.iconId != null
                 ? TsFilterChipType.withIcon
                 : TsFilterChipType.textOnly,
-
             iconWidget: chip.iconId != null
                 ? TsLeagueIcon(leagueId: chip.iconId!, size: 16)
                 : null,
-
             onTap: () {
-              ref.read(selectedLeagueProvider.notifier).state = chip.isAll
-                  ? null
-                  : chip.id;
+              ref.read(selectedLeagueProvider.notifier).state =
+                  chip.isAll ? null : chip.id;
             },
           );
         },
@@ -309,17 +234,12 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
 
     return SizedBox(
       height: 32,
-
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-
         itemCount: baseballAnalysisLeagueChips.length,
-
         separatorBuilder: (_, _) => const SizedBox(width: 8),
-
         itemBuilder: (context, index) {
           final chip = baseballAnalysisLeagueChips[index];
-
           final isSelected = chip.isAll
               ? selectedBaseballLeague == null
               : selectedBaseballLeague == chip.code;
@@ -332,17 +252,13 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
               language: language,
               l10n: l10n,
             ),
-
             isSelected: isSelected,
-
             type: chip.iconId != null
                 ? TsFilterChipType.withIcon
                 : TsFilterChipType.textOnly,
-
             iconWidget: chip.iconId != null
                 ? TsLeagueIcon(leagueId: chip.iconId!, size: 16)
                 : null,
-
             onTap: () {
               ref.read(selectedBaseballLeagueProvider.notifier).state =
                   chip.isAll ? null : chip.code;
@@ -353,219 +269,84 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
     );
   }
 
-  Widget _buildBaseballDateNavStrip() {
-    final l10n = context.l10n;
-    final weekdays = _weekdayLabels(l10n);
-    final today = DateTime.now();
-
-    final todayDay = DateTime(today.year, today.month, today.day);
-
-    final chipDates = baseballAnalysisDateTimes();
-
-    final selectedDateStr = ref.watch(baseballAnalysisDateProvider);
-
-    return SizedBox(
-      height: 40,
-
-      child: Row(
-        children: [
-          for (var i = 0; i < chipDates.length; i++) ...[
-            if (i > 0) const SizedBox(width: _dateChipGap),
-
-            Expanded(
-              child: DateNavChip(
-                expandWidth: true,
-                type: _isSameDay(chipDates[i], todayDay)
-                    ? DateNavChipType.today
-                    : DateNavChipType.date,
-
-                dayLabel: _isSameDay(chipDates[i], todayDay)
-                    ? l10n.analysisToday
-                    : weekdays[chipDates[i].weekday - 1],
-
-                dateLabel: _md.format(chipDates[i]),
-
-                isActive: selectedDateStr == baseballDateString(chipDates[i]),
-
-                onTap: () => _selectBaseballDateAtIndex(i),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
+  TsBadgeType _badgeForPlan(PlanType planType) {
+    return switch (planType) {
+      PlanType.none || PlanType.free => TsBadgeType.free,
+      PlanType.trial => TsBadgeType.trial,
+      PlanType.premium => TsBadgeType.premium,
+    };
   }
 
-  Widget _buildSoccerDateNavStrip() {
-    final l10n = context.l10n;
-    final weekdays = _weekdayLabels(l10n);
-    final today = DateTime.now();
-    final todayDay = DateTime(today.year, today.month, today.day);
-    final chipDates = soccerAnalysisDateTimes();
-    final selectedDateStr = ref.watch(soccerAnalysisDateProvider);
-
-    return SizedBox(
-      height: 40,
-      child: Row(
-        children: [
-          for (var i = 0; i < chipDates.length; i++) ...[
-            if (i > 0) const SizedBox(width: _dateChipGap),
-            Expanded(
-              child: DateNavChip(
-                expandWidth: true,
-                type: _isSameDay(chipDates[i], todayDay)
-                    ? DateNavChipType.today
-                    : DateNavChipType.date,
-                dayLabel: _isSameDay(chipDates[i], todayDay)
-                    ? l10n.analysisToday
-                    : weekdays[chipDates[i].weekday - 1],
-                dateLabel: _md.format(chipDates[i]),
-                isActive: selectedDateStr == fixtureDateString(chipDates[i]),
-                onTap: () => _selectSoccerDateAtIndex(i),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSoccerSection({required VoidCallback onPremiumCtaTap}) {
-    final dates = ref.watch(soccerAnalysisDatesProvider);
-
-    return NestedScrollView(
-      headerSliverBuilder: (context, innerBoxIsScrolled) {
-        return [
-          SliverOverlapAbsorber(
-            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-            sliver: SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 16),
-                    PremiumPickStatsCard(
-                      showCTA: true,
-                      onCTATap: onPremiumCtaTap,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildSoccerDateNavStrip(),
-                    const SizedBox(height: 16),
-                    _buildSoccerFilterChips(),
-                    const SizedBox(height: 8),
-                  ],
+  Widget _buildAppBarTitle({
+    required SupabaseAuthProvider auth,
+    required TsSemanticColors semantic,
+    required Brightness brightness,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        TsLogo(
+          type: TsLogoType.horizon,
+          color: brightness == Brightness.dark
+              ? TsLogoColor.white
+              : TsLogoColor.black,
+        ),
+        if (!auth.isLoggedIn)
+          TsButton(
+            label: context.l10n.loginAppBarTitle,
+            variant: TsButtonVariant.primary,
+            size: TsButtonSize.small,
+            onPressed: () => context.push('/login'),
+          )
+        else
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TsBadge(type: _badgeForPlan(auth.planType)),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () => context.go('/menu'),
+                child: SvgPicture.asset(
+                  TsAssets.iconAccountCircle,
+                  width: 24,
+                  height: 24,
+                  colorFilter: ColorFilter.mode(
+                    semantic.textPrimary,
+                    BlendMode.srcIn,
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ];
-      },
-      body: PageView.builder(
-        controller: _soccerPageController,
-        physics: _pageScrollPhysics,
-        dragStartBehavior: DragStartBehavior.down,
-        itemCount: dates.length,
-        onPageChanged: _onSoccerPageChanged,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: SoccerMatchesSection(
-              dateStr: dates[index],
-              scrollable: true,
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildBaseballSection() {
-    final dates = ref.watch(baseballAnalysisDatesProvider);
-
-    return NestedScrollView(
-      headerSliverBuilder: (context, innerBoxIsScrolled) {
-        return [
-          SliverOverlapAbsorber(
-            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-            sliver: SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 16),
-                    const BaseballTodayComboCard(),
-                    const SizedBox(height: 16),
-                    _buildBaseballDateNavStrip(),
-                    const SizedBox(height: 16),
-                    _buildBaseballLeagueFilterChips(),
-                    const SizedBox(height: 8),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ];
-      },
-      body: PageView.builder(
-        controller: _baseballPageController,
-        physics: _pageScrollPhysics,
-        dragStartBehavior: DragStartBehavior.down,
-        itemCount: dates.length,
-        onPageChanged: _onBaseballPageChanged,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: BaseballMatchesSection(
-              dateStr: dates[index],
-              scrollable: true,
-            ),
-          );
-        },
-      ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-
+    final brightness = Theme.of(context).brightness;
     final auth = ref.watch(authProvider);
-    final soccerDates = ref.watch(soccerAnalysisDatesProvider);
-    final baseballDates = ref.watch(baseballAnalysisDatesProvider);
+    final l10n = context.l10n;
+    final isSoccer = _selectedSport == SportType.soccer;
 
-    ref.listen(soccerAnalysisDateProvider, (previous, next) {
-      if (previous == next || _syncingSoccerPage) return;
+    final chipDates = isSoccer
+        ? soccerAnalysisDateTimes()
+        : baseballAnalysisDateTimes();
+    final selectedDateStr = isSoccer
+        ? ref.watch(soccerAnalysisDateProvider)
+        : ref.watch(baseballAnalysisDateProvider);
+    final dateStringFor =
+        isSoccer ? fixtureDateString : baseballDateString;
+    final onDateSelected =
+        isSoccer ? _selectSoccerDateAtIndex : _selectBaseballDateAtIndex;
 
-      final index = soccerDates.indexOf(next);
-      if (index < 0 || !_soccerPageController.hasClients) return;
-
-      final currentPage =
-          _soccerPageController.page?.round() ??
-          _soccerPageController.initialPage;
-      if (currentPage == index) return;
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted || _syncingSoccerPage) return;
-        _jumpSoccerToPageIndex(index);
-      });
-    });
-
-    ref.listen(baseballAnalysisDateProvider, (previous, next) {
-      if (previous == next || _syncingBaseballPage) return;
-
-      final index = baseballDates.indexOf(next);
-      if (index < 0 || !_baseballPageController.hasClients) return;
-
-      final currentPage =
-          _baseballPageController.page?.round() ??
-          _baseballPageController.initialPage;
-      if (currentPage == index) return;
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted || _syncingBaseballPage) return;
-        _jumpBaseballToPageIndex(index);
-      });
-    });
+    final dateItems = _buildDateItems(chipDates: chipDates, l10n: l10n);
+    final selectedDateIndex = _selectedDateIndex(
+      chipDates: chipDates,
+      selectedDateStr: selectedDateStr,
+      dateStringFor: dateStringFor,
+    );
 
     void onPremiumCtaTap({required SportType sport}) {
       if (auth.hasFullAccess) {
@@ -578,39 +359,110 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
     }
 
     return Scaffold(
-      backgroundColor: semantic.surfaceBase,
+      backgroundColor: semantic.surfaceRaised,
+      body: GestureDetector(
+        onHorizontalDragStart: (details) {
+          _dragStartX = details.globalPosition.dx;
+          _dragEndX = details.globalPosition.dx;
+        },
+        onHorizontalDragUpdate: (details) {
+          _dragEndX = details.globalPosition.dx;
+        },
+        onHorizontalDragEnd: (details) {
+          final dx = _dragEndX - _dragStartX;
+          final velocity = details.primaryVelocity;
+          if (velocity == null && dx.abs() < 50) return;
 
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-
-            child: SportsToggle(
-              selectedSport: _selectedSport,
-
-              onChanged: (sport) {
-                setState(() => _selectedSport = sport);
-
-                if (sport == SportType.soccer) {
-                  _resetSoccerToToday();
-                } else {
-                  _resetBaseballToToday();
-                }
-              },
+          if ((velocity ?? 0) < -300 || dx < -50) {
+            _goToNextDate(
+              isSoccer: isSoccer,
+              selectedIndex: selectedDateIndex,
+              dateCount: chipDates.length,
+            );
+          } else if ((velocity ?? 0) > 300 || dx > 50) {
+            _goToPreviousDate(
+              isSoccer: isSoccer,
+              selectedIndex: selectedDateIndex,
+            );
+          }
+        },
+        child: CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            SliverAppBar(
+              pinned: true,
+              floating: true,
+              snap: true,
+              toolbarHeight: 56,
+              backgroundColor: semantic.surfaceBase,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              automaticallyImplyLeading: false,
+              titleSpacing: 0,
+              title: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _buildAppBarTitle(
+                  auth: auth,
+                  semantic: semantic,
+                  brightness: brightness,
+                ),
+              ),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(DateTabBar.barHeight),
+                child: DateTabBar(
+                  dates: dateItems,
+                  selectedIndex: selectedDateIndex,
+                  onDateSelected: onDateSelected,
+                  fillWidth: true,
+                  backgroundColor: semantic.surfaceBase,
+                ),
+              ),
+            ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: SportsToggle(
+                selectedSport: _selectedSport,
+                onChanged: (sport) {
+                  setState(() => _selectedSport = sport);
+                  if (sport == SportType.soccer) {
+                    _resetSoccerToToday();
+                  } else {
+                    _resetBaseballToToday();
+                  }
+                },
+              ),
             ),
           ),
-
-          Expanded(
-            child: _selectedSport == SportType.soccer
-                ? _buildSoccerSection(
-                    onPremiumCtaTap: () =>
-                        onPremiumCtaTap(sport: SportType.soccer),
-                  )
-                : _buildBaseballSection(),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: isSoccer
+                  ? PremiumPickStatsCard(
+                      showCTA: true,
+                      onCTATap: () =>
+                          onPremiumCtaTap(sport: SportType.soccer),
+                    )
+                  : const BaseballTodayComboCard(),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: isSoccer
+                  ? _buildSoccerFilterChips()
+                  : _buildBaseballLeagueFilterChips(),
+            ),
+          ),
+          if (isSoccer)
+            SoccerMatchesSection(dateStr: selectedDateStr)
+          else
+            BaseballMatchesSection(dateStr: selectedDateStr),
+          const SliverPadding(
+            padding: EdgeInsets.only(bottom: 16),
           ),
         ],
+        ),
       ),
     );
   }

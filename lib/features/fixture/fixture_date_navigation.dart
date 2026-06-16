@@ -2,33 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
-import 'package:trendsoccer/shared/widgets/fixture/date_nav_chip.dart';
+import 'package:trendsoccer/shared/widgets/navigation/date_tab_bar.dart';
 
 class FixtureDateNavigation extends StatelessWidget {
   const FixtureDateNavigation({
     required this.scrollController,
     required this.chipDates,
     required this.selectedDateStr,
-    required this.isLiveFilter,
     required this.todayDay,
     required this.weekdayLabels,
     required this.todayLabel,
-    required this.onLiveTap,
     required this.onDateTap,
-    this.chipGap = 8,
     super.key,
   });
 
   final ScrollController scrollController;
   final List<DateTime> chipDates;
   final String selectedDateStr;
-  final bool isLiveFilter;
   final DateTime todayDay;
   final List<String> weekdayLabels;
   final String todayLabel;
-  final VoidCallback onLiveTap;
   final ValueChanged<int> onDateTap;
-  final double chipGap;
 
   static final _md = DateFormat('M.dd');
 
@@ -37,37 +31,26 @@ class FixtureDateNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40,
-      child: SingleChildScrollView(
-        controller: scrollController,
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            DateNavChip(
-              type: DateNavChipType.live,
-              isActive: isLiveFilter,
-              onTap: onLiveTap,
-            ),
-            SizedBox(width: chipGap),
-            for (var i = 0; i < chipDates.length; i++) ...[
-              if (i > 0) SizedBox(width: chipGap),
-              DateNavChip(
-                type: _isSameDay(chipDates[i], todayDay)
-                    ? DateNavChipType.today
-                    : DateNavChipType.date,
-                dayLabel: _isSameDay(chipDates[i], todayDay)
-                    ? todayLabel
-                    : weekdayLabels[chipDates[i].weekday - 1],
-                dateLabel: _md.format(chipDates[i]),
-                isActive: !isLiveFilter &&
-                    selectedDateStr == fixtureDateString(chipDates[i]),
-                onTap: () => onDateTap(i),
-              ),
-            ],
-          ],
+    final dates = [
+      for (final date in chipDates)
+        DateTabItem(
+          dayLabel: _isSameDay(date, todayDay)
+              ? todayLabel
+              : weekdayLabels[date.weekday - 1],
+          dateLabel: _md.format(date),
+          isToday: _isSameDay(date, todayDay),
         ),
-      ),
+    ];
+
+    final selectedIndex = chipDates.indexWhere(
+      (date) => fixtureDateString(date) == selectedDateStr,
+    );
+
+    return DateTabBar(
+      scrollController: scrollController,
+      dates: dates,
+      selectedIndex: selectedIndex < 0 ? 0 : selectedIndex,
+      onDateSelected: onDateTap,
     );
   }
 }

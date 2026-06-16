@@ -17,34 +17,10 @@ import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 class BaseballMatchesSection extends ConsumerWidget {
   const BaseballMatchesSection({
     required this.dateStr,
-    this.scrollable = false,
     super.key,
   });
 
   final String dateStr;
-  final bool scrollable;
-
-  static const _nestedScrollPhysics = ClampingScrollPhysics();
-
-  Widget _buildNestedScrollView(
-    BuildContext context, {
-    required List<Widget> slivers,
-  }) {
-    return Builder(
-      builder: (context) {
-        return CustomScrollView(
-          key: PageStorageKey<String>('baseball-analysis-$dateStr'),
-          physics: _nestedScrollPhysics,
-          slivers: [
-            SliverOverlapInjector(
-              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-            ),
-            ...slivers,
-          ],
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,26 +36,14 @@ class BaseballMatchesSection extends ConsumerWidget {
     });
 
     return matchesAsync.when(
-      loading: () {
-        const loading = Padding(
+      loading: () => const SliverToBoxAdapter(
+        child: Padding(
           padding: EdgeInsets.symmetric(vertical: 48),
           child: Center(child: CircularProgressIndicator()),
-        );
-        if (scrollable) {
-          return _buildNestedScrollView(
-            context,
-            slivers: const [
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: loading,
-              ),
-            ],
-          );
-        }
-        return loading;
-      },
-      error: (error, stackTrace) {
-        final errorWidget = Padding(
+        ),
+      ),
+      error: (error, stackTrace) => SliverToBoxAdapter(
+        child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 32),
           child: Center(
             child: _InlineError(
@@ -87,20 +51,8 @@ class BaseballMatchesSection extends ConsumerWidget {
               onRetry: () => ref.invalidate(baseballAnalysisMatchesProvider),
             ),
           ),
-        );
-        if (scrollable) {
-          return _buildNestedScrollView(
-            context,
-            slivers: [
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: errorWidget,
-              ),
-            ],
-          );
-        }
-        return errorWidget;
-      },
+        ),
+      ),
       data: (matches) {
         final filtered = filterBaseballAnalysisMatches(
           matches: matches,
@@ -109,48 +61,34 @@ class BaseballMatchesSection extends ConsumerWidget {
         );
 
         if (filtered.isEmpty) {
-          final emptyState = TsEmptyState(
-            title: context.l10n.analysisNoBaseballScheduled,
-          );
-          if (scrollable) {
-            return _buildNestedScrollView(
-              context,
-              slivers: [
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(child: emptyState),
-                ),
-              ],
-            );
-          }
-          return SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.4,
-            child: Center(child: emptyState),
-          );
-        }
-
-        final cards = [
-          for (var i = 0; i < filtered.length; i++) ...[
-            if (i > 0) const SizedBox(height: 16),
-            _BaseballAnalysisCardItem(card: filtered[i]),
-          ],
-        ];
-
-        if (scrollable) {
-          return _buildNestedScrollView(
-            context,
-            slivers: [
-              SliverPadding(
-                padding: const EdgeInsets.only(bottom: 24),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate(cards),
+          return SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 48),
+              child: Center(
+                child: TsEmptyState(
+                  title: context.l10n.analysisNoBaseballScheduled,
                 ),
               ),
-            ],
+            ),
           );
         }
 
-        return Column(children: cards);
+        return SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              return Padding(
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  index == 0 ? 0 : 8,
+                  16,
+                  index == filtered.length - 1 ? 0 : 8,
+                ),
+                child: _BaseballAnalysisCardItem(card: filtered[index]),
+              );
+            },
+            childCount: filtered.length,
+          ),
+        );
       },
     );
   }
@@ -215,4 +153,3 @@ class _InlineError extends StatelessWidget {
     );
   }
 }
-

@@ -81,7 +81,7 @@ class _NavTabItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final color =
-        selected ? semantic.interactivePrimary : semantic.textTertiary;
+        selected ? semantic.textPrimary : semantic.textTertiary;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,

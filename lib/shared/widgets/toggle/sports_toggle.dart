@@ -44,7 +44,7 @@ class SportsToggle extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: selected
-                  ? semantic.interactivePrimary
+                  ? semantic.textPrimary
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(8),
             ),
@@ -56,7 +56,7 @@ class SportsToggle extends StatelessWidget {
                   fill: SportsIconFill.primary,
                   size: 24,
                   color: selected
-                      ? semantic.interactiveOnPrimary
+                      ? semantic.surfaceBase
                       : semantic.textPrimary,
                 ),
                 const SizedBox(width: TsSpacing.sm),
@@ -64,7 +64,7 @@ class SportsToggle extends StatelessWidget {
                   _label(l10n, sport),
                   style: TsType.bodyLBold.copyWith(
                     color: selected
-                        ? semantic.interactiveOnPrimary
+                        ? semantic.surfaceBase
                         : semantic.textPrimary,
                   ),
                 ),

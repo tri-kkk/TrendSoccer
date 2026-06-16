@@ -116,6 +116,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final path = GoRouterState.of(context).uri.path;
     final selectedIndex = _selectedIndexForLocation(path);
     final isMenuTab = selectedIndex == 4;
+    final isAnalysisTab = path.startsWith('/analysis');
     final isRootTab = _tabPaths.contains(path);
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final brightness = Theme.of(context).brightness;
@@ -143,7 +144,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         backgroundColor: semantic.surfaceBase,
         body: Column(
           children: [
-            if (isRootTab)
+            if (isRootTab && !isAnalysisTab)
               SafeArea(
                 bottom: false,
                 child: Container(

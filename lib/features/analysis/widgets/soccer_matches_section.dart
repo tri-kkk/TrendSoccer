@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
+import 'package:trendsoccer/features/analysis/analysis_layout_dummy.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -16,56 +17,19 @@ import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 
 class SoccerMatchesSection extends ConsumerWidget {
   const SoccerMatchesSection({
-    this.dateStr,
-    this.scrollable = false,
+    required this.dateStr,
     super.key,
   });
 
-  final String? dateStr;
-  final bool scrollable;
-
-  static const _nestedScrollPhysics = ClampingScrollPhysics();
-
-  Widget _buildNestedScrollView(
-    BuildContext context, {
-    required List<Widget> slivers,
-  }) {
-    return Builder(
-      builder: (context) {
-        return CustomScrollView(
-          key: PageStorageKey<String>(
-            'soccer-analysis-${dateStr ?? 'all'}',
-          ),
-          physics: _nestedScrollPhysics,
-          slivers: [
-            SliverOverlapInjector(
-              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-            ),
-            ...slivers,
-          ],
-        );
-      },
-    );
-  }
+  final String dateStr;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final selectedLeague = ref.watch(selectedLeagueProvider);
-    final matchesAsync = dateStr == null
-        ? ref.watch(filteredSoccerMatchesProvider)
-        : ref.watch(analysisSoccerMatchesProvider);
+    final matchesAsync = ref.watch(analysisSoccerMatchesProvider);
 
     ref.listen(analysisSoccerMatchesProvider, (previous, next) {
-      if (dateStr == null) return;
-      final wasLoading = previous?.isLoading ?? false;
-      if (wasLoading && next.hasError && context.mounted) {
-        TsToast.error(context, context.l10n.analysisLoadMatchesFailed);
-      }
-    });
-
-    ref.listen(filteredSoccerMatchesProvider, (previous, next) {
-      if (dateStr != null) return;
       final wasLoading = previous?.isLoading ?? false;
       if (wasLoading && next.hasError && context.mounted) {
         TsToast.error(context, context.l10n.analysisLoadMatchesFailed);
@@ -73,26 +37,14 @@ class SoccerMatchesSection extends ConsumerWidget {
     });
 
     return matchesAsync.when(
-      loading: () {
-        const loading = Padding(
+      loading: () => const SliverToBoxAdapter(
+        child: Padding(
           padding: EdgeInsets.symmetric(vertical: 48),
           child: Center(child: CircularProgressIndicator()),
-        );
-        if (scrollable) {
-          return _buildNestedScrollView(
-            context,
-            slivers: const [
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: loading,
-              ),
-            ],
-          );
-        }
-        return loading;
-      },
-      error: (error, stackTrace) {
-        final errorWidget = Padding(
+        ),
+      ),
+      error: (error, stackTrace) => SliverToBoxAdapter(
+        child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 32),
           child: Center(
             child: _InlineError(
@@ -103,74 +55,106 @@ class SoccerMatchesSection extends ConsumerWidget {
               },
             ),
           ),
-        );
-        if (scrollable) {
-          return _buildNestedScrollView(
-            context,
-            slivers: [
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: errorWidget,
-              ),
-            ],
-          );
-        }
-        return errorWidget;
-      },
+        ),
+      ),
       data: (matches) {
-        final filtered = dateStr == null
-            ? matches
-            : filterSoccerAnalysisMatches(
-                matches,
-                dateStr!,
-                selectedLeague,
-              );
+        final filtered = filterSoccerAnalysisMatches(
+          matches,
+          dateStr,
+          selectedLeague,
+        );
 
         if (filtered.isEmpty) {
-          final emptyState = TsEmptyState(
-            title: context.l10n.analysisNoMatches,
-            subtitle: context.l10n.analysisNoMatchesFilterHint,
-          );
-          if (scrollable) {
-            return _buildNestedScrollView(
-              context,
-              slivers: [
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(child: emptyState),
+          if (AnalysisLayoutDummy.enabled) {
+            final dummyMatches =
+                AnalysisLayoutDummy.getSoccerMatches(dateStr);
+            if (dummyMatches.isNotEmpty) {
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    return Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        16,
+                        index == 0 ? 0 : 8,
+                        16,
+                        index == dummyMatches.length - 1 ? 0 : 8,
+                      ),
+                      child: _LayoutDummySoccerCard(data: dummyMatches[index]),
+                    );
+                  },
+                  childCount: dummyMatches.length,
                 ),
-              ],
-            );
+              );
+            }
           }
-          return SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.4,
-            child: Center(child: emptyState),
-          );
-        }
 
-        final cards = [
-          for (var i = 0; i < filtered.length; i++) ...[
-            if (i > 0) const SizedBox(height: 16),
-            _SoccerAnalysisCardItem(card: filtered[i]),
-          ],
-        ];
-
-        if (scrollable) {
-          return _buildNestedScrollView(
-            context,
-            slivers: [
-              SliverPadding(
-                padding: const EdgeInsets.only(bottom: 24),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate(cards),
+          return SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 48),
+              child: Center(
+                child: TsEmptyState(
+                  title: context.l10n.analysisNoMatches,
+                  subtitle: context.l10n.analysisNoMatchesFilterHint,
                 ),
               ),
-            ],
+            ),
           );
         }
 
-        return Column(children: cards);
+        return SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              return Padding(
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  index == 0 ? 0 : 8,
+                  16,
+                  index == filtered.length - 1 ? 0 : 8,
+                ),
+                child: _SoccerAnalysisCardItem(card: filtered[index]),
+              );
+            },
+            childCount: filtered.length,
+          ),
+        );
       },
+    );
+  }
+}
+
+class _LayoutDummySoccerCard extends StatelessWidget {
+  const _LayoutDummySoccerCard({required this.data});
+
+  final Map<String, dynamic> data;
+
+  @override
+  Widget build(BuildContext context) {
+    final matchDate = data['matchDate']?.toString() ?? '';
+
+    return AnalysisCard(
+      leagueId: data['leagueCode']?.toString() ?? '',
+      leagueName: localizedLeagueName(
+        context,
+        data['leagueName']?.toString(),
+        data['leagueNameKo']?.toString() ?? data['leagueName']?.toString() ?? '',
+      ),
+      date: matchDate,
+      homeTeam: localizedTeamName(
+        context,
+        data['homeTeam']?.toString() ?? '',
+        data['homeTeamKo']?.toString(),
+      ),
+      awayTeam: localizedTeamName(
+        context,
+        data['awayTeam']?.toString() ?? '',
+        data['awayTeamKo']?.toString(),
+      ),
+      matchTime: data['matchTime']?.toString() ?? '',
+      alwaysActiveAnalyzeButton: true,
+      isPremiumPick: false,
+      pickDirection: null,
+      winRate: null,
+      onAnalyze: () {},
     );
   }
 }
