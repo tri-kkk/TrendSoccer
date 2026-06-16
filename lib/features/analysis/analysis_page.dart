@@ -400,7 +400,7 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
               automaticallyImplyLeading: false,
               titleSpacing: 0,
               title: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: _buildAppBarTitle(
                   auth: auth,
                   semantic: semantic,

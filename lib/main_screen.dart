@@ -115,10 +115,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   Widget build(BuildContext context) {
     final path = GoRouterState.of(context).uri.path;
     final selectedIndex = _selectedIndexForLocation(path);
-    final isMenuTab = selectedIndex == 4;
+    final isMenuTab = path.startsWith('/menu');
     final isAnalysisTab = path.startsWith('/analysis');
     final isFixtureTab = path.startsWith('/fixture');
-    final hideShellAppBar = isAnalysisTab || isFixtureTab;
+    final hideShellAppBar = isAnalysisTab || isFixtureTab || path == '/menu';
     final isRootTab = _tabPaths.contains(path);
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final brightness = Theme.of(context).brightness;

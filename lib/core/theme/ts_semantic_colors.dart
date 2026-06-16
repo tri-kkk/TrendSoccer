@@ -20,11 +20,14 @@ class TsSemanticColors extends ThemeExtension<TsSemanticColors> {
     required this.borderDefault,
     required this.borderSubtle,
     required this.borderFocus,
+    required this.interactiveSurface,
+    required this.interactiveSurfaceStrong,
+    required this.interactiveDivider,
   });
 
   static const TsSemanticColors dark = TsSemanticColors(
-    surfaceBase: TsColors.canvas0,
-    surfaceRaised: TsColors.canvas100,
+    surfaceBase: TsColors.canvas100,
+    surfaceRaised: TsColors.canvas0,
     surfaceOverlay: TsColors.canvas200,
     surfaceContainer: TsColors.canvas300,
     textPrimary: TsColors.onCanvas0,
@@ -33,17 +36,20 @@ class TsSemanticColors extends ThemeExtension<TsSemanticColors> {
     textDisabled: TsColors.onCanvas300,
     interactivePrimary: TsColors.brandPrimary500,
     interactiveOnPrimary: TsColors.canvas0,
-    interactiveSecondary: TsColors.brandPrimary500,
+    interactiveSecondary: TsColors.brandPrimary400,
     borderDefault: TsColors.onCanvas300,
     borderSubtle: TsColors.canvas300,
     borderFocus: TsColors.brandPrimary500,
+    interactiveSurface: Color(0x0DFFFFFF),
+    interactiveSurfaceStrong: Color(0x1AFFFFFF),
+    interactiveDivider: TsColors.canvas300,
   );
 
   static const TsSemanticColors light = TsSemanticColors(
     surfaceBase: TsColors.neutral100,
-    surfaceRaised: TsColors.neutral50,
+    surfaceRaised: TsColors.neutral0,
     surfaceOverlay: TsColors.neutral0,
-    surfaceContainer: TsColors.neutral200,
+    surfaceContainer: TsColors.neutral50,
     textPrimary: TsColors.neutral900,
     textSecondary: TsColors.neutral600,
     textTertiary: TsColors.neutral500,
@@ -54,6 +60,9 @@ class TsSemanticColors extends ThemeExtension<TsSemanticColors> {
     borderDefault: TsColors.neutral300,
     borderSubtle: TsColors.neutral200,
     borderFocus: TsColors.brandPrimary700,
+    interactiveSurface: Color(0x0D000000),
+    interactiveSurfaceStrong: Color(0x1A000000),
+    interactiveDivider: TsColors.neutral200,
   );
 
   final Color surfaceBase;
@@ -70,6 +79,9 @@ class TsSemanticColors extends ThemeExtension<TsSemanticColors> {
   final Color borderDefault;
   final Color borderSubtle;
   final Color borderFocus;
+  final Color interactiveSurface;
+  final Color interactiveSurfaceStrong;
+  final Color interactiveDivider;
 
   @override
   TsSemanticColors copyWith({
@@ -87,6 +99,9 @@ class TsSemanticColors extends ThemeExtension<TsSemanticColors> {
     Color? borderDefault,
     Color? borderSubtle,
     Color? borderFocus,
+    Color? interactiveSurface,
+    Color? interactiveSurfaceStrong,
+    Color? interactiveDivider,
   }) {
     return TsSemanticColors(
       surfaceBase: surfaceBase ?? this.surfaceBase,
@@ -103,6 +118,10 @@ class TsSemanticColors extends ThemeExtension<TsSemanticColors> {
       borderDefault: borderDefault ?? this.borderDefault,
       borderSubtle: borderSubtle ?? this.borderSubtle,
       borderFocus: borderFocus ?? this.borderFocus,
+      interactiveSurface: interactiveSurface ?? this.interactiveSurface,
+      interactiveSurfaceStrong:
+          interactiveSurfaceStrong ?? this.interactiveSurfaceStrong,
+      interactiveDivider: interactiveDivider ?? this.interactiveDivider,
     );
   }
 
@@ -124,6 +143,54 @@ class TsSemanticColors extends ThemeExtension<TsSemanticColors> {
       borderDefault: Color.lerp(borderDefault, other.borderDefault, t)!,
       borderSubtle: Color.lerp(borderSubtle, other.borderSubtle, t)!,
       borderFocus: Color.lerp(borderFocus, other.borderFocus, t)!,
+      interactiveSurface: Color.lerp(interactiveSurface, other.interactiveSurface, t)!,
+      interactiveSurfaceStrong:
+          Color.lerp(interactiveSurfaceStrong, other.interactiveSurfaceStrong, t)!,
+      interactiveDivider: Color.lerp(interactiveDivider, other.interactiveDivider, t)!,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is TsSemanticColors &&
+        other.surfaceBase == surfaceBase &&
+        other.surfaceRaised == surfaceRaised &&
+        other.surfaceOverlay == surfaceOverlay &&
+        other.surfaceContainer == surfaceContainer &&
+        other.textPrimary == textPrimary &&
+        other.textSecondary == textSecondary &&
+        other.textTertiary == textTertiary &&
+        other.textDisabled == textDisabled &&
+        other.interactivePrimary == interactivePrimary &&
+        other.interactiveOnPrimary == interactiveOnPrimary &&
+        other.interactiveSecondary == interactiveSecondary &&
+        other.borderDefault == borderDefault &&
+        other.borderSubtle == borderSubtle &&
+        other.borderFocus == borderFocus &&
+        other.interactiveSurface == interactiveSurface &&
+        other.interactiveSurfaceStrong == interactiveSurfaceStrong &&
+        other.interactiveDivider == interactiveDivider;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        surfaceBase,
+        surfaceRaised,
+        surfaceOverlay,
+        surfaceContainer,
+        textPrimary,
+        textSecondary,
+        textTertiary,
+        textDisabled,
+        interactivePrimary,
+        interactiveOnPrimary,
+        interactiveSecondary,
+        borderDefault,
+        borderSubtle,
+        borderFocus,
+        interactiveSurface,
+        interactiveSurfaceStrong,
+        interactiveDivider,
+      );
 }

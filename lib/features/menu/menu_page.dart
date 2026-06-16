@@ -339,14 +339,13 @@ class _MenuPageState extends ConsumerState<MenuPage> {
       child: Scaffold(
       backgroundColor: semantic.surfaceBase,
       body: SafeArea(
-        top: false,
         bottom: false,
         child: SingleChildScrollView(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 16,
-            bottom: 16 + MediaQuery.of(context).padding.bottom,
+          padding: EdgeInsets.fromLTRB(
+            16,
+            16,
+            16,
+            16 + MediaQuery.of(context).padding.bottom,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
