@@ -289,7 +289,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
     if (!AccessGate.canViewPremiumContent(planType: auth.planType)) {
       final l10n = context.l10n;
       return Scaffold(
-        backgroundColor: semantic.surfaceBase,
+        backgroundColor: semantic.surfaceRaised,
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -340,7 +340,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: semantic.surfaceRaised,
+                      color: semantic.surfaceBase,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Column(
@@ -385,7 +385,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
     }
 
     return Scaffold(
-      backgroundColor: semantic.surfaceBase,
+      backgroundColor: semantic.surfaceRaised,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

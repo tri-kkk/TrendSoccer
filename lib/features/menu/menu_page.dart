@@ -337,7 +337,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
     return TsLoadingOverlay(
       isLoading: _isDeletingAccount,
       child: Scaffold(
-      backgroundColor: semantic.surfaceBase,
+      backgroundColor: semantic.surfaceRaised,
       body: SafeArea(
         bottom: false,
         child: SingleChildScrollView(

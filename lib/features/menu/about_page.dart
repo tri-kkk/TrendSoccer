@@ -15,13 +15,13 @@ class AboutPage extends StatelessWidget {
     final l10n = context.l10n;
 
     return Scaffold(
-      backgroundColor: semantic.surfaceBase,
+      backgroundColor: semantic.surfaceRaised,
       appBar: AppBar(
         title: Text(
           l10n.menuAbout,
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
         ),
-        backgroundColor: semantic.surfaceBase,
+        backgroundColor: semantic.surfaceRaised,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,

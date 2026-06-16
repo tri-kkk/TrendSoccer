@@ -393,7 +393,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
               height: 207,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: sem.surfaceRaised,
+                color: sem.surfaceBase,
                 borderRadius: BorderRadius.circular(12),
               ),
               padding: const EdgeInsets.all(16),
@@ -657,7 +657,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
         showBottomAds && (_loadingBanners || _bottomBanners.isNotEmpty);
 
     return Scaffold(
-      backgroundColor: semantic.surfaceBase,
+      backgroundColor: semantic.surfaceRaised,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16),

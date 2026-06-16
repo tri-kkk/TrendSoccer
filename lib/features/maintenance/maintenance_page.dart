@@ -21,7 +21,7 @@ class MaintenancePage extends StatelessWidget {
     final subtitle = maintenanceMessage ?? l10n.maintenanceSubtitle;
 
     return Scaffold(
-      backgroundColor: semantic.surfaceBase,
+      backgroundColor: semantic.surfaceRaised,
       body: SafeArea(
         child: Center(
           child: Padding(

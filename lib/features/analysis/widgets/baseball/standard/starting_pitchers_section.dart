@@ -304,7 +304,7 @@ class StartingPitchersSection extends ConsumerWidget {
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: semantic.surfaceRaised,
+            color: semantic.surfaceBase,
             borderRadius: BorderRadius.circular(8),
           ),
           clipBehavior: Clip.antiAlias,

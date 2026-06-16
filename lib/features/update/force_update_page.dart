@@ -93,7 +93,7 @@ class _ForceUpdatePageState extends ConsumerState<ForceUpdatePage> {
         _skipUpdate();
       },
       child: Scaffold(
-        backgroundColor: semantic.surfaceBase,
+        backgroundColor: semantic.surfaceRaised,
         body: SafeArea(
           child: Center(
             child: Padding(

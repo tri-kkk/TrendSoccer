@@ -72,7 +72,7 @@ class _TsAppBarToolbar extends StatelessWidget {
     return switch (location) {
       TsAppBarLocation.home => Container(
           decoration: BoxDecoration(
-            color: semantic.surfaceBase,
+            color: semantic.surfaceRaised,
             border: Border(bottom: bottomBorder),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -87,7 +87,7 @@ class _TsAppBarToolbar extends StatelessWidget {
       TsAppBarLocation.backTitle => Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: semantic.surfaceBase,
+            color: semantic.surfaceRaised,
             border: Border(bottom: bottomBorder),
           ),
           child: Stack(

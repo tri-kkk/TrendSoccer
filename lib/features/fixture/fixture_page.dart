@@ -3,11 +3,10 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import 'package:trendsoccer/core/models/auth_state.dart';
+
 import 'package:trendsoccer/core/models/fixture_models_v2.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/constants/alarm_preference_keys.dart';
@@ -16,7 +15,6 @@ import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
 import 'package:trendsoccer/core/services/fixture_service.dart';
 import 'package:trendsoccer/core/services/notification_service.dart';
-import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/baseball_status.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
@@ -25,7 +23,7 @@ import 'package:trendsoccer/features/fixture/fixture_baseball_content.dart';
 import 'package:trendsoccer/features/fixture/fixture_league_filters.dart';
 import 'package:trendsoccer/features/fixture/fixture_soccer_content.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
-import 'package:trendsoccer/shared/widgets/badge/ts_badge.dart';
+import 'package:trendsoccer/shared/widgets/appbar/ts_shell_app_bar_content.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/fixture/alarm_sheet.dart';
@@ -33,7 +31,6 @@ import 'package:trendsoccer/shared/widgets/fixture/fixture_league_header.dart';
 import 'package:trendsoccer/shared/widgets/fixture/fixture_match_row.dart';
 import 'package:trendsoccer/shared/widgets/fixture/fixture_matches_card.dart';
 import 'package:trendsoccer/shared/widgets/fixture/fixture_status.dart';
-import 'package:trendsoccer/shared/widgets/logo/ts_logo.dart';
 import 'package:trendsoccer/shared/widgets/navigation/date_tab_bar.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 import 'package:trendsoccer/shared/widgets/toggle/sports_toggle.dart';
@@ -532,59 +529,6 @@ class _FixturePageState extends ConsumerState<FixturePage>
     return index < 0 ? 0 : index;
   }
 
-  TsBadgeType _badgeForPlan(PlanType planType) {
-    return switch (planType) {
-      PlanType.none || PlanType.free => TsBadgeType.free,
-      PlanType.trial => TsBadgeType.trial,
-      PlanType.premium => TsBadgeType.premium,
-    };
-  }
-
-  Widget _buildAppBarTitle({
-    required SupabaseAuthProvider auth,
-    required TsSemanticColors semantic,
-    required Brightness brightness,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        TsLogo(
-          type: TsLogoType.horizon,
-          color: brightness == Brightness.dark
-              ? TsLogoColor.white
-              : TsLogoColor.black,
-        ),
-        if (!auth.isLoggedIn)
-          TsButton(
-            label: context.l10n.loginAppBarTitle,
-            variant: TsButtonVariant.primary,
-            size: TsButtonSize.small,
-            onPressed: () => context.push('/login'),
-          )
-        else
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TsBadge(type: _badgeForPlan(auth.planType)),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () => context.go('/menu'),
-                child: SvgPicture.asset(
-                  TsAssets.iconAccountCircle,
-                  width: 24,
-                  height: 24,
-                  colorFilter: ColorFilter.mode(
-                    semantic.textPrimary,
-                    BlendMode.srcIn,
-                  ),
-                ),
-              ),
-            ],
-          ),
-      ],
-    );
-  }
-
   List<String> _weekdayLabels(AppLocalizations l10n) => [
         l10n.weekdayMon,
         l10n.weekdayTue,
@@ -1022,7 +966,6 @@ class _FixturePageState extends ConsumerState<FixturePage>
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final brightness = Theme.of(context).brightness;
     final selectedSportStr = ref.watch(fixtureSelectedSportProvider);
     final selectedSport = _selectedSport(selectedSportStr);
     final isBaseball = selectedSportStr == 'baseball';
@@ -1117,19 +1060,15 @@ class _FixturePageState extends ConsumerState<FixturePage>
               pinned: true,
               floating: true,
               snap: true,
-              toolbarHeight: 56,
-              backgroundColor: semantic.surfaceBase,
+              toolbarHeight: TsShellAppBarMetrics.barHeight,
+              backgroundColor: semantic.surfaceRaised,
               elevation: 0,
               scrolledUnderElevation: 0,
               automaticallyImplyLeading: false,
               titleSpacing: 0,
-              title: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: _buildAppBarTitle(
-                  auth: auth,
-                  semantic: semantic,
-                  brightness: brightness,
-                ),
+              title: TsShellAppBarTitle(
+                auth: auth,
+                onLogoTap: () => context.go('/trend'),
               ),
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(DateTabBar.barHeight),
@@ -1139,7 +1078,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
                   selectedIndex: selectedDateIndex,
                   onDateSelected: _selectDateAtIndex,
                   fillWidth: false,
-                  backgroundColor: semantic.surfaceBase,
+                  backgroundColor: semantic.surfaceRaised,
                 ),
               ),
             ),

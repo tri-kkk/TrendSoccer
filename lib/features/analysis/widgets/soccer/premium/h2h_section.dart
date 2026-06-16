@@ -291,7 +291,7 @@ class _H2HSectionState extends State<H2HSection> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: semantic.surfaceRaised,
+        color: semantic.surfaceBase,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(

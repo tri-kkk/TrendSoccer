@@ -270,7 +270,7 @@ class SoccerReportDetailPage extends ConsumerWidget {
     );
 
     return Scaffold(
-      backgroundColor: semantic.surfaceBase,
+      backgroundColor: semantic.surfaceRaised,
       appBar: TsAppBar.preferred(
         context,
         location: TsAppBarLocation.backTitle,

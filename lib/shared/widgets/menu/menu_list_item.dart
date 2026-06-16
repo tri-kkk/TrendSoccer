@@ -35,7 +35,7 @@ class MenuListItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
         alignment: Alignment.centerLeft,
         decoration: BoxDecoration(
-          color: semantic.surfaceRaised,
+          color: semantic.surfaceBase,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(

@@ -21,13 +21,13 @@ class TermsOfServicePage extends ConsumerWidget {
     final contentAsync = ref.watch(termsContentProvider);
 
     return Scaffold(
-      backgroundColor: semantic.surfaceBase,
+      backgroundColor: semantic.surfaceRaised,
       appBar: AppBar(
         title: Text(
           l10n.menuTermsOfService,
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
         ),
-        backgroundColor: semantic.surfaceBase,
+        backgroundColor: semantic.surfaceRaised,
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: IconThemeData(color: semantic.textPrimary),

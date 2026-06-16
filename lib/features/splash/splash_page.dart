@@ -77,7 +77,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     final logoColor = isDark ? TsLogoColor.white : TsLogoColor.black;
 
     return Scaffold(
-      backgroundColor: semantic.surfaceBase,
+      backgroundColor: semantic.surfaceRaised,
       body: Stack(
         children: [
           Center(

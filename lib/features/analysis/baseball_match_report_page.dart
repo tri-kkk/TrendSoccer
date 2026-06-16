@@ -94,7 +94,7 @@ class _BaseballMatchReportPageState
     final header = _resolveHeader();
 
     return Scaffold(
-      backgroundColor: semantic.surfaceBase,
+      backgroundColor: semantic.surfaceRaised,
       appBar: TsAppBar.preferred(
         context,
         location: TsAppBarLocation.backTitle,

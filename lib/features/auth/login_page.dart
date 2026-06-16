@@ -254,7 +254,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
       },
       child: Scaffold(
         extendBodyBehindAppBar: true,
-        backgroundColor: semantic.surfaceBase,
+        backgroundColor: semantic.surfaceRaised,
         appBar: AppBar(
           leading: IconButton(
             icon: Icon(Icons.arrow_back, color: semantic.textPrimary),

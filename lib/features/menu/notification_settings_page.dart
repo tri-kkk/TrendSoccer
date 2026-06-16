@@ -123,13 +123,13 @@ class _NotificationSettingsPageState
     final fcmEnabled = !_isLoading && !_isSavingFcm;
 
     return Scaffold(
-      backgroundColor: semantic.surfaceBase,
+      backgroundColor: semantic.surfaceRaised,
       appBar: AppBar(
         title: Text(
           l10n.notificationSettings,
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
         ),
-        backgroundColor: semantic.surfaceBase,
+        backgroundColor: semantic.surfaceRaised,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,

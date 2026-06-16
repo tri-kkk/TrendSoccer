@@ -312,9 +312,9 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           _handleBack(context);
         },
         child: Scaffold(
-          backgroundColor: semantic.surfaceBase,
+          backgroundColor: semantic.surfaceRaised,
           appBar: AppBar(
-            backgroundColor: semantic.surfaceBase,
+            backgroundColor: semantic.surfaceRaised,
             elevation: 0,
             scrolledUnderElevation: 0,
             automaticallyImplyLeading: false,
@@ -370,7 +370,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: semantic.surfaceRaised,
+        color: semantic.surfaceBase,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -440,7 +440,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           semantic: semantic,
           title: l10n.subscribePlanFree,
           titleColor: semantic.textPrimary,
-          bgColor: semantic.surfaceRaised,
+          bgColor: semantic.surfaceBase,
           borderColor: null,
           dividerColor: semantic.borderSubtle,
           benefits: [

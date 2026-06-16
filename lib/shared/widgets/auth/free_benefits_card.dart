@@ -17,7 +17,7 @@ class FreeBenefitsCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(TsSpacing.lg),
       decoration: BoxDecoration(
-        color: semantic.surfaceRaised,
+        color: semantic.surfaceBase,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(

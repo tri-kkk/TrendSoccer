@@ -320,7 +320,7 @@ class _PremiumPickCardState extends State<PremiumPickCard>
       width: double.infinity,
       padding: const EdgeInsets.all(TsSpacing.lg),
       decoration: BoxDecoration(
-        color: semantic.surfaceRaised,
+        color: semantic.surfaceBase,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(

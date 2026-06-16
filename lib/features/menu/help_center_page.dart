@@ -58,7 +58,7 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
         borderSide: const BorderSide(color: TsColors.error500, width: 2),
       ),
       filled: true,
-      fillColor: colors.surfaceRaised,
+      fillColor: colors.surfaceContainer,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: TsSpacing.md,
         vertical: TsSpacing.md,
@@ -154,13 +154,13 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
     final l10n = context.l10n;
 
     return Scaffold(
-      backgroundColor: colors.surfaceBase,
+      backgroundColor: colors.surfaceRaised,
       appBar: AppBar(
         title: Text(
           l10n.helpCenterTitle,
           style: TsType.headingH3.copyWith(color: colors.textPrimary),
         ),
-        backgroundColor: colors.surfaceBase,
+        backgroundColor: colors.surfaceRaised,
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: IconThemeData(color: colors.textPrimary),

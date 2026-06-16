@@ -74,7 +74,7 @@ class ReportCard extends StatelessWidget {
           width: double.infinity,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: semantic.surfaceRaised,
+            color: semantic.surfaceBase,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Column(
@@ -123,7 +123,7 @@ class ReportCard extends StatelessWidget {
         height: 180,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: semantic.surfaceRaised,
+          color: semantic.surfaceBase,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(

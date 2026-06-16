@@ -21,13 +21,13 @@ class PrivacyPolicyPage extends ConsumerWidget {
     final contentAsync = ref.watch(privacyContentProvider);
 
     return Scaffold(
-      backgroundColor: semantic.surfaceBase,
+      backgroundColor: semantic.surfaceRaised,
       appBar: AppBar(
         title: Text(
           l10n.menuPrivacyPolicy,
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
         ),
-        backgroundColor: semantic.surfaceBase,
+        backgroundColor: semantic.surfaceRaised,
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: IconThemeData(color: semantic.textPrimary),

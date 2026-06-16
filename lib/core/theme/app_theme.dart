@@ -9,7 +9,7 @@ abstract final class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: semantic.surfaceBase,
+      scaffoldBackgroundColor: semantic.surfaceRaised,
       extensions: const [semantic],
       colorScheme: ColorScheme.dark(
         primary: semantic.interactivePrimary,
@@ -71,7 +71,7 @@ abstract final class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      scaffoldBackgroundColor: semantic.surfaceBase,
+      scaffoldBackgroundColor: semantic.surfaceRaised,
       extensions: const [semantic],
       colorScheme: ColorScheme.light(
         primary: semantic.interactivePrimary,

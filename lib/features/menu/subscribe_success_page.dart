@@ -46,9 +46,9 @@ class _SubscribeSuccessPageState extends ConsumerState<SubscribeSuccessPage> {
         context.go('/trend');
       },
       child: Scaffold(
-        backgroundColor: semantic.surfaceBase,
+        backgroundColor: semantic.surfaceRaised,
         appBar: AppBar(
-          backgroundColor: semantic.surfaceBase,
+          backgroundColor: semantic.surfaceRaised,
           elevation: 0,
           scrolledUnderElevation: 0,
           iconTheme: IconThemeData(color: semantic.textPrimary),

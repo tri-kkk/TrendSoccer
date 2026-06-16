@@ -23,7 +23,7 @@ class SoccerReportListPage extends ConsumerWidget {
     final postsAsync = ref.watch(blogPostsProvider);
 
     return Scaffold(
-      backgroundColor: semantic.surfaceBase,
+      backgroundColor: semantic.surfaceRaised,
       appBar: TsAppBar.preferred(
         context,
         location: TsAppBarLocation.backTitle,
@@ -106,7 +106,7 @@ class _ReportCard extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: semantic.surfaceRaised,
+          color: semantic.surfaceBase,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(

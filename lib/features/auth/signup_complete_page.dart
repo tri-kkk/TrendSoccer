@@ -104,7 +104,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: semantic.surfaceRaised,
+        color: semantic.surfaceBase,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -140,10 +140,10 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
         _goHome();
       },
       child: Scaffold(
-        backgroundColor: semantic.surfaceBase,
+        backgroundColor: semantic.surfaceRaised,
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor: semantic.surfaceBase,
+          backgroundColor: semantic.surfaceRaised,
           elevation: 0,
           leading: IconButton(
             icon: Icon(Icons.arrow_back, color: semantic.textPrimary),

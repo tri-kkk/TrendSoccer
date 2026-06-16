@@ -174,7 +174,7 @@ class _TeamAnalysisSectionState extends State<TeamAnalysisSection> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: semantic.surfaceRaised,
+        color: semantic.surfaceBase,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(

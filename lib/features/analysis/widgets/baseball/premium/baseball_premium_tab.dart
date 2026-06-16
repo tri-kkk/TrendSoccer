@@ -154,7 +154,7 @@ class BaseballPremiumTabLoading extends StatelessWidget {
             height: 140,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: semantic.surfaceRaised,
+              color: semantic.surfaceBase,
               borderRadius: BorderRadius.circular(8),
             ),
           ),
@@ -287,7 +287,7 @@ class _WinProbabilitySection extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(TsSpacing.lg),
           decoration: BoxDecoration(
-            color: semantic.surfaceRaised,
+            color: semantic.surfaceBase,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Column(
@@ -381,7 +381,7 @@ class _OverUnderSection extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(TsSpacing.lg),
           decoration: BoxDecoration(
-            color: semantic.surfaceRaised,
+            color: semantic.surfaceBase,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Column(
@@ -461,7 +461,7 @@ class _HomeAwayRecordSection extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(TsSpacing.lg),
           decoration: BoxDecoration(
-            color: semantic.surfaceRaised,
+            color: semantic.surfaceBase,
             borderRadius: BorderRadius.circular(TsSpacing.sm),
           ),
           child: Row(
@@ -529,7 +529,7 @@ class _WinRateSection extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(TsSpacing.lg),
           decoration: BoxDecoration(
-            color: semantic.surfaceRaised,
+            color: semantic.surfaceBase,
             borderRadius: BorderRadius.circular(TsSpacing.sm),
           ),
           child: Column(
@@ -615,7 +615,7 @@ class _TeamProductionSection extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(TsSpacing.lg),
           decoration: BoxDecoration(
-            color: semantic.surfaceRaised,
+            color: semantic.surfaceBase,
             borderRadius: BorderRadius.circular(TsSpacing.sm),
           ),
           child: Column(
@@ -682,7 +682,7 @@ class _SeasonTeamStatsSection extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(TsSpacing.lg),
           decoration: BoxDecoration(
-            color: semantic.surfaceRaised,
+            color: semantic.surfaceBase,
             borderRadius: BorderRadius.circular(8),
           ),
           child: parsed.hasTeamSeason

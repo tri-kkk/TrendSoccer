@@ -160,7 +160,7 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
         await _cancelSignupAndGoLogin();
       },
       child: Scaffold(
-      backgroundColor: semantic.surfaceBase,
+      backgroundColor: semantic.surfaceRaised,
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: semantic.textPrimary),
@@ -170,7 +170,7 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
           l10n.signupPageTitle,
           style: TsType.headingH3.copyWith(color: semantic.textPrimary),
         ),
-        backgroundColor: semantic.surfaceBase,
+        backgroundColor: semantic.surfaceRaised,
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: IconThemeData(color: semantic.textPrimary),
@@ -226,7 +226,7 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: semantic.surfaceRaised,
+                    color: semantic.surfaceBase,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(

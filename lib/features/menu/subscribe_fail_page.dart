@@ -24,9 +24,9 @@ class SubscribeFailPage extends StatelessWidget {
         context.go('/menu/subscribe');
       },
       child: Scaffold(
-        backgroundColor: semantic.surfaceBase,
+        backgroundColor: semantic.surfaceRaised,
         appBar: AppBar(
-          backgroundColor: semantic.surfaceBase,
+          backgroundColor: semantic.surfaceRaised,
           elevation: 0,
           scrolledUnderElevation: 0,
           iconTheme: IconThemeData(color: semantic.textPrimary),

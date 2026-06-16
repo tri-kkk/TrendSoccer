@@ -125,7 +125,7 @@ class _SoccerMatchReportPageState extends ConsumerState<SoccerMatchReportPage> {
     final params = _buildParams(header);
 
     return Scaffold(
-      backgroundColor: semantic.surfaceBase,
+      backgroundColor: semantic.surfaceRaised,
       appBar: TsAppBar.preferred(
         context,
         location: TsAppBarLocation.backTitle,
