@@ -625,6 +625,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fixtureLiveEmpty => 'No live matches.';
 
   @override
+  String get fixtureNoLiveMatches => 'No live matches in progress.';
+
+  @override
   String get fixtureLiveEmptyAction => 'View Today\'s Matches';
 
   @override

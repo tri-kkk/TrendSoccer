@@ -1232,6 +1232,12 @@ abstract class AppLocalizations {
   /// **'진행 중인 경기가 없습니다.'**
   String get fixtureLiveEmpty;
 
+  /// No description provided for @fixtureNoLiveMatches.
+  ///
+  /// In ko, this message translates to:
+  /// **'진행 중인 경기가 없습니다.'**
+  String get fixtureNoLiveMatches;
+
   /// No description provided for @fixtureLiveEmptyAction.
   ///
   /// In ko, this message translates to:

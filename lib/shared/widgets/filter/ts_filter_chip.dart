@@ -15,6 +15,8 @@ class TsFilterChip extends StatelessWidget {
     this.type = TsFilterChipType.textOnly,
     this.iconWidget,
     this.logoUrl,
+    this.activeBackgroundColor,
+    this.activeTextColor,
     super.key,
   });
 
@@ -24,13 +26,18 @@ class TsFilterChip extends StatelessWidget {
   final TsFilterChipType type;
   final Widget? iconWidget;
   final String? logoUrl;
+  final Color? activeBackgroundColor;
+  final Color? activeTextColor;
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final backgroundColor =
-        isSelected ? semantic.textPrimary : semantic.surfaceContainer;
-    final textColor = isSelected ? semantic.surfaceBase : semantic.textSecondary;
+    final backgroundColor = isSelected
+        ? (activeBackgroundColor ?? semantic.textPrimary)
+        : semantic.surfaceContainer;
+    final textColor = isSelected
+        ? (activeTextColor ?? semantic.surfaceBase)
+        : semantic.textSecondary;
     final textStyle = TsType.labelSRegular.copyWith(color: textColor);
 
     return GestureDetector(

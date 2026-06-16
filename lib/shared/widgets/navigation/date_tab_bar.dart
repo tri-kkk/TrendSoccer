@@ -15,7 +15,7 @@ class DateTabItem {
   final bool isToday;
 }
 
-class DateTabBar extends StatelessWidget {
+class DateTabBar extends StatefulWidget {
   const DateTabBar({
     required this.dates,
     required this.selectedIndex,
@@ -34,39 +34,93 @@ class DateTabBar extends StatelessWidget {
   final bool fillWidth;
 
   static const double barHeight = 56;
+  static const double tabWidth = 80;
+
+  @override
+  State<DateTabBar> createState() => _DateTabBarState();
+}
+
+class _DateTabBarState extends State<DateTabBar> {
+  ScrollController? _ownedScrollController;
+
+  ScrollController? get _effectiveScrollController =>
+      widget.fillWidth ? null : (widget.scrollController ?? _ownedScrollController);
+
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.fillWidth && widget.scrollController == null) {
+      _ownedScrollController = ScrollController();
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelectedTab());
+  }
+
+  @override
+  void didUpdateWidget(covariant DateTabBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedIndex != widget.selectedIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelectedTab());
+    }
+  }
+
+  @override
+  void dispose() {
+    _ownedScrollController?.dispose();
+    super.dispose();
+  }
+
+  void _scrollToSelectedTab() {
+    final controller = _effectiveScrollController;
+    if (controller == null || !controller.hasClients) return;
+
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final offset = widget.selectedIndex * DateTabBar.tabWidth;
+    final targetOffset =
+        (offset - screenWidth / 2 + DateTabBar.tabWidth / 2)
+            .clamp(0.0, controller.position.maxScrollExtent);
+
+    controller.animateTo(
+      targetOffset,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final background = backgroundColor ?? semantic.surfaceRaised;
+    final background = widget.backgroundColor ?? semantic.surfaceRaised;
 
     final tabs = [
-      for (var i = 0; i < dates.length; i++)
+      for (var i = 0; i < widget.dates.length; i++)
         _DateTab(
-          item: dates[i],
-          isSelected: i == selectedIndex,
+          item: widget.dates[i],
+          isSelected: i == widget.selectedIndex,
           semantic: semantic,
-          expanded: fillWidth,
-          onTap: () => onDateSelected(i),
+          expanded: widget.fillWidth,
+          onTap: () => widget.onDateSelected(i),
         ),
     ];
 
     return ColoredBox(
       color: background,
       child: SizedBox(
-        height: barHeight,
-        child: fillWidth
+        height: DateTabBar.barHeight,
+        child: widget.fillWidth
             ? Row(children: [for (final tab in tabs) Expanded(child: tab)])
             : SingleChildScrollView(
-                controller: scrollController,
+                controller: _effectiveScrollController,
                 scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    for (var i = 0; i < tabs.length; i++) ...[
-                      if (i > 0) const SizedBox(width: 8),
-                      tabs[i],
+                child: IntrinsicHeight(
+                  child: Row(
+                    children: [
+                      for (var i = 0; i < tabs.length; i++)
+                        SizedBox(
+                          width: DateTabBar.tabWidth,
+                          child: tabs[i],
+                        ),
                     ],
-                  ],
+                  ),
                 ),
               ),
       ),
@@ -101,7 +155,7 @@ class _DateTab extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        constraints: expanded ? null : const BoxConstraints(minWidth: 80),
+        width: expanded ? null : double.infinity,
         height: DateTabBar.barHeight,
         padding: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(

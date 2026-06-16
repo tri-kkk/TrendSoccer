@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
+import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/models/fixture_models_v2.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/constants/alarm_preference_keys.dart';
@@ -14,15 +16,16 @@ import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
 import 'package:trendsoccer/core/services/fixture_service.dart';
 import 'package:trendsoccer/core/services/notification_service.dart';
+import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/baseball_status.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/features/fixture/fixture_baseball_content.dart';
-import 'package:trendsoccer/features/fixture/fixture_date_navigation.dart';
 import 'package:trendsoccer/features/fixture/fixture_league_filters.dart';
 import 'package:trendsoccer/features/fixture/fixture_soccer_content.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
+import 'package:trendsoccer/shared/widgets/badge/ts_badge.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/fixture/alarm_sheet.dart';
@@ -30,6 +33,8 @@ import 'package:trendsoccer/shared/widgets/fixture/fixture_league_header.dart';
 import 'package:trendsoccer/shared/widgets/fixture/fixture_match_row.dart';
 import 'package:trendsoccer/shared/widgets/fixture/fixture_matches_card.dart';
 import 'package:trendsoccer/shared/widgets/fixture/fixture_status.dart';
+import 'package:trendsoccer/shared/widgets/logo/ts_logo.dart';
+import 'package:trendsoccer/shared/widgets/navigation/date_tab_bar.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 import 'package:trendsoccer/shared/widgets/toggle/sports_toggle.dart';
 
@@ -42,16 +47,7 @@ class FixturePage extends ConsumerStatefulWidget {
 
 class _FixturePageState extends ConsumerState<FixturePage>
     with WidgetsBindingObserver {
-  static const _pageScrollPhysics = PageScrollPhysics(
-    parent: ClampingScrollPhysics(),
-  );
-  static const _verticalScrollPhysics = AlwaysScrollableScrollPhysics(
-    parent: ClampingScrollPhysics(),
-  );
-
-  static const _dateChipWidth = 80.0;
-  static const _dateChipGap = 8.0;
-  static const _dateChipHorizontalPadding = 16.0;
+  static final _md = DateFormat('M.dd');
 
   final Set<String> _alarmEnabledMatchIds = {};
   int _alarmRefreshGeneration = 0;
@@ -60,9 +56,10 @@ class _FixturePageState extends ConsumerState<FixturePage>
   static const _soccerFinishedCacheTtl = Duration(minutes: 5);
   final Map<String, List<FixtureMatch>> _baseballDateCache = {};
   final Set<String> _baseballDateLoading = {};
-  late final PageController _pageController;
-  final ScrollController _dateChipScrollController = ScrollController();
-  bool _syncingPage = false;
+  final ScrollController _scrollController = ScrollController();
+  final ScrollController _dateTabScrollController = ScrollController();
+  double _dragStartX = 0;
+  double _dragEndX = 0;
   bool _deepLinkApplied = false;
   Timer? _livePollingTimer;
 
@@ -70,9 +67,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _pageController = PageController(initialPage: _todayChipIndex());
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollDateChipToIndex(_dateChipIndexForPage(_todayChipIndex()));
       _startLivePolling();
       _ensureBaseballDateLoaded();
     });
@@ -82,9 +77,18 @@ class _FixturePageState extends ConsumerState<FixturePage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _stopLivePolling();
-    _pageController.dispose();
-    _dateChipScrollController.dispose();
+    _scrollController.dispose();
+    _dateTabScrollController.dispose();
     super.dispose();
+  }
+
+  void _scrollToTop() {
+    if (!_scrollController.hasClients) return;
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
   }
 
   @override
@@ -448,31 +452,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
     _livePollingTimer = null;
   }
 
-  int _dateChipIndexForPage(int pageIndex) => pageIndex;
-
-  void _scrollDateChipToIndex(int chipIndex) {
-    if (!_dateChipScrollController.hasClients) return;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_dateChipScrollController.hasClients) return;
-
-      final screenWidth = MediaQuery.sizeOf(context).width;
-      final targetOffset = _dateChipHorizontalPadding +
-          (chipIndex * (_dateChipWidth + _dateChipGap)) -
-          (screenWidth / 2) +
-          (_dateChipWidth / 2);
-      final clampedOffset = targetOffset.clamp(
-        0.0,
-        _dateChipScrollController.position.maxScrollExtent,
-      );
-
-      _dateChipScrollController.animateTo(
-        clampedOffset,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    });
-  }
+  int _todayChipIndex() => 2;
 
   List<DateTime> _chipDates() {
     final today = DateTime.now();
@@ -480,30 +460,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
     return fixtureDateChipDates(todayDay);
   }
 
-  int _todayChipIndex() => 2;
-
-  int _dateIndexFor(String dateStr) {
-    return _chipDates().indexWhere((date) => fixtureDateString(date) == dateStr);
-  }
-
-  void _onPageChanged(int index) {
-    if (_syncingPage) return;
-
-    final dateStr = fixtureDateString(_chipDates()[index]);
-    ref.read(fixtureSelectedDateProvider.notifier).state = dateStr;
-    ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
-    ref.read(fixtureLiveFilterProvider.notifier).state = false;
-    _scrollDateChipToIndex(_dateChipIndexForPage(index));
-    _startLivePolling();
-    if (ref.read(fixtureSelectedSportProvider) == 'baseball') {
-      unawaited(_loadBaseballDate(dateStr));
-    }
-  }
-
   void _resetFixtureToTodayOnSportChange() {
-    final todayPageIndex = _todayChipIndex();
-    final todayChipIndex = _dateChipIndexForPage(todayPageIndex);
-
     ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
     ref.read(fixtureLiveFilterProvider.notifier).state = false;
     ref.read(fixtureSelectedDateProvider.notifier).state =
@@ -511,27 +468,14 @@ class _FixturePageState extends ConsumerState<FixturePage>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (_pageController.hasClients) {
-        _syncingPage = true;
-        _pageController.jumpToPage(todayPageIndex);
-        _syncingPage = false;
-      }
-      _scrollDateChipToIndex(todayChipIndex);
+      _scrollToTop();
       _ensureBaseballDateLoaded();
     });
-  }
-
-  void _jumpToPageIndex(int index) {
-    if (!_pageController.hasClients) return;
-    _syncingPage = true;
-    _pageController.jumpToPage(index);
-    _syncingPage = false;
   }
 
   void _selectDateAtIndex(int index) {
     if (index < 0 || index >= _chipDates().length) return;
 
-    _syncingPage = true;
     ref.read(fixtureLiveFilterProvider.notifier).state = false;
     ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
     ref.read(fixtureSelectedDateProvider.notifier).state =
@@ -541,23 +485,104 @@ class _FixturePageState extends ConsumerState<FixturePage>
       unawaited(_loadBaseballDate(fixtureDateString(_chipDates()[index])));
     }
 
-    if (!_pageController.hasClients) {
-      _syncingPage = false;
-      return;
-    }
+    _startLivePolling();
+    _scrollToTop();
+  }
 
-    _pageController
-        .animateToPage(
-          index,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        )
-        .whenComplete(() {
-      if (mounted) {
-        _syncingPage = false;
-        _startLivePolling();
-      }
-    });
+  void _goToNextDate(int selectedIndex, int dateCount) {
+    if (selectedIndex >= dateCount - 1) return;
+    _selectDateAtIndex(selectedIndex + 1);
+  }
+
+  void _goToPreviousDate(int selectedIndex) {
+    if (selectedIndex <= 0) return;
+    _selectDateAtIndex(selectedIndex - 1);
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  List<DateTabItem> _buildDateItems({
+    required List<DateTime> chipDates,
+    required AppLocalizations l10n,
+  }) {
+    final weekdays = _weekdayLabels(l10n);
+    final today = DateTime.now();
+    final todayDay = DateTime(today.year, today.month, today.day);
+
+    return [
+      for (final date in chipDates)
+        DateTabItem(
+          dayLabel: _isSameDay(date, todayDay)
+              ? l10n.today
+              : weekdays[date.weekday - 1],
+          dateLabel: _md.format(date),
+          isToday: _isSameDay(date, todayDay),
+        ),
+    ];
+  }
+
+  int _selectedDateIndex({
+    required List<DateTime> chipDates,
+    required String selectedDateStr,
+  }) {
+    final index = chipDates.indexWhere(
+      (date) => fixtureDateString(date) == selectedDateStr,
+    );
+    return index < 0 ? 0 : index;
+  }
+
+  TsBadgeType _badgeForPlan(PlanType planType) {
+    return switch (planType) {
+      PlanType.none || PlanType.free => TsBadgeType.free,
+      PlanType.trial => TsBadgeType.trial,
+      PlanType.premium => TsBadgeType.premium,
+    };
+  }
+
+  Widget _buildAppBarTitle({
+    required SupabaseAuthProvider auth,
+    required TsSemanticColors semantic,
+    required Brightness brightness,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        TsLogo(
+          type: TsLogoType.horizon,
+          color: brightness == Brightness.dark
+              ? TsLogoColor.white
+              : TsLogoColor.black,
+        ),
+        if (!auth.isLoggedIn)
+          TsButton(
+            label: context.l10n.loginAppBarTitle,
+            variant: TsButtonVariant.primary,
+            size: TsButtonSize.small,
+            onPressed: () => context.push('/login'),
+          )
+        else
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TsBadge(type: _badgeForPlan(auth.planType)),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () => context.go('/menu'),
+                child: SvgPicture.asset(
+                  TsAssets.iconAccountCircle,
+                  width: 24,
+                  height: 24,
+                  colorFilter: ColorFilter.mode(
+                    semantic.textPrimary,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+            ],
+          ),
+      ],
+    );
   }
 
   List<String> _weekdayLabels(AppLocalizations l10n) => [
@@ -768,44 +793,8 @@ class _FixturePageState extends ConsumerState<FixturePage>
     );
   }
 
-  Widget _buildDateNavStrip() {
-    final l10n = context.l10n;
-    final today = DateTime.now();
-    final todayDay = DateTime(today.year, today.month, today.day);
-
-    return FixtureDateNavigation(
-      scrollController: _dateChipScrollController,
-      chipDates: _chipDates(),
-      selectedDateStr: ref.watch(fixtureSelectedDateProvider),
-      todayDay: todayDay,
-      weekdayLabels: _weekdayLabels(l10n),
-      todayLabel: l10n.today,
-      onDateTap: _selectDateAtIndex,
-    );
-  }
-
-  bool _hasAnyLiveMatches(
-    List<FixtureMatch> matches, {
-    required bool isBaseball,
-    required Map<String, LiveMatchData> liveMap,
-  }) {
-    if (isBaseball) {
-      return matches.any(
-        (match) =>
-            BaseballStatus.isLive(match.rawStatus) ||
-            BaseballStatus.isInterrupted(match.rawStatus),
-      );
-    }
-
-    return matches.any((match) {
-      final live = _liveDataForMatch(match, liveMap);
-      return live != null && live.isLive;
-    });
-  }
-
   Widget _buildLeagueFilters(
     List<FixtureLeagueOption> leagues, {
-    required bool showLiveChip,
     required bool isLiveFilter,
   }) {
     return FixtureLeagueFilters(
@@ -814,15 +803,14 @@ class _FixturePageState extends ConsumerState<FixturePage>
       filterAllLabel: context.l10n.filterAll,
       liveLabel: context.l10n.fixtureLive,
       locale: Localizations.localeOf(context).languageCode,
-      showLiveChip: showLiveChip,
       isLiveFilter: isLiveFilter,
       onSelectAll: () {
-        ref.read(fixtureLiveFilterProvider.notifier).state = false;
         ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
+        ref.read(fixtureLiveFilterProvider.notifier).state = false;
       },
       onLiveTap: () {
-        ref.read(fixtureLiveFilterProvider.notifier).state = true;
         ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
+        ref.read(fixtureLiveFilterProvider.notifier).state = true;
       },
       onSelectLeague: (code) {
         ref.read(fixtureLiveFilterProvider.notifier).state = false;
@@ -905,191 +893,118 @@ class _FixturePageState extends ConsumerState<FixturePage>
     );
   }
 
-  List<Widget> _buildMatchWidgets(
+  Widget _emptyDayContent({required bool isLiveFilter}) {
+    final l10n = context.l10n;
+    if (isLiveFilter) {
+      return TsEmptyState(
+        type: TsEmptyStateType.withAction,
+        title: l10n.fixtureNoLiveMatches,
+        buttonLabel: l10n.fixtureLiveEmptyAction,
+        onButtonPressed: _resetFromLiveEmpty,
+      );
+    }
+    return TsEmptyState(
+      type: TsEmptyStateType.noData,
+      title: l10n.fixtureNoMatches,
+      subtitle: l10n.fixtureNoMatchesOnDate,
+    );
+  }
+
+  List<Widget> _groupsToSlivers(
     List<FixtureLeagueGroup> groups, {
     required bool isBaseball,
     required AppLocalizations l10n,
     Map<String, LiveMatchData> liveMap = const {},
   }) {
-    return groups.asMap().entries.expand((entry) {
-      final gi = entry.key;
-      final group = entry.value;
-
-      return [
-        FixtureLeagueHeader(
-          leagueName: group.leagueName,
-          leagueNameEn: group.leagueNameEn,
-          leagueCode: group.leagueCode,
-          leagueLogoUrl: group.leagueLogo,
-        ),
-        const SizedBox(height: 8),
-        FixtureMatchesCard(
-          children: [
-            for (final match in group.matches)
-              _buildMatchRow(
-                match,
-                isBaseball: isBaseball,
-                l10n: l10n,
-                live: _liveDataForMatch(match, liveMap),
-              ),
-          ],
-        ),
-        if (gi < groups.length - 1) const SizedBox(height: 16),
-      ];
-    }).toList();
-  }
-
-  List<FixtureLeagueGroup> _groupsForDate({
-    required List<FixtureMatch> matches,
-    required String dateStr,
-    required String? selectedLeague,
-  }) {
-    var filtered =
-        matches.where((match) => matchIsOnDate(match, dateStr)).toList();
-
-    if (selectedLeague != null && selectedLeague.isNotEmpty) {
-      filtered = filtered
-          .where((match) => match.leagueKey == selectedLeague)
-          .toList();
-    }
-
-    return groupMatchesByLeague(filtered);
-  }
-
-  Widget _buildEmptyDayState({required bool isLiveFilter}) {
-    final l10n = context.l10n;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          physics: _verticalScrollPhysics,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: Center(
-              child: isLiveFilter
-                  ? TsEmptyState(
-                      type: TsEmptyStateType.withAction,
-                      title: l10n.fixtureLiveEmpty,
-                      buttonLabel: l10n.fixtureLiveEmptyAction,
-                      onButtonPressed: _resetFromLiveEmpty,
-                    )
-                  : TsEmptyState(
-                      type: TsEmptyStateType.noData,
-                      title: l10n.fixtureNoMatches,
-                      subtitle: l10n.fixtureNoMatchesOnDate,
-                    ),
+    final slivers = <Widget>[];
+    for (var gi = 0; gi < groups.length; gi++) {
+      final group = groups[gi];
+      slivers.add(
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(16, gi == 0 ? 0 : 16, 16, 8),
+            child: FixtureLeagueHeader(
+              leagueName: group.leagueName,
+              leagueNameEn: group.leagueNameEn,
+              leagueCode: group.leagueCode,
+              leagueLogoUrl: group.leagueLogo,
             ),
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildMatchScrollView(
-    List<FixtureLeagueGroup> groups, {
-    required bool isBaseball,
-    required AppLocalizations l10n,
-    Map<String, LiveMatchData> liveMap = const {},
-  }) {
-    if (groups.isEmpty) {
-      return _buildEmptyDayState(isLiveFilter: false);
+        ),
+      );
+      slivers.add(
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: FixtureMatchesCard(
+              children: [
+                for (final match in group.matches)
+                  _buildMatchRow(
+                    match,
+                    isBaseball: isBaseball,
+                    l10n: l10n,
+                    live: _liveDataForMatch(match, liveMap),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
-
-    final matchWidgets = _buildMatchWidgets(
-      groups,
-      isBaseball: isBaseball,
-      l10n: l10n,
-      liveMap: liveMap,
-    );
-    return ListView(
-      physics: _verticalScrollPhysics,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      children: [
-        ...matchWidgets,
-        const SizedBox(height: 24),
-      ],
-    );
+    return slivers;
   }
 
-  Widget _buildDayPage({
-    required String dateStr,
-    required List<FixtureMatch> matches,
-    required String? selectedLeague,
+  List<Widget> _buildFixtureContentSlivers({
+    required AsyncValue<List<FixtureLeagueGroup>> groupsAsync,
+    required bool isLiveFilter,
     required bool isBaseball,
     required AppLocalizations l10n,
-    Map<String, LiveMatchData> liveMap = const {},
-  }) {
-    final groups = _groupsForDate(
-      matches: matches,
-      dateStr: dateStr,
-      selectedLeague: selectedLeague,
-    );
-    return _buildMatchScrollView(
-      groups,
-      isBaseball: isBaseball,
-      l10n: l10n,
-      liveMap: liveMap,
-    );
-  }
-
-  Widget _buildLiveMatchArea({
-    required AsyncValue<List<FixtureLeagueGroup>> groupsAsync,
-    required bool isBaseball,
     required TsSemanticColors semantic,
     Map<String, LiveMatchData> liveMap = const {},
   }) {
     return groupsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              context.l10n.fixtureLoadFailed,
-              style: TextStyle(color: semantic.textSecondary),
-            ),
-            const SizedBox(height: 16),
-            TsButton(
-              label: context.l10n.retry,
-              variant: TsButtonVariant.primary,
-              size: TsButtonSize.small,
-              onPressed: _onFixtureRefresh,
-            ),
-          ],
+      loading: () => const [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(child: CircularProgressIndicator()),
         ),
-      ),
+      ],
+      error: (error, stackTrace) => [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  context.l10n.fixtureLoadFailed,
+                  style: TextStyle(color: semantic.textSecondary),
+                ),
+                const SizedBox(height: 16),
+                TsButton(
+                  label: context.l10n.retry,
+                  variant: TsButtonVariant.primary,
+                  size: TsButtonSize.small,
+                  onPressed: _onFixtureRefresh,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
       data: (groups) {
         if (groups.isEmpty) {
-          return _buildEmptyDayState(isLiveFilter: true);
+          return [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
+                child: _emptyDayContent(isLiveFilter: isLiveFilter),
+              ),
+            ),
+          ];
         }
-        return _buildMatchScrollView(
+        return _groupsToSlivers(
           groups,
-          isBaseball: isBaseball,
-          l10n: context.l10n,
-          liveMap: liveMap,
-        );
-      },
-    );
-  }
-
-  Widget _buildDatePageView({
-    required List<FixtureMatch> allMatches,
-    required bool isBaseball,
-    required String? selectedLeague,
-    required List<DateTime> chipDates,
-    required AppLocalizations l10n,
-    Map<String, LiveMatchData> liveMap = const {},
-  }) {
-    return PageView.builder(
-      controller: _pageController,
-      dragStartBehavior: DragStartBehavior.down,
-      physics: _pageScrollPhysics,
-      itemCount: chipDates.length,
-      onPageChanged: _onPageChanged,
-      itemBuilder: (context, index) {
-        return _buildDayPage(
-          dateStr: fixtureDateString(chipDates[index]),
-          matches: allMatches,
-          selectedLeague: selectedLeague,
           isBaseball: isBaseball,
           l10n: l10n,
           liveMap: liveMap,
@@ -1107,24 +1022,14 @@ class _FixturePageState extends ConsumerState<FixturePage>
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final brightness = Theme.of(context).brightness;
     final selectedSportStr = ref.watch(fixtureSelectedSportProvider);
     final selectedSport = _selectedSport(selectedSportStr);
     final isBaseball = selectedSportStr == 'baseball';
     final isLiveFilter = ref.watch(fixtureLiveFilterProvider);
-    final selectedLeague = ref.watch(fixtureSelectedLeagueProvider);
     final leagues = ref.watch(fixtureAvailableLeaguesProvider);
     final groupsAsync = ref.watch(fixtureLeagueGroupsProvider);
-    final allMatchesAsync = ref.watch(allFixturesWithLiveProvider);
     final liveMap = ref.watch(liveMatchesProvider);
-    final chipDates = _chipDates();
-    final hasLiveMatches = allMatchesAsync.maybeWhen(
-      data: (matches) => _hasAnyLiveMatches(
-        matches,
-        isBaseball: isBaseball,
-        liveMap: liveMap,
-      ),
-      orElse: () => false,
-    );
 
     ref.listen(rawFixturesProvider, (previous, next) {
       final wasLoading = previous?.isLoading ?? false;
@@ -1172,30 +1077,76 @@ class _FixturePageState extends ConsumerState<FixturePage>
           _scheduleAlarmStateRefresh(matches, selectedDate: next);
         }
       }
-
-      if (_syncingPage || ref.read(fixtureLiveFilterProvider)) return;
-
-      final index = _dateIndexFor(next);
-      if (index < 0 || !_pageController.hasClients) return;
-
-      final currentPage =
-          _pageController.page?.round() ?? _pageController.initialPage;
-      if (currentPage != index) {
-        _jumpToPageIndex(index);
-      }
     });
 
+    final auth = ref.watch(authProvider);
+    final l10n = context.l10n;
+    final chipDates = _chipDates();
+    final selectedDateStr = ref.watch(fixtureSelectedDateProvider);
+    final dateItems = _buildDateItems(chipDates: chipDates, l10n: l10n);
+    final selectedDateIndex = _selectedDateIndex(
+      chipDates: chipDates,
+      selectedDateStr: selectedDateStr,
+    );
+
     return Scaffold(
-      backgroundColor: semantic.surfaceBase,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SportsToggle(
+      backgroundColor: semantic.surfaceRaised,
+      body: GestureDetector(
+        onHorizontalDragStart: (details) {
+          _dragStartX = details.globalPosition.dx;
+          _dragEndX = details.globalPosition.dx;
+        },
+        onHorizontalDragUpdate: (details) {
+          _dragEndX = details.globalPosition.dx;
+        },
+        onHorizontalDragEnd: (details) {
+          final dx = _dragEndX - _dragStartX;
+          final velocity = details.primaryVelocity;
+          if (velocity == null && dx.abs() < 50) return;
+
+          if ((velocity ?? 0) < -300 || dx < -50) {
+            _goToNextDate(selectedDateIndex, chipDates.length);
+          } else if ((velocity ?? 0) > 300 || dx > 50) {
+            _goToPreviousDate(selectedDateIndex);
+          }
+        },
+        child: CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            SliverAppBar(
+              pinned: true,
+              floating: true,
+              snap: true,
+              toolbarHeight: 56,
+              backgroundColor: semantic.surfaceBase,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              automaticallyImplyLeading: false,
+              titleSpacing: 0,
+              title: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _buildAppBarTitle(
+                  auth: auth,
+                  semantic: semantic,
+                  brightness: brightness,
+                ),
+              ),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(DateTabBar.barHeight),
+                child: DateTabBar(
+                  scrollController: _dateTabScrollController,
+                  dates: dateItems,
+                  selectedIndex: selectedDateIndex,
+                  onDateSelected: _selectDateAtIndex,
+                  fillWidth: false,
+                  backgroundColor: semantic.surfaceBase,
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: SportsToggle(
                   selectedSport: selectedSport,
                   onChanged: (sport) {
                     ref.read(fixtureSelectedSportProvider.notifier).state =
@@ -1207,57 +1158,30 @@ class _FixturePageState extends ConsumerState<FixturePage>
                     }
                   },
                 ),
-                const SizedBox(height: 16),
-                _buildDateNavStrip(),
-                const SizedBox(height: 16),
-                _buildLeagueFilters(
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: _buildLeagueFilters(
                   leagues,
-                  showLiveChip: hasLiveMatches,
                   isLiveFilter: isLiveFilter,
                 ),
-              ],
+              ),
             ),
-          ),
-          Expanded(
-            child: isLiveFilter
-                ? _buildLiveMatchArea(
-                    groupsAsync: groupsAsync,
-                    isBaseball: isBaseball,
-                    semantic: semantic,
-                    liveMap: liveMap,
-                  )
-                : allMatchesAsync.when(
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (error, stackTrace) => Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            context.l10n.fixtureLoadFailed,
-                            style: TextStyle(color: semantic.textSecondary),
-                          ),
-                          const SizedBox(height: 16),
-                          TsButton(
-                            label: context.l10n.retry,
-                            variant: TsButtonVariant.primary,
-                            size: TsButtonSize.small,
-                            onPressed: _onFixtureRefresh,
-                          ),
-                        ],
-                      ),
-                    ),
-                    data: (matches) => _buildDatePageView(
-                      allMatches: matches,
-                      isBaseball: isBaseball,
-                      selectedLeague: selectedLeague,
-                      chipDates: chipDates,
-                      l10n: context.l10n,
-                      liveMap: liveMap,
-                    ),
-                  ),
-          ),
-        ],
+            ..._buildFixtureContentSlivers(
+              groupsAsync: groupsAsync,
+              isLiveFilter: isLiveFilter,
+              isBaseball: isBaseball,
+              l10n: l10n,
+              semantic: semantic,
+              liveMap: liveMap,
+            ),
+            const SliverPadding(
+              padding: EdgeInsets.only(bottom: 16),
+            ),
+          ],
+        ),
       ),
     );
   }

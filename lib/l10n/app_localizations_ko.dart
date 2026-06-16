@@ -612,6 +612,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fixtureLiveEmpty => '진행 중인 경기가 없습니다.';
 
   @override
+  String get fixtureNoLiveMatches => '진행 중인 경기가 없습니다.';
+
+  @override
   String get fixtureLiveEmptyAction => '오늘 경기 확인하기';
 
   @override

@@ -189,6 +189,7 @@
   "baseballInningBottom": "{inning}회 말",
   "fixtureLive": "LIVE",
   "fixtureLiveEmpty": "진행 중인 경기가 없습니다.",
+  "fixtureNoLiveMatches": "진행 중인 경기가 없습니다.",
   "fixtureLiveEmptyAction": "오늘 경기 확인하기",
   "fixtureLoadFailed": "경기 일정을 불러오지 못했습니다.",
   "fixtureNoMatches": "경기가 없습니다",

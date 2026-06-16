@@ -224,25 +224,28 @@ List<FixtureMatch> _scopeMatchesForFilters(
   required String sport,
   Map<String, LiveMatchData> liveMap = const {},
 }) {
-  if (liveFilter) {
-    if (sport == 'baseball') {
-      return matches
-          .where(
-            (match) =>
-                BaseballStatus.isLive(match.rawStatus) ||
-                BaseballStatus.isInterrupted(match.rawStatus),
-          )
-          .toList();
-    }
-    return matches
-        .where((match) {
-          final live = _liveDataForFixture(match, liveMap);
-          return live != null && live.isLive;
-        })
+  var filtered = matches
+      .where((match) => matchIsOnDate(match, selectedDate))
+      .toList();
+
+  if (!liveFilter) {
+    return filtered;
+  }
+
+  if (sport == 'baseball') {
+    return filtered
+        .where(
+          (match) =>
+              BaseballStatus.isLive(match.rawStatus) ||
+              BaseballStatus.isInterrupted(match.rawStatus),
+        )
         .toList();
   }
-  return matches
-      .where((match) => matchIsOnDate(match, selectedDate))
+  return filtered
+      .where((match) {
+        final live = _liveDataForFixture(match, liveMap);
+        return live != null && live.isLive;
+      })
       .toList();
 }
 
@@ -296,7 +299,7 @@ List<FixtureMatch> _applyFixtureFilters({
     liveMap: liveMap,
   );
 
-  if (selectedLeague != null && selectedLeague.isNotEmpty) {
+  if (!liveFilter && selectedLeague != null && selectedLeague.isNotEmpty) {
     filtered = filtered
         .where((match) => match.leagueKey == selectedLeague)
         .toList();
@@ -308,7 +311,6 @@ List<FixtureMatch> _applyFixtureFilters({
 final fixtureAvailableLeaguesProvider =
     Provider<List<FixtureLeagueOption>>((ref) {
   final selectedDate = ref.watch(fixtureSelectedDateProvider);
-  final liveFilter = ref.watch(fixtureLiveFilterProvider);
   final sport = ref.watch(fixtureSelectedSportProvider);
   final liveMap = ref.watch(liveMatchesProvider);
 
@@ -317,7 +319,7 @@ final fixtureAvailableLeaguesProvider =
           _applyFixtureFilters(
             matches: matches,
             selectedDate: selectedDate,
-            liveFilter: liveFilter,
+            liveFilter: false,
             sport: sport,
             liveMap: liveMap,
           ),

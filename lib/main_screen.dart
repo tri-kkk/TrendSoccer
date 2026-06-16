@@ -117,6 +117,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final selectedIndex = _selectedIndexForLocation(path);
     final isMenuTab = selectedIndex == 4;
     final isAnalysisTab = path.startsWith('/analysis');
+    final isFixtureTab = path.startsWith('/fixture');
+    final hideShellAppBar = isAnalysisTab || isFixtureTab;
     final isRootTab = _tabPaths.contains(path);
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final brightness = Theme.of(context).brightness;
@@ -144,7 +146,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         backgroundColor: semantic.surfaceBase,
         body: Column(
           children: [
-            if (isRootTab && !isAnalysisTab)
+            if (isRootTab && !hideShellAppBar)
               SafeArea(
                 bottom: false,
                 child: Container(

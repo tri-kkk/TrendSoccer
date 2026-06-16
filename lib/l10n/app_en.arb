@@ -189,6 +189,7 @@
   "baseballInningBottom": "Bot {inning}",
   "fixtureLive": "LIVE",
   "fixtureLiveEmpty": "No live matches.",
+  "fixtureNoLiveMatches": "No live matches in progress.",
   "fixtureLiveEmptyAction": "View Today's Matches",
   "fixtureLoadFailed": "Could not load fixtures.",
   "fixtureNoMatches": "No matches",

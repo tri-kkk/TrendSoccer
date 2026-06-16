@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
-import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
-import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
-import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/filter/ts_filter_chip.dart';
 import 'package:trendsoccer/shared/widgets/fixture/fixture_league_logo.dart';
 
@@ -15,7 +12,6 @@ class FixtureLeagueFilters extends StatelessWidget {
     required this.filterAllLabel,
     required this.liveLabel,
     required this.locale,
-    required this.showLiveChip,
     required this.isLiveFilter,
     required this.onSelectAll,
     required this.onLiveTap,
@@ -28,7 +24,6 @@ class FixtureLeagueFilters extends StatelessWidget {
   final String filterAllLabel;
   final String liveLabel;
   final String locale;
-  final bool showLiveChip;
   final bool isLiveFilter;
   final VoidCallback onSelectAll;
   final VoidCallback onLiveTap;
@@ -36,14 +31,12 @@ class FixtureLeagueFilters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final liveOffset = showLiveChip ? 1 : 0;
-
     return SizedBox(
       height: 32,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
-        itemCount: leagues.length + 1 + liveOffset,
+        itemCount: leagues.length + 2,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           if (index == 0) {
@@ -55,22 +48,25 @@ class FixtureLeagueFilters extends StatelessWidget {
             );
           }
 
-          if (showLiveChip && index == 1) {
-            return _LiveFilterChip(
+          if (index == 1) {
+            return TsFilterChip(
               label: liveLabel,
-              isActive: isLiveFilter,
+              isSelected: isLiveFilter,
+              type: TsFilterChipType.textOnly,
+              activeBackgroundColor: TsColors.error500,
+              activeTextColor: Colors.white,
               onTap: onLiveTap,
             );
           }
 
-          final league = leagues[index - 1 - liveOffset];
+          final league = leagues[index - 2];
           final displayName = locale == 'en'
               ? (league.nameEn ?? league.name)
               : league.name;
 
           return TsFilterChip(
             label: displayName,
-            isSelected: !isLiveFilter && selectedLeague == league.code,
+            isSelected: selectedLeague == league.code && !isLiveFilter,
             type: TsFilterChipType.withIcon,
             iconWidget: FixtureLeagueLogo(
               leagueName: displayName,
@@ -81,59 +77,6 @@ class FixtureLeagueFilters extends StatelessWidget {
             onTap: () => onSelectLeague(league.code),
           );
         },
-      ),
-    );
-  }
-}
-
-class _LiveFilterChip extends StatelessWidget {
-  const _LiveFilterChip({
-    required this.label,
-    required this.isActive,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final backgroundColor =
-        isActive ? semantic.textPrimary : semantic.surfaceBase;
-    final textColor = isActive ? semantic.surfaceBase : semantic.textSecondary;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 32,
-        padding: const EdgeInsets.symmetric(
-          horizontal: TsSpacing.md,
-          vertical: TsSpacing.xs,
-        ),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 4,
-              height: 4,
-              decoration: const BoxDecoration(
-                color: TsColors.systemError500,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: TsSpacing.xs),
-            Text(
-              label,
-              style: TsType.labelSRegular.copyWith(color: textColor),
-            ),
-          ],
-        ),
       ),
     );
   }
