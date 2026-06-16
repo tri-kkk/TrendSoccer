@@ -17,7 +17,7 @@ class FixtureMatchesCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(TsSpacing.lg),
       decoration: BoxDecoration(
-        color: semantic.surfaceContainer,
+        color: semantic.surfaceRaised,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(

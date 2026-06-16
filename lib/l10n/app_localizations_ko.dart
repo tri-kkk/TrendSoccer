@@ -951,6 +951,60 @@ class AppLocalizationsKo extends AppLocalizations {
   String get notificationPermissionTitle => '알림 권한 필요';
 
   @override
+  String get notificationSettings => '알림 설정';
+
+  @override
+  String get notificationGeneral => '일반 설정';
+
+  @override
+  String get notificationSoccer => '축구';
+
+  @override
+  String get notificationBaseball => '야구';
+
+  @override
+  String get notificationAppAlerts => '앱 알림';
+
+  @override
+  String get alarmKickoff => '킥 오프';
+
+  @override
+  String get alarmGoal => '득점';
+
+  @override
+  String get alarmHalftime => '하프타임';
+
+  @override
+  String get alarmSecondHalfStart => '후반시작';
+
+  @override
+  String get alarmFulltime => '풀 타임';
+
+  @override
+  String get alarmYellowCard => '옐로우카드';
+
+  @override
+  String get alarmRedCard => '레드카드';
+
+  @override
+  String get alarmSubstitution => '교체';
+
+  @override
+  String get alarmGameStart => '경기 시작';
+
+  @override
+  String get alarmScore => '득점';
+
+  @override
+  String get alarmHomerun => '홈런';
+
+  @override
+  String get alarmInningEnd => '이닝 종료';
+
+  @override
+  String get alarmGameEnd => '경기 종료';
+
+  @override
   String get notificationTitle => '알림 설정';
 
   @override

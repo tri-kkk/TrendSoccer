@@ -126,6 +126,10 @@ class NotificationService {
         '[NOTIF] saveAlarm: matchId=$matchId, enabled=$enabled, '
         'status=${response.statusCode}',
       );
+      debugPrint(
+        '[ALARM] PUT response: status=${response.statusCode}, '
+        'body=${response.data}',
+      );
       final data = response.data;
       return data is Map && data['success'] == true;
     } catch (e) {

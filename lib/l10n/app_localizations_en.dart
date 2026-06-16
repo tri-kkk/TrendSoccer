@@ -970,6 +970,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationPermissionTitle => 'Permission Required';
 
   @override
+  String get notificationSettings => 'Notification Settings';
+
+  @override
+  String get notificationGeneral => 'General Settings';
+
+  @override
+  String get notificationSoccer => 'Soccer';
+
+  @override
+  String get notificationBaseball => 'Baseball';
+
+  @override
+  String get notificationAppAlerts => 'App Notifications';
+
+  @override
+  String get alarmKickoff => 'Kick-off';
+
+  @override
+  String get alarmGoal => 'Goal';
+
+  @override
+  String get alarmHalftime => 'Half-time';
+
+  @override
+  String get alarmSecondHalfStart => '2nd Half Start';
+
+  @override
+  String get alarmFulltime => 'Full-time';
+
+  @override
+  String get alarmYellowCard => 'Yellow Card';
+
+  @override
+  String get alarmRedCard => 'Red Card';
+
+  @override
+  String get alarmSubstitution => 'Substitution';
+
+  @override
+  String get alarmGameStart => 'Game Start';
+
+  @override
+  String get alarmScore => 'Score';
+
+  @override
+  String get alarmHomerun => 'Home Run';
+
+  @override
+  String get alarmInningEnd => 'Inning End';
+
+  @override
+  String get alarmGameEnd => 'Game End';
+
+  @override
   String get notificationTitle => 'Notification Settings';
 
   @override

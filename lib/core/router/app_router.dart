@@ -11,6 +11,7 @@ import 'package:trendsoccer/features/fixture/fixture_page.dart';
 import 'package:trendsoccer/features/menu/about_page.dart';
 import 'package:trendsoccer/features/menu/help_center_page.dart';
 import 'package:trendsoccer/features/menu/menu_page.dart';
+import 'package:trendsoccer/features/menu/notification_settings_page.dart';
 import 'package:trendsoccer/features/menu/privacy_policy_page.dart';
 import 'package:trendsoccer/features/menu/subscribe_fail_page.dart';
 import 'package:trendsoccer/features/menu/subscribe_page.dart';
@@ -171,6 +172,10 @@ abstract final class AppRouter {
               GoRoute(
                 path: 'help',
                 builder: (context, state) => const HelpCenterPage(),
+              ),
+              GoRoute(
+                path: 'notification-settings',
+                builder: (context, state) => const NotificationSettingsPage(),
               ),
             ],
           ),

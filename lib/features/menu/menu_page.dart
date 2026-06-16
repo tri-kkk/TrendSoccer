@@ -4,11 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:trendsoccer/core/models/auth_state.dart';
-import 'package:trendsoccer/core/services/fcm_service.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/language_provider.dart';
@@ -29,7 +26,6 @@ import 'package:trendsoccer/shared/widgets/section/ts_section_header.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 import 'package:trendsoccer/core/utils/error_resolver.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
-import 'package:trendsoccer/shared/widgets/toggle/ts_toggle.dart';
 
 class MenuPage extends ConsumerStatefulWidget {
   const MenuPage({super.key});
@@ -96,98 +92,6 @@ class _MenuPageState extends ConsumerState<MenuPage> {
       backgroundColor: Colors.transparent,
       builder: (_) => const _LanguageBottomSheet(),
     );
-  }
-
-  Future<void> _showPermissionSettingsDialog(BuildContext context) async {
-    if (!context.mounted) return;
-    final shouldOpen = await showDialog<bool>(
-      context: context,
-      builder: (ctx) {
-        final semantic = Theme.of(ctx).extension<TsSemanticColors>()!;
-        return AlertDialog(
-          backgroundColor: semantic.surfaceOverlay,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            ctx.l10n.notificationPermissionTitle,
-            style: TextStyle(color: semantic.textPrimary),
-          ),
-          content: Text(
-            ctx.l10n.notificationPermissionMessage,
-            style: TextStyle(color: semantic.textSecondary),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(
-                ctx.l10n.cancel,
-                style: TextStyle(color: semantic.textTertiary),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(
-                ctx.l10n.notificationPermissionGoSettings,
-                style: TextStyle(color: semantic.interactivePrimary),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-    if (shouldOpen == true) {
-      await openAppSettings();
-    }
-  }
-
-  Future<void> _openNotificationBottomSheet(BuildContext context) async {
-    if (!context.mounted) return;
-    await showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const _NotificationBottomSheet(),
-    );
-  }
-
-  Future<void> _showNotificationSheet(BuildContext context) async {
-    final status = await Permission.notification.status;
-
-    if (status.isPermanentlyDenied) {
-      if (!context.mounted) return;
-      await _showPermissionSettingsDialog(context);
-      return;
-    }
-
-    if (status.isDenied) {
-      final result = await Permission.notification.request();
-      if (!result.isGranted) {
-        await FCMService().unsubscribeAllTopics();
-        if (context.mounted) {
-          final messenger = ScaffoldMessenger.of(context);
-          messenger.clearSnackBars();
-          messenger.showSnackBar(
-            SnackBar(
-              content: Text(
-                context.l10n.notificationDisabledSnack,
-              ),
-              duration: Duration(seconds: 5),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-        return;
-      }
-
-      final prefs = await SharedPreferences.getInstance();
-      final appGeneral = prefs.getBool(FCMService.prefAppGeneral) ?? false;
-      if (!appGeneral) {
-        await FCMService().subscribeAllTopics();
-      }
-    }
-
-    if (!context.mounted) return;
-    await _openNotificationBottomSheet(context);
   }
 
   void _showSignOutDialog(BuildContext context) {
@@ -503,7 +407,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                   MenuListItem(
                     iconAsset: TsAssets.iconNotifications,
                     label: l10n.menuNotification,
-                    onTap: () => _showNotificationSheet(context),
+                    onTap: () => context.push('/menu/notification-settings'),
                   ),
                 ],
               ),
@@ -843,210 +747,6 @@ class _LanguageOptionRow extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _NotificationBottomSheet extends StatefulWidget {
-  const _NotificationBottomSheet();
-
-  @override
-  State<_NotificationBottomSheet> createState() =>
-      _NotificationBottomSheetState();
-}
-
-class _NotificationBottomSheetState extends State<_NotificationBottomSheet> {
-  bool _isLoading = true;
-  bool _isSaving = false;
-  bool _appGeneral = true;
-  bool _matchEvents = true;
-  bool _marketing = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadPrefs();
-  }
-
-  Future<void> _loadPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
-    setState(() {
-      _appGeneral = prefs.getBool(FCMService.prefAppGeneral) ?? true;
-      _matchEvents = prefs.getBool(FCMService.prefMatchEvents) ?? true;
-      _marketing = prefs.getBool(FCMService.prefMarketing) ?? true;
-      _isLoading = false;
-    });
-  }
-
-  Future<void> _onToggleChanged({
-    required String prefKey,
-    required String baseTopic,
-    required bool value,
-    required void Function(bool) updateState,
-  }) async {
-    if (_isSaving || _isLoading) return;
-    setState(() {
-      _isSaving = true;
-      updateState(value);
-    });
-
-    try {
-      await FCMService().setTopicEnabled(
-        baseTopic: baseTopic,
-        prefKey: prefKey,
-        enabled: value,
-      );
-    } catch (_) {
-      if (mounted) {
-        setState(() => updateState(!value));
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isSaving = false);
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    final l10n = context.l10n;
-    final togglesEnabled = !_isLoading && !_isSaving;
-
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      child: ColoredBox(
-        color: semantic.surfaceOverlay,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            24,
-            12,
-            24,
-            24 + MediaQuery.of(context).padding.bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const TsBottomSheetHandle(),
-              const SizedBox(height: 16),
-              Text(
-                l10n.notificationTitle,
-                style: TsType.headingH3.copyWith(color: semantic.textPrimary),
-              ),
-              const SizedBox(height: 16),
-              if (_isLoading)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: semantic.interactivePrimary,
-                    ),
-                  ),
-                )
-              else ...[
-                _NotificationTopicSection(
-                  semantic: semantic,
-                  label: l10n.notificationAppGeneral,
-                  subtitle: l10n.notificationAppGeneralDesc,
-                  value: _appGeneral,
-                  onChanged: togglesEnabled
-                      ? (v) => _onToggleChanged(
-                            prefKey: FCMService.prefAppGeneral,
-                            baseTopic: FCMService.topicAppGeneral,
-                            value: v,
-                            updateState: (val) => _appGeneral = val,
-                          )
-                      : null,
-                  showDivider: true,
-                ),
-                _NotificationTopicSection(
-                  semantic: semantic,
-                  label: l10n.notificationMatchEvents,
-                  subtitle: l10n.notificationMatchEventsDesc,
-                  value: _matchEvents,
-                  onChanged: togglesEnabled
-                      ? (v) => _onToggleChanged(
-                            prefKey: FCMService.prefMatchEvents,
-                            baseTopic: FCMService.topicMatchEvents,
-                            value: v,
-                            updateState: (val) => _matchEvents = val,
-                          )
-                      : null,
-                  showDivider: true,
-                ),
-                _NotificationTopicSection(
-                  semantic: semantic,
-                  label: l10n.notificationMarketing,
-                  subtitle: l10n.notificationMarketingDesc,
-                  value: _marketing,
-                  onChanged: togglesEnabled
-                      ? (v) => _onToggleChanged(
-                            prefKey: FCMService.prefMarketing,
-                            baseTopic: FCMService.topicMarketing,
-                            value: v,
-                            updateState: (val) => _marketing = val,
-                          )
-                      : null,
-                  showDivider: false,
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NotificationTopicSection extends StatelessWidget {
-  const _NotificationTopicSection({
-    required this.semantic,
-    required this.label,
-    required this.subtitle,
-    required this.value,
-    required this.onChanged,
-    required this.showDivider,
-  });
-
-  final TsSemanticColors semantic;
-  final String label;
-  final String subtitle;
-  final bool value;
-  final ValueChanged<bool>? onChanged;
-  final bool showDivider;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Text(
-                label,
-                style: TsType.bodyLRegular.copyWith(
-                  color: semantic.textPrimary,
-                ),
-              ),
-            ),
-            TsToggle(value: value, onChanged: onChanged),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
-        ),
-        if (showDivider) ...[
-          const SizedBox(height: 16),
-          Container(height: 1, color: semantic.borderSubtle),
-          const SizedBox(height: 16),
-        ],
-      ],
     );
   }
 }

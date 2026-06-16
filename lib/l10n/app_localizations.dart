@@ -1892,6 +1892,114 @@ abstract class AppLocalizations {
   /// **'알림 권한 필요'**
   String get notificationPermissionTitle;
 
+  /// No description provided for @notificationSettings.
+  ///
+  /// In ko, this message translates to:
+  /// **'알림 설정'**
+  String get notificationSettings;
+
+  /// No description provided for @notificationGeneral.
+  ///
+  /// In ko, this message translates to:
+  /// **'일반 설정'**
+  String get notificationGeneral;
+
+  /// No description provided for @notificationSoccer.
+  ///
+  /// In ko, this message translates to:
+  /// **'축구'**
+  String get notificationSoccer;
+
+  /// No description provided for @notificationBaseball.
+  ///
+  /// In ko, this message translates to:
+  /// **'야구'**
+  String get notificationBaseball;
+
+  /// No description provided for @notificationAppAlerts.
+  ///
+  /// In ko, this message translates to:
+  /// **'앱 알림'**
+  String get notificationAppAlerts;
+
+  /// No description provided for @alarmKickoff.
+  ///
+  /// In ko, this message translates to:
+  /// **'킥 오프'**
+  String get alarmKickoff;
+
+  /// No description provided for @alarmGoal.
+  ///
+  /// In ko, this message translates to:
+  /// **'득점'**
+  String get alarmGoal;
+
+  /// No description provided for @alarmHalftime.
+  ///
+  /// In ko, this message translates to:
+  /// **'하프타임'**
+  String get alarmHalftime;
+
+  /// No description provided for @alarmSecondHalfStart.
+  ///
+  /// In ko, this message translates to:
+  /// **'후반시작'**
+  String get alarmSecondHalfStart;
+
+  /// No description provided for @alarmFulltime.
+  ///
+  /// In ko, this message translates to:
+  /// **'풀 타임'**
+  String get alarmFulltime;
+
+  /// No description provided for @alarmYellowCard.
+  ///
+  /// In ko, this message translates to:
+  /// **'옐로우카드'**
+  String get alarmYellowCard;
+
+  /// No description provided for @alarmRedCard.
+  ///
+  /// In ko, this message translates to:
+  /// **'레드카드'**
+  String get alarmRedCard;
+
+  /// No description provided for @alarmSubstitution.
+  ///
+  /// In ko, this message translates to:
+  /// **'교체'**
+  String get alarmSubstitution;
+
+  /// No description provided for @alarmGameStart.
+  ///
+  /// In ko, this message translates to:
+  /// **'경기 시작'**
+  String get alarmGameStart;
+
+  /// No description provided for @alarmScore.
+  ///
+  /// In ko, this message translates to:
+  /// **'득점'**
+  String get alarmScore;
+
+  /// No description provided for @alarmHomerun.
+  ///
+  /// In ko, this message translates to:
+  /// **'홈런'**
+  String get alarmHomerun;
+
+  /// No description provided for @alarmInningEnd.
+  ///
+  /// In ko, this message translates to:
+  /// **'이닝 종료'**
+  String get alarmInningEnd;
+
+  /// No description provided for @alarmGameEnd.
+  ///
+  /// In ko, this message translates to:
+  /// **'경기 종료'**
+  String get alarmGameEnd;
+
   /// No description provided for @notificationTitle.
   ///
   /// In ko, this message translates to:

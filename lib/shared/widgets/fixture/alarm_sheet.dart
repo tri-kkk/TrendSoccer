@@ -285,13 +285,60 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
   }
 }
 
-/// Checks notification permission, then opens the alarm bottom sheet.
-Future<void> showAlarmSheet(
-  BuildContext context, {
-  required int matchId,
-  required String sport,
-  ValueChanged<bool>? onEnabledChanged,
-}) async {
+/// Returns false when match-alarm flow should abort (permission or menu off).
+/// No login required — anonymous devices use X-Device-Token via [NotificationService].
+Future<bool> ensureMatchAlarmGate(BuildContext context) async {
+  var status = await Permission.notification.status;
+
+  if (!status.isPermanentlyDenied && status.isDenied) {
+    await Permission.notification.request();
+    status = await Permission.notification.status;
+  }
+
+  if (status.isPermanentlyDenied) {
+    if (!context.mounted) return false;
+    final shouldOpen = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final semantic = Theme.of(ctx).extension<TsSemanticColors>()!;
+        return AlertDialog(
+          backgroundColor: semantic.surfaceOverlay,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            ctx.l10n.notificationPermissionTitle,
+            style: TextStyle(color: semantic.textPrimary),
+          ),
+          content: Text(
+            ctx.l10n.notificationPermissionMessageMatch,
+            style: TextStyle(color: semantic.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(
+                ctx.l10n.cancel,
+                style: TextStyle(color: semantic.textTertiary),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(
+                ctx.l10n.notificationPermissionGoSettings,
+                style: TextStyle(color: semantic.interactivePrimary),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    if (shouldOpen == true) {
+      await openAppSettings();
+    }
+    return false;
+  }
+
   final prefs = await SharedPreferences.getInstance();
   final matchEventsEnabled =
       prefs.getBool(FCMService.prefMatchEvents) ?? true;
@@ -335,62 +382,23 @@ Future<void> showAlarmSheet(
         },
       );
       if (shouldGoMenu == true && context.mounted) {
-        context.go('/menu');
+        context.go('/menu/notification-settings');
       }
     }
-    return;
+    return false;
   }
 
-  var status = await Permission.notification.status;
+  return context.mounted;
+}
 
-  if (!status.isPermanentlyDenied && status.isDenied) {
-    await Permission.notification.request();
-    status = await Permission.notification.status;
-  }
-
-  if (status.isPermanentlyDenied) {
-    if (!context.mounted) return;
-    final shouldOpen = await showDialog<bool>(
-      context: context,
-      builder: (ctx) {
-        final semantic = Theme.of(ctx).extension<TsSemanticColors>()!;
-        return AlertDialog(
-          backgroundColor: semantic.surfaceOverlay,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            ctx.l10n.notificationPermissionTitle,
-            style: TextStyle(color: semantic.textPrimary),
-          ),
-          content: Text(
-            ctx.l10n.notificationPermissionMessageMatch,
-            style: TextStyle(color: semantic.textSecondary),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(
-                ctx.l10n.cancel,
-                style: TextStyle(color: semantic.textTertiary),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(
-                ctx.l10n.notificationPermissionGoSettings,
-                style: TextStyle(color: semantic.interactivePrimary),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-    if (shouldOpen == true) {
-      await openAppSettings();
-    }
-    return;
-  }
+/// Checks notification permission, then opens the alarm bottom sheet.
+Future<void> showAlarmSheet(
+  BuildContext context, {
+  required int matchId,
+  required String sport,
+  ValueChanged<bool>? onEnabledChanged,
+}) async {
+  if (!await ensureMatchAlarmGate(context)) return;
 
   if (!context.mounted) return;
   await showModalBottomSheet<void>(

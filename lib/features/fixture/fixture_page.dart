@@ -8,8 +8,10 @@ import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/models/fixture_models_v2.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
+import 'package:trendsoccer/core/constants/alarm_preference_keys.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
+import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
 import 'package:trendsoccer/core/services/fixture_service.dart';
 import 'package:trendsoccer/core/services/notification_service.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -675,32 +677,58 @@ class _FixturePageState extends ConsumerState<FixturePage>
 
   Future<void> _onNotificationTap(FixtureMatch match) async {
     if (!_isAlarmEligible(match)) return;
+    if (!await ensureMatchAlarmGate(context)) return;
+    if (!mounted) return;
 
     final sport = _sportApiValue(match.sport);
-    await showAlarmSheet(
-      context,
-      matchId: match.matchId,
-      sport: sport,
-    );
+    final matchId = match.matchId;
+    final id = matchId.toString();
+    final isCurrentlyOn = _alarmEnabledMatchIds.contains(id);
+    final service = ref.read(notificationServiceProvider);
+    final prefs = ref.read(sharedPreferencesProvider);
 
-    if (!mounted) return;
-
-    final settings = await ref
-        .read(notificationServiceProvider)
-        .getMatchAlarmSettings(match.matchId, sport);
-    if (!mounted) return;
-
-    setState(() {
-      final id = match.matchId.toString();
-      final events = settings['events'];
-      final isActive = settings['enabled'] == true ||
-          (events is Map && events.values.any((value) => value == true));
-      if (isActive) {
-        _alarmEnabledMatchIds.add(id);
-      } else {
-        _alarmEnabledMatchIds.remove(id);
+    if (isCurrentlyOn) {
+      final disabledEvents =
+          AlarmPreferenceKeys.disabledEvents(prefs, sport);
+      setState(() => _alarmEnabledMatchIds.remove(id));
+      try {
+        final ok = await service.saveMatchAlarmSettings(
+          matchId,
+          sport,
+          false,
+          disabledEvents,
+        );
+        debugPrint('[ALARM] Save response: matchId=$matchId, success=true');
+        if (!ok && mounted) {
+          setState(() => _alarmEnabledMatchIds.add(id));
+          TsToast.error(context, context.l10n.errorUnauthorized);
+        }
+      } catch (e) {
+        debugPrint('[ALARM] Save FAILED: matchId=$matchId, error=$e');
       }
-    });
+      return;
+    }
+
+    final events = AlarmPreferenceKeys.globalEvents(prefs, sport);
+    debugPrint(
+      '[ALARM] Bell ON: matchId=$matchId, sport=$sport, events=$events',
+    );
+    setState(() => _alarmEnabledMatchIds.add(id));
+    try {
+      final ok = await service.saveMatchAlarmSettings(
+        matchId,
+        sport,
+        true,
+        events,
+      );
+      debugPrint('[ALARM] Save response: matchId=$matchId, success=true');
+      if (!ok && mounted) {
+        setState(() => _alarmEnabledMatchIds.remove(id));
+        TsToast.error(context, context.l10n.errorUnauthorized);
+      }
+    } catch (e) {
+      debugPrint('[ALARM] Save FAILED: matchId=$matchId, error=$e');
+    }
   }
 
   FixtureMatchStatus _toFixtureStatus(
