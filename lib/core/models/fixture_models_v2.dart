@@ -203,6 +203,7 @@ class LiveMatchData {
     required this.elapsed,
     required this.homeScore,
     required this.awayScore,
+    this.elapsedExtra,
     this.halftimeHomeScore,
     this.halftimeAwayScore,
     this.leagueCode,
@@ -214,6 +215,7 @@ class LiveMatchData {
   final int elapsed;
   final int homeScore;
   final int awayScore;
+  final int? elapsedExtra;
   final int? halftimeHomeScore;
   final int? halftimeAwayScore;
   final String? leagueCode;
@@ -226,6 +228,7 @@ class LiveMatchData {
       elapsed: (json['elapsed'] as num?)?.toInt() ?? 0,
       homeScore: (json['homeScore'] as num?)?.toInt() ?? 0,
       awayScore: (json['awayScore'] as num?)?.toInt() ?? 0,
+      elapsedExtra: (json['elapsedExtra'] as num?)?.toInt(),
       halftimeHomeScore: (json['halftimeHomeScore'] as num?)?.toInt(),
       halftimeAwayScore: (json['halftimeAwayScore'] as num?)?.toInt(),
       leagueCode: json['leagueCode']?.toString(),

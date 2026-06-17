@@ -34,7 +34,15 @@ abstract final class FixtureSoccerContent {
     return score?.toString();
   }
 
-  static String formatSoccerElapsedTime(int elapsed, String status) {
+  static String formatSoccerElapsedTime(
+    int elapsed,
+    String status, {
+    int? elapsedExtra,
+  }) {
+    if (elapsedExtra != null && elapsedExtra > 0) {
+      return '$elapsed+$elapsedExtra';
+    }
+
     final normalized = status.trim().toUpperCase();
     if (normalized == '1H' && elapsed > 45) {
       return '45+${elapsed - 45}';
@@ -45,8 +53,12 @@ abstract final class FixtureSoccerContent {
     return '$elapsed';
   }
 
-  static String liveElapsedText(int elapsed, String status) {
-    return "${formatSoccerElapsedTime(elapsed, status)}'";
+  static String liveElapsedText(
+    int elapsed,
+    String status, {
+    int? elapsedExtra,
+  }) {
+    return "${formatSoccerElapsedTime(elapsed, status, elapsedExtra: elapsedExtra)}'";
   }
 
   static String? statusTimeText(
@@ -61,7 +73,11 @@ abstract final class FixtureSoccerContent {
       return 'HT';
     }
     if (live != null && live.isLive) {
-      return liveElapsedText(live.elapsed, live.status);
+      return liveElapsedText(
+        live.elapsed,
+        live.status,
+        elapsedExtra: live.elapsedExtra,
+      );
     }
     if (live != null && live.isFinished) {
       return l10n.fixtureStatusFinal;
@@ -73,7 +89,11 @@ abstract final class FixtureSoccerContent {
           return 'HT';
         }
         return live != null && live.elapsed > 0
-            ? liveElapsedText(live.elapsed, live.status)
+            ? liveElapsedText(
+                live.elapsed,
+                live.status,
+                elapsedExtra: live.elapsedExtra,
+              )
             : l10n.fixtureLive;
       case 'finished':
         return l10n.fixtureStatusFinal;
