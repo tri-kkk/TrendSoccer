@@ -161,6 +161,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
       if (_isSoccerFinishedLiveStatus(live.status)) {
         cached['finished'] = true;
         _soccerFinishedCacheAt[id] = now;
+        debugPrint('[LIVE-DEBUG] FT detected: matchId=$id, merging permanently');
       }
       _lastKnownSoccerLiveStates[id] = cached;
     }
@@ -168,10 +169,15 @@ class _FixturePageState extends ConsumerState<FixturePage>
     _soccerFinishedCacheAt.removeWhere((id, finishedAt) {
       if (now.difference(finishedAt) > _soccerFinishedCacheTtl) {
         _lastKnownSoccerLiveStates.remove(id);
+        debugPrint('[LIVE-DEBUG] Cache cleared for: $id');
         return true;
       }
       return false;
     });
+
+    debugPrint(
+      '[LIVE-DEBUG] Cache size: ${_lastKnownSoccerLiveStates.length}',
+    );
   }
 
   LiveMatchData _soccerLiveDataFromCache(
@@ -236,6 +242,15 @@ class _FixturePageState extends ConsumerState<FixturePage>
       }
     }
 
+    debugPrint('[LIVE-DEBUG] Poll result: ${liveData.length} matches');
+    for (final entry in liveData.entries) {
+      final m = entry.value;
+      debugPrint(
+        '[LIVE-DEBUG] Match: ${m.matchId}, status=${m.status}, '
+        'home=${m.homeScore}, away=${m.awayScore}',
+      );
+    }
+
     final effective = _effectiveSoccerLiveMap(liveData);
     if (liveData.isEmpty && effective.isNotEmpty) {
       debugPrint(
@@ -246,6 +261,11 @@ class _FixturePageState extends ConsumerState<FixturePage>
     ref.read(liveMatchesProvider.notifier).state = effective;
 
     if (effective.values.any((live) => live.isFinished)) {
+      final finishedIds = effective.entries
+          .where((entry) => entry.value.isFinished)
+          .map((entry) => entry.key)
+          .join(', ');
+      debugPrint('[LIVE-DEBUG] FT merge trigger: $finishedIds');
       final base = ref.read(soccerPolledFixturesProvider) ??
           ref.read(soccerFixturesProvider).asData?.value;
       if (base != null) {

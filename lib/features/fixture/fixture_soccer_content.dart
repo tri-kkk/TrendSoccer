@@ -34,6 +34,21 @@ abstract final class FixtureSoccerContent {
     return score?.toString();
   }
 
+  static String formatSoccerElapsedTime(int elapsed, String status) {
+    final normalized = status.trim().toUpperCase();
+    if (normalized == '1H' && elapsed > 45) {
+      return '45+${elapsed - 45}';
+    }
+    if (normalized == '2H' && elapsed > 90) {
+      return '90+${elapsed - 90}';
+    }
+    return '$elapsed';
+  }
+
+  static String liveElapsedText(int elapsed, String status) {
+    return "${formatSoccerElapsedTime(elapsed, status)}'";
+  }
+
   static String? statusTimeText(
     FixtureMatch match, {
     required AppLocalizations l10n,
@@ -46,7 +61,7 @@ abstract final class FixtureSoccerContent {
       return 'HT';
     }
     if (live != null && live.isLive) {
-      return l10n.liveMinutes(live.elapsed);
+      return liveElapsedText(live.elapsed, live.status);
     }
     if (live != null && live.isFinished) {
       return l10n.fixtureStatusFinal;
@@ -58,7 +73,7 @@ abstract final class FixtureSoccerContent {
           return 'HT';
         }
         return live != null && live.elapsed > 0
-            ? l10n.liveMinutes(live.elapsed)
+            ? liveElapsedText(live.elapsed, live.status)
             : l10n.fixtureLive;
       case 'finished':
         return l10n.fixtureStatusFinal;
