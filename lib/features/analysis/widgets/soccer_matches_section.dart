@@ -4,12 +4,15 @@ import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
+import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/features/analysis/analysis_layout_dummy.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
+import 'package:trendsoccer/core/services/admob_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
+import 'package:trendsoccer/shared/widgets/ads/premium_ad_wrapper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
@@ -69,21 +72,11 @@ class SoccerMatchesSection extends ConsumerWidget {
             final dummyMatches =
                 AnalysisLayoutDummy.getSoccerMatches(dateStr);
             if (dummyMatches.isNotEmpty) {
-              return SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    return Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        16,
-                        index == 0 ? 0 : 8,
-                        16,
-                        index == dummyMatches.length - 1 ? 0 : 8,
-                      ),
-                      child: _LayoutDummySoccerCard(data: dummyMatches[index]),
-                    );
-                  },
-                  childCount: dummyMatches.length,
-                ),
+              return _buildMatchesSliver(
+                ref: ref,
+                itemCount: dummyMatches.length,
+                cardBuilder: (index) =>
+                    _LayoutDummySoccerCard(data: dummyMatches[index]),
               );
             }
           }
@@ -101,25 +94,51 @@ class SoccerMatchesSection extends ConsumerWidget {
           );
         }
 
-        return SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              return Padding(
-                padding: EdgeInsets.fromLTRB(
-                  16,
-                  index == 0 ? 0 : 8,
-                  16,
-                  index == filtered.length - 1 ? 0 : 8,
-                ),
-                child: _SoccerAnalysisCardItem(card: filtered[index]),
-              );
-            },
-            childCount: filtered.length,
-          ),
+        return _buildMatchesSliver(
+          ref: ref,
+          itemCount: filtered.length,
+          cardBuilder: (index) =>
+              _SoccerAnalysisCardItem(card: filtered[index]),
         );
       },
     );
   }
+}
+
+Widget _buildMatchesSliver({
+  required WidgetRef ref,
+  required int itemCount,
+  required Widget Function(int index) cardBuilder,
+}) {
+  final showAd = !ref.watch(authProvider).hasFullAccess;
+  final sliverItemCount = itemCount + (showAd ? 1 : 0);
+
+  return SliverList(
+    delegate: SliverChildBuilderDelegate(
+      (context, index) {
+        if (showAd && index == 1) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: PremiumAdWrapper(
+              adUnitId: AdmobService.analysisBannerAdUnitId,
+            ),
+          );
+        }
+
+        final cardIndex = showAd && index > 1 ? index - 1 : index;
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            16,
+            cardIndex == 0 ? 0 : 8,
+            16,
+            cardIndex == itemCount - 1 ? 0 : 8,
+          ),
+          child: cardBuilder(cardIndex),
+        );
+      },
+      childCount: sliverItemCount,
+    ),
+  );
 }
 
 class _LayoutDummySoccerCard extends StatelessWidget {

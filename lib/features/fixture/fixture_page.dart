@@ -887,6 +887,18 @@ class _FixturePageState extends ConsumerState<FixturePage>
           ),
         ),
       );
+      if (gi == 0 && !ref.watch(authProvider).hasFullAccess) {
+        slivers.add(
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: PremiumAdWrapper(
+                adUnitId: AdmobService.fixtureBannerAdUnitId,
+              ),
+            ),
+          ),
+        );
+      }
     }
     return slivers;
   }
@@ -1108,11 +1120,6 @@ class _FixturePageState extends ConsumerState<FixturePage>
               l10n: l10n,
               semantic: semantic,
               liveMap: liveMap,
-            ),
-            SliverToBoxAdapter(
-              child: PremiumAdWrapper(
-                adUnitId: AdmobService.fixtureBannerAdUnitId,
-              ),
             ),
             const SliverFillRemaining(
               hasScrollBody: false,
