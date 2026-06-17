@@ -34,12 +34,14 @@ class TsLeagueIcon extends StatelessWidget {
     required this.leagueId,
     this.size = 16,
     this.logoUrl,
+    this.isActive = false,
     super.key,
   });
 
   final String leagueId;
   final double size;
   final String? logoUrl;
+  final bool isActive;
 
   Widget _fallback(BuildContext context) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
@@ -85,7 +87,11 @@ class TsLeagueIcon extends StatelessWidget {
   }
 
   String _assetPath(BuildContext context) {
-    return TsAssets.leagueIcon(leagueId, Theme.of(context).brightness);
+    final brightness = Theme.of(context).brightness;
+    final effectiveBrightness = isActive
+        ? (brightness == Brightness.dark ? Brightness.light : Brightness.dark)
+        : brightness;
+    return TsAssets.leagueIcon(leagueId, effectiveBrightness);
   }
 
   @override

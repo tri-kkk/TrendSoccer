@@ -15,6 +15,7 @@ class FixtureLeagueLogo extends StatelessWidget {
     required this.leagueCode,
     this.leagueLogoUrl,
     this.size = 20,
+    this.isActive = false,
     super.key,
   });
 
@@ -22,6 +23,13 @@ class FixtureLeagueLogo extends StatelessWidget {
   final String leagueCode;
   final String? leagueLogoUrl;
   final double size;
+  final bool isActive;
+
+  Brightness _effectiveBrightness(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    if (!isActive) return brightness;
+    return brightness == Brightness.dark ? Brightness.light : Brightness.dark;
+  }
 
   String get _codeLabel {
     final code = leagueCode.trim().toUpperCase();
@@ -59,7 +67,7 @@ class FixtureLeagueLogo extends StatelessWidget {
 
   Widget _worldCupIcon(BuildContext context) {
     return SvgPicture.asset(
-      TsAssets.leagueIcon26fwc(Theme.of(context).brightness),
+      TsAssets.leagueIcon26fwc(_effectiveBrightness(context)),
       width: size,
       height: size,
       fit: BoxFit.contain,
@@ -72,7 +80,11 @@ class FixtureLeagueLogo extends StatelessWidget {
     }
     final iconId = TsAssets.leagueIconIdFromApiCode(leagueCode);
     if (iconId != null) {
-      return TsLeagueIcon(leagueId: iconId, size: size);
+      return TsLeagueIcon(
+        leagueId: iconId,
+        size: size,
+        isActive: isActive,
+      );
     }
     return _textFallback(semantic);
   }

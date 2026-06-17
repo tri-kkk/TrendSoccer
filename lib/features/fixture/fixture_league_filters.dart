@@ -63,16 +63,18 @@ class FixtureLeagueFilters extends StatelessWidget {
           final displayName = locale == 'en'
               ? (league.nameEn ?? league.name)
               : league.name;
+          final isSelected = selectedLeague == league.code && !isLiveFilter;
 
           return TsFilterChip(
             label: displayName,
-            isSelected: selectedLeague == league.code && !isLiveFilter,
+            isSelected: isSelected,
             type: TsFilterChipType.withIcon,
             iconWidget: FixtureLeagueLogo(
               leagueName: displayName,
               leagueCode: league.code,
               leagueLogoUrl: league.logo,
               size: 16,
+              isActive: isSelected,
             ),
             onTap: () => onSelectLeague(league.code),
           );

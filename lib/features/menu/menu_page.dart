@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -38,6 +39,22 @@ class MenuPage extends ConsumerStatefulWidget {
 
 class _MenuPageState extends ConsumerState<MenuPage> {
   final bool _isDeletingAccount = false;
+  String _appVersion = '';
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadAppVersion());
+  }
+
+  Future<void> _loadAppVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _appVersion = info.version;
+      });
+    }
+  }
 
   PlanType _planTicketType(PlanType planType) {
     return switch (planType) {
@@ -457,7 +474,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                     iconAsset: TsAssets.iconVersionInfo,
                     label: l10n.menuAppVersion,
                     type: MenuItemType.value,
-                    value: '1.0.0',
+                    value: _appVersion.isEmpty ? '-' : _appVersion,
                   ),
                 ],
               ),

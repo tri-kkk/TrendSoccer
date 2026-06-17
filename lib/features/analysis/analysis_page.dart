@@ -211,7 +211,11 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
                 ? TsFilterChipType.withIcon
                 : TsFilterChipType.textOnly,
             iconWidget: chip.iconId != null
-                ? TsLeagueIcon(leagueId: chip.iconId!, size: 16)
+                ? TsLeagueIcon(
+                    leagueId: chip.iconId!,
+                    size: 16,
+                    isActive: isSelected,
+                  )
                 : null,
             onTap: () {
               ref.read(selectedLeagueProvider.notifier).state =
@@ -253,7 +257,11 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
                 ? TsFilterChipType.withIcon
                 : TsFilterChipType.textOnly,
             iconWidget: chip.iconId != null
-                ? TsLeagueIcon(leagueId: chip.iconId!, size: 16)
+                ? TsLeagueIcon(
+                    leagueId: chip.iconId!,
+                    size: 16,
+                    isActive: isSelected,
+                  )
                 : null,
             onTap: () {
               ref.read(selectedBaseballLeagueProvider.notifier).state =
