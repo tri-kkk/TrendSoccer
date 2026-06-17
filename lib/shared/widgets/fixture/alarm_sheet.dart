@@ -2,11 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:trendsoccer/core/services/fcm_service.dart';
 import 'package:trendsoccer/core/services/notification_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -285,7 +282,7 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
   }
 }
 
-/// Returns false when match-alarm flow should abort (permission or menu off).
+/// Returns false when match-alarm flow should abort (notification permission).
 /// No login required — anonymous devices use X-Device-Token via [NotificationService].
 Future<bool> ensureMatchAlarmGate(BuildContext context) async {
   var status = await Permission.notification.status;
@@ -339,52 +336,7 @@ Future<bool> ensureMatchAlarmGate(BuildContext context) async {
     return false;
   }
 
-  final prefs = await SharedPreferences.getInstance();
-  final matchEventsEnabled =
-      prefs.getBool(FCMService.prefMatchEvents) ?? true;
-
-  if (!matchEventsEnabled) {
-    if (context.mounted) {
-      final shouldGoMenu = await showDialog<bool>(
-        context: context,
-        builder: (ctx) {
-          final sem = Theme.of(ctx).extension<TsSemanticColors>()!;
-          return AlertDialog(
-            backgroundColor: sem.surfaceOverlay,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: Text(
-              ctx.l10n.matchAlarmDisabledTitle,
-              style: TextStyle(color: sem.textPrimary),
-            ),
-            content: Text(
-              ctx.l10n.matchAlarmDisabledMessage,
-              style: TextStyle(color: sem.textSecondary),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text(
-                  ctx.l10n.cancel,
-                  style: TextStyle(color: sem.textTertiary),
-                ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: Text(
-                  ctx.l10n.matchAlarmDisabledGoSettings,
-                  style: TextStyle(color: sem.interactivePrimary),
-                ),
-              ),
-            ],
-          );
-        },
-      );
-      if (shouldGoMenu == true && context.mounted) {
-        context.go('/menu/notification-settings');
-      }
-    }
+  if (!status.isGranted) {
     return false;
   }
 

@@ -396,6 +396,14 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
             SoccerMatchesSection(dateStr: selectedDateStr)
           else
             BaseballMatchesSection(dateStr: selectedDateStr),
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            fillOverscroll: false,
+            child: SizedBox.shrink(),
+          ),
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 56),
+          ),
           const SliverPadding(
             padding: EdgeInsets.only(bottom: 16),
           ),

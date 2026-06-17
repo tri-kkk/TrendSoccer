@@ -23,7 +23,7 @@ abstract final class TsShellAppBarMetrics {
 }
 
 /// Logo row + login/profile actions — identical to [MainScreen] shell AppBar content.
-class TsShellAppBarContent extends StatefulWidget {
+class TsShellAppBarContent extends StatelessWidget {
   const TsShellAppBarContent({
     required this.auth,
     this.onLogoTap,
@@ -57,80 +57,55 @@ class TsShellAppBarContent extends StatefulWidget {
   }
 
   @override
-  State<TsShellAppBarContent> createState() => _TsShellAppBarContentState();
-}
-
-class _TsShellAppBarContentState extends State<TsShellAppBarContent> {
-  final _logoKey = GlobalKey();
-
-  @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final box = _logoKey.currentContext?.findRenderObject() as RenderBox?;
-      if (box != null) {
-        final position = box.localToGlobal(Offset.zero);
-        final size = box.size;
-        debugPrint(
-          '[LOGO-POS] y=${position.dy.toStringAsFixed(1)}, '
-          'h=${size.height.toStringAsFixed(1)}, '
-          'w=${size.width.toStringAsFixed(1)}',
-        );
-      }
-    });
-
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final brightness = Theme.of(context).brightness;
 
     return SizedBox(
-      height: widget.logoHeight,
-      child: Container(
-        key: _logoKey,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            GestureDetector(
-              onTap: widget.onLogoTap,
-              behavior: HitTestBehavior.opaque,
-              child: TsLogo(
-                type: TsLogoType.horizon,
-                height: widget.logoHeight,
-                color: brightness == Brightness.dark
-                    ? TsLogoColor.white
-                    : TsLogoColor.black,
-              ),
+      height: logoHeight,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          GestureDetector(
+            onTap: onLogoTap,
+            behavior: HitTestBehavior.opaque,
+            child: TsLogo(
+              type: TsLogoType.horizon,
+              height: logoHeight,
+              color: brightness == Brightness.dark
+                  ? TsLogoColor.white
+                  : TsLogoColor.black,
             ),
-            if (!widget.auth.isLoggedIn)
-              TsButton(
-                label: context.l10n.loginAppBarTitle,
-                variant: TsButtonVariant.primary,
-                size: TsButtonSize.small,
-                onPressed: () => context.push('/login'),
-              )
-            else if (widget.showProfileWhenLoggedIn)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TsBadge(
-                    type: TsShellAppBarContent.badgeForPlan(widget.auth.planType),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () => context.go('/menu'),
-                    child: SvgPicture.asset(
-                      TsAssets.iconAccountCircle,
-                      width: 24,
-                      height: 24,
-                      colorFilter: ColorFilter.mode(
-                        semantic.textPrimary,
-                        BlendMode.srcIn,
-                      ),
+          ),
+          if (!auth.isLoggedIn)
+            TsButton(
+              label: context.l10n.loginAppBarTitle,
+              variant: TsButtonVariant.primary,
+              size: TsButtonSize.small,
+              onPressed: () => context.push('/login'),
+            )
+          else if (showProfileWhenLoggedIn)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TsBadge(type: badgeForPlan(auth.planType)),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => context.go('/menu'),
+                  child: SvgPicture.asset(
+                    TsAssets.iconAccountCircle,
+                    width: 24,
+                    height: 24,
+                    colorFilter: ColorFilter.mode(
+                      semantic.textPrimary,
+                      BlendMode.srcIn,
                     ),
                   ),
-                ],
-              ),
-          ],
-        ),
+                ),
+              ],
+            ),
+        ],
       ),
     );
   }

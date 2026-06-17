@@ -1116,6 +1116,14 @@ class _FixturePageState extends ConsumerState<FixturePage>
               semantic: semantic,
               liveMap: liveMap,
             ),
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              fillOverscroll: false,
+              child: SizedBox.shrink(),
+            ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 56),
+            ),
             const SliverPadding(
               padding: EdgeInsets.only(bottom: 16),
             ),
