@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,8 +21,7 @@ class BaseballComboService {
 
   String _apiLanguage() {
     final lang = getApiLanguage(_prefs);
-    debugPrint('[BASEBALL] API language: $lang');
-    return lang;
+        return lang;
   }
 
   Future<Map<String, dynamic>> getTodayComboStats() async {
@@ -42,22 +40,15 @@ class BaseballComboService {
         },
       );
       final data = _adaptToMap(response.data);
-      debugPrint('[BASEBALL] Combo picks response keys: ${data.keys.toList()}');
-
+      
       final firstItem = _firstComboItem(data);
       if (firstItem != null) {
-        debugPrint(
-          '[BASEBALL] Combo picks for today: first item keys: '
-          '${firstItem.keys.toList()}',
-        );
-      } else {
-        debugPrint('[BASEBALL] Combo picks for today: no combo items found');
-      }
+              } else {
+              }
 
       return data;
     } catch (e) {
-      debugPrint('[BASEBALL] Combo picks for $date failed: $e');
-      return const {};
+            return const {};
     }
   }
 

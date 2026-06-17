@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -103,11 +102,7 @@ class _ProfileTrialInfo {
             : null);
     final active = map['active'] == true;
 
-    debugPrint(
-      '[AUTH] Trial parse: active=$active, endsAt=$endsAt, '
-      'expiresAt field=${map['expiresAt']}',
-    );
-
+    
     return _ProfileTrialInfo(endsAt: endsAt, active: active);
   }
 }
@@ -140,14 +135,9 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
   bool get isTrial => _state.isTrial;
 
-  bool get hasFullAccess {
-    final result = _state.planType == PlanType.premium ||
-        _state.planType == PlanType.trial;
-    debugPrint(
-      '[AUTH] hasFullAccess: planType=${_state.planType}, result=$result',
-    );
-    return result;
-  }
+  bool get hasFullAccess =>
+      _state.planType == PlanType.premium ||
+      _state.planType == PlanType.trial;
 
   PlanType get planType => _state.planType;
 
@@ -225,11 +215,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
       planType = PlanType.free;
     }
 
-    debugPrint(
-      '[AUTH] Tier mapping: apiTier=$tier, hasSubscription=$hasActiveSubscription, '
-      'isTrialActive=$isTrialActive → planType=$planType',
-    );
-    return planType;
+        return planType;
   }
 
   PlanType _resolvePlanType({
@@ -292,8 +278,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
     if (email.isEmpty) return;
     final prefs = _ref.read(sharedPreferencesProvider);
     await prefs.setString(_userEmailKey, email);
-    debugPrint('[AUTH] Persisted user_email to SharedPreferences');
-  }
+      }
 
   Future<void> _persistNaverAuthSession(String jwt) async {
     final prefs = _ref.read(sharedPreferencesProvider);
@@ -318,10 +303,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
         final errorCode = errorMap['code'] ?? '';
         final daysLeft = errorMap['daysLeft'];
 
-        debugPrint(
-          '[AUTH] $logLabel login blocked: code=$errorCode, daysLeft=$daysLeft',
-        );
-
+        
         if (errorCode == 'COOLDOWN_ACTIVE') {
           final days = daysLeft is num ? daysLeft.toInt() : 7;
           throw Exception('COOLDOWN_ACTIVE:$days');
@@ -337,8 +319,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
       throw Exception('EMAIL_REQUIRED');
     }
 
-    debugPrint('[AUTH] $logLabel login DioException: ${e.message}');
-    throw Exception(
+        throw Exception(
       logLabel == 'Google' ? 'LOGIN_FAILED' : 'NAVER_LOGIN_FAILED',
     );
   }
@@ -394,18 +375,10 @@ class SupabaseAuthProvider extends ChangeNotifier {
     final email = user['email'] as String? ?? '';
     final name = user['name'] as String? ?? '';
 
-    debugPrint(
-      '[AUTH] _applyMeUserJson: email=$email, name=$name, '
-      'tier=${user['tier']}',
-    );
-
+    
     _subscription = SubscriptionInfo.fromJson(user['subscription']);
     _trial = _ProfileTrialInfo.fromJson(user['trial']);
-    debugPrint(
-      '[AUTH] loadProfile: tier=${user['tier']}, '
-      'trial=${user['trial']}, subscription=${user['subscription']}',
-    );
-
+    
     final profileJson = Map<String, dynamic>.from(user)
       ..['email'] = email
       ..['name'] = name;
@@ -438,10 +411,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
         trialExpiresAt: trialEnds,
         clearPremiumExpiresAt: true,
       );
-      debugPrint(
-        '[AUTH] Post-signup tier from agreeTerms: trial until $trialEnds',
-      );
-    } else {
+          } else {
       _trial = null;
       _subscription = null;
       userProfile = UserProfile(
@@ -462,14 +432,12 @@ class SupabaseAuthProvider extends ChangeNotifier {
         clearTrialExpiresAt: true,
         clearPremiumExpiresAt: true,
       );
-      debugPrint('[AUTH] Post-signup tier from agreeTerms: free');
-    }
+          }
     notifyListeners();
   }
 
   void _schedulePostSignupProfileRefresh(String? jwt) {
-    debugPrint('[AUTH] Post-signup loadProfile delayed 1s (background)');
-    unawaited(_refreshProfileAfterSignup(jwt));
+        unawaited(_refreshProfileAfterSignup(jwt));
   }
 
   Future<void> _refreshProfileAfterSignup(String? jwt) async {
@@ -477,8 +445,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
     try {
       await loadProfile(jwt: jwt);
     } catch (e) {
-      debugPrint('[Auth] Post-signup loadProfile failed (non-critical): $e');
-    }
+          }
   }
 
   void _syncStateFromUserProfile(UserProfile profile) {
@@ -598,13 +565,9 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
   Future<void> loadProfile({String? jwt}) async {
     const url = _meUrl;
-    debugPrint('[AUTH] loadProfile URL: $url');
-    try {
+        try {
       final headers = await _buildMeRequestHeaders(jwt: jwt);
-      debugPrint(
-        '[AUTH] loadProfile: auth header present=${headers.containsKey('Authorization')}',
-      );
-
+      
       final dio = Dio();
       final response = await dio.get<dynamic>(
         url,
@@ -612,35 +575,11 @@ class SupabaseAuthProvider extends ChangeNotifier {
       );
       final raw = response.data;
 
-      debugPrint('[AUTH] loadProfile: raw response type=${raw.runtimeType}');
-      final rawString = raw.toString();
-      debugPrint(
-        '[AUTH] loadProfile: raw response=${rawString.substring(0, math.min(500, rawString.length))}',
-      );
-
       Map<String, dynamic>? responseData;
       if (raw is Map<String, dynamic>) {
         responseData = raw;
       } else if (raw is Map) {
         responseData = Map<String, dynamic>.from(raw);
-      }
-
-      debugPrint(
-        '[AUTH] loadProfile: has data key=${responseData?.containsKey('data')}, '
-        'has user key=${responseData?.containsKey('user')}',
-      );
-      debugPrint('[AUTH] loadProfile: data content=${responseData?['data']}');
-      debugPrint('[AUTH] loadProfile: data type=${responseData?['data']?.runtimeType}');
-      debugPrint(
-        '[AUTH] loadProfile: data keys=${responseData?['data'] is Map ? (responseData!['data'] as Map).keys : 'not a map'}',
-      );
-
-      if (responseData?['data'] is Map) {
-        final data = responseData!['data'] is Map<String, dynamic>
-            ? responseData['data'] as Map<String, dynamic>
-            : Map<String, dynamic>.from(responseData['data'] as Map);
-        debugPrint('[AUTH] loadProfile: data keys=${data.keys}');
-        debugPrint('[AUTH] loadProfile: data.user type=${data['user']?.runtimeType}');
       }
 
       if (responseData != null &&
@@ -650,8 +589,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
         if (error is Map<String, dynamic>) {
           final apiError = ApiError.fromJson(error);
           if (apiError.code == 'CONSENT_REQUIRED') {
-            debugPrint('[AUTH] loadProfile: CONSENT_REQUIRED');
-            _markConsentRequired();
+                        _markConsentRequired();
             return;
           }
           throw ApiException.fromApiError(apiError);
@@ -664,52 +602,33 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
       final user = _extractMeUser(responseData);
       if (user == null) {
-        debugPrint(
-          '[AUTH] loadProfile: could not find user in response. '
-          'Keys: ${responseData != null ? responseData.keys : 'not a map'}',
-        );
-        return;
+                return;
       }
 
-      debugPrint(
-        '[AUTH] loadProfile: user found, tier=${user['tier']}, email=${user['email']}',
-      );
-      debugPrint(
-        '[AUTH] Tier mapping: apiTier=${user['tier']}, '
-        'subscription=${user['subscription']}, trial=${user['trial']}',
-      );
-
+            
       _applyMeUserJson(user);
       try {
         await FCMService().registerDevice();
         await FCMService().migrateToUser();
         await Future<void>.delayed(const Duration(milliseconds: 500));
       } catch (e) {
-        debugPrint('[Auth] FCM post-login failed: $e');
-      }
+              }
     } on ApiException catch (e) {
       if (e.code == 'CONSENT_REQUIRED') {
-        debugPrint('[AUTH] loadProfile: CONSENT_REQUIRED');
-        _markConsentRequired();
+                _markConsentRequired();
         return;
       }
-      debugPrint('[Auth] loadProfile warning: $e');
-    } on DioException catch (e) {
+          } on DioException catch (e) {
       final statusCode = e.response?.statusCode;
       if (statusCode == 401) {
-        debugPrint('[AUTH] loadProfile: 401 token expired, signing out');
-        await signOut();
+                await signOut();
         return;
       }
       if (statusCode == 409 || _responseIndicatesConsentRequired(e.response?.data)) {
-        debugPrint('[AUTH] loadProfile: CONSENT_REQUIRED (409)');
-        _markConsentRequired();
+                _markConsentRequired();
         return;
       }
-      debugPrint('[Auth] loadProfile network warning: $e');
-    } catch (e) {
-      debugPrint('[Auth] loadProfile warning: $e');
-    }
+          }
   }
 
   Future<void> signOut() async {
@@ -728,10 +647,8 @@ class SupabaseAuthProvider extends ChangeNotifier {
         } else if (data is Map) {
           csrfToken = data['csrfToken']?.toString();
         }
-        debugPrint('[AUTH] CSRF token obtained');
-      } catch (e) {
-        debugPrint('[AUTH] CSRF fetch failed (non-critical): $e');
-      }
+              } catch (e) {
+              }
 
       if (csrfToken != null) {
         try {
@@ -739,17 +656,13 @@ class SupabaseAuthProvider extends ChangeNotifier {
             'https://www.trendsoccer.com/api/auth/signout',
             data: {'csrfToken': csrfToken},
           );
-          debugPrint('[AUTH] Backend signout success');
-        } catch (e) {
-          debugPrint('[AUTH] Backend signout failed (non-critical): $e');
-        }
+                  } catch (e) {
+                  }
       }
 
       await _clearLocalAuth(loginMethod);
-      debugPrint('[AUTH] Logout complete: state reset to guest');
-    } catch (e) {
-      debugPrint('[AUTH] Logout error: $e');
-      _resetToGuest();
+          } catch (e) {
+            _resetToGuest();
     }
   }
 
@@ -781,32 +694,22 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
   Future<void> loginWithGoogle() async {
     try {
-      debugPrint('[AUTH] Step 1: Starting Google Sign-In');
-      final googleSignIn = GoogleSignIn(
+            final googleSignIn = GoogleSignIn(
         serverClientId: AppConfig.googleWebClientId,
       );
       final account = await googleSignIn.signIn();
       if (account == null) return;
 
-      debugPrint('[AUTH] Step 2: Got account: ${account.email}');
-      final authentication = await account.authentication;
-      final idToken = authentication.idToken;
+            final authentication = await account.authentication;
       final accessToken = authentication.accessToken;
-      debugPrint(
-        '[AUTH] Step 3: idToken=${idToken != null}, accessToken=${accessToken != null}, accessToken length: ${accessToken?.length}',
-      );
-      if (accessToken == null) {
+            if (accessToken == null) {
         throw Exception('Google sign-in failed: accessToken is null');
       }
 
-      debugPrint('[AUTH] Step 4: Calling /api/v1/mobile/auth/google');
-      try {
+            try {
         final response =
             await _ref.read(authServiceProvider).googleAuth(accessToken);
-        debugPrint(
-          '[AUTH] Step 5: Login response received, isNewUser=${response.user.isNewUser}',
-        );
-        await _applyLoginResponse(response, LoginMethod.google);
+                await _applyLoginResponse(response, LoginMethod.google);
         final session = Supabase.instance.client.auth.currentSession;
         await loadProfile(
           jwt: session?.accessToken ?? response.session.accessToken,
@@ -817,32 +720,24 @@ class SupabaseAuthProvider extends ChangeNotifier {
         _handleMobileAuthDioException(e, logLabel: 'Google');
       }
     } catch (e) {
-      debugPrint('[AUTH] ERROR: ${e.runtimeType}: $e');
-      if (e is ApiException) {
-        debugPrint('[AUTH] API Error code: ${e.code}, message: ${e.message}');
-      }
+            if (e is ApiException) {
+              }
       if (e is DioException) {
-        debugPrint(
-          '[AUTH] Dio Error: ${e.type}, statusCode: ${e.response?.statusCode}, data: ${e.response?.data}',
-        );
-      }
+              }
       rethrow;
     }
   }
 
   Future<Map<String, dynamic>> loginWithNaver() async {
     try {
-      debugPrint('[AUTH] Naver login: calling FlutterNaverLogin.logIn()');
-      final result = await FlutterNaverLogin.logIn();
+            final result = await FlutterNaverLogin.logIn();
 
       if (result.status == NaverLoginStatus.loggedOut) {
-        debugPrint('[AUTH] Naver login cancelled by user');
-        return {'cancelled': true};
+                return {'cancelled': true};
       }
 
       if (result.status == NaverLoginStatus.error) {
-        debugPrint('[AUTH] Naver SDK error: ${result.errorMessage}');
-        throw Exception('Naver login failed: ${result.errorMessage}');
+                throw Exception('Naver login failed: ${result.errorMessage}');
       }
 
       final loginToken = result.accessToken;
@@ -854,24 +749,14 @@ class SupabaseAuthProvider extends ChangeNotifier {
         naverAccessToken = tokenResult.accessToken;
       }
 
-      final previewLength =
-          math.min(10, naverAccessToken.length);
-      debugPrint(
-        '[AUTH] Naver accessToken obtained: ${naverAccessToken.substring(0, previewLength)}...',
-      );
-
       if (naverAccessToken.isEmpty) {
         throw Exception('Naver access token is empty');
       }
 
-      debugPrint('[AUTH] Posting to /api/v1/mobile/auth/naver');
-      try {
+            try {
         final response =
             await _ref.read(authServiceProvider).naverAuth(naverAccessToken);
-        debugPrint(
-          '[AUTH] Backend response: isNewUser=${response.user.isNewUser}, tier=${response.user.tier}',
-        );
-
+        
         final jwt = response.session.accessToken;
         await _persistNaverAuthSession(jwt);
         await _applyLoginResponse(response, LoginMethod.naver);
@@ -888,10 +773,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
           unawaited(_persistUserEmail(email));
           notifyListeners();
         }
-        debugPrint(
-          '[AUTH] Naver login success: email=$email, tier=${user.tier}, isNewUser=${user.isNewUser}',
-        );
-
+        
         return {
           'isNewUser': user.isNewUser,
           'requiresConsent': needsConsent,
@@ -903,8 +785,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
         _handleMobileAuthDioException(e, logLabel: 'Naver');
       }
     } catch (e) {
-      debugPrint('[AUTH] Naver login error: $e');
-      if (e.toString().contains('cancelled')) {
+            if (e.toString().contains('cancelled')) {
         return {'cancelled': true};
       }
       rethrow;
@@ -942,15 +823,12 @@ class SupabaseAuthProvider extends ChangeNotifier {
       _schedulePostSignupProfileRefresh(currentJwt);
 
       return true;
-    } on ApiException catch (e) {
-      debugPrint('[Auth] agreeTerms failed: $e');
-      return false;
-    } on DioException catch (e) {
-      debugPrint('[Auth] agreeTerms network error: $e');
-      return false;
+    } on ApiException {
+            return false;
+    } on DioException {
+            return false;
     } catch (e) {
-      debugPrint('[Auth] agreeTerms failed: $e');
-      return false;
+            return false;
     }
   }
 
@@ -972,8 +850,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
     final loginMethod = _state.loginMethod;
 
     try {
-      debugPrint('[AUTH] Deleting account: $email');
-
+      
       final dio = _ref.read(apiClientProvider);
       final response = await dio.post<dynamic>(
         '/api/user/delete',
@@ -986,18 +863,15 @@ class SupabaseAuthProvider extends ChangeNotifier {
         throw Exception('DELETE_ACCOUNT_FAILED');
       }
 
-      debugPrint('[AUTH] Delete account response: $raw');
-
+      
       if (raw['success'] == true) {
         await _clearLocalAuth(loginMethod);
-        debugPrint('[AUTH] Account deleted successfully');
-        return;
+                return;
       }
 
       if (raw['code'] == 'COOLDOWN_ACTIVE') {
         final daysLeft = raw['daysLeft'] ?? 7;
-        debugPrint('[AUTH] Delete account cooldown: $daysLeft days left');
-        throw Exception('COOLDOWN_ACTIVE:$daysLeft');
+                throw Exception('COOLDOWN_ACTIVE:$daysLeft');
       }
 
       throw Exception('DELETE_ACCOUNT_FAILED');
@@ -1014,18 +888,15 @@ class SupabaseAuthProvider extends ChangeNotifier {
       if (statusCode == 403 ||
           dataMap?['code'] == 'COOLDOWN_ACTIVE') {
         final daysLeft = dataMap?['daysLeft'] ?? 7;
-        debugPrint('[AUTH] Delete account cooldown: $daysLeft days left');
-        throw Exception('COOLDOWN_ACTIVE:$daysLeft');
+                throw Exception('COOLDOWN_ACTIVE:$daysLeft');
       }
       if (statusCode == 404) {
         throw Exception('USER_NOT_FOUND');
       }
 
-      debugPrint('[AUTH] Delete account error: ${e.message}');
-      throw Exception('DELETE_ACCOUNT_FAILED');
+            throw Exception('DELETE_ACCOUNT_FAILED');
     } catch (e) {
-      debugPrint('[AUTH] Delete account error: $e');
-      rethrow;
+            rethrow;
     }
   }
 }

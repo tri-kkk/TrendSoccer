@@ -13,6 +13,7 @@ import 'package:trendsoccer/core/constants/alarm_preference_keys.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
+import 'package:trendsoccer/core/services/admob_service.dart';
 import 'package:trendsoccer/core/services/fixture_service.dart';
 import 'package:trendsoccer/core/services/notification_service.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -23,6 +24,7 @@ import 'package:trendsoccer/features/fixture/fixture_baseball_content.dart';
 import 'package:trendsoccer/features/fixture/fixture_league_filters.dart';
 import 'package:trendsoccer/features/fixture/fixture_soccer_content.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
+import 'package:trendsoccer/shared/widgets/ads/premium_ad_wrapper.dart';
 import 'package:trendsoccer/shared/widgets/appbar/ts_shell_app_bar_content.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
@@ -225,25 +227,19 @@ class _FixturePageState extends ConsumerState<FixturePage>
     if (!mounted) return;
 
     if (liveData.isEmpty) {
-      debugPrint('[FIXTURE] Soccer live: empty response, retrying in 3s');
-      await Future.delayed(const Duration(seconds: 3));
+            await Future.delayed(const Duration(seconds: 3));
       if (!mounted) return;
       final retryData = await service.getLiveMatches();
       if (!mounted) return;
       if (retryData.isNotEmpty) {
-        debugPrint('[FIXTURE] Soccer live retry: ${retryData.length} matches');
-        liveData = retryData;
+                liveData = retryData;
       } else {
-        debugPrint('[FIXTURE] Soccer live retry: still empty');
-      }
+              }
     }
 
     final effective = _effectiveSoccerLiveMap(liveData);
     if (liveData.isEmpty && effective.isNotEmpty) {
-      debugPrint(
-        '[FIXTURE] Soccer live: empty poll, using ${effective.length} cached states',
-      );
-    }
+          }
 
     ref.read(liveMatchesProvider.notifier).state = effective;
 
@@ -341,8 +337,6 @@ class _FixturePageState extends ConsumerState<FixturePage>
       if (!background) {
         _preloadAdjacentBaseballDates(date);
       }
-    } catch (e) {
-      debugPrint('[FIXTURE] Baseball date load failed ($date): $e');
     } finally {
       _baseballDateLoading.remove(date);
       if (!background && mounted) {
@@ -356,53 +350,27 @@ class _FixturePageState extends ConsumerState<FixturePage>
     if (ref.read(fixtureSelectedSportProvider) != 'baseball') return;
 
     final selectedDate = ref.read(fixtureSelectedDateProvider);
-    debugPrint(
-      '[FIXTURE] Baseball poll fetch: date=$selectedDate, '
-      'timezone=${DateTime.now().timeZoneName}, '
-      'utcOffset=${DateTime.now().timeZoneOffset}',
-    );
-    try {
+        try {
       final service = ref.read(fixtureServiceProvider);
       final dateMatches = await service
           .getBaseballFixtures(date: selectedDate)
           .timeout(const Duration(seconds: 10));
       if (!mounted) return;
 
-      debugPrint(
-        '[FIXTURE] Baseball poll result: ${dateMatches.length} matches, '
-        'statuses=${dateMatches.map((m) => m.status).toSet().toList()}',
-      );
-      if (dateMatches.isNotEmpty) {
-        final match = dateMatches.first;
-        debugPrint(
-          '[FIXTURE] Poll match logo: '
-          'home=${match.homeTeamLogo != null && match.homeTeamLogo!.isNotEmpty}, '
-          'away=${match.awayTeamLogo != null && match.awayTeamLogo!.isNotEmpty}',
-        );
-      }
-
       final polled = ref.read(baseballPolledFixturesProvider);
       final List<FixtureMatch> base =
           polled ?? ref.read(baseballLazyFixturesProvider);
       if (base.isEmpty) {
-        debugPrint(
-          '[FIXTURE] Baseball poll: skipped merge (initial load not ready)',
-        );
-        return;
+                return;
       }
 
       final merged =
           mergeBaseballTodayFixtures(base, dateMatches, selectedDate);
       _baseballDateCache[selectedDate] = dateMatches;
       _publishBaseballCache();
-      debugPrint(
-        '[FIXTURE] Merge: before=${base.where((m) => m.status == 'scheduled').length} NS, '
-        'after=${merged.where((m) => m.status == 'scheduled').length} NS',
-      );
-      ref.read(baseballPolledFixturesProvider.notifier).state = merged;
+            ref.read(baseballPolledFixturesProvider.notifier).state = merged;
     } catch (e) {
-      debugPrint('[FIXTURE] Baseball poll error: $e');
-    }
+          }
   }
 
   bool _shouldPollBaseball() {
@@ -415,18 +383,12 @@ class _FixturePageState extends ConsumerState<FixturePage>
     _stopLivePolling();
 
     final sport = ref.read(fixtureSelectedSportProvider);
-    final isToday =
-        fixtureIsTodayDate(ref.read(fixtureSelectedDateProvider));
     if (sport == 'soccer') {
       unawaited(_fetchLiveNow());
       _livePollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
         unawaited(_fetchLiveNow());
       });
-      debugPrint(
-        '[FIXTURE] startPolling: sport=soccer, isToday=$isToday, '
-        'timerActive=${_livePollingTimer?.isActive}',
-      );
-      return;
+            return;
     }
 
     if (_shouldPollBaseball()) {
@@ -434,16 +396,8 @@ class _FixturePageState extends ConsumerState<FixturePage>
       _livePollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
         unawaited(_fetchBaseballNow());
       });
-      debugPrint(
-        '[FIXTURE] startPolling: sport=baseball, isToday=$isToday, '
-        'timerActive=${_livePollingTimer?.isActive}',
-      );
-    } else {
-      debugPrint(
-        '[FIXTURE] startPolling: sport=baseball, isToday=$isToday, '
-        'timerActive=false',
-      );
-    }
+          } else {
+          }
   }
 
   void _stopLivePolling() {
@@ -713,22 +667,17 @@ class _FixturePageState extends ConsumerState<FixturePage>
           false,
           disabledEvents,
         );
-        debugPrint('[ALARM] Save response: matchId=$matchId, success=true');
-        if (!ok && mounted) {
+                if (!ok && mounted) {
           setState(() => _alarmEnabledMatchIds.add(id));
           TsToast.error(context, context.l10n.errorUnauthorized);
         }
       } catch (e) {
-        debugPrint('[ALARM] Save FAILED: matchId=$matchId, error=$e');
-      }
+              }
       return;
     }
 
     final events = AlarmPreferenceKeys.globalEvents(prefs, sport);
-    debugPrint(
-      '[ALARM] Bell ON: matchId=$matchId, sport=$sport, events=$events',
-    );
-    setState(() => _alarmEnabledMatchIds.add(id));
+        setState(() => _alarmEnabledMatchIds.add(id));
     try {
       final ok = await service.saveMatchAlarmSettings(
         matchId,
@@ -736,14 +685,12 @@ class _FixturePageState extends ConsumerState<FixturePage>
         true,
         events,
       );
-      debugPrint('[ALARM] Save response: matchId=$matchId, success=true');
-      if (!ok && mounted) {
+            if (!ok && mounted) {
         setState(() => _alarmEnabledMatchIds.remove(id));
         TsToast.error(context, context.l10n.errorUnauthorized);
       }
     } catch (e) {
-      debugPrint('[ALARM] Save FAILED: matchId=$matchId, error=$e');
-    }
+          }
   }
 
   FixtureMatchStatus _toFixtureStatus(
@@ -1161,6 +1108,11 @@ class _FixturePageState extends ConsumerState<FixturePage>
               l10n: l10n,
               semantic: semantic,
               liveMap: liveMap,
+            ),
+            SliverToBoxAdapter(
+              child: PremiumAdWrapper(
+                adUnitId: AdmobService.fixtureBannerAdUnitId,
+              ),
             ),
             const SliverFillRemaining(
               hasScrollBody: false,

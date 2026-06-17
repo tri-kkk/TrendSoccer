@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 
 class BlogPostListItem {
   const BlogPostListItem({
@@ -46,12 +45,6 @@ class BlogParser {
     required String locale,
   }) {
     final raw = _extractPosts(response);
-    if (raw.isNotEmpty) {
-      final first = raw.first;
-      debugPrint(
-        '[BLOG] First item: title=${first['title']}, title_kr=${first['title_kr']}',
-      );
-    }
     return raw
         .map((post) => _parseListItem(post, locale: locale))
         .where((item) => item.slug.isNotEmpty)

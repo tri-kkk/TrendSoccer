@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,14 +21,6 @@ class FixtureService {
         'daysBack': '3',
         'daysAhead': '4',
       };
-      final requestUri = Uri(
-        path: path,
-        queryParameters: queryParameters,
-      );
-      debugPrint(
-        '[FIXTURE] Soccer fixture API URL: '
-        '${_dio.options.baseUrl}$requestUri',
-      );
 
       final response = await _dio.get<dynamic>(
         path,
@@ -46,10 +37,7 @@ class FixtureService {
       for (final m in matches) {
         if (m.status != 'scheduled' && m.status != 'finished') {
           if (nonStandardStatusLogs >= 5) break;
-          debugPrint(
-            '[FIXTURE] Non-standard status: matchId=${m.matchId} ${m.homeTeam} vs ${m.awayTeam} rawStatus="${m.rawStatus}" normalizedStatus="${m.status}"',
-          );
-          nonStandardStatusLogs++;
+                    nonStandardStatusLogs++;
         }
       }
 
@@ -59,30 +47,12 @@ class FixtureService {
             (match.awayTeamKo?.isNotEmpty ?? false),
       );
       if (matches.isNotEmpty && !hasKoTeamNames) {
-        debugPrint(
-          '[FIXTURE] Soccer has no KO team names — API field needed',
-        );
+        // Korean team names missing from API response.
       }
 
-      debugPrint('[FIXTURE] Soccer fixtures loaded: ${matches.length} matches');
-      final dates = matches
-          .map((match) {
-            final local = match.matchTimestamp.toLocal();
-            final month = local.month.toString().padLeft(2, '0');
-            final day = local.day.toString().padLeft(2, '0');
-            return '${local.year}-$month-$day';
-          })
-          .toSet()
-          .toList()
-        ..sort();
-      debugPrint('[FIXTURE] Date range: $dates');
-      debugPrint(
-        '[FIXTURE] Leagues found: ${matches.map((m) => m.leagueCode.isNotEmpty ? m.leagueCode : m.leagueName).toSet().toList()}',
-      );
       return matches;
     } catch (e) {
-      debugPrint('[FIXTURE] Soccer fixtures failed: $e');
-      return const [];
+            return const [];
     }
   }
 
@@ -93,8 +63,7 @@ class FixtureService {
       7,
       (index) => todayDay.add(Duration(days: index - 2)),
     );
-    debugPrint('[FIXTURE] Baseball date range: dates=${dates.toList()}');
-
+    
     final results = await Future.wait(
       dates.map(
         (date) => getBaseballFixtures(
@@ -104,18 +73,10 @@ class FixtureService {
       ),
     );
 
-    for (var i = 0; i < dates.length; i++) {
-      final date = _formatApiDate(dates[i]);
-      debugPrint('[FIXTURE] Baseball date $date: ${results[i].length} matches');
-    }
-
     final merged = results.expand((matches) => matches).toList()
       ..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
 
-    debugPrint(
-      '[FIXTURE] Baseball fixtures range: ${merged.length} matches from 7 dates',
-    );
-    return merged;
+        return merged;
   }
 
   String _formatApiDate(DateTime date) {
@@ -159,61 +120,27 @@ class FixtureService {
     bool includeAllStatuses = true,
   }) async {
     try {
-      debugPrint(
-        '[FIXTURE] Baseball call: date=$date, '
-        'includeAllStatuses=$includeAllStatuses',
-      );
-
+      
       const path = '/api/baseball/matches';
       final queryParams = _baseballQueryParametersForDate(
         date,
         includeAllStatuses: includeAllStatuses,
       );
-      debugPrint(
-        '[FIXTURE] Baseball API call: '
-        '${_dio.options.baseUrl}$path?${Uri(queryParameters: queryParams).query}',
-      );
-
+      
       final response = await _dio.get<dynamic>(
         path,
         queryParameters: queryParams,
       );
 
-      final responseData = response.data;
-      final dataLength = responseData is List
-          ? responseData.length
-          : (responseData is Map
-              ? (responseData['data']?.length ??
-                  responseData['matches']?.length ??
-                  'unknown')
-              : 'unknown');
-      debugPrint(
-        '[FIXTURE] Baseball API response for $date: '
-        'status=${response.statusCode}, dataLength=$dataLength',
-      );
-
       // Temporary: check for postponed matches
-      final rawData = response.data;
-      final rawList = rawData is List
-          ? rawData
-          : (rawData is Map ? rawData['data'] : null) ?? [];
-      if (rawList is List) {
-        debugPrint(
-          '[FIXTURE] Baseball API: ${rawList.length} matches, '
-          'statuses=${rawList.map((m) => m is Map ? m['status'] : null).toSet().toList()}',
-        );
-      }
-
       final matches = _parseFixtures(
         response.data,
         sport: 'baseball',
         label: 'Baseball fixtures for $date',
       );
-      debugPrint('[FIXTURE] Baseball fixtures for $date: ${matches.length} matches');
-      return matches;
+            return matches;
     } catch (e) {
-      debugPrint('[FIXTURE] Baseball fixtures for $date failed: $e');
-      return const [];
+            return const [];
     }
   }
 
@@ -231,11 +158,9 @@ class FixtureService {
           result[id] = LiveMatchData.fromJson(map);
         }
       }
-      debugPrint('[FIXTURE] Live matches: ${result.length} active');
-      return result;
+            return result;
     } catch (e) {
-      debugPrint('[FIXTURE] Live matches error: $e');
-      return {};
+            return {};
     }
   }
 
@@ -292,9 +217,7 @@ class FixtureService {
 
   void _logFirstItemKeys(List<Map<String, dynamic>> items, String label) {
     if (items.isEmpty) {
-      debugPrint('[FIXTURE] $label: no items in response');
-      return;
+            return;
     }
-    debugPrint('[FIXTURE] $label first item keys: ${items.first.keys.toList()}');
-  }
+      }
 }

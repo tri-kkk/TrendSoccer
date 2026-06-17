@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 
 DateTime? _parseDateTime(Object? value) {
   if (value is String && value.isNotEmpty) {
@@ -273,16 +272,12 @@ class SoccerMatch {
   });
 
   factory SoccerMatch.fromJson(Map<String, dynamic> json) {
-    debugPrint('[SOCCER] SoccerMatch.fromJson keys: ${json.keys.toList()}');
-    final homeValue = json['homeTeam'] ?? json['home_team'] ?? json['home'];
+        final homeValue = json['homeTeam'] ?? json['home_team'] ?? json['home'];
     final awayValue = json['awayTeam'] ?? json['away_team'] ?? json['away'];
     final isFlat = homeValue is String || awayValue is String;
 
     if (isFlat) {
-      debugPrint(
-        '[SOCCER] Field mapping: flat format — home_team/away_team strings, leagueName, commence_time',
-      );
-      final matchId =
+            final matchId =
           _parseInt(json['match_id'] ?? json['matchId'] ?? json['id']) ?? 0;
       final matchTimestamp = _parseDateTime(json['commence_time']) ??
           _parseDateTime(
@@ -375,10 +370,7 @@ class SoccerMatch {
       json,
       const ['league', 'leagueInfo', 'league_info'],
     );
-    debugPrint(
-      '[SOCCER] Field mapping: homeTeam<=homeTeam|home_team|home (found: ${homeJson != null}), awayTeam<=awayTeam|away_team|away (found: ${awayJson != null}), league<=league|leagueInfo|league_info (found: ${leagueJson != null})',
-    );
-    final scoreJson = _readMap(json, const ['score', 'scores', 'result']);
+        final scoreJson = _readMap(json, const ['score', 'scores', 'result']);
 
     final matchId = _parseInt(
           json['matchId'] ?? json['match_id'] ?? json['id'],
@@ -498,11 +490,7 @@ class SoccerAnalysisCard {
   });
 
   factory SoccerAnalysisCard.fromJson(Map<String, dynamic> json) {
-    debugPrint('[SOCCER] fromJson keys: ${json.keys.toList()}');
-    debugPrint(
-      '[SOCCER] Field mapping: match<=match|fixture|game|root; odds<=odds|matchOdds|match_odds|flat home_odds; grade<=grade|pickGrade|pick_grade; prediction<=prediction|analysis|pick|flat predicted_winner',
-    );
-
+        
     final nestedMatchJson = _readMap(json, const ['match', 'fixture', 'game']);
     final matchJson = nestedMatchJson ?? json;
 

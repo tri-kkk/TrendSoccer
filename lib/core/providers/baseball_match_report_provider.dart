@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:trendsoccer/core/services/baseball_service.dart';
@@ -77,8 +76,7 @@ final baseballPitcherAnalysisProvider =
         }
       }
     } catch (e) {
-      debugPrint('[BASEBALL] Failed to get KBO/NPB pitcher stats for analysis: $e');
-    }
+          }
   }
 
   if (league == 'MLB') {
@@ -106,8 +104,7 @@ final baseballPitcherAnalysisProvider =
         );
       }
     } catch (e) {
-      debugPrint('[BASEBALL] Failed to get MLB pitcher stats for analysis: $e');
-    }
+          }
   }
 
   if (league == 'MLB') {
@@ -142,16 +139,9 @@ final baseballPitcherAnalysisProvider =
     };
   }
 
-  debugPrint('[BASEBALL] pitcher-analysis homeStats keys: ${homeStats.keys}');
-  if (league == 'MLB') {
-    debugPrint(
-      '[BASEBALL] pitcher-analysis MLB shape: current=${(homeStats['current'] as Map?)?.keys}, prev=${homeStats['prev'] != null}',
-    );
-  }
-  debugPrint(
-    '[BASEBALL] pitcher-analysis POST: league=$league, homeTeam=$homeTeamForAnalysis, homePitcher=$homePitcherName, statsShape=${league == 'MLB' ? 'current/prev' : 'flat'}',
-  );
-
+    if (league == 'MLB') {
+      }
+  
   return service.getPitcherAnalysis(
     matchId: apiMatchId,
     homeTeam: homeTeamForAnalysis,
@@ -243,10 +233,7 @@ final baseballPredictProvider =
   if (detail.isEmpty) return {};
   final ctx = _baseballMatchContext(detail, matchId);
   final service = ref.read(baseballServiceProvider);
-  debugPrint(
-    '[BASEBALL] predict POST: homeTeam=${ctx.homeTeam}, awayTeam=${ctx.awayTeam}',
-  );
-  return service.getBaseballPredict(
+    return service.getBaseballPredict(
     matchId: ctx.apiMatchId,
     homeTeam: ctx.homeTeam,
     awayTeam: ctx.awayTeam,
@@ -346,11 +333,7 @@ final mlbPitcherStatsProvider =
       response['awayPitcher'] == null && awayPitcherId != null;
 
   if (needsHomeFallback || needsAwayFallback) {
-    debugPrint(
-      '[BASEBALL] MLB pitcher-stats null — falling back to MLB Stats API '
-      '(home=$homePitcherId, away=$awayPitcherId, season=$currentSeason)',
-    );
-    final homeId = homePitcherId;
+        final homeId = homePitcherId;
     final awayId = awayPitcherId;
     final fallbackResults = await Future.wait<Map<String, dynamic>?>([
       needsHomeFallback && homeId != null

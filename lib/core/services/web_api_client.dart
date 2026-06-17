@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:trendsoccer/core/config/app_config.dart';
@@ -20,13 +19,7 @@ void _configureWebApiClient(Dio dio, TokenService tokenService) {
 
   dio.interceptors.addAll([
     _WebAuthInterceptor(tokenService),
-    if (kDebugMode)
-      LogInterceptor(
-        requestBody: true,
-        responseBody: true,
-        error: true,
-      ),
-    _WebErrorLoggingInterceptor(),
+_WebErrorLoggingInterceptor(),
   ]);
 }
 
@@ -62,12 +55,6 @@ class _WebAuthInterceptor extends Interceptor {
 class _WebErrorLoggingInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    if (kDebugMode) {
-      debugPrint(
-        '[WebApiClient] ${err.requestOptions.method} ${err.requestOptions.uri} '
-        'failed: ${err.message}',
-      );
-    }
     handler.next(err);
   }
 }

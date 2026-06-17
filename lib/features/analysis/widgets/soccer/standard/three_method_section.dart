@@ -149,10 +149,7 @@ class ThreeMethodAnalysisSection extends StatelessWidget {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final l10n = context.l10n;
 
-    debugPrint(
-      '[SOCCER] 3-Method data: ${methods.map((m) => 'win=${m.win} draw=${m.draw} lose=${m.lose}').toList()}',
-    );
-
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

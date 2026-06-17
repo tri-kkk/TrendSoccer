@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -123,8 +122,7 @@ final soccerMatchesProvider =
 final analysisSoccerMatchesProvider =
     FutureProvider<List<SoccerAnalysisCard>>((ref) async {
   if (_shouldSkipSoccerAnalysisFetch()) {
-    debugPrint('[SOCCER] Skipping analysis fetch — off-season cache active');
-    return const [];
+        return const [];
   }
 
   final service = ref.read(soccerServiceProvider);
@@ -165,13 +163,9 @@ Future<List<SoccerAnalysisCard>> _fetchAnalysisSoccerMatches(
   }
 
   final allCards = merged.values.toList();
-  debugPrint(
-    '[SOCCER] analysisSoccerMatches: merged ${allCards.length} cards from 7 days',
-  );
-
+  
   final filtered = allCards.where(_isUpcomingMatch).toList();
-  debugPrint('[SOCCER] After finished filter: ${filtered.length} cards');
-
+  
   filtered.sort((a, b) {
     final aTs = a.match.matchTimestamp;
     final bTs = b.match.matchTimestamp;
@@ -224,8 +218,7 @@ final teamLogoMapProvider = Provider<Map<String, String>>((ref) {
         orElse: () {},
       );
 
-  debugPrint('[SOCCER] teamLogoMap built with ${map.length} teams');
-  return map;
+    return map;
 });
 
 const _diacriticMap = {
@@ -481,9 +474,7 @@ String? findTeamLogo(Map<String, String> logoMap, String teamName) {
   if (wordMatch != null) return wordMatch;
 
   if (_loggedMissingTeamLogos.add(teamName)) {
-    debugPrint('[SOCCER] Logo NOT found for: "$teamName"');
-    debugPrint('[SOCCER] Available keys sample: ${logoMap.keys.take(10).toList()}');
-  }
+          }
   return null;
 }
 

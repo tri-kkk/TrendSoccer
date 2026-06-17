@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -22,13 +21,7 @@ void _configureApiClient(Dio dio, TokenService tokenService) {
 
   dio.interceptors.addAll([
     _AuthInterceptor(tokenService),
-    if (kDebugMode)
-      LogInterceptor(
-        requestBody: true,
-        responseBody: true,
-        error: true,
-      ),
-    _ErrorLoggingInterceptor(),
+_ErrorLoggingInterceptor(),
   ]);
 }
 
@@ -80,12 +73,6 @@ class _AuthInterceptor extends Interceptor {
 class _ErrorLoggingInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    if (kDebugMode) {
-      debugPrint(
-        '[ApiClient] ${err.requestOptions.method} ${err.requestOptions.uri} '
-        'failed: ${err.message}',
-      );
-    }
     handler.next(err);
   }
 }

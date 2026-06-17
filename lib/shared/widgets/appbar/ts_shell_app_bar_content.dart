@@ -42,11 +42,7 @@ class TsShellAppBarContent extends StatelessWidget {
   static void logMetricsOnce() {
     if (_metricsLogged) return;
     _metricsLogged = true;
-    debugPrint(
-      '[LOGO] Shell AppBar logo: height=${TsShellAppBarMetrics.logoHeight}, '
-      'padding=${TsShellAppBarMetrics.contentPadding}',
-    );
-  }
+      }
 
   static TsBadgeType badgeForPlan(PlanType planType) {
     return switch (planType) {

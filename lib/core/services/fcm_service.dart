@@ -43,8 +43,7 @@ class FCMService {
 
   /// Initialize FCM: request permission, get token, setup handlers
   Future<void> init() async {
-    debugPrint('[FCM] ===== init() START =====');
-
+    
     final prefs = await SharedPreferences.getInstance();
     final alreadyAsked = prefs.getBool(_prefPermissionAsked) ?? false;
 
@@ -55,10 +54,7 @@ class FCMService {
         sound: true,
       );
       await prefs.setBool(_prefPermissionAsked, true);
-      debugPrint(
-        '[FCM] First-time permission request: ${settings.authorizationStatus}',
-      );
-
+      
       if (!prefs.containsKey(prefAppGeneral)) {
         await _handleFirstPermissionResult(
           prefs,
@@ -67,11 +63,7 @@ class FCMService {
       }
     } else {
       final currentSettings = await _messaging.getNotificationSettings();
-      debugPrint(
-        '[FCM] Permission already asked. Current: '
-        '${currentSettings.authorizationStatus}',
-      );
-
+      
       if (!prefs.containsKey(prefAppGeneral)) {
         await _handleFirstPermissionResult(
           prefs,
@@ -85,15 +77,13 @@ class FCMService {
     }
 
     _fcmToken = await _messaging.getToken();
-    debugPrint('[FCM] Token: $_fcmToken');
-
+    
     if (_fcmToken != null) {
       await registerDevice(_fcmToken);
     }
 
     _messaging.onTokenRefresh.listen((newToken) {
-      debugPrint('[FCM] Token refreshed: $newToken');
-      _fcmToken = newToken;
+            _fcmToken = newToken;
       registerDevice(newToken);
     });
 
@@ -119,16 +109,14 @@ class FCMService {
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
     FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
 
-    debugPrint('[FCM] init complete');
-  }
+      }
 
   /// Handle cold-start notification tap after the router is ready.
   Future<void> handleInitialMessage() async {
     final message = await _messaging.getInitialMessage();
     if (message == null) return;
 
-    debugPrint('[FCM] Initial message: ${message.data}');
-    navigateFromPushData(message.data);
+        navigateFromPushData(message.data);
   }
 
   /// Subscribe all topics and save prefs when permission is first granted (e.g. from menu).
@@ -137,23 +125,20 @@ class FCMService {
     if (prefs.containsKey(prefAppGeneral)) return;
 
     await subscribeAllTopics();
-    debugPrint('[FCM] Permission granted: all topics subscribed');
-  }
+      }
 
   /// Unsubscribe all topics and save prefs as off.
   Future<void> unsubscribeAllTopics() async {
     final prefs = await SharedPreferences.getInstance();
     await _unsubscribeAllTopicVariants();
     await _setAllTopicsOff(prefs);
-    debugPrint('[FCM] All topics unsubscribed');
-  }
+      }
 
   /// Subscribe all topics and save prefs as on.
   Future<void> subscribeAllTopics() async {
     final prefs = await SharedPreferences.getInstance();
     await _subscribeAllTopics(prefs);
-    debugPrint('[FCM] All topics subscribed');
-  }
+      }
 
   /// Toggle a single topic for the current locale.
   Future<void> setTopicEnabled({
@@ -168,12 +153,10 @@ class FCMService {
     if (enabled) {
       await _messaging.subscribeToTopic(topic);
       await prefs.setBool(prefKey, true);
-      debugPrint('[FCM] Subscribed: $topic');
-    } else {
+          } else {
       await _messaging.unsubscribeFromTopic(topic);
       await prefs.setBool(prefKey, false);
-      debugPrint('[FCM] Unsubscribed: $topic');
-    }
+          }
   }
 
   /// Re-subscribe enabled topics when the app language changes.
@@ -201,8 +184,7 @@ class FCMService {
       }
     }
 
-    debugPrint('[FCM] Locale changed: $previousLocale -> $newLocale');
-    if (_fcmToken != null) {
+        if (_fcmToken != null) {
       await registerDevice(_fcmToken);
     }
   }
@@ -228,11 +210,9 @@ class FCMService {
       await _messaging.subscribeToTopic(topicWithLocale(topicAppGeneral, locale));
       await _messaging.subscribeToTopic(topicWithLocale(topicMatchEvents, locale));
       await _messaging.subscribeToTopic(topicWithLocale(topicMarketing, locale));
-      debugPrint('[FCM] First launch: all topics subscribed');
-    } else {
+          } else {
       await _unsubscribeAllTopicVariants();
-      debugPrint('[FCM] First launch: permission denied, all topics off');
-    }
+          }
   }
 
   static bool _isFcmAuthorized(AuthorizationStatus status) {
@@ -249,8 +229,7 @@ class FCMService {
     await prefs.setBool(prefAppGeneral, true);
     await prefs.setBool(prefMatchEvents, true);
     await prefs.setBool(prefMarketing, true);
-    debugPrint('[FCM] Subscribed all topics for locale=$locale');
-  }
+      }
 
   Future<void> _syncEnabledTopicsFromPrefs(SharedPreferences prefs) async {
     final locale = localeFromPrefs(prefs);
@@ -267,11 +246,9 @@ class FCMService {
       final topic = topicWithLocale(baseTopic, locale);
       if (enabled) {
         await _messaging.subscribeToTopic(topic);
-        debugPrint('[FCM] Sync subscribe: $topic');
-      } else {
+              } else {
         await _messaging.unsubscribeFromTopic(topic);
-        debugPrint('[FCM] Sync unsubscribe: $topic');
-      }
+              }
     }
   }
 
@@ -304,8 +281,7 @@ class FCMService {
   Future<void> registerDevice([String? token]) async {
     final fcmToken = token ?? _fcmToken;
     if (fcmToken == null) {
-      debugPrint('[FCM] registerDevice: no token');
-      return;
+            return;
     }
 
     final jwt = await _getJwt();
@@ -315,15 +291,11 @@ class FCMService {
 
     if (jwt != null && jwt.isNotEmpty) {
       headers['Authorization'] = 'Bearer $jwt';
-      debugPrint('[FCM] registerDevice: with JWT (authenticated)');
-    } else {
-      debugPrint('[FCM] registerDevice: anonymous (no JWT)');
     }
 
     try {
       final dio = Dio();
-      debugPrint('[FCM] registerDevice: locale=$locale');
-      final response = await dio.post<dynamic>(
+      await dio.post<dynamic>(
         'https://www.trendsoccer.com/api/v1/mobile/devices',
         data: <String, String>{
           'token': fcmToken,
@@ -333,22 +305,8 @@ class FCMService {
         },
         options: Options(headers: headers),
       );
-      debugPrint(
-        '[FCM] registerDevice response: status=${response.statusCode}, locale=$locale',
-      );
-      var anonymous = false;
-      final data = response.data;
-      if (data is Map) {
-        final inner = data['data'];
-        if (inner is Map) {
-          anonymous = inner['anonymous'] == true;
-        }
-      }
-      debugPrint(
-        '[FCM] registerDevice: ${response.statusCode}, anonymous=$anonymous',
-      );
-    } catch (e) {
-      debugPrint('[FCM] registerDevice error: $e');
+    } on Object {
+      // Device registration is best-effort.
     }
   }
 
@@ -357,13 +315,12 @@ class FCMService {
     final jwt = await _getJwt();
     final fcmToken = _fcmToken;
     if (jwt == null || fcmToken == null) {
-      debugPrint('[FCM] migrate: missing jwt or token');
-      return;
+            return;
     }
 
     try {
       final dio = Dio();
-      final response = await dio.post<dynamic>(
+      await dio.post<dynamic>(
         'https://www.trendsoccer.com/api/v1/mobile/notifications/migrate',
         data: <String, String>{'token': fcmToken},
         options: Options(
@@ -373,9 +330,8 @@ class FCMService {
           },
         ),
       );
-      debugPrint('[FCM] migrate: ${response.data}');
-    } catch (e) {
-      debugPrint('[FCM] migrate error: $e');
+    } on Object {
+      // Migration is best-effort.
     }
   }
 
@@ -383,8 +339,7 @@ class FCMService {
   Future<void> unregisterDevice() async {
     final jwt = await _getJwt();
     if (jwt == null) {
-      debugPrint('[FCM] unregisterDevice: no JWT, skipping');
-      return;
+            return;
     }
 
     try {
@@ -399,10 +354,8 @@ class FCMService {
           },
         ),
       );
-      debugPrint('[FCM] unregisterDevice: success');
-    } catch (e) {
-      debugPrint('[FCM] unregisterDevice error: $e');
-    }
+          } catch (e) {
+          }
   }
 
   Future<Uint8List?> _downloadImage(String url) async {
@@ -421,8 +374,7 @@ class FCMService {
         return Uint8List.fromList(response.data!);
       }
     } catch (e) {
-      debugPrint('[FCM] Logo download failed: $e');
-    }
+          }
     return null;
   }
 
@@ -436,8 +388,7 @@ class FCMService {
       final imageBytes = await _downloadImage(teamLogo);
       if (imageBytes != null) {
         largeIcon = ByteArrayAndroidBitmap(imageBytes);
-        debugPrint('[FCM] largeIcon set for: $teamLogo');
-      }
+              }
     }
 
     return AndroidNotificationDetails(
@@ -452,8 +403,7 @@ class FCMService {
 
   /// Handle foreground message — show local notification
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
-    debugPrint('[FCM] foreground: ${message.notification?.title}');
-    final notification = message.notification;
+        final notification = message.notification;
     if (notification == null) return;
 
     final payload = message.data.isNotEmpty ? jsonEncode(message.data) : null;
@@ -478,35 +428,29 @@ class FCMService {
         navigateFromPushData(Map<String, dynamic>.from(decoded));
       }
     } catch (e) {
-      debugPrint('[FCM] Failed to parse notification payload: $e');
-    }
+          }
   }
 
   /// Handle notification tap (background)
   void _handleMessageOpenedApp(RemoteMessage message) {
-    debugPrint('[FCM] opened: ${message.data}');
-    navigateFromPushData(message.data);
+        navigateFromPushData(message.data);
   }
 
   void navigateFromPushData(Map<String, dynamic> data) {
     final type = data['type']?.toString();
     if (type == 'topic') {
-      debugPrint('[FCM] Deep link: topic notification, no navigation');
-      return;
+            return;
     }
     if (type != 'match_event') {
-      debugPrint('[FCM] Deep link: unknown type=$type');
-      return;
+            return;
     }
 
     final sport = data['sport']?.toString();
     if (sport != 'soccer' && sport != 'baseball') {
-      debugPrint('[FCM] Deep link: incomplete data=$data');
-      return;
+            return;
     }
 
-    debugPrint('[FCM] Deep link: fixture tab, sport=$sport, filter=live');
-    AppRouter.router.go('/fixture?sport=$sport&filter=live');
+        AppRouter.router.go('/fixture?sport=$sport&filter=live');
   }
 
   /// Get JWT from multiple sources
@@ -515,16 +459,14 @@ class FCMService {
       final prefs = await SharedPreferences.getInstance();
       final jwt = prefs.getString('auth_jwt');
       if (jwt != null && jwt.isNotEmpty) {
-        debugPrint('[FCM] JWT found in SharedPreferences');
-        return jwt;
+                return jwt;
       }
     } catch (_) {}
 
     try {
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null && session.accessToken.isNotEmpty) {
-        debugPrint('[FCM] JWT found in Supabase session');
-        return session.accessToken;
+                return session.accessToken;
       }
     } catch (_) {}
 
@@ -532,12 +474,10 @@ class FCMService {
       final tokenService = TokenService();
       final token = await tokenService.getToken();
       if (token != null && token.isNotEmpty) {
-        debugPrint('[FCM] JWT found in TokenService');
-        return token;
+                return token;
       }
     } catch (_) {}
 
-    debugPrint('[FCM] _getJwt: no JWT from any source');
-    return null;
+        return null;
   }
 }

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:trendsoccer/features/analysis/models/parser_labels.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/premium/team_stat_gauge_card.dart';
 import 'package:trendsoccer/shared/widgets/baseball/premium/confidence_chip.dart';
@@ -124,13 +123,11 @@ BaseballAiAnalysisParsed parseBaseballAiAnalysis(
 }) {
   if (!_loggedAiKeys) {
     _loggedAiKeys = true;
-    debugPrint('[BASEBALL] AI analysis keys: ${raw.keys.toList()}');
-  }
+      }
 
   final data = _unwrapAi(raw);
   if (data.isNotEmpty && data != raw) {
-    debugPrint('[BASEBALL] AI analysis data keys: ${data.keys.toList()}');
-  }
+      }
 
   final homeTeam = _readTeamNameEn(data, isHome: true);
   final awayTeam = _readTeamNameEn(data, isHome: false);

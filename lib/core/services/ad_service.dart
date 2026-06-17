@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final adServiceProvider = Provider<AdService>((ref) {
@@ -33,8 +32,7 @@ class AdService {
       }
       return [];
     } catch (e) {
-      debugPrint('[AD] getAds error ($slot): $e');
-      return [];
+            return [];
     }
   }
 
@@ -50,9 +48,7 @@ class AdService {
           'type': type,
         },
       );
-      debugPrint('[AD] track: id=$adId, type=$type');
-    } catch (e) {
-      debugPrint('[AD] track error: $e');
-    }
+          } catch (e) {
+          }
   }
 }

@@ -1,5 +1,4 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:flutter/foundation.dart';
 
 class AnalyticsService {
   static final _analytics = FirebaseAnalytics.instance;
@@ -7,8 +6,7 @@ class AnalyticsService {
   /// Track sign_up event — call after agree-terms API success.
   static Future<void> logSignUp({required String method}) async {
     await _analytics.logSignUp(signUpMethod: method);
-    debugPrint('[ANALYTICS] sign_up: method=$method');
-  }
+      }
 
   /// Track purchase event — call after IAP verify API success.
   static Future<void> logPurchase({
@@ -28,8 +26,5 @@ class AnalyticsService {
         ),
       ],
     );
-    debugPrint(
-      '[ANALYTICS] purchase: plan=$basePlanId, value=${isMonthly ? 4900 : 9900}',
-    );
-  }
+      }
 }

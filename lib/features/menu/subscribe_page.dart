@@ -177,8 +177,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
       return await completer.future.timeout(
         const Duration(minutes: 5),
         onTimeout: () {
-          debugPrint('[IAP] purchase wait timed out');
-          return _IapPurchaseOutcome.fail;
+                    return _IapPurchaseOutcome.fail;
         },
       );
     } finally {
@@ -190,19 +189,13 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     final iap = ref.read(iapServiceProvider);
     final basePlanId = _selectedBasePlanId;
 
-    debugPrint(
-      '[IAP] subscribe page: productId=${IAPService.premium}, '
-      'basePlanId=$basePlanId',
-    );
-
+    
     if (!iap.isAvailable) {
-      debugPrint('[IAP] subscribe page: store not available');
-      return _IapAttemptResult.unavailable;
+            return _IapAttemptResult.unavailable;
     }
 
     if (!iap.hasProduct(IAPService.premium)) {
-      debugPrint('[IAP] subscribe page: product not loaded');
-      return _IapAttemptResult.unavailable;
+            return _IapAttemptResult.unavailable;
     }
 
     if (mounted) {
@@ -215,8 +208,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     final purchaseFuture = _waitForIapPurchaseResult(iap);
     final initiated = await iap.buySubscription(basePlanId);
     if (!initiated) {
-      debugPrint('[IAP] subscribe page: buySubscription failed');
-      if (mounted) {
+            if (mounted) {
         final messenger = ScaffoldMessenger.of(context);
         messenger.clearSnackBars();
         messenger.showSnackBar(

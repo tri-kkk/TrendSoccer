@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:trendsoccer/core/config/app_config.dart';
+import 'package:trendsoccer/core/services/admob_service.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/services/fcm_service.dart';
 import 'package:trendsoccer/core/services/iap_service.dart';
@@ -22,31 +23,22 @@ import 'package:trendsoccer/core/theme/app_theme.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  debugPrint('[FCM] background: ${message.messageId}');
 }
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  debugPrint('[MAIN] app starting');
 
   await dotenv.load(fileName: '.env');
 
   await Firebase.initializeApp();
-  debugPrint('[MAIN] Firebase initialized');
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   try {
-    debugPrint('[MAIN] FCM init starting');
     final fcmService = FCMService();
     await fcmService.init();
-    debugPrint('[MAIN] FCM init complete, token=${fcmService.fcmToken}');
-  } catch (e, stackTrace) {
-    debugPrint('[MAIN] FCM init ERROR: $e');
-    final stack = stackTrace.toString();
-    debugPrint(
-      '[MAIN] FCM stack: ${stack.length > 500 ? stack.substring(0, 500) : stack}',
-    );
+  } on Object {
+    // Non-fatal: app continues without push notifications.
   }
 
   await Supabase.initialize(
@@ -63,10 +55,11 @@ Future<void> main() async {
     },
   );
   // ignore: avoid_print
-  debugPrint('[AUTH] Naver SDK initialized');
-  final prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
   final iapService = IAPService();
   await iapService.init();
+
+  await AdmobService.initialize();
 
   runApp(
     ProviderScope(

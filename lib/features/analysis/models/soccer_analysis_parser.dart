@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
@@ -139,10 +138,7 @@ SoccerStandardAnalysisParsed parseSoccerStandardAnalysis(
     _parseMethodBreakdown(method2, labels.soccerMethodMinMax),
     _parseMethodBreakdown(method3, labels.soccerMethodFirstGoal),
   ];
-  debugPrint(
-    '[SOCCER] 3-Method parsed: ${threeMethods.map((m) => 'win=${m.win} draw=${m.draw} lose=${m.lose}').toList()}',
-  );
-
+  
   return SoccerStandardAnalysisParsed(
     leagueId: headerFallback?.resolvedLeagueIconId ??
         (leagueMap == null
@@ -212,25 +208,15 @@ SoccerStandardAnalysisParsed parseSoccerStandardAnalysis(
 }
 
 void _logPredictV2Structure(Map<String, dynamic> pred) {
-  debugPrint('[SOCCER] parse predict-v2 root keys: ${pred.keys.toList()}');
-  debugPrint('[SOCCER] prediction.pattern: ${pred['pattern']}');
-  debugPrint('[SOCCER] homePA: ${pred['homePA']}');
-  debugPrint('[SOCCER] awayPA: ${pred['awayPA']}');
-  final homePA = pred['homePA'];
+          final homePA = pred['homePA'];
   if (homePA is Map) {
-    debugPrint('[SOCCER] homePA.all: ${homePA['all']}');
-    debugPrint('[SOCCER] homePA.five: ${homePA['five']}');
-    debugPrint('[SOCCER] homePA.firstGoal: ${homePA['firstGoal']}');
-  }
+              }
   final debug = pred['debug'];
   if (debug is Map) {
-    debugPrint('[SOCCER] debug.homeStats: ${debug['homeStats']}');
-    debugPrint('[SOCCER] debug.awayStats: ${debug['awayStats']}');
-  }
+          }
   final patternStats = pred['patternStats'];
   if (patternStats is Map) {
-    debugPrint('[SOCCER] patternStats keys: ${patternStats.keys.toList()}');
-  }
+      }
 }
 
 String _formatPickDirection(String? pick) {

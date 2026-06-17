@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -34,8 +33,7 @@ class LanguageNotifier extends Notifier<AppLanguage> {
     invalidateBaseballLanguageDependentProviders(ref);
     invalidateSoccerLanguageDependentProviders(ref);
     invalidateLegalLanguageDependentProviders(ref);
-    debugPrint('[LANG] Language changed to ${language.name}');
-  }
+      }
 }
 
 AppLanguage _readLanguage(SharedPreferences prefs) {

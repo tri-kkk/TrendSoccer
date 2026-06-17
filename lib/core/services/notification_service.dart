@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -29,11 +28,7 @@ class NotificationService {
         queryParameters: <String, String>{'sport': sport},
         options: Options(headers: headers),
       );
-      debugPrint(
-        '[NOTIF] getAlarm: matchId=$matchId, sport=$sport, '
-        'status=${response.statusCode}',
-      );
-      final data = response.data;
+            final data = response.data;
       if (data is Map && data['success'] == true) {
         final inner = data['data'];
         if (inner is Map<String, dynamic>) return inner;
@@ -41,8 +36,7 @@ class NotificationService {
       }
       return _defaultSettings(sport);
     } catch (e) {
-      debugPrint('[NOTIF] getAlarm error: $e');
-      return _defaultSettings(sport);
+            return _defaultSettings(sport);
     }
   }
 
@@ -68,11 +62,7 @@ class NotificationService {
         },
         options: Options(headers: headers),
       );
-      debugPrint(
-        '[NOTIF] getAlarmsBatch: sport=$sport, count=${matchIds.length}, '
-        'status=${response.statusCode}',
-      );
-
+      
       final data = response.data;
       if (data is! Map) return {};
 
@@ -93,8 +83,7 @@ class NotificationService {
         ),
       );
     } catch (e) {
-      debugPrint('[NOTIF] getAlarmsBatch error: $e');
-      return {};
+            return {};
     }
   }
 
@@ -107,8 +96,7 @@ class NotificationService {
   ) async {
     final headers = await _buildHeaders();
     if (!_hasAuthHeaders(headers)) {
-      debugPrint('[NOTIF] saveAlarm: no JWT or device token');
-      return false;
+            return false;
     }
 
     try {
@@ -122,19 +110,10 @@ class NotificationService {
         },
         options: Options(headers: headers),
       );
-      debugPrint(
-        '[NOTIF] saveAlarm: matchId=$matchId, enabled=$enabled, '
-        'status=${response.statusCode}',
-      );
-      debugPrint(
-        '[ALARM] PUT response: status=${response.statusCode}, '
-        'body=${response.data}',
-      );
-      final data = response.data;
+                  final data = response.data;
       return data is Map && data['success'] == true;
     } catch (e) {
-      debugPrint('[NOTIF] saveAlarm error: $e');
-      return false;
+            return false;
     }
   }
 

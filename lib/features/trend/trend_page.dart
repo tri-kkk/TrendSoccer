@@ -14,6 +14,7 @@ import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/services/ad_service.dart';
+import 'package:trendsoccer/core/services/admob_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
@@ -22,6 +23,7 @@ import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/baseball_today_combo_card.dart';
+import 'package:trendsoccer/shared/widgets/ads/premium_ad_wrapper.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -41,14 +43,17 @@ class _TrendPageState extends ConsumerState<TrendPage> {
 
   late final PageController _bannerController;
   late final PageController _bottomBannerController;
+  late final PageController _directAdBannerController;
   late final PageController _soccerCardsPageController;
   late final PageController _baseballCardsPageController;
   Timer? _bannerTimer;
   int _currentBannerPage = 0;
   int _currentBottomBannerPage = 0;
+  int _currentDirectAdBannerPage = 0;
 
   List<Map<String, dynamic>> _topBanners = [];
   List<Map<String, dynamic>> _bottomBanners = [];
+  List<Map<String, dynamic>> _directAdBanners = [];
   bool _loadingBanners = true;
 
   @override
@@ -56,6 +61,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     super.initState();
     _bannerController = PageController();
     _bottomBannerController = PageController(viewportFraction: 1.0);
+    _directAdBannerController = PageController(viewportFraction: 1.0);
     _soccerCardsPageController =
         PageController(viewportFraction: _analysisCardViewportFraction);
     _baseballCardsPageController =
@@ -68,6 +74,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     _bannerTimer?.cancel();
     _bannerController.dispose();
     _bottomBannerController.dispose();
+    _directAdBannerController.dispose();
     _soccerCardsPageController.dispose();
     _baseballCardsPageController.dispose();
     super.dispose();
@@ -78,10 +85,12 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     final results = await Future.wait([
       adService.getAds('mobile_app_main_top'),
       adService.getAds('mobile_app_main_bottom'),
+      adService.getAds('mobile_app_main_banner'),
     ]);
 
     final top = results[0];
     final bottom = results[1];
+    final direct = results[2];
 
     for (final ad in top) {
       final id = ad['id']?.toString() ?? '';
@@ -95,14 +104,22 @@ class _TrendPageState extends ConsumerState<TrendPage> {
         unawaited(adService.trackAd(id, 'impression'));
       }
     }
+    for (final ad in direct) {
+      final id = ad['id']?.toString() ?? '';
+      if (id.isNotEmpty) {
+        unawaited(adService.trackAd(id, 'impression'));
+      }
+    }
 
     if (!mounted) return;
     setState(() {
       _topBanners = top;
       _bottomBanners = bottom;
+      _directAdBanners = direct;
       _loadingBanners = false;
       _currentBannerPage = 0;
       _currentBottomBannerPage = 0;
+      _currentDirectAdBannerPage = 0;
     });
     _startBannerAutoSlide();
   }
@@ -346,6 +363,84 @@ class _TrendPageState extends ConsumerState<TrendPage> {
       return const SizedBox.shrink();
     }
     return _buildBottomBannerCarousel();
+  }
+
+  Widget _buildDirectAdBannerCarousel() {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          height: _bottomBannerHeight,
+          child: PageView.builder(
+            controller: _directAdBannerController,
+            onPageChanged: (index) {
+              setState(() => _currentDirectAdBannerPage = index);
+            },
+            itemCount: _directAdBanners.length,
+            itemBuilder: (context, index) =>
+                _buildBottomBanner(_directAdBanners[index]),
+          ),
+        ),
+        if (_directAdBanners.length > 1) ...[
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              for (var i = 0; i < _directAdBanners.length; i++) ...[
+                if (i > 0) const SizedBox(width: 8),
+                i == _currentDirectAdBannerPage
+                    ? Container(
+                        width: 20,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: TsColors.brandPrimary500,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      )
+                    : Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: semantic.textDisabled,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+              ],
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildDirectAdBannerSection(
+    TsSemanticColors semantic,
+    bool showAds,
+  ) {
+    if (!showAds) {
+      return const SizedBox.shrink();
+    }
+    if (_loadingBanners) {
+      return SizedBox(
+        height: _bottomBannerHeight,
+        child: Container(
+          width: double.infinity,
+          color: semantic.surfaceContainer,
+          child: Center(
+            child: CircularProgressIndicator(
+              color: semantic.interactivePrimary,
+              strokeWidth: 2,
+            ),
+          ),
+        ),
+      );
+    }
+    if (_directAdBanners.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return _buildDirectAdBannerCarousel();
   }
 
   Widget _buildSectionHeader({
@@ -653,6 +748,8 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     final showTopBannerArea = _loadingBanners || _topBanners.isNotEmpty;
     final showBottomBannerArea =
         showBottomAds && (_loadingBanners || _bottomBanners.isNotEmpty);
+    final showDirectAdBannerArea =
+        showBottomAds && (_loadingBanners || _directAdBanners.isNotEmpty);
 
     return Scaffold(
       backgroundColor: semantic.surfaceRaised,
@@ -687,6 +784,10 @@ class _TrendPageState extends ConsumerState<TrendPage> {
               ),
               const SizedBox(height: 16),
               _buildSoccerCards(),
+              if (showDirectAdBannerArea) ...[
+                const SizedBox(height: 16),
+                _buildDirectAdBannerSection(semantic, showBottomAds),
+              ],
               const SizedBox(height: 16),
               _buildSectionHeader(
                 title: context.l10n.trendBaseballAnalysis,
@@ -696,6 +797,8 @@ class _TrendPageState extends ConsumerState<TrendPage> {
               const BaseballTodayComboCard(),
               const SizedBox(height: 16),
               _buildBaseballCards(),
+              const SizedBox(height: 16),
+              PremiumAdWrapper(adUnitId: AdmobService.trendBannerAdUnitId),
               const SizedBox(height: 24),
             ],
           ),

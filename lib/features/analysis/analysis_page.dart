@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/services/admob_service.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/providers/language_provider.dart';
@@ -17,6 +18,7 @@ import 'package:trendsoccer/features/analysis/analysis_dummy_data.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball_matches_section.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer_matches_section.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
+import 'package:trendsoccer/shared/widgets/ads/premium_ad_wrapper.dart';
 import 'package:trendsoccer/shared/widgets/appbar/ts_shell_app_bar_content.dart';
 import 'package:trendsoccer/shared/widgets/cards/baseball_today_combo_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
@@ -404,6 +406,11 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
             SoccerMatchesSection(dateStr: selectedDateStr)
           else
             BaseballMatchesSection(dateStr: selectedDateStr),
+          SliverToBoxAdapter(
+            child: PremiumAdWrapper(
+              adUnitId: AdmobService.analysisBannerAdUnitId,
+            ),
+          ),
           const SliverFillRemaining(
             hasScrollBody: false,
             fillOverscroll: false,

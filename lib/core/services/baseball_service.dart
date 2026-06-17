@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,28 +22,9 @@ class BaseballService {
 
   String _apiLanguage() {
     final lang = getApiLanguage(_prefs);
-    debugPrint('[BASEBALL] API language: $lang');
-    return lang;
+        return lang;
   }
 
-  void _logPitcherStatsRequest(
-    String path,
-    Map<String, String> queryParameters,
-  ) {
-    final query = queryParameters.entries
-        .map(
-          (entry) =>
-              '${Uri.encodeQueryComponent(entry.key)}=${Uri.encodeQueryComponent(entry.value)}',
-        )
-        .join('&');
-    final baseUrl = _dio.options.baseUrl;
-    final normalizedBase =
-        baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
-    final normalizedPath = path.startsWith('/') ? path : '/$path';
-    debugPrint(
-      '[PITCHER] Stats API call: $normalizedBase$normalizedPath?$query',
-    );
-  }
 
   Future<Map<String, dynamic>> getPitcherAnalysis({
     required int matchId,
@@ -58,8 +38,7 @@ class BaseballService {
   }) async {
     try {
       final language = _apiLanguage();
-      debugPrint('[BASEBALL] pitcher-analysis language: $language');
-      final body = <String, dynamic>{
+            final body = <String, dynamic>{
         'matchId': matchId,
         'homeTeam': homeTeam,
         'awayTeam': awayTeam,
@@ -70,10 +49,7 @@ class BaseballService {
         'league': league,
         'language': language,
       };
-      debugPrint(
-        '[BASEBALL] POST pitcher-analysis: api_match_id=$matchId, league=$league',
-      );
-      final response = await _dio.post<dynamic>(
+            final response = await _dio.post<dynamic>(
         '/api/baseball/pitcher-analysis',
         data: body,
         options: Options(
@@ -82,13 +58,11 @@ class BaseballService {
         ),
       );
       final data = response.data;
-      debugPrint('[BASEBALL] Pitcher analysis success: cached=${data?['cached']}');
-      if (data is Map<String, dynamic>) return data;
+            if (data is Map<String, dynamic>) return data;
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};
     } catch (e) {
-      debugPrint('[BASEBALL] Pitcher analysis error: $e');
-      return {};
+            return {};
     }
   }
 
@@ -114,17 +88,14 @@ class BaseballService {
             .where((match) => match.league.toUpperCase() == normalizedLeague)
             .toList();
       }
-      debugPrint('[BASEBALL] Analysis matches for $date: ${matches.length}');
-      return matches;
+            return matches;
     } catch (e) {
-      debugPrint('[BASEBALL] Analysis matches for $date failed: $e');
-      return const [];
+            return const [];
     }
   }
 
   Future<Map<String, dynamic>> getMatchDetail({required int matchId}) async {
-    debugPrint('[BASEBALL] Match detail request: api_match_id=$matchId');
-    try {
+        try {
       final language = _apiLanguage();
       final response = await _dio.get<dynamic>(
         '/api/baseball/matches',
@@ -143,22 +114,13 @@ class BaseballService {
         match = _adaptToMap((responseData['matches'] as List).first);
       }
 
-      debugPrint(
-        '[BASEBALL] Match detail via query: id=$matchId, keys=${match?.keys}',
-      );
-      debugPrint('[BASEBALL] aiPrediction: ${match?['aiPrediction']}');
-      debugPrint(
-        '[BASEBALL] aiPick: ${match?['aiPick']}, confidence: ${match?['aiPickConfidence']}',
-      );
-
+                  
       if (match != null) {
         return {'match': match};
       }
-      debugPrint('[BASEBALL] Match detail for $matchId: no match in response');
-      return responseData;
+            return responseData;
     } catch (e) {
-      debugPrint('[BASEBALL] Match detail for $matchId failed: $e');
-      rethrow;
+            rethrow;
     }
   }
 
@@ -174,16 +136,12 @@ class BaseballService {
           'awayTeamId': awayTeamId,
         },
       );
-      debugPrint(
-        '[BASEBALL] H2H for $homeTeamId vs $awayTeamId: ${response.data?['count']} matches',
-      );
-      final data = response.data;
+            final data = response.data;
       if (data is Map<String, dynamic>) return data;
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};
     } catch (e) {
-      debugPrint('[BASEBALL] H2H error: $e');
-      return {};
+            return {};
     }
   }
 
@@ -210,14 +168,12 @@ class BaseballService {
           receiveTimeout: const Duration(seconds: 30),
         ),
       );
-      debugPrint('[BASEBALL] predict response: success=${response.data?['success']}');
-      final data = response.data;
+            final data = response.data;
       if (data is Map<String, dynamic>) return data;
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};
     } catch (e) {
-      debugPrint('[BASEBALL] predict error: $e');
-      return {};
+            return {};
     }
   }
 
@@ -225,23 +181,18 @@ class BaseballService {
     required int teamId,
   }) async {
     try {
-      debugPrint('[BASEBALL] team-stats request: teamId=$teamId');
-      final response = await _dio.get<dynamic>(
+            final response = await _dio.get<dynamic>(
         '/api/baseball/team-stats',
         queryParameters: <String, dynamic>{
           'teamId': teamId,
         },
       );
       final data = response.data;
-      debugPrint(
-        '[BASEBALL] team-stats response: success=${data?['success']}, games=${data?['stats']?['games']}',
-      );
-      if (data is Map<String, dynamic>) return data;
+            if (data is Map<String, dynamic>) return data;
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};
     } catch (e) {
-      debugPrint('[BASEBALL] team-stats error: $e');
-      return {};
+            return {};
     }
   }
 
@@ -263,7 +214,6 @@ class BaseballService {
         queryParameters['awayPitcherId'] = awayPitcherId.toString();
       }
       const path = '/api/baseball/pitcher-stats';
-      _logPitcherStatsRequest(path, queryParameters);
       final response = await _dio.get<dynamic>(
         path,
         queryParameters: queryParameters,
@@ -274,19 +224,9 @@ class BaseballService {
           : data is Map
               ? Map<String, dynamic>.from(data)
               : <String, dynamic>{};
-      final homePitcher = map['homePitcher'];
-      final homeStrengths = homePitcher is Map
-          ? homePitcher['strengths']
-          : null;
-      debugPrint(
-        '[PITCHER] Stats response language: ${map['language'] ?? 'not specified'} '
-        '(requested: $language), '
-        'strengths: ${map['strengths'] ?? map['data']?['strengths'] ?? homeStrengths}',
-      );
       return map;
     } catch (e) {
-      debugPrint('[BASEBALL] MLB pitcher-stats error: $e');
-      return {};
+            return {};
     }
   }
 
@@ -297,8 +237,7 @@ class BaseballService {
     try {
       final url =
           'https://statsapi.mlb.com/api/v1/people/$pitcherId?hydrate=stats(group=[pitching],type=[season],season=$season)';
-      debugPrint('[BASEBALL] MLB Stats API request: pitcherId=$pitcherId, season=$season');
-      final response = await Dio().get<dynamic>(
+            final response = await Dio().get<dynamic>(
         url,
         options: Options(
           receiveTimeout: const Duration(seconds: 5),
@@ -314,18 +253,11 @@ class BaseballService {
       final firstSplit = splits is List && splits.isNotEmpty ? splits[0] : null;
       final stat = firstSplit is Map ? firstSplit['stat'] : null;
       if (stat is Map) {
-        debugPrint(
-          '[BASEBALL] MLB Stats API success: pitcherId=$pitcherId, season=$season, era=${stat['era']}',
-        );
-        return Map<String, dynamic>.from(stat);
+                return Map<String, dynamic>.from(stat);
       }
-      debugPrint(
-        '[BASEBALL] MLB Stats API: no stats for pitcherId=$pitcherId, season=$season',
-      );
-      return null;
+            return null;
     } catch (e) {
-      debugPrint('[BASEBALL] MLB Stats API error: $e');
-      return null;
+            return null;
     }
   }
 
@@ -348,33 +280,19 @@ class BaseballService {
         'awayTeam': awayTeam,
         'language': language,
       };
-      _logPitcherStatsRequest(path, queryParameters);
       final response = await _dio.get<dynamic>(
         path,
         queryParameters: queryParameters,
       );
-      debugPrint(
-        '[BASEBALL] KBO/NPB pitcher stats (lang=$language): ${response.data?.keys}',
-      );
-      final data = response.data;
+            final data = response.data;
       final map = data is Map<String, dynamic>
           ? data
           : data is Map
               ? Map<String, dynamic>.from(data)
               : <String, dynamic>{};
-      final homePitcherData = map['homePitcher'];
-      final homeStrengths = homePitcherData is Map
-          ? homePitcherData['strengths']
-          : null;
-      debugPrint(
-        '[PITCHER] Stats response language: ${map['language'] ?? 'not specified'} '
-        '(requested: $language), '
-        'strengths: ${map['strengths'] ?? map['data']?['strengths'] ?? homeStrengths}',
-      );
       return map;
     } catch (e) {
-      debugPrint('[BASEBALL] KBO/NPB pitcher stats error: $e');
-      return {};
+            return {};
     }
   }
 
@@ -393,17 +311,12 @@ class BaseballService {
         '/api/baseball/combo-picks',
         queryParameters: params,
       );
-      debugPrint(
-        '[BASEBALL] combo-picks: success=${response.data?['success']}, '
-        'picks=${(response.data?['picks'] as List?)?.length}',
-      );
-      final data = response.data;
+            final data = response.data;
       if (data is Map<String, dynamic>) return data;
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};
     } catch (e) {
-      debugPrint('[BASEBALL] combo-picks error: $e');
-      return {};
+            return {};
     }
   }
 
@@ -430,8 +343,7 @@ class BaseballService {
     final merged = byId.values.toList()
       ..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
 
-    debugPrint('[BASEBALL] Upcoming analysis matches: ${merged.length}');
-    return merged;
+        return merged;
   }
 
   List<BaseballAnalysisCard> _parseAnalysisCards(dynamic raw) {

@@ -743,8 +743,7 @@ class _PitcherSide {
 
   Widget _pitcherEmblem(TsSemanticColors semantic) {
     if (_isTbd) {
-      debugPrint('[BASEBALL] Pitcher TBD: showing default avatar');
-      return _avatarPlaceholder(semantic);
+            return _avatarPlaceholder(semantic);
     }
 
     if (!_isMlb) {

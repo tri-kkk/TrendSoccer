@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -41,21 +40,11 @@ class AuthService {
         final map = json! as Map<String, dynamic>;
         final rawUser = map['user'];
         if (rawUser is Map<String, dynamic>) {
-          debugPrint(
-            '[AUTH] loadProfile: tier=${rawUser['tier']}, '
-            'trial=${rawUser['trial']}, '
-            'subscription=${rawUser['subscription']}',
-          );
-          return UserProfile.fromJson(rawUser);
+                    return UserProfile.fromJson(rawUser);
         }
         if (rawUser is Map) {
           final userMap = Map<String, dynamic>.from(rawUser);
-          debugPrint(
-            '[AUTH] loadProfile: tier=${userMap['tier']}, '
-            'trial=${userMap['trial']}, '
-            'subscription=${userMap['subscription']}',
-          );
-          return UserProfile.fromJson(userMap);
+                    return UserProfile.fromJson(userMap);
         }
         return UserProfile.fromJson(map);
       },
@@ -78,10 +67,7 @@ class AuthService {
   }
 
   Future<LoginResponse> googleAuth(String accessToken) async {
-    debugPrint(
-      '[AUTH] Request body token field: accessToken (OAuth), value length: ${accessToken.length}',
-    );
-    return _api.post<LoginResponse>(
+        return _api.post<LoginResponse>(
       _googleAuthPath,
       data: <String, dynamic>{
         'accessToken': accessToken,
@@ -97,8 +83,7 @@ class AuthService {
       return _naverAuthStubResponse();
     }
 
-    debugPrint('[AUTH] Naver login: sending accessToken to backend');
-    return _api.post<LoginResponse>(
+        return _api.post<LoginResponse>(
       _naverAuthPath,
       data: <String, dynamic>{
         'accessToken': accessToken,
@@ -166,8 +151,7 @@ class AuthService {
     final success = raw['success'] == true;
     final isTrial = raw['isTrial'] == true;
     final message = raw['message'] as String? ?? '';
-    debugPrint('[AUTH] agreeTerms: success=$success, isTrial=$isTrial, message=$message');
-
+    
     if (!success) {
       throw ApiException(
         code: raw['code'] as String? ?? 'REQUEST_FAILED',

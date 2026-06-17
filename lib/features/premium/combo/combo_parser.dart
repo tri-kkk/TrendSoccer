@@ -242,15 +242,7 @@ class ComboParser {
         ? (highWins * 100 / highPicks.length).round()
         : 0;
 
-    debugPrint(
-      '[BASEBALL] combo dashboard accuracy: $wins wins / $total total = '
-      '$accRate% (date: $selectedDate)',
-    );
-    debugPrint(
-      '[BASEBALL] combo stats: safe=${safePicks.length}, '
-      'high=${highPicks.length} (date: $selectedDate)',
-    );
-
+        
     final selectedDt = DateTime.parse(selectedDate);
     final dateTitle = _dashboardDateTitle(l10n, selectedDt);
 
@@ -287,20 +279,6 @@ class ComboParser {
       final foldCount = _readFoldCount(pick, innerPicks: innerPicks);
       final comboType = foldCount <= 2 ? 'safe' : 'high';
 
-      final aiText = pick['ai_analysis']?.toString() ?? '';
-      final aiPreview =
-          aiText.length > 50 ? aiText.substring(0, 50) : aiText;
-      debugPrint(
-        '[BASEBALL] combo card: id=${pick['id']}, '
-        'total_odds=${pick['total_odds']}, '
-        'avg_confidence=${pick['avg_confidence']}, '
-        'ai_analysis=$aiPreview',
-      );
-      debugPrint(
-        '[BASEBALL] combo type: id=${pick['id']}, '
-        'fold_count=$foldCount, type=$comboType',
-      );
-
       final aiSummary = _readAiSummary(pick, l10n);
 
       return ComboCardData(
@@ -335,12 +313,7 @@ class ComboParser {
     final homeScore = (m['homeScore'] as num?)?.toInt();
     final awayScore = (m['awayScore'] as num?)?.toInt();
 
-    debugPrint(
-      '[BASEBALL] combo match: pickTeam=${m['pickTeamKo']}, '
-      'isCorrect=$isCorrect, matchStatus=$matchStatus, '
-      'score=$homeScore-$awayScore',
-    );
-
+    
     final String matchResultLabel;
     final String matchResultType;
 

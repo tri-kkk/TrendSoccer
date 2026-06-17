@@ -1,43 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:trendsoccer/features/analysis/models/parser_labels.dart';
 import 'package:trendsoccer/core/models/baseball_models.dart';
 import 'package:trendsoccer/shared/widgets/baseball/premium/confidence_chip.dart';
 
-void logBaseballPremiumPredict(Map<String, dynamic> predictData) {
-  debugPrint('[BASEBALL] Premium predict keys: ${predictData.keys}');
+void logBaseballPremiumPredict(Map<String, dynamic> predictData) {}
 
-  final prediction = predictData['prediction'] as Map?;
-  final insights = predictData['insights'] as Map?;
-  final dataQuality = predictData['dataQuality'] as Map?;
-
-  debugPrint(
-    '[BASEBALL] Premium WIN PROB: home=${prediction?['homeWinProb']}, away=${prediction?['awayWinProb']}',
-  );
-  debugPrint(
-    '[BASEBALL] Premium O/U PROB: over=${prediction?['overProb']}, under=${prediction?['underProb']}',
-  );
-  debugPrint('[BASEBALL] Premium CONFIDENCE: ${prediction?['confidence']}');
-  debugPrint('[BASEBALL] Premium RECENT FORM: ${insights?['recentForm']}');
-  debugPrint('[BASEBALL] Premium HOME ADVANTAGE: ${insights?['homeAdvantage']}');
-  debugPrint('[BASEBALL] Premium TEAM FORM: ${insights?['teamForm']}');
-  debugPrint('[BASEBALL] Premium TEAM SEASON: ${insights?['teamSeason']}');
-  debugPrint('[BASEBALL] Premium DATA QUALITY: $dataQuality');
-  debugPrint('[BASEBALL] Premium using predict for sections 3-7');
-}
-
-void logBaseballPremiumDetail(Map<String, dynamic> detail) {
-  final match = _unwrapMatch(detail);
-  final aiPred = match['aiPrediction'] as Map?;
-  debugPrint(
-    '[BASEBALL] Premium using aiPrediction: homeWinProb=${aiPred?['homeWinProb']}, grade=${match['aiPick']}',
-  );
-  final odds = match['odds'] as Map?;
-  final (overProb, underProb) = _impliedOverUnderProbs(
-    _parseDouble(odds?['overOdds']),
-    _parseDouble(odds?['underOdds']),
-  );
-  debugPrint('[BASEBALL] Premium O/U implied: over=$overProb%, under=$underProb%');
-}
+void logBaseballPremiumDetail(Map<String, dynamic> detail) {}
 
 class PremiumGaugeItem {
   const PremiumGaugeItem({

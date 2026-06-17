@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:trendsoccer/l10n/app_localizations.dart';
@@ -13,8 +12,7 @@ final baseballComboPicksProvider =
 });
 
 void invalidateBaseballComboPicks(WidgetRef ref) {
-  debugPrint('[BASEBALL] combo-picks provider invalidated — fetching fresh data');
-  ref.invalidate(baseballComboPicksProvider);
+    ref.invalidate(baseballComboPicksProvider);
 }
 
 class BaseballComboStatsView {

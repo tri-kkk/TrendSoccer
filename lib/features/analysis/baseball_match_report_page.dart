@@ -89,8 +89,7 @@ class _BaseballMatchReportPageState
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('[BASEBALL] Match report page: api_match_id=${widget.matchId}');
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+        final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final header = _resolveHeader();
 
     return Scaffold(

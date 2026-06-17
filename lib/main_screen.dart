@@ -187,11 +187,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
               }
               context.go(_tabPaths[index]);
-              debugPrint(
-                '[NAV] Tab changed: index=$index, '
-                'path=${GoRouterState.of(context).uri}',
-              );
-            },
+                          },
           ),
         ),
       ),

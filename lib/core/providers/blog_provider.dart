@@ -1,6 +1,3 @@
-import 'package:flutter/foundation.dart';
-import 'dart:math';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:trendsoccer/core/services/blog_service.dart';
@@ -32,11 +29,6 @@ Future<String> _loadLegalMarkdown(
     throw Exception('Failed to parse $label');
   }
 
-  final previewLen = min(100, content.length);
-  debugPrint(
-    '[LEGAL] $type content: ${content.length} chars, '
-    'first 100: ${content.substring(0, previewLen)}',
-  );
   return content;
 }
 
@@ -52,8 +44,7 @@ final termsContentProvider = FutureProvider<String>((ref) async {
 
 /// Clears cached legal pages so the next read uses the updated API language.
 void invalidateLegalLanguageDependentProviders(Ref ref) {
-  debugPrint('[LEGAL] Invalidating providers after language change');
-  ref.invalidate(privacyContentProvider);
+    ref.invalidate(privacyContentProvider);
   ref.invalidate(termsContentProvider);
   ref.invalidate(blogPostsProvider);
   ref.invalidate(blogPostDetailProvider);
