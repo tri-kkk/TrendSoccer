@@ -341,21 +341,9 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
               scrolledUnderElevation: 0,
               automaticallyImplyLeading: false,
               titleSpacing: 0,
-              title: const SizedBox.shrink(),
-              flexibleSpace: FlexibleSpaceBar(
-                titlePadding: EdgeInsets.zero,
-                background: SafeArea(
-                  bottom: false,
-                  child: Container(
-                    height: TsShellAppBarMetrics.barHeight,
-                    padding: TsShellAppBarMetrics.contentPadding,
-                    color: semantic.surfaceRaised,
-                    child: TsShellAppBarContent(
-                      auth: auth,
-                      onLogoTap: () => context.go('/trend'),
-                    ),
-                  ),
-                ),
+              title: TsShellAppBarTitle(
+                auth: auth,
+                onLogoTap: () => context.go('/trend'),
               ),
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(DateTabBar.barHeight),

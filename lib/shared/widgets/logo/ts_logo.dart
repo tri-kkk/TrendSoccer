@@ -66,7 +66,7 @@ class TsLogo extends StatelessWidget {
     return switch (type) {
       TsLogoType.horizon => SvgPicture.asset(
           path,
-          height: 32,
+          height: height ?? 32,
           fit: BoxFit.contain,
           alignment: Alignment.centerLeft,
           placeholderBuilder: (context) => _fallback(context),

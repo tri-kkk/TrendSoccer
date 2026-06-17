@@ -104,9 +104,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final path = GoRouterState.of(context).uri.path;
     final selectedIndex = _selectedIndexForLocation(path);
     final isMenuTab = path.startsWith('/menu');
-    final isAnalysisTab = path.startsWith('/analysis');
-    final isFixtureTab = path.startsWith('/fixture');
-    final hideShellAppBar = isAnalysisTab || isFixtureTab || path == '/menu';
+    final hideShellAppBar =
+        path == '/analysis' || path == '/fixture' || path == '/menu';
     final isRootTab = _tabPaths.contains(path);
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final auth = ref.watch(authProvider);
@@ -140,8 +139,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   return SafeArea(
                     bottom: false,
                     child: Container(
-                      height: TsShellAppBarMetrics.barHeight,
+                      height: TsShellAppBarMetrics.barHeight + 2,
                       padding: TsShellAppBarMetrics.contentPadding,
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: semantic.surfaceRaised,
                         border: Border(
@@ -153,6 +153,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       ),
                       child: TsShellAppBarContent(
                         auth: auth,
+                        logoHeight: TsShellAppBarMetrics.logoHeight,
                         onLogoTap: selectedIndex == 0
                             ? null
                             : () => context.go('/trend'),
