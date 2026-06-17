@@ -19,22 +19,22 @@ class ComboStatusBadge extends StatelessWidget {
   (Color, Color, String) _style(TsSemanticColors s, AppLocalizations l10n) {
     return switch (status) {
       ComboStatus.inProgress => (
-          const Color(0x336B7280),
+          TsColors.analysisPass500.withValues(alpha: 0.2),
           s.textSecondary,
           l10n.comboStatusInProgress,
         ),
       ComboStatus.partial => (
-          const Color(0x33F59E0B),
+          TsColors.systemWarning500.withValues(alpha: 0.2),
           TsColors.systemWarning500,
           l10n.comboStatusPartial,
         ),
       ComboStatus.hit => (
-          const Color(0x3310B981),
+          TsColors.systemSuccess500.withValues(alpha: 0.2),
           TsColors.systemSuccess500,
           l10n.comboStatusHit,
         ),
       ComboStatus.miss => (
-          const Color(0x33EF4444),
+          TsColors.systemError500.withValues(alpha: 0.2),
           TsColors.systemError500,
           l10n.comboStatusMiss,
         ),

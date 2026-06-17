@@ -64,7 +64,8 @@ class PremiumPickCard extends StatefulWidget {
   final String? countdownLabel;
   final String? streakLabel;
 
-  static const Color winBadgeBackground = Color(0x3310B981);
+  static final Color winBadgeBackground =
+      TsColors.systemSuccess500.withValues(alpha: 0.2);
 
   @override
   State<PremiumPickCard> createState() => _PremiumPickCardState();

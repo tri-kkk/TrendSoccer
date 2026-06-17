@@ -378,9 +378,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
   Widget _buildAnalysisEmptyCard(BuildContext context) {
     final sem = Theme.of(context).extension<TsSemanticColors>()!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final overlayColor = isDark
-        ? const Color(0xBF212726)
-        : const Color(0xD9FDFCFB);
+    final overlayColor = sem.surfaceBase.withValues(alpha: isDark ? 0.75 : 0.85);
 
     return SizedBox(
       height: 207,

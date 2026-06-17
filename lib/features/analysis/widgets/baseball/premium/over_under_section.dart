@@ -50,7 +50,7 @@ class OverUnderSection extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0x33F59E0B),
+                    color: TsColors.systemWarning500.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -98,7 +98,8 @@ class _UOBox extends StatelessWidget {
   final String value;
   final bool isFavored;
 
-  static const Color _favoredBg = Color(0x3300DF81);
+  static final Color _favoredBg =
+      TsColors.brandPrimary500.withValues(alpha: 0.2);
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -37,7 +38,9 @@ class PlanOption extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0x3300DF81) : semantic.surfaceContainer,
+          color: isSelected
+              ? TsColors.brandPrimary500.withValues(alpha: 0.2)
+              : semantic.surfaceContainer,
           borderRadius: BorderRadius.circular(4),
           border: isSelected
               ? Border.all(color: semantic.interactivePrimary, width: 1)
@@ -71,7 +74,7 @@ class PlanOption extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0x3300DF81),
+                  color: TsColors.brandPrimary500.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(

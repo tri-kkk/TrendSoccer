@@ -37,10 +37,14 @@ class ComboDashboard extends StatelessWidget {
   final String highOddsHitRate;
   final String highOddsHitDetail;
 
-  static const Color _safeBg = Color(0x0F00DF81);
-  static const Color _safeBorder = Color(0x2600DF81);
-  static const Color _highBg = Color(0x0FF59E0B);
-  static const Color _highBorder = Color(0x26F59E0B);
+  static final Color _safeBg =
+      TsColors.brandPrimary500.withValues(alpha: 0.06);
+  static final Color _safeBorder =
+      TsColors.brandPrimary500.withValues(alpha: 0.15);
+  static final Color _highBg =
+      TsColors.systemWarning500.withValues(alpha: 0.06);
+  static final Color _highBorder =
+      TsColors.systemWarning500.withValues(alpha: 0.15);
 
   @override
   Widget build(BuildContext context) {

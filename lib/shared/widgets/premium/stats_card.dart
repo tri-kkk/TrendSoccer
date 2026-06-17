@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -19,7 +20,8 @@ class StatsCard extends StatelessWidget {
   final bool isHighlight;
   final bool isBadge;
 
-  static const Color _highlightBg = Color(0x3300DF81);
+  static final Color _highlightBg =
+      TsColors.brandPrimary500.withValues(alpha: 0.2);
 
   @override
   Widget build(BuildContext context) {

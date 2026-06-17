@@ -10,8 +10,10 @@ class PositionChip extends StatelessWidget {
 
   final bool isHome;
 
-  static const Color _homeBg = Color(0x3300DF81);
-  static const Color _awayBg = Color(0x33EF4444);
+  static final Color _homeBg =
+      TsColors.brandPrimary500.withValues(alpha: 0.2);
+  static final Color _awayBg =
+      TsColors.systemError500.withValues(alpha: 0.2);
 
   @override
   Widget build(BuildContext context) {

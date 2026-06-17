@@ -22,12 +22,12 @@ class ComboTypeBadge extends StatelessWidget {
   ) {
     return switch (type) {
       ComboType.safe => (
-          const Color(0x3300DF81),
+          TsColors.brandPrimary500.withValues(alpha: 0.2),
           semantic.interactivePrimary,
           l10n.comboTypeSafe,
         ),
       ComboType.highOdds => (
-          const Color(0x33F59E0B),
+          TsColors.systemWarning500.withValues(alpha: 0.2),
           TsColors.systemWarning500,
           l10n.comboTypeHigh,
         ),

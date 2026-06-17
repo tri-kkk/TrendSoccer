@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -16,7 +17,7 @@ class TrialBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(TsSpacing.lg),
       decoration: BoxDecoration(
-        color: const Color(0x1A00DF81),
+        color: TsColors.brandPrimary500.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: semantic.interactivePrimary, width: 1),
       ),

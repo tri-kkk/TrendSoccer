@@ -161,7 +161,9 @@ Widget _buildWinBadge(
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
     decoration: BoxDecoration(
-      color: isHomeWinner ? const Color(0x3300DF81) : const Color(0x1AEF4444),
+      color: isHomeWinner
+          ? TsColors.brandPrimary500.withValues(alpha: 0.2)
+          : TsColors.systemError500.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(4),
     ),
     child: Text(

@@ -231,26 +231,26 @@ class _LeagueIconBox extends StatelessWidget {
     );
   }
 
-  static const _defaultLeagueStyle = _LeagueStyle(
-    bgColor: Color(0x0F00C2FF),
-    borderColor: Color(0x1A00C2FF),
+  static final _defaultLeagueStyle = _LeagueStyle(
+    bgColor: TsColors.brandAccent500.withValues(alpha: 0.06),
+    borderColor: TsColors.brandAccent500.withValues(alpha: 0.1),
     leagueId: 'mlb',
   );
 
-  static const _leagueStyles = {
+  static final _leagueStyles = {
     'KBO': _LeagueStyle(
-      bgColor: Color(0x0FEF4444),
-      borderColor: Color(0x1AEF4444),
+      bgColor: TsColors.systemError500.withValues(alpha: 0.06),
+      borderColor: TsColors.systemError500.withValues(alpha: 0.1),
       leagueId: 'kbo',
     ),
     'MLB': _LeagueStyle(
-      bgColor: Color(0x0F00C2FF),
-      borderColor: Color(0x1A00C2FF),
+      bgColor: TsColors.brandAccent500.withValues(alpha: 0.06),
+      borderColor: TsColors.brandAccent500.withValues(alpha: 0.1),
       leagueId: 'mlb',
     ),
     'NPB': _LeagueStyle(
-      bgColor: Color(0x0FF59E0B),
-      borderColor: Color(0x1AF59E0B),
+      bgColor: TsColors.systemWarning500.withValues(alpha: 0.06),
+      borderColor: TsColors.systemWarning500.withValues(alpha: 0.1),
       leagueId: 'npb',
     ),
   };
@@ -288,7 +288,7 @@ class _LeagueIconBox extends StatelessWidget {
 }
 
 class _LeagueStyle {
-  const _LeagueStyle({
+  _LeagueStyle({
     required this.bgColor,
     required this.borderColor,
     required this.leagueId,

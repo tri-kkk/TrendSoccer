@@ -122,12 +122,12 @@ class ComboCard extends StatelessWidget {
 
     switch (section.type) {
       case 'summary':
-        bgColor = const Color(0x1A00DF81);
-        borderColor = const Color(0x4D00DF81);
+        bgColor = TsColors.brandPrimary500.withValues(alpha: 0.1);
+        borderColor = TsColors.brandPrimary500.withValues(alpha: 0.3);
         labelColor = colors.interactivePrimary;
       case 'warning':
-        bgColor = const Color(0x1AF59E0B);
-        borderColor = const Color(0x26F59E0B);
+        bgColor = TsColors.systemWarning500.withValues(alpha: 0.1);
+        borderColor = TsColors.systemWarning500.withValues(alpha: 0.15);
         labelColor = TsColors.systemWarning500;
       default:
         bgColor = colors.surfaceContainer;

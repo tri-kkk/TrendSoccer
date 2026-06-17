@@ -180,7 +180,8 @@ class _OuLineRow extends StatelessWidget {
 
   final BaseballOULine line;
 
-  static const Color _baselineChipBg = Color(0x33F59E0B);
+  static final Color _baselineChipBg =
+      TsColors.systemWarning500.withValues(alpha: 0.2);
 
   @override
   Widget build(BuildContext context) {
