@@ -299,6 +299,7 @@
   "notificationPermissionGoSettings": "Go to Settings",
   "notificationPermissionMessage": "Notification permission is required.\nPlease enable it in Settings.",
   "notificationPermissionMessageMatch": "Notification permission is required to receive match alerts.\nPlease enable it in Settings.",
+  "notificationPermissionDisabledBanner": "Notifications are disabled. Please enable them in Settings.",
   "notificationPermissionTitle": "Permission Required",
   "notificationSettings": "Notification Settings",
   "notificationGeneral": "General Settings",

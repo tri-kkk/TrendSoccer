@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:trendsoccer/core/constants/alarm_preference_keys.dart';
 import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
@@ -50,6 +52,13 @@ class _NotificationSettingsPageState
 
   Future<void> _loadPrefs() async {
     final prefs = ref.read(sharedPreferencesProvider);
+    final permissionGranted =
+        (await Permission.notification.status).isGranted;
+
+    if (permissionGranted && _wereAllTogglesOffFromDenial(prefs)) {
+      await _enableAllTogglesAfterPermissionGrant(prefs);
+    }
+
     if (!mounted) return;
     setState(() {
       _appGeneral = prefs.getBool(FCMService.prefAppGeneral) ?? true;
@@ -81,6 +90,40 @@ class _NotificationSettingsPageState
 
       _isLoading = false;
     });
+  }
+
+  bool _wereAllTogglesOffFromDenial(SharedPreferences prefs) {
+    return AlarmPreferenceKeys.allSoccerKeys
+            .every((key) => prefs.getBool(key) == false) &&
+        AlarmPreferenceKeys.allBaseballKeys
+            .every((key) => prefs.getBool(key) == false) &&
+        prefs.getBool(FCMService.prefAppGeneral) == false &&
+        prefs.getBool(FCMService.prefMarketing) == false;
+  }
+
+  Future<void> _enableAllTogglesAfterPermissionGrant(
+    SharedPreferences prefs,
+  ) async {
+    await prefs.setBool(FCMService.prefAppGeneral, true);
+    await prefs.setBool(FCMService.prefMarketing, true);
+    for (final key in AlarmPreferenceKeys.allSoccerKeys) {
+      await prefs.setBool(key, true);
+    }
+    for (final key in AlarmPreferenceKeys.allBaseballKeys) {
+      await prefs.setBool(key, true);
+    }
+
+    final fcm = FCMService();
+    await fcm.setTopicEnabled(
+      baseTopic: FCMService.topicAppGeneral,
+      prefKey: FCMService.prefAppGeneral,
+      enabled: true,
+    );
+    await fcm.setTopicEnabled(
+      baseTopic: FCMService.topicMarketing,
+      prefKey: FCMService.prefMarketing,
+      enabled: true,
+    );
   }
 
   Future<void> _onFcmToggleChanged({

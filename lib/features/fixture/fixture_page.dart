@@ -610,6 +610,8 @@ class _FixturePageState extends ConsumerState<FixturePage>
       results.addAll(chunkResult);
     }
 
+    _checkAndResyncAlarms(results, sport);
+
     final enabledIds = <String>{};
     for (final match in eligible) {
       final id = match.matchId.toString();
@@ -625,6 +627,48 @@ class _FixturePageState extends ConsumerState<FixturePage>
         ..clear()
         ..addAll(enabledIds);
     });
+  }
+
+  void _checkAndResyncAlarms(
+    Map<String, dynamic> serverResults,
+    String sport,
+  ) {
+    final prefs = ref.read(sharedPreferencesProvider);
+    final localEvents = AlarmPreferenceKeys.globalEvents(prefs, sport);
+    final service = ref.read(notificationServiceProvider);
+
+    for (final entry in serverResults.entries) {
+      final alarm = entry.value;
+      if (alarm is! Map || alarm['enabled'] != true) continue;
+      if (_alarmEventsMatchLocal(alarm['events'], localEvents)) continue;
+
+      final matchId = int.tryParse(entry.key);
+      if (matchId == null || matchId == 0) continue;
+
+      unawaited(
+        service.saveMatchAlarmSettings(
+          matchId,
+          sport,
+          true,
+          localEvents,
+        ),
+      );
+    }
+  }
+
+  bool _alarmEventsMatchLocal(
+    Object? serverEventsRaw,
+    Map<String, bool> localEvents,
+  ) {
+    if (serverEventsRaw is! Map) return false;
+
+    for (final entry in localEvents.entries) {
+      final serverVal = serverEventsRaw[entry.key];
+      if (serverVal is! bool || serverVal != entry.value) {
+        return false;
+      }
+    }
+    return true;
   }
 
   void _scheduleAlarmStateRefresh(

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:trendsoccer/core/models/auth_state.dart';
@@ -20,6 +21,7 @@ import 'package:trendsoccer/shared/widgets/menu/guest_banner.dart';
 import 'package:trendsoccer/shared/widgets/menu/menu_list_item.dart';
 import 'package:trendsoccer/shared/widgets/menu/plan_ticket.dart';
 import 'package:trendsoccer/shared/widgets/menu/profile_card.dart';
+import 'package:trendsoccer/shared/widgets/notification/notification_permission_dialog.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/radio/ts_radio_button.dart';
 import 'package:trendsoccer/shared/widgets/section/ts_section_header.dart';
@@ -92,6 +94,16 @@ class _MenuPageState extends ConsumerState<MenuPage> {
       backgroundColor: Colors.transparent,
       builder: (_) => const _LanguageBottomSheet(),
     );
+  }
+
+  Future<void> _openNotificationSettings(BuildContext context) async {
+    final status = await Permission.notification.status;
+    if (!context.mounted) return;
+    if (status.isGranted) {
+      context.push('/menu/notification-settings');
+    } else {
+      await showNotificationPermissionDialog(context);
+    }
   }
 
   void _showSignOutDialog(BuildContext context) {
@@ -406,7 +418,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                   MenuListItem(
                     iconAsset: TsAssets.iconNotifications,
                     label: l10n.menuNotification,
-                    onTap: () => context.push('/menu/notification-settings'),
+                    onTap: () => unawaited(_openNotificationSettings(context)),
                   ),
                 ],
               ),

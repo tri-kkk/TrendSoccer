@@ -17,6 +17,25 @@ abstract final class AlarmPreferenceKeys {
   static const baseballInningChange = 'baseball_alarm_inningChange';
   static const baseballGameEnd = 'baseball_alarm_gameEnd';
 
+  static const List<String> allSoccerKeys = [
+    soccerKickoff,
+    soccerGoal,
+    soccerHalftime,
+    soccerSecondHalf,
+    soccerFulltime,
+    soccerYellowCard,
+    soccerRedCard,
+    soccerSubstitution,
+  ];
+
+  static const List<String> allBaseballKeys = [
+    baseballFirstPitch,
+    baseballScore,
+    baseballHomerun,
+    baseballInningChange,
+    baseballGameEnd,
+  ];
+
   static Map<String, bool> globalEvents(SharedPreferences prefs, String sport) {
     if (sport == 'soccer') {
       return {

@@ -1892,6 +1892,12 @@ abstract class AppLocalizations {
   /// **'경기 알림을 받으려면 알림 권한이 필요합니다.\n설정에서 알림을 허용해주세요.'**
   String get notificationPermissionMessageMatch;
 
+  /// No description provided for @notificationPermissionDisabledBanner.
+  ///
+  /// In ko, this message translates to:
+  /// **'알림 권한이 비활성화되어 있습니다. 설정에서 활성화해주세요.'**
+  String get notificationPermissionDisabledBanner;
+
   /// No description provided for @notificationPermissionTitle.
   ///
   /// In ko, this message translates to:

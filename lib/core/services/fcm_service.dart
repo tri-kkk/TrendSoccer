@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:trendsoccer/core/router/app_router.dart';
+import 'package:trendsoccer/core/constants/alarm_preference_keys.dart';
 import 'package:trendsoccer/core/services/token_service.dart';
 
 class FCMService {
@@ -59,13 +60,10 @@ class FCMService {
       );
 
       if (!prefs.containsKey(prefAppGeneral)) {
-        if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-          await _subscribeAllTopics(prefs);
-          debugPrint('[FCM] First launch: all topics subscribed');
-        } else {
-          await _setAllTopicsOff(prefs);
-          debugPrint('[FCM] First launch: permission denied, all topics off');
-        }
+        await _handleFirstPermissionResult(
+          prefs,
+          _isFcmAuthorized(settings.authorizationStatus),
+        );
       }
     } else {
       final currentSettings = await _messaging.getNotificationSettings();
@@ -75,12 +73,10 @@ class FCMService {
       );
 
       if (!prefs.containsKey(prefAppGeneral)) {
-        if (currentSettings.authorizationStatus ==
-            AuthorizationStatus.authorized) {
-          await _subscribeAllTopics(prefs);
-        } else {
-          await _setAllTopicsOff(prefs);
-        }
+        await _handleFirstPermissionResult(
+          prefs,
+          _isFcmAuthorized(currentSettings.authorizationStatus),
+        );
       }
     }
 
@@ -209,6 +205,39 @@ class FCMService {
     if (_fcmToken != null) {
       await registerDevice(_fcmToken);
     }
+  }
+
+  Future<void> _handleFirstPermissionResult(
+    SharedPreferences prefs,
+    bool granted,
+  ) async {
+    await prefs.setBool(prefAppGeneral, granted);
+    await prefs.setBool(prefMatchEvents, granted);
+    await prefs.setBool(prefMarketing, granted);
+
+    for (final key in AlarmPreferenceKeys.allSoccerKeys) {
+      await prefs.setBool(key, granted);
+    }
+    for (final key in AlarmPreferenceKeys.allBaseballKeys) {
+      await prefs.setBool(key, granted);
+    }
+
+    if (granted) {
+      final locale = localeFromPrefs(prefs);
+      await _unsubscribeLegacyTopics();
+      await _messaging.subscribeToTopic(topicWithLocale(topicAppGeneral, locale));
+      await _messaging.subscribeToTopic(topicWithLocale(topicMatchEvents, locale));
+      await _messaging.subscribeToTopic(topicWithLocale(topicMarketing, locale));
+      debugPrint('[FCM] First launch: all topics subscribed');
+    } else {
+      await _unsubscribeAllTopicVariants();
+      debugPrint('[FCM] First launch: permission denied, all topics off');
+    }
+  }
+
+  static bool _isFcmAuthorized(AuthorizationStatus status) {
+    return status == AuthorizationStatus.authorized ||
+        status == AuthorizationStatus.provisional;
   }
 
   Future<void> _subscribeAllTopics(SharedPreferences prefs) async {

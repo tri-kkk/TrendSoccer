@@ -8,6 +8,7 @@ import 'package:trendsoccer/core/services/notification_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/shared/widgets/notification/notification_permission_dialog.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 
 class AlarmSheet extends ConsumerStatefulWidget {
@@ -294,45 +295,7 @@ Future<bool> ensureMatchAlarmGate(BuildContext context) async {
 
   if (status.isPermanentlyDenied) {
     if (!context.mounted) return false;
-    final shouldOpen = await showDialog<bool>(
-      context: context,
-      builder: (ctx) {
-        final semantic = Theme.of(ctx).extension<TsSemanticColors>()!;
-        return AlertDialog(
-          backgroundColor: semantic.surfaceOverlay,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            ctx.l10n.notificationPermissionTitle,
-            style: TextStyle(color: semantic.textPrimary),
-          ),
-          content: Text(
-            ctx.l10n.notificationPermissionMessageMatch,
-            style: TextStyle(color: semantic.textSecondary),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(
-                ctx.l10n.cancel,
-                style: TextStyle(color: semantic.textTertiary),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(
-                ctx.l10n.notificationPermissionGoSettings,
-                style: TextStyle(color: semantic.interactivePrimary),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-    if (shouldOpen == true) {
-      await openAppSettings();
-    }
+    await showNotificationPermissionDialog(context, forMatchAlarm: true);
     return false;
   }
 

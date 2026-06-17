@@ -970,6 +970,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Notification permission is required to receive match alerts.\nPlease enable it in Settings.';
 
   @override
+  String get notificationPermissionDisabledBanner =>
+      'Notifications are disabled. Please enable them in Settings.';
+
+  @override
   String get notificationPermissionTitle => 'Permission Required';
 
   @override

@@ -951,6 +951,10 @@ class AppLocalizationsKo extends AppLocalizations {
       '경기 알림을 받으려면 알림 권한이 필요합니다.\n설정에서 알림을 허용해주세요.';
 
   @override
+  String get notificationPermissionDisabledBanner =>
+      '알림 권한이 비활성화되어 있습니다. 설정에서 활성화해주세요.';
+
+  @override
   String get notificationPermissionTitle => '알림 권한 필요';
 
   @override

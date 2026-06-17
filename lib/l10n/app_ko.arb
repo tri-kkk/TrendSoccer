@@ -299,6 +299,7 @@
   "notificationPermissionGoSettings": "설정으로 이동",
   "notificationPermissionMessage": "알림 권한이 필요합니다.\n설정에서 알림을 허용해주세요.",
   "notificationPermissionMessageMatch": "경기 알림을 받으려면 알림 권한이 필요합니다.\n설정에서 알림을 허용해주세요.",
+  "notificationPermissionDisabledBanner": "알림 권한이 비활성화되어 있습니다. 설정에서 활성화해주세요.",
   "notificationPermissionTitle": "알림 권한 필요",
   "notificationSettings": "알림 설정",
   "notificationGeneral": "일반 설정",
