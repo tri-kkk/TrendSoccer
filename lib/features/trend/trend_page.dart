@@ -11,6 +11,7 @@ import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/providers/baseball_combo_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/services/ad_service.dart';
@@ -124,6 +125,22 @@ class _TrendPageState extends ConsumerState<TrendPage> {
       _currentDirectAdBannerPage = 0;
     });
     _startBannerAutoSlide();
+  }
+
+  Future<void> _onRefresh() async {
+    ref.invalidate(analysisSoccerMatchesProvider);
+    ref.invalidate(baseballAnalysisMatchesProvider);
+    ref.invalidate(premiumPickStatsProvider);
+    ref.invalidate(baseballComboStatsProvider);
+
+    await _loadBanners();
+
+    await Future.wait([
+      ref.read(analysisSoccerMatchesProvider.future),
+      ref.read(baseballAnalysisMatchesProvider.future),
+      ref.read(premiumPickStatsProvider.future),
+      ref.read(baseballComboStatsProvider.future),
+    ]);
   }
 
   void _startBannerAutoSlide() {
@@ -780,54 +797,62 @@ class _TrendPageState extends ConsumerState<TrendPage> {
 
     return Scaffold(
       backgroundColor: semantic.surfaceRaised,
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(TsSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (showTopBannerArea) ...[
-                _buildTopBannerSection(semantic),
+      body: RefreshIndicator(
+        onRefresh: _onRefresh,
+        color: semantic.interactivePrimary,
+        backgroundColor: semantic.surfaceBase,
+        displacement: 40,
+        edgeOffset: 0,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(TsSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (showTopBannerArea) ...[
+                  _buildTopBannerSection(semantic),
+                  const SizedBox(height: TsSpacing.lg),
+                ],
+                if (showBottomBannerArea) ...[
+                  _buildBottomBannerSection(semantic, showBottomAds),
+                  const SizedBox(height: TsSpacing.lg),
+                ],
+                _buildSectionHeader(
+                  title: context.l10n.trendSoccerAnalysis,
+                  onMoreTap: () => context.go('/analysis'),
+                ),
                 const SizedBox(height: TsSpacing.lg),
-              ],
-              if (showBottomBannerArea) ...[
-                _buildBottomBannerSection(semantic, showBottomAds),
+                PremiumPickStatsCard(
+                  showCTA: true,
+                  onCTATap: () {
+                    if (auth.hasFullAccess) {
+                      context.go('/premium');
+                    } else {
+                      navigateToSubscribeIfLoggedIn(context, auth.isLoggedIn);
+                    }
+                  },
+                ),
                 const SizedBox(height: TsSpacing.lg),
-              ],
-              _buildSectionHeader(
-                title: context.l10n.trendSoccerAnalysis,
-                onMoreTap: () => context.go('/analysis'),
-              ),
-              const SizedBox(height: TsSpacing.lg),
-              PremiumPickStatsCard(
-                showCTA: true,
-                onCTATap: () {
-                  if (auth.hasFullAccess) {
-                    context.go('/premium');
-                  } else {
-                    navigateToSubscribeIfLoggedIn(context, auth.isLoggedIn);
-                  }
-                },
-              ),
-              const SizedBox(height: TsSpacing.lg),
-              _buildSoccerCards(),
-              if (showDirectAdBannerArea) ...[
+                _buildSoccerCards(),
+                if (showDirectAdBannerArea) ...[
+                  const SizedBox(height: TsSpacing.lg),
+                  _buildDirectAdBannerSection(semantic, showBottomAds),
+                ],
                 const SizedBox(height: TsSpacing.lg),
-                _buildDirectAdBannerSection(semantic, showBottomAds),
+                _buildSectionHeader(
+                  title: context.l10n.trendBaseballAnalysis,
+                  onMoreTap: () => context.go('/analysis?sport=baseball'),
+                ),
+                const SizedBox(height: TsSpacing.lg),
+                const BaseballTodayComboCard(),
+                const SizedBox(height: TsSpacing.lg),
+                _buildBaseballCards(),
+                const SizedBox(height: TsSpacing.lg),
+                PremiumAdWrapper(adUnitId: AdmobService.trendBannerAdUnitId),
+                const SizedBox(height: TsSpacing.xl),
               ],
-              const SizedBox(height: TsSpacing.lg),
-              _buildSectionHeader(
-                title: context.l10n.trendBaseballAnalysis,
-                onMoreTap: () => context.go('/analysis?sport=baseball'),
-              ),
-              const SizedBox(height: TsSpacing.lg),
-              const BaseballTodayComboCard(),
-              const SizedBox(height: TsSpacing.lg),
-              _buildBaseballCards(),
-              const SizedBox(height: TsSpacing.lg),
-              PremiumAdWrapper(adUnitId: AdmobService.trendBannerAdUnitId),
-              const SizedBox(height: TsSpacing.xl),
-            ],
+            ),
           ),
         ),
       ),
