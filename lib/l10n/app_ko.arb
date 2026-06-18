@@ -23,6 +23,28 @@
   "accessUnlockMinutes": "{minutes}분 후 오픈",
   "accessUnlockViewAnalysis": "분석보기",
   "alarmToggleTitle": "알림 받기",
+  "alarmEnabledToast": "{homeTeam} - {awayTeam}의 경기 알림이 활성화 되었습니다",
+  "@alarmEnabledToast": {
+    "placeholders": {
+      "homeTeam": {
+        "type": "String"
+      },
+      "awayTeam": {
+        "type": "String"
+      }
+    }
+  },
+  "alarmDisabledToast": "{homeTeam} - {awayTeam}의 경기 알림이 비활성화 되었습니다",
+  "@alarmDisabledToast": {
+    "placeholders": {
+      "homeTeam": {
+        "type": "String"
+      },
+      "awayTeam": {
+        "type": "String"
+      }
+    }
+  },
   "alarmSecondHalf": "후반전 시작",
   "analysisAiAnalyzing": "AI 분석 중...",
   "analysisAiWaitHint": "잠시만 기다려주세요 (약 5–10초)",
@@ -185,6 +207,8 @@
   "fixtureCancelled": "취소",
   "fixtureEmpty": "경기 일정이 없습니다.",
   "fixtureInterrupted": "중단",
+  "statusPostponed": "연기",
+  "statusInterrupted": "중단",
   "baseballInningTop": "{inning}회 초",
   "baseballInningBottom": "{inning}회 말",
   "fixtureLive": "LIVE",

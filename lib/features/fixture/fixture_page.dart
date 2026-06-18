@@ -17,6 +17,7 @@ import 'package:trendsoccer/core/services/admob_service.dart';
 import 'package:trendsoccer/core/services/fixture_service.dart';
 import 'package:trendsoccer/core/services/notification_service.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/utils/baseball_status.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
@@ -503,10 +504,38 @@ class _FixturePageState extends ConsumerState<FixturePage>
 
   bool _isAlarmEligible(FixtureMatch match, {LiveMatchData? live}) {
     var status = match.status;
-    var rawStatus = match.rawStatus;
+    var rawStatus = match.rawStatus.trim().toUpperCase();
     if (live != null) {
       rawStatus = live.status.trim().toUpperCase();
       status = normalizeMatchStatus(rawStatus);
+    }
+
+    const ineligibleRaw = {
+      'FT',
+      'FINAL',
+      'FIN',
+      'FINISHED',
+      'POST',
+      'INTR',
+      'CANC',
+      'ABD',
+      'PST',
+      'POSTPONED',
+      'CANCELLED',
+      'CANCELED',
+      'ABANDONED',
+      'AET',
+      'PEN',
+      'AWD',
+      'WO',
+    };
+    if (ineligibleRaw.contains(rawStatus)) return false;
+
+    if (status == 'finished' ||
+        status == 'postponed' ||
+        status == 'interrupted' ||
+        status == 'cancelled') {
+      return false;
     }
 
     if (status == 'scheduled' || status == 'live') return true;
@@ -644,6 +673,39 @@ class _FixturePageState extends ConsumerState<FixturePage>
     unawaited(_refreshAlarmStatesForDate(matches, date));
   }
 
+  void _showAlarmToggleToast(FixtureMatch match, {required bool enabled}) {
+    if (!mounted) return;
+    final sem = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
+    final homeTeam = localizedTeamName(
+      context,
+      match.homeTeam,
+      match.homeTeamKo,
+    );
+    final awayTeam = localizedTeamName(
+      context,
+      match.awayTeam,
+      match.awayTeamKo,
+    );
+    final message = enabled
+        ? l10n.alarmEnabledToast(homeTeam, awayTeam)
+        : l10n.alarmDisabledToast(homeTeam, awayTeam);
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: TsType.bodyMRegular.copyWith(color: sem.surfaceRaised),
+        ),
+        backgroundColor: sem.textPrimary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   Future<void> _onNotificationTap(FixtureMatch match) async {
     if (!_isAlarmEligible(match)) return;
     if (!await ensureMatchAlarmGate(context)) return;
@@ -670,6 +732,8 @@ class _FixturePageState extends ConsumerState<FixturePage>
                 if (!ok && mounted) {
           setState(() => _alarmEnabledMatchIds.add(id));
           TsToast.error(context, context.l10n.errorUnauthorized);
+        } else if (ok && mounted) {
+          _showAlarmToggleToast(match, enabled: false);
         }
       } catch (e) {
               }
@@ -688,6 +752,8 @@ class _FixturePageState extends ConsumerState<FixturePage>
             if (!ok && mounted) {
         setState(() => _alarmEnabledMatchIds.remove(id));
         TsToast.error(context, context.l10n.errorUnauthorized);
+      } else if (ok && mounted) {
+        _showAlarmToggleToast(match, enabled: true);
       }
     } catch (e) {
           }
@@ -891,7 +957,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
         slivers.add(
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
               child: PremiumAdWrapper(
                 adUnitId: AdmobService.fixtureBannerAdUnitId,
               ),

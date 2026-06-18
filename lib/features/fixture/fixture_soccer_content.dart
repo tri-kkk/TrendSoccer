@@ -12,6 +12,13 @@ abstract final class FixtureSoccerContent {
   }
 
   static FixtureMatchStatus toFixtureStatus(FixtureMatch match) {
+    final raw = match.rawStatus.trim().toUpperCase();
+    if (raw == 'POST' || raw == 'PST' || raw == 'POSTPONED') {
+      return FixtureMatchStatus.postponed;
+    }
+    if (raw == 'INTR') {
+      return FixtureMatchStatus.interrupted;
+    }
     switch (match.status) {
       case 'live':
         return FixtureMatchStatus.live;
@@ -30,6 +37,11 @@ abstract final class FixtureSoccerContent {
 
   static String? scoreText(FixtureMatch match, {required bool isHome}) {
     if (match.status == 'scheduled') return null;
+    if (match.status == 'postponed' || match.status == 'interrupted') {
+      if (match.homeScore == null && match.awayScore == null) {
+        return null;
+      }
+    }
     final score = isHome ? match.homeScore : match.awayScore;
     return score?.toString();
   }
@@ -82,6 +94,13 @@ abstract final class FixtureSoccerContent {
     if (live != null && live.isFinished) {
       return l10n.fixtureStatusFinal;
     }
+    final raw = match.rawStatus.trim().toUpperCase();
+    if (raw == 'POST' || raw == 'PST' || raw == 'POSTPONED') {
+      return l10n.statusPostponed;
+    }
+    if (raw == 'INTR') {
+      return l10n.statusInterrupted;
+    }
     switch (match.status) {
       case 'live':
         if (isHalftimeStatus(match.rawStatus) ||
@@ -98,11 +117,11 @@ abstract final class FixtureSoccerContent {
       case 'finished':
         return l10n.fixtureStatusFinal;
       case 'postponed':
-        return l10n.matchPostponed;
+        return l10n.statusPostponed;
       case 'cancelled':
         return l10n.matchCancelled;
       case 'interrupted':
-        return l10n.fixtureInterrupted;
+        return l10n.statusInterrupted;
       default:
         return fixtureMatchTimeKst(match);
     }

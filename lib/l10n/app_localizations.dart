@@ -236,6 +236,18 @@ abstract class AppLocalizations {
   /// **'알림 받기'**
   String get alarmToggleTitle;
 
+  /// No description provided for @alarmEnabledToast.
+  ///
+  /// In ko, this message translates to:
+  /// **'{homeTeam} - {awayTeam}의 경기 알림이 활성화 되었습니다'**
+  String alarmEnabledToast(String homeTeam, String awayTeam);
+
+  /// No description provided for @alarmDisabledToast.
+  ///
+  /// In ko, this message translates to:
+  /// **'{homeTeam} - {awayTeam}의 경기 알림이 비활성화 되었습니다'**
+  String alarmDisabledToast(String homeTeam, String awayTeam);
+
   /// No description provided for @alarmSecondHalf.
   ///
   /// In ko, this message translates to:
@@ -1207,6 +1219,18 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'중단'**
   String get fixtureInterrupted;
+
+  /// No description provided for @statusPostponed.
+  ///
+  /// In ko, this message translates to:
+  /// **'연기'**
+  String get statusPostponed;
+
+  /// No description provided for @statusInterrupted.
+  ///
+  /// In ko, this message translates to:
+  /// **'중단'**
+  String get statusInterrupted;
 
   /// No description provided for @baseballInningTop.
   ///

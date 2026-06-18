@@ -36,10 +36,13 @@ abstract final class FixtureBaseballContent {
   }
 
   static String? scoreText(FixtureMatch match, {required bool isHome}) {
-    if (match.status == 'scheduled' ||
-        match.status == 'postponed' ||
-        match.status == 'cancelled') {
+    if (match.status == 'scheduled' || match.status == 'cancelled') {
       return null;
+    }
+    if (match.status == 'postponed' || match.status == 'interrupted') {
+      if (match.homeScore == null && match.awayScore == null) {
+        return null;
+      }
     }
     final score = isHome ? match.homeScore : match.awayScore;
     return score?.toString();
@@ -51,14 +54,15 @@ abstract final class FixtureBaseballContent {
   ) {
     if (match.status == 'postponed' ||
         BaseballStatus.isPostponed(match.rawStatus)) {
-      return l10n.matchPostponed;
+      return l10n.statusPostponed;
     }
     if (match.status == 'cancelled' ||
         BaseballStatus.isCancelled(match.rawStatus)) {
       return l10n.matchCancelled;
     }
-    if (BaseballStatus.isInterrupted(match.rawStatus)) {
-      return l10n.fixtureInterrupted;
+    if (match.status == 'interrupted' ||
+        BaseballStatus.isInterrupted(match.rawStatus)) {
+      return l10n.statusInterrupted;
     }
 
     if (BaseballStatus.isScheduled(match.rawStatus) ||
@@ -88,7 +92,7 @@ abstract final class FixtureBaseballContent {
 
   static String localizeStatusCode(String code, AppLocalizations l10n) {
     if (code.isEmpty) return code;
-    if (code == 'INT') return l10n.fixtureInterrupted;
+    if (code == 'INT') return l10n.statusInterrupted;
     final topMatch = RegExp(r'^(\d+)T$').firstMatch(code);
     if (topMatch != null) {
       return l10n.baseballInningTop(int.parse(topMatch.group(1)!));

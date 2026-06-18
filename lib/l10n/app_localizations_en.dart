@@ -89,6 +89,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alarmToggleTitle => 'Receive Alerts';
 
   @override
+  String alarmEnabledToast(String homeTeam, String awayTeam) {
+    return 'Match alerts enabled for $homeTeam vs $awayTeam';
+  }
+
+  @override
+  String alarmDisabledToast(String homeTeam, String awayTeam) {
+    return 'Match alerts disabled for $homeTeam vs $awayTeam';
+  }
+
+  @override
   String get alarmSecondHalf => '2nd Half Start';
 
   @override
@@ -607,6 +617,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fixtureInterrupted => 'Interrupted';
+
+  @override
+  String get statusPostponed => 'PPD';
+
+  @override
+  String get statusInterrupted => 'SUSP';
 
   @override
   String baseballInningTop(int inning) {

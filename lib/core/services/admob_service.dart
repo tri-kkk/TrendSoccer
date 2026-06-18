@@ -3,7 +3,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdmobService {
   // Set to false before release
-  static const bool _useTestAds = true;
+  static const bool _useTestAds = false;
 
   // Production IDs
   static const String _prodTrendBanner =

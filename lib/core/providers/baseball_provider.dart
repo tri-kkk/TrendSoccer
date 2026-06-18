@@ -32,13 +32,6 @@ const baseballAnalysisLeagueChips = [
     labelEn: 'All',
   ),
   BaseballAnalysisLeagueChip(
-    id: 'kbo',
-    label: 'KBO',
-    labelEn: 'KBO',
-    code: 'KBO',
-    iconId: 'kbo',
-  ),
-  BaseballAnalysisLeagueChip(
     id: 'mlb',
     label: 'MLB',
     labelEn: 'MLB',
@@ -51,6 +44,13 @@ const baseballAnalysisLeagueChips = [
     labelEn: 'NPB',
     code: 'NPB',
     iconId: 'npb',
+  ),
+  BaseballAnalysisLeagueChip(
+    id: 'kbo',
+    label: 'KBO',
+    labelEn: 'KBO',
+    code: 'KBO',
+    iconId: 'kbo',
   ),
   BaseballAnalysisLeagueChip(
     id: 'cpbl',

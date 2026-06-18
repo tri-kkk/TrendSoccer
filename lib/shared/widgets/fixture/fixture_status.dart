@@ -116,7 +116,7 @@ class _FixtureStatusState extends State<FixtureStatus> with TickerProviderStateM
           ),
         FixtureMatchStatus.interrupted => Center(
             child: Text(
-              widget.timeText ?? l10n.fixtureInterrupted,
+              widget.timeText ?? l10n.statusInterrupted,
               style: TsType.labelSRegular.copyWith(
                 color: TsColors.systemWarning500,
               ),
@@ -125,8 +125,10 @@ class _FixtureStatusState extends State<FixtureStatus> with TickerProviderStateM
           ),
         FixtureMatchStatus.postponed => Center(
             child: Text(
-              widget.timeText ?? l10n.matchPostponed,
-              style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+              widget.timeText ?? l10n.statusPostponed,
+              style: TsType.labelSRegular.copyWith(
+                color: TsColors.systemWarning500,
+              ),
               textAlign: TextAlign.center,
             ),
           ),

@@ -5,6 +5,36 @@ import 'package:trendsoccer/core/models/fixture_models_v2.dart';
 import 'package:trendsoccer/core/services/fixture_service.dart';
 import 'package:trendsoccer/core/utils/baseball_status.dart';
 
+const baseballLeaguePriority = {
+  'MLB': 0,
+  'NPB': 1,
+  'KBO': 2,
+  'CPBL': 3,
+};
+
+int _baseballLeagueSortKey(String code) =>
+    baseballLeaguePriority[code.toUpperCase()] ?? 99;
+
+void _sortBaseballLeagueGroups(List<FixtureLeagueGroup> groups) {
+  groups.sort((a, b) {
+    final priorityA = _baseballLeagueSortKey(a.leagueCode);
+    final priorityB = _baseballLeagueSortKey(b.leagueCode);
+    final cmp = priorityA.compareTo(priorityB);
+    if (cmp != 0) return cmp;
+    return a.leagueName.toLowerCase().compareTo(b.leagueName.toLowerCase());
+  });
+}
+
+void _sortBaseballLeagueOptions(List<FixtureLeagueOption> options) {
+  options.sort((a, b) {
+    final priorityA = _baseballLeagueSortKey(a.code);
+    final priorityB = _baseballLeagueSortKey(b.code);
+    final cmp = priorityA.compareTo(priorityB);
+    if (cmp != 0) return cmp;
+    return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+  });
+}
+
 String fixtureDateString(DateTime date) {
   final month = date.month.toString().padLeft(2, '0');
   final day = date.day.toString().padLeft(2, '0');
@@ -323,12 +353,16 @@ final fixtureAvailableLeaguesProvider =
             sport: sport,
             liveMap: liveMap,
           ),
+          sport: sport,
         ),
         orElse: () => const [],
       );
 });
 
-List<FixtureLeagueOption> _extractLeagueOptions(List<FixtureMatch> matches) {
+List<FixtureLeagueOption> _extractLeagueOptions(
+  List<FixtureMatch> matches, {
+  String? sport,
+}) {
   final byCode = <String, FixtureLeagueOption>{};
   for (final match in matches) {
     if (match.leagueKey == 'unknown') continue;
@@ -340,8 +374,12 @@ List<FixtureLeagueOption> _extractLeagueOptions(List<FixtureMatch> matches) {
       logo: match.leagueLogo ?? existing?.logo,
     );
   }
-  final options = byCode.values.toList()
-    ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+  final options = byCode.values.toList();
+  if (sport == 'baseball') {
+    _sortBaseballLeagueOptions(options);
+  } else {
+    options.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+  }
   return options;
 }
 
@@ -381,7 +419,14 @@ final allFixturesWithLiveProvider =
 
 final fixtureLeagueGroupsProvider =
     Provider<AsyncValue<List<FixtureLeagueGroup>>>((ref) {
-  return ref.watch(fixturesWithLiveProvider).whenData(groupMatchesByLeague);
+  final sport = ref.watch(fixtureSelectedSportProvider);
+  return ref.watch(fixturesWithLiveProvider).whenData((matches) {
+    final groups = groupMatchesByLeague(matches);
+    if (sport == 'baseball') {
+      _sortBaseballLeagueGroups(groups);
+    }
+    return groups;
+  });
 });
 
 void invalidateFixtureData(WidgetRef ref) {

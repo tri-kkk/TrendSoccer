@@ -23,6 +23,28 @@
   "accessUnlockMinutes": "Opens in {minutes}m",
   "accessUnlockViewAnalysis": "View analysis",
   "alarmToggleTitle": "Receive Alerts",
+  "alarmEnabledToast": "Match alerts enabled for {homeTeam} vs {awayTeam}",
+  "@alarmEnabledToast": {
+    "placeholders": {
+      "homeTeam": {
+        "type": "String"
+      },
+      "awayTeam": {
+        "type": "String"
+      }
+    }
+  },
+  "alarmDisabledToast": "Match alerts disabled for {homeTeam} vs {awayTeam}",
+  "@alarmDisabledToast": {
+    "placeholders": {
+      "homeTeam": {
+        "type": "String"
+      },
+      "awayTeam": {
+        "type": "String"
+      }
+    }
+  },
   "alarmSecondHalf": "2nd Half Start",
   "analysisAiAnalyzing": "AI analysis in progress...",
   "analysisAiWaitHint": "Please wait (about 5–10 seconds)",
@@ -185,6 +207,8 @@
   "fixtureCancelled": "Cancelled",
   "fixtureEmpty": "No fixtures available.",
   "fixtureInterrupted": "Interrupted",
+  "statusPostponed": "PPD",
+  "statusInterrupted": "SUSP",
   "baseballInningTop": "Top {inning}",
   "baseballInningBottom": "Bot {inning}",
   "fixtureLive": "LIVE",

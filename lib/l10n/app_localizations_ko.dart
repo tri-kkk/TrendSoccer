@@ -85,6 +85,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get alarmToggleTitle => '알림 받기';
 
   @override
+  String alarmEnabledToast(String homeTeam, String awayTeam) {
+    return '$homeTeam - $awayTeam의 경기 알림이 활성화 되었습니다';
+  }
+
+  @override
+  String alarmDisabledToast(String homeTeam, String awayTeam) {
+    return '$homeTeam - $awayTeam의 경기 알림이 비활성화 되었습니다';
+  }
+
+  @override
   String get alarmSecondHalf => '후반전 시작';
 
   @override
@@ -594,6 +604,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get fixtureInterrupted => '중단';
+
+  @override
+  String get statusPostponed => '연기';
+
+  @override
+  String get statusInterrupted => '중단';
 
   @override
   String baseballInningTop(int inning) {
