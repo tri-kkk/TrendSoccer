@@ -18,19 +18,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutContactWebsite => 'trendsoccer.com';
 
   @override
-  String get aboutDescription =>
-      'TrendSoccer predicts match flow with AI-powered real-time analysis. From the Premier League to the Champions League, experience every big match with expert-level insights.';
+  String get aboutDescription => 'TrendSoccer predicts match flow with AI-powered real-time analysis. From the Premier League to the Champions League, experience every big match with expert-level insights.';
 
   @override
-  String get aboutFeatureAiDesc =>
-      'Built on four seasons of extensive match data';
+  String get aboutFeatureAiDesc => 'Built on four seasons of extensive match data';
 
   @override
   String get aboutFeatureAiTitle => 'AI-powered analysis';
 
   @override
-  String get aboutFeatureLeaguesDesc =>
-      'Comprehensive data for the top six leagues';
+  String get aboutFeatureLeaguesDesc => 'Comprehensive data for the top six leagues';
 
   @override
   String get aboutFeatureLeaguesTitle => 'Global league coverage';
@@ -51,8 +48,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutVisionSection => 'Vision';
 
   @override
-  String get aboutVisionText =>
-      'We help football fans understand and enjoy matches more deeply.';
+  String get aboutVisionText => 'We help football fans understand and enjoy matches more deeply.';
 
   @override
   String get accessLockLoginRequired => 'Log in to view.';
@@ -64,8 +60,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accessLockOpensOneHourBefore => 'Opens 1 hour before kickoff.';
 
   @override
-  String get accessLockPremium24h =>
-      'Premium subscribers can view from 24 hours before kickoff.';
+  String get accessLockPremium24h => 'Premium subscribers can view from 24 hours before kickoff.';
 
   @override
   String accessUnlockDaysHours(int days, int hours) {
@@ -135,8 +130,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get analysisNoMatches => 'No matches';
 
   @override
-  String get analysisNoMatchesFilterHint =>
-      'No games today or no matches match your filters.';
+  String get analysisNoMatchesFilterHint => 'No games today or no matches match your filters.';
 
   @override
   String get analysisNoResult => 'No analysis result available.';
@@ -178,8 +172,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get baseballAiMatchAnalysis => 'AI match analysis';
 
   @override
-  String get baseballAiPremiumHint =>
-      'In-depth AI analysis is available with a Premium subscription.';
+  String get baseballAiPremiumHint => 'In-depth AI analysis is available with a Premium subscription.';
 
   @override
   String get baseballAiSummary => 'AI analysis summary';
@@ -194,12 +187,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get baseballAiTabLoading => 'Loading AI analysis...';
 
   @override
-  String get baseballAiTabLoadingHint =>
-      'First analysis may take about 10–15 seconds.';
+  String get baseballAiTabLoadingHint => 'First analysis may take about 10–15 seconds.';
 
   @override
-  String get baseballAiWinProbabilityHint =>
-      'AI-based win probability analysis.';
+  String get baseballAiWinProbabilityHint => 'AI-based win probability analysis.';
 
   @override
   String get baseballBaseline => 'Line';
@@ -268,8 +259,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get baseballPitcherAnalysis => 'Pitcher analysis';
 
   @override
-  String get baseballPitcherAnalysisNoData =>
-      'Pitcher analysis data unavailable.';
+  String get baseballPitcherAnalysisNoData => 'Pitcher analysis data unavailable.';
 
   @override
   String get baseballPitcherMatchup => 'Pitcher matchup analysis';
@@ -335,8 +325,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get baseballTeamOps => 'Team OPS';
 
   @override
-  String get baseballTeamProductivityComment =>
-      'Team offensive production over the last 10 games.';
+  String get baseballTeamProductivityComment => 'Team offensive production over the last 10 games.';
 
   @override
   String get baseballTeamWhip => 'Team WHIP';
@@ -409,8 +398,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get close => 'Close';
 
   @override
-  String get comboAiDisclaimer =>
-      'AI analysis is for reference only; results are not guaranteed.';
+  String get comboAiDisclaimer => 'AI analysis is for reference only; results are not guaranteed.';
 
   @override
   String get comboAiSummary => 'Summary';
@@ -515,8 +503,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteAccountHint => 'Type \'DELETE\' to confirm.';
 
   @override
-  String get deleteAccountMessage =>
-      'Deleting your account will permanently remove all data and cannot be undone.';
+  String get deleteAccountMessage => 'Deleting your account will permanently remove all data and cannot be undone.';
 
   @override
   String get deleteAccountTitle => 'Delete Account';
@@ -560,8 +547,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorDeleteConfirmation => 'Account deletion failed';
 
   @override
-  String get errorAccountDeleted =>
-      'This account was deleted. Please sign in with another account.';
+  String get errorAccountDeleted => 'This account was deleted. Please sign in with another account.';
 
   @override
   String get errorEmailRequired => 'Email is required';
@@ -576,8 +562,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorNotFound => 'Requested information not found';
 
   @override
-  String get errorPaymentPending =>
-      'Payment processing. Please try again shortly';
+  String get errorPaymentPending => 'Payment processing. Please try again shortly';
 
   @override
   String get errorPurchaseVerifyFailed => 'Payment verification failed';
@@ -686,8 +671,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get forceUpdateButton => 'Update';
 
   @override
-  String get forceUpdateMessage =>
-      'An update with new features and stability improvements is available.';
+  String get forceUpdateMessage => 'An update with new features and stability improvements is available.';
 
   @override
   String get forceUpdateSkip => 'Skip';
@@ -717,8 +701,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get helpCenterEmail => 'Email';
 
   @override
-  String get helpCenterIntro =>
-      'Leave your inquiry and we will reply by email.';
+  String get helpCenterIntro => 'Leave your inquiry and we will reply by email.';
 
   @override
   String get helpCenterMessage => 'Message';
@@ -825,8 +808,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginNaverFailed => 'Naver sign-in failed. Please try again.';
 
   @override
-  String get loginSheetDesc =>
-      'From H2H records to in-depth team analysis, explore the data to complete your predictions.';
+  String get loginSheetDesc => 'From H2H records to in-depth team analysis, explore the data to complete your predictions.';
 
   @override
   String get loginSheetTitle => 'The smarter choice starts here.';
@@ -835,8 +817,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginStart => 'Get Started';
 
   @override
-  String get loginSubtitle =>
-      'AI-powered soccer and baseball analysis.\nElevate your predictions with precision data.';
+  String get loginSubtitle => 'AI-powered soccer and baseball analysis.\nElevate your predictions with precision data.';
 
   @override
   String get loginSuccess => 'Signed in successfully';
@@ -848,8 +829,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchAlarmDisabledGoSettings => 'Go to Settings';
 
   @override
-  String get matchAlarmDisabledMessage =>
-      'Match alerts are turned off.\nEnable them in Menu > Notification Settings.';
+  String get matchAlarmDisabledMessage => 'Match alerts are turned off.\nEnable them in Menu > Notification Settings.';
 
   @override
   String get matchAlarmDisabledTitle => 'Match Alerts Disabled';
@@ -967,12 +947,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationAppGeneral => 'App Notifications';
 
   @override
-  String get notificationAppGeneralDesc =>
-      'Updates, announcements, service notices';
+  String get notificationAppGeneralDesc => 'Updates, announcements, service notices';
 
   @override
-  String get notificationDisabledSnack =>
-      'Notifications are disabled. Please enable them in Settings.';
+  String get notificationDisabledSnack => 'Notifications are disabled. Please enable them in Settings.';
 
   @override
   String get notificationMarketing => 'Marketing';
@@ -990,16 +968,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationPermissionGoSettings => 'Go to Settings';
 
   @override
-  String get notificationPermissionMessage =>
-      'Notification permission is required.\nPlease enable it in Settings.';
+  String get notificationPermissionMessage => 'Notification permission is required.\nPlease enable it in Settings.';
 
   @override
-  String get notificationPermissionMessageMatch =>
-      'Notification permission is required to receive match alerts.\nPlease enable it in Settings.';
+  String get notificationPermissionMessageMatch => 'Notification permission is required to receive match alerts.\nPlease enable it in Settings.';
 
   @override
-  String get notificationPermissionDisabledBanner =>
-      'Notifications are disabled. Please enable them in Settings.';
+  String get notificationPermissionDisabledBanner => 'Notifications are disabled. Please enable them in Settings.';
 
   @override
   String get notificationPermissionTitle => 'Permission Required';
@@ -1147,8 +1122,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumComboLoadFailed => 'Could not load baseball AI combos.';
 
   @override
-  String get premiumExclusiveContent =>
-      'This content is for Premium members only.';
+  String get premiumExclusiveContent => 'This content is for Premium members only.';
 
   @override
   String get premiumExclusiveShort => 'Premium only';
@@ -1173,8 +1147,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get parserReasonProbEdge => 'Probability edge';
 
   @override
-  String get premiumNonSubscriberSubtitle =>
-      'AI Analysis, PREMIUM PICK, Baseball Combos\nAd-free experience';
+  String get premiumNonSubscriberSubtitle => 'AI Analysis, PREMIUM PICK, Baseball Combos\nAd-free experience';
 
   @override
   String get premiumNonSubscriberTitle => 'Premium Content';
@@ -1186,8 +1159,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumSubscribeAfter => 'Available after subscribing.';
 
   @override
-  String get premiumSubscribeBenefitsLine1 =>
-      'PREMIUM PICK and baseball AI combo analysis';
+  String get premiumSubscribeBenefitsLine1 => 'PREMIUM PICK and baseball AI combo analysis';
 
   @override
   String get premiumSubscribeNow => 'Subscribe Now';
@@ -1199,12 +1171,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subscribeToUnlock => 'Subscribe to unlock full predictions';
 
   @override
-  String get premiumSubscribeSheetBaseballDesc =>
-      'Try AI analysis data including win probability, over/under, and season stats.';
+  String get premiumSubscribeSheetBaseballDesc => 'Try AI analysis data including win probability, over/under, and season stats.';
 
   @override
-  String get premiumSubscribeSheetSoccerDesc =>
-      'Enjoy premium benefits such as H2H records and in-depth team analysis.';
+  String get premiumSubscribeSheetSoccerDesc => 'Enjoy premium benefits such as H2H records and in-depth team analysis.';
 
   @override
   String get reportAuthorRole => 'Football data analyst';
@@ -1213,8 +1183,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportDetailLoadError => 'Could not load match preview.';
 
   @override
-  String get reportEmptySubtitle =>
-      'New previews will appear here when published.';
+  String get reportEmptySubtitle => 'New previews will appear here when published.';
 
   @override
   String get reportEmptyTitle => 'No match previews yet.';
@@ -1229,8 +1198,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportNotFoundTitle => 'Report not found.';
 
   @override
-  String get reportPremiumOnlyMessage =>
-      'Subscribe to view AI analysis results';
+  String get reportPremiumOnlyMessage => 'Subscribe to view AI analysis results';
 
   @override
   String get reportPremiumOnlyTitle => 'Premium members only';
@@ -1302,12 +1270,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signupFreeBenefit3 => 'Browse baseball Standard analysis';
 
   @override
-  String get signupTrialBannerSubtitle =>
-      '48-hour premium trial starts immediately after sign-up';
+  String get signupTrialBannerSubtitle => '48-hour premium trial starts immediately after sign-up';
 
   @override
-  String get signupWhatsNextBenefit1 =>
-      'Auto switch to free plan after 48-hour trial';
+  String get signupWhatsNextBenefit1 => 'Auto switch to free plan after 48-hour trial';
 
   @override
   String get signupWhatsNextBenefit2 => 'Subscribe to premium for full access';
@@ -1321,8 +1287,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get signupCompleteFreeBenefit1 =>
-      'Analysis opens 2 hours before kickoff';
+  String get signupCompleteFreeBenefit1 => 'Analysis opens 2 hours before kickoff';
 
   @override
   String get signupCompleteFreeBenefit2 => 'Basic analysis data';
@@ -1337,8 +1302,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signupCompleteGoHome => 'Go to Home';
 
   @override
-  String get signupCompletePremiumBenefit1 =>
-      '24-hour priority analysis access';
+  String get signupCompletePremiumBenefit1 => '24-hour priority analysis access';
 
   @override
   String get signupCompletePremiumBenefit2 => 'Unlimited PREMIUM PICK';
@@ -1356,23 +1320,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signupCompleteStartPrompt => 'Start exploring TrendSoccer now.';
 
   @override
-  String get signupCompleteSubtitle =>
-      'Your 48-hour premium trial has started.';
+  String get signupCompleteSubtitle => 'Your 48-hour premium trial has started.';
 
   @override
-  String get signupCompleteSuccessToast =>
-      'Sign-up complete! Your premium trial has started.';
+  String get signupCompleteSuccessToast => 'Sign-up complete! Your premium trial has started.';
 
   @override
   String get signupCompleteTitle => 'Welcome!';
 
   @override
-  String get signupCompleteTrialBanner =>
-      'Your 48-hour free Premium trial has started!';
+  String get signupCompleteTrialBanner => 'Your 48-hour free Premium trial has started!';
 
   @override
-  String get signupErrorProcessing =>
-      'An error occurred while processing sign-up.';
+  String get signupErrorProcessing => 'An error occurred while processing sign-up.';
 
   @override
   String get signupMarketingOptional => 'Marketing Emails';
@@ -1399,8 +1359,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signupTermsHeadingLine2 => 'please agree to the terms.';
 
   @override
-  String get signupTermsHint =>
-      'Sign-up completes when you agree to the required items.';
+  String get signupTermsHint => 'Sign-up completes when you agree to the required items.';
 
   @override
   String get signupTermsRequired => 'Terms of Service';
@@ -1418,8 +1377,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get soccerAiPremiumOnly => 'Premium-only analysis';
 
   @override
-  String get soccerAiPremiumSubscribeHint =>
-      'In-depth H2H and team insights require Premium.';
+  String get soccerAiPremiumSubscribeHint => 'In-depth H2H and team insights require Premium.';
 
   @override
   String get soccerAnalysisReasoning => 'Reasoning';
@@ -1614,8 +1572,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sportSoccer => 'Soccer';
 
   @override
-  String get subscribeAlreadyOwned =>
-      'You are already subscribed. Checking your subscription.';
+  String get subscribeAlreadyOwned => 'You are already subscribed. Checking your subscription.';
 
   @override
   String get subscribeBack => 'Go back';
@@ -1627,8 +1584,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subscribeFailAttemptAmount => 'Attempted amount';
 
   @override
-  String get subscribeFailDescription =>
-      'Please try again or use another payment method.';
+  String get subscribeFailDescription => 'Please try again or use another payment method.';
 
   @override
   String get subscribeFailErrorCode => 'Error code';
@@ -1643,8 +1599,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subscribeFailTitle => 'Payment Failed';
 
   @override
-  String get subscribeFreeBenefit1 =>
-      'Analysis cards open 2 hours before kickoff';
+  String get subscribeFreeBenefit1 => 'Analysis cards open 2 hours before kickoff';
 
   @override
   String get subscribeFreeBenefit2 => 'Basic match analysis and stats';
@@ -1683,8 +1638,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subscribeIapUnavailable => 'Google Play billing is unavailable.';
 
   @override
-  String get subscribeIapVerifyPending =>
-      'Payment completed but verification is pending. Please restart the app shortly.';
+  String get subscribeIapVerifyPending => 'Payment completed but verification is pending. Please restart the app shortly.';
 
   @override
   String get subscribeManageOnPlay => 'Manage on Google Play';
@@ -1710,8 +1664,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subscribePremiumActive => 'Premium Active';
 
   @override
-  String get subscribePremiumBenefit1 =>
-      '24-hour priority access to all analysis';
+  String get subscribePremiumBenefit1 => '24-hour priority access to all analysis';
 
   @override
   String get subscribePremiumBenefit2 => 'Unlimited soccer Premium Picks';
@@ -1731,8 +1684,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get subscribePremiumMessage =>
-      'You are currently subscribed to Premium.';
+  String get subscribePremiumMessage => 'You are currently subscribed to Premium.';
 
   @override
   String get subscribePriceMonthly => '₩4,900';
@@ -1824,12 +1776,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get trendBaseballAnalysis => 'Baseball Analysis';
 
   @override
-  String get trendEmptySubtitle1 =>
-      'Official leagues are currently on a break.';
+  String get trendEmptySubtitle1 => 'Official leagues are currently on a break.';
 
   @override
-  String get trendEmptySubtitle2 =>
-      'Stay tuned for our smarter picks when the season resumes.';
+  String get trendEmptySubtitle2 => 'Stay tuned for our smarter picks when the season resumes.';
 
   @override
   String get trendEmptyTitle => 'Awaiting the Next Match';

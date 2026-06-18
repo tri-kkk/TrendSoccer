@@ -7,6 +7,7 @@ import 'package:trendsoccer/core/router/app_router.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 
 /// Double-tap back to exit on root tabs; defers to GoRouter for sub-pages and
@@ -56,13 +57,14 @@ class _ExitBackHandlerState extends ConsumerState<ExitBackHandler> {
     }
     _lastBackPress = now;
 
+    final sem = Theme.of(context).extension<TsSemanticColors>()!;
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           l10n.exitToastMessage,
-          style: TsType.bodyMRegular.copyWith(color: Colors.white),
+          style: TsType.bodyMRegular.copyWith(color: sem.textPrimary),
         ),
         backgroundColor: TsColors.error500,
         behavior: SnackBarBehavior.floating,
