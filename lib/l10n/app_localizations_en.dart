@@ -601,10 +601,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exitConfirm => 'Exit';
 
   @override
+  String get exitDialogConfirm => 'Exit';
+
+  @override
+  String get exitDialogMessage => 'Are you sure you want to exit TrendSoccer?';
+
+  @override
+  String get exitDialogTitle => 'Exit App';
+
+  @override
   String get exitMessage => 'Are you sure you want to exit TrendSoccer?';
 
   @override
   String get exitTitle => 'Exit App';
+
+  @override
+  String get exitToastMessage => 'Press back again to exit';
 
   @override
   String get filterAll => 'All';

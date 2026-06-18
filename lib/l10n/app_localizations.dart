@@ -1184,6 +1184,24 @@ abstract class AppLocalizations {
   /// **'종료하기'**
   String get exitConfirm;
 
+  /// No description provided for @exitDialogConfirm.
+  ///
+  /// In ko, this message translates to:
+  /// **'종료'**
+  String get exitDialogConfirm;
+
+  /// No description provided for @exitDialogMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'TrendSoccer를 종료하시겠습니까?'**
+  String get exitDialogMessage;
+
+  /// No description provided for @exitDialogTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'앱 종료'**
+  String get exitDialogTitle;
+
   /// No description provided for @exitMessage.
   ///
   /// In ko, this message translates to:
@@ -1195,6 +1213,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'앱 종료'**
   String get exitTitle;
+
+  /// No description provided for @exitToastMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'한 번 더 누르면 종료됩니다'**
+  String get exitToastMessage;
 
   /// No description provided for @filterAll.
   ///
