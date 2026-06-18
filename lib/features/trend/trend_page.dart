@@ -41,6 +41,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
   static const double _analysisCardViewportFraction = 0.96;
   static const double _topBannerHeight = 380;
   static const double _bottomBannerHeight = 160;
+  static const double _directAdBannerHeight = 120;
 
   late final PageController _bannerController;
   late final PageController _bottomBannerController;
@@ -259,6 +260,31 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     );
   }
 
+  Widget _buildDirectAdBanner(Map<String, dynamic> ad) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+
+    return GestureDetector(
+      onTap: () => _handleAdClick(ad),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(TsSpacing.md),
+        child: CachedNetworkImage(
+          imageUrl: ad['image_url'] as String? ?? '',
+          width: double.infinity,
+          height: _directAdBannerHeight,
+          fit: BoxFit.fitWidth,
+          placeholder: (context, url) => Container(
+            height: _directAdBannerHeight,
+            decoration: BoxDecoration(
+              color: semantic.surfaceContainer,
+              borderRadius: BorderRadius.circular(TsSpacing.md),
+            ),
+          ),
+          errorWidget: (context, url, error) => const SizedBox.shrink(),
+        ),
+      ),
+    );
+  }
+
   Widget _buildBannerIndicator() {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     return Row(
@@ -373,7 +399,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
-          height: _bottomBannerHeight,
+          height: _directAdBannerHeight,
           child: PageView.builder(
             controller: _directAdBannerController,
             onPageChanged: (index) {
@@ -381,7 +407,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
             },
             itemCount: _directAdBanners.length,
             itemBuilder: (context, index) =>
-                _buildBottomBanner(_directAdBanners[index]),
+                _buildDirectAdBanner(_directAdBanners[index]),
           ),
         ),
         if (_directAdBanners.length > 1) ...[
@@ -425,7 +451,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     }
     if (_loadingBanners) {
       return SizedBox(
-        height: _bottomBannerHeight,
+        height: _directAdBannerHeight,
         child: Container(
           width: double.infinity,
           color: semantic.surfaceContainer,
