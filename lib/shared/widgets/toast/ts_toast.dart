@@ -2,14 +2,25 @@ import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 
 abstract final class TsToast {
   static void success(BuildContext context, String message) {
-    _show(
-      context,
-      message: message,
-      backgroundColor: TsColors.brandPrimary500,
-      duration: const Duration(seconds: 5),
+    final sem = Theme.of(context).extension<TsSemanticColors>()!;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: TsType.bodyMRegular.copyWith(color: sem.surfaceRaised),
+        ),
+        backgroundColor: sem.textPrimary,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        duration: const Duration(seconds: 3),
+      ),
     );
   }
 
