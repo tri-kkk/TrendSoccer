@@ -27,7 +27,7 @@ import 'package:trendsoccer/features/fixture/fixture_soccer_content.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/shared/widgets/ads/premium_ad_wrapper.dart';
 import 'package:trendsoccer/shared/widgets/appbar/ts_shell_app_bar_content.dart';
-import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
+import 'package:trendsoccer/shared/widgets/empty/network_error_widget.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/fixture/alarm_sheet.dart';
 import 'package:trendsoccer/shared/widgets/fixture/fixture_league_header.dart';
@@ -62,6 +62,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
   double _dragStartX = 0;
   double _dragEndX = 0;
   bool _deepLinkApplied = false;
+  bool _baseballLoadFailed = false;
   Timer? _livePollingTimer;
 
   @override
@@ -266,6 +267,8 @@ class _FixturePageState extends ConsumerState<FixturePage>
   }
 
   Future<void> _onRefresh() async {
+    if (mounted) setState(() => _baseballLoadFailed = false);
+
     final sport = ref.read(fixtureSelectedSportProvider);
     final selectedDate = ref.read(fixtureSelectedDateProvider);
 
@@ -355,9 +358,14 @@ class _FixturePageState extends ConsumerState<FixturePage>
 
       _baseballDateCache[date] = matches;
       _publishBaseballCache();
+      if (mounted) setState(() => _baseballLoadFailed = false);
 
       if (!background) {
         _preloadAdjacentBaseballDates(date);
+      }
+    } on Object {
+      if (!background && mounted) {
+        setState(() => _baseballLoadFailed = true);
       }
     } finally {
       _baseballDateLoading.remove(date);
@@ -1008,27 +1016,24 @@ class _FixturePageState extends ConsumerState<FixturePage>
       error: (error, stackTrace) => [
         SliverFillRemaining(
           hasScrollBody: false,
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  context.l10n.fixtureLoadFailed,
-                  style: TextStyle(color: semantic.textSecondary),
-                ),
-                const SizedBox(height: TsSpacing.lg),
-                TsButton(
-                  label: context.l10n.retry,
-                  variant: TsButtonVariant.primary,
-                  size: TsButtonSize.small,
-                  onPressed: _onFixtureRefresh,
-                ),
-              ],
-            ),
+          child: NetworkErrorWidget(
+            message: context.l10n.fixtureLoadFailed,
+            onRetry: _onFixtureRefresh,
           ),
         ),
       ],
       data: (groups) {
+        if (groups.isEmpty && isBaseball && _baseballLoadFailed) {
+          return [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: NetworkErrorWidget(
+                message: context.l10n.fixtureLoadFailed,
+                onRetry: _onFixtureRefresh,
+              ),
+            ),
+          ];
+        }
         if (groups.isEmpty) {
           return [
             SliverFillRemaining(
@@ -1065,13 +1070,6 @@ class _FixturePageState extends ConsumerState<FixturePage>
     final leagues = ref.watch(fixtureAvailableLeaguesProvider);
     final groupsAsync = ref.watch(fixtureLeagueGroupsProvider);
     final liveMap = ref.watch(liveMatchesProvider);
-
-    ref.listen(rawFixturesProvider, (previous, next) {
-      final wasLoading = previous?.isLoading ?? false;
-      if (wasLoading && next.hasError && context.mounted) {
-        TsToast.error(context, context.l10n.fixtureLoadFailed);
-      }
-    });
 
     ref.listen(allFixturesWithLiveProvider, (previous, next) {
       next.whenData((matches) {

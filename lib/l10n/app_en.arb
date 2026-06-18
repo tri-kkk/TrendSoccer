@@ -316,6 +316,7 @@
   "menuTheme": "Theme",
   "menuTrialExpired": "Trial expired",
   "menuTrialRemaining": "{hours}h {minutes}m remaining",
+  "networkErrorMessage": "Please check your network connection.",
   "noMatchInfo": "Match information unavailable",
   "notificationAppGeneral": "App Notifications",
   "notificationAppGeneralDesc": "Updates, announcements, service notices",

@@ -22,6 +22,7 @@ import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
+import 'package:trendsoccer/shared/widgets/empty/network_error_widget.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/baseball_today_combo_card.dart';
 import 'package:trendsoccer/shared/widgets/ads/premium_ad_wrapper.dart';
@@ -700,18 +701,16 @@ class _TrendPageState extends ConsumerState<TrendPage> {
   }
 
   Widget _buildSoccerCards() {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final matchesAsync = ref.watch(analysisSoccerMatchesProvider);
 
     return SizedBox(
       height: 220,
       child: matchesAsync.when(
         loading: () => _buildAnalysisEmptyCard(context),
-        error: (error, stackTrace) => Center(
-          child: Text(
-            context.l10n.loadMatchesFailed,
-            style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
-            textAlign: TextAlign.center,
+        error: (error, stackTrace) => SingleChildScrollView(
+          child: NetworkErrorWidget(
+            message: context.l10n.loadMatchesFailed,
+            onRetry: () => ref.invalidate(analysisSoccerMatchesProvider),
           ),
         ),
         data: (matches) {
@@ -739,7 +738,6 @@ class _TrendPageState extends ConsumerState<TrendPage> {
   }
 
   Widget _buildBaseballCards() {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final matchesAsync = ref.watch(baseballAnalysisMatchesProvider);
 
     return SizedBox(
@@ -753,11 +751,10 @@ class _TrendPageState extends ConsumerState<TrendPage> {
             ),
           ),
         ),
-        error: (error, stackTrace) => Center(
-          child: Text(
-            context.l10n.loadMatchesFailed,
-            style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
-            textAlign: TextAlign.center,
+        error: (error, stackTrace) => SingleChildScrollView(
+          child: NetworkErrorWidget(
+            message: context.l10n.loadMatchesFailed,
+            onRetry: () => ref.invalidate(baseballAnalysisMatchesProvider),
           ),
         ),
         data: (matches) {

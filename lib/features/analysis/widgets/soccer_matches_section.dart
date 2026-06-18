@@ -7,16 +7,13 @@ import 'package:trendsoccer/core/models/soccer_models.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/services/admob_service.dart';
-import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
-import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/shared/widgets/ads/premium_ad_wrapper.dart';
-import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
+import 'package:trendsoccer/shared/widgets/empty/network_error_widget.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
-import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
-import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class SoccerMatchesSection extends ConsumerWidget {
   const SoccerMatchesSection({
@@ -28,16 +25,8 @@ class SoccerMatchesSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final selectedLeague = ref.watch(selectedLeagueProvider);
     final matchesAsync = ref.watch(analysisSoccerMatchesProvider);
-
-    ref.listen(analysisSoccerMatchesProvider, (previous, next) {
-      final wasLoading = previous?.isLoading ?? false;
-      if (wasLoading && next.hasError && context.mounted) {
-        TsToast.error(context, context.l10n.analysisLoadMatchesFailed);
-      }
-    });
 
     return matchesAsync.when(
       loading: () => const SliverToBoxAdapter(
@@ -47,17 +36,12 @@ class SoccerMatchesSection extends ConsumerWidget {
         ),
       ),
       error: (error, stackTrace) => SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: TsSpacing.xxl),
-          child: Center(
-            child: _InlineError(
-              semantic: semantic,
-              onRetry: () {
-                clearSoccerAnalysisEmptyCache();
-                ref.invalidate(analysisSoccerMatchesProvider);
-              },
-            ),
-          ),
+        child: NetworkErrorWidget(
+          message: context.l10n.analysisLoadMatchesFailed,
+          onRetry: () {
+            clearSoccerAnalysisEmptyCache();
+            ref.invalidate(analysisSoccerMatchesProvider);
+          },
         ),
       ),
       data: (matches) {
@@ -168,39 +152,6 @@ class _SoccerAnalysisCardItem extends ConsumerWidget {
         '/analysis/soccer/match-report/${match.matchId}',
         extra: MatchHeaderData.fromSoccerCard(card),
       ),
-    );
-  }
-}
-
-class _InlineError extends StatelessWidget {
-  const _InlineError({
-    required this.semantic,
-    required this.onRetry,
-  });
-
-  final TsSemanticColors semantic;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          l10n.analysisLoadMatchesFailed,
-          style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: TsSpacing.lg),
-        TsButton(
-          label: l10n.retry,
-          variant: TsButtonVariant.primary,
-          size: TsButtonSize.small,
-          onPressed: onRetry,
-        ),
-      ],
     );
   }
 }

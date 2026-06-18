@@ -18,7 +18,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get aboutContactWebsite => 'trendsoccer.com';
 
   @override
-  String get aboutDescription => 'TrendSoccer는 AI 기반 실시간 분석으로 경기 흐름을 예측합니다. 프리미어리그부터 챔피언스리그까지, 모든 빅매치를 전문가 수준의 인사이트로 경험하세요.';
+  String get aboutDescription =>
+      'TrendSoccer는 AI 기반 실시간 분석으로 경기 흐름을 예측합니다. 프리미어리그부터 챔피언스리그까지, 모든 빅매치를 전문가 수준의 인사이트로 경험하세요.';
 
   @override
   String get aboutFeatureAiDesc => '4시즌 방대한 경기 데이터를 기반으로 구축';
@@ -130,7 +131,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get analysisNoMatches => '경기가 없습니다';
 
   @override
-  String get analysisNoMatchesFilterHint => '오늘 예정된 경기가 없거나 필터 조건에 맞는 경기가 없습니다.';
+  String get analysisNoMatchesFilterHint =>
+      '오늘 예정된 경기가 없거나 필터 조건에 맞는 경기가 없습니다.';
 
   @override
   String get analysisNoResult => '분석 결과가 없습니다.';
@@ -817,7 +819,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get loginStart => '시작하기';
 
   @override
-  String get loginSubtitle => '프리미엄 AI가 읽어내는 축구와 야구의 흐름.\n정교한 데이터로 예측의 정확도를 높이세요.';
+  String get loginSubtitle =>
+      '프리미엄 AI가 읽어내는 축구와 야구의 흐름.\n정교한 데이터로 예측의 정확도를 높이세요.';
 
   @override
   String get loginSuccess => '로그인 성공';
@@ -829,7 +832,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get matchAlarmDisabledGoSettings => '설정으로 이동';
 
   @override
-  String get matchAlarmDisabledMessage => '경기 알림이 꺼져 있습니다.\n메뉴 > 알림 설정에서 경기 알림을 켜주세요.';
+  String get matchAlarmDisabledMessage =>
+      '경기 알림이 꺼져 있습니다.\n메뉴 > 알림 설정에서 경기 알림을 켜주세요.';
 
   @override
   String get matchAlarmDisabledTitle => '경기 알림 비활성화';
@@ -941,6 +945,9 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get networkErrorMessage => '네트워크 연결을 확인해주세요.';
+
+  @override
   String get noMatchInfo => '경기 정보가 없습니다';
 
   @override
@@ -971,10 +978,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get notificationPermissionMessage => '알림 권한이 필요합니다.\n설정에서 알림을 허용해주세요.';
 
   @override
-  String get notificationPermissionMessageMatch => '경기 알림을 받으려면 알림 권한이 필요합니다.\n설정에서 알림을 허용해주세요.';
+  String get notificationPermissionMessageMatch =>
+      '경기 알림을 받으려면 알림 권한이 필요합니다.\n설정에서 알림을 허용해주세요.';
 
   @override
-  String get notificationPermissionDisabledBanner => '알림 권한이 비활성화되어 있습니다. 설정에서 활성화해주세요.';
+  String get notificationPermissionDisabledBanner =>
+      '알림 권한이 비활성화되어 있습니다. 설정에서 활성화해주세요.';
 
   @override
   String get notificationPermissionTitle => '알림 권한 필요';
@@ -1147,7 +1156,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get parserReasonProbEdge => '확률 우위';
 
   @override
-  String get premiumNonSubscriberSubtitle => 'AI 분석, PREMIUM PICK, 야구 조합\n광고 없는 쾌적한 환경';
+  String get premiumNonSubscriberSubtitle =>
+      'AI 분석, PREMIUM PICK, 야구 조합\n광고 없는 쾌적한 환경';
 
   @override
   String get premiumNonSubscriberTitle => '프리미엄 전용 콘텐츠';
@@ -1171,10 +1181,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get subscribeToUnlock => '프리미엄 구독으로 전체 예측을 확인하세요';
 
   @override
-  String get premiumSubscribeSheetBaseballDesc => '승리 확률, 오버&언더, 시즌 통계 등 AI 분석 데이터를 이용해보세요.';
+  String get premiumSubscribeSheetBaseballDesc =>
+      '승리 확률, 오버&언더, 시즌 통계 등 AI 분석 데이터를 이용해보세요.';
 
   @override
-  String get premiumSubscribeSheetSoccerDesc => 'H2H 상대전적, 팀 심층 분석 등 프리미엄 혜택을 이용해보세요.';
+  String get premiumSubscribeSheetSoccerDesc =>
+      'H2H 상대전적, 팀 심층 분석 등 프리미엄 혜택을 이용해보세요.';
 
   @override
   String get reportAuthorRole => '축구 데이터 분석가';
@@ -1377,7 +1389,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get soccerAiPremiumOnly => '프리미엄 전용 분석';
 
   @override
-  String get soccerAiPremiumSubscribeHint => 'H2H 심층 분석과 팀 인사이트는 프리미엄 구독 후 이용할 수 있습니다.';
+  String get soccerAiPremiumSubscribeHint =>
+      'H2H 심층 분석과 팀 인사이트는 프리미엄 구독 후 이용할 수 있습니다.';
 
   @override
   String get soccerAnalysisReasoning => '분석 근거';
@@ -1638,7 +1651,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get subscribeIapUnavailable => 'Google Play 결제를 사용할 수 없습니다.';
 
   @override
-  String get subscribeIapVerifyPending => '결제는 완료되었으나 검증 대기 중입니다. 잠시 후 앱을 재시작해주세요.';
+  String get subscribeIapVerifyPending =>
+      '결제는 완료되었으나 검증 대기 중입니다. 잠시 후 앱을 재시작해주세요.';
 
   @override
   String get subscribeManageOnPlay => 'Google Play에서 구독 관리';

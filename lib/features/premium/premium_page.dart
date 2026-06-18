@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -16,12 +18,12 @@ import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/premium/combo/combo_parser.dart';
-import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_card.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_dashboard.dart';
+import 'package:trendsoccer/shared/widgets/empty/network_error_widget.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/toggle/sports_toggle.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
@@ -91,36 +93,14 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
     final date = ref.watch(todayDateProvider);
     final picksAsync = ref.watch(premiumPicksProvider(date));
 
-    ref.listen(premiumPicksProvider(date), (previous, next) {
-      final wasLoading = previous?.isLoading ?? false;
-      if (wasLoading && next.hasError && context.mounted) {
-        TsToast.error(context, l10n.premiumPickLoadFailed);
-      }
-    });
-
     return picksAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              l10n.premiumPickLoadFailed,
-              style: TsType.bodyLRegular.copyWith(
-                color: Theme.of(context)
-                    .extension<TsSemanticColors>()!
-                    .textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: TsSpacing.lg),
-            TsButton(
-              label: l10n.retry,
-              variant: TsButtonVariant.primary,
-              size: TsButtonSize.small,
-              onPressed: () => ref.invalidate(premiumPicksProvider(date)),
-            ),
-          ],
+      error: (error, stackTrace) => SizedBox.expand(
+        child: Center(
+          child: NetworkErrorWidget(
+            message: l10n.premiumPickLoadFailed,
+            onRetry: () => unawaited(_onRefresh()),
+          ),
         ),
       ),
       data: (picks) {
@@ -199,27 +179,12 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
 
     return comboAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              l10n.premiumComboLoadFailed,
-              style: TsType.bodyLRegular.copyWith(
-                color: Theme.of(context)
-                    .extension<TsSemanticColors>()!
-                    .textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: TsSpacing.lg),
-            TsButton(
-              label: l10n.retry,
-              variant: TsButtonVariant.primary,
-              size: TsButtonSize.small,
-              onPressed: () => ref.invalidate(baseballComboPicksProvider),
-            ),
-          ],
+      error: (error, stackTrace) => SizedBox.expand(
+        child: Center(
+          child: NetworkErrorWidget(
+            message: l10n.premiumComboLoadFailed,
+            onRetry: () => unawaited(_onRefresh()),
+          ),
         ),
       ),
       data: (rawData) {

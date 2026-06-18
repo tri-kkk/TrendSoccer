@@ -316,6 +316,7 @@
   "menuTheme": "테마",
   "menuTrialExpired": "체험 기간 만료",
   "menuTrialRemaining": "{hours}시간 {minutes}분 남음",
+  "networkErrorMessage": "네트워크 연결을 확인해주세요.",
   "noMatchInfo": "경기 정보가 없습니다",
   "notificationAppGeneral": "앱 알림",
   "notificationAppGeneralDesc": "업데이트, 공지, 서비스 안내",

@@ -10,6 +10,7 @@ import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_card.dart';
+import 'package:trendsoccer/shared/widgets/empty/network_error_widget.dart';
 
 /// PREMIUM PICK summary backed by [premiumPickStatsProvider].
 class PremiumPickStatsCard extends ConsumerStatefulWidget {
@@ -140,10 +141,8 @@ class _PremiumPickStatsCardState extends ConsumerState<PremiumPickStatsCard>
         teamLogoMap: teamLogoMap,
         isLoading: true,
       ),
-      error: (error, stackTrace) => _buildCard(
-        context,
-        PremiumPickStatsView.placeholder,
-        teamLogoMap: teamLogoMap,
+      error: (error, stackTrace) => CompactNetworkError(
+        onRetry: () => ref.invalidate(premiumPickStatsProvider),
       ),
       data: (map) => _buildCard(
         context,
