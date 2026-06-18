@@ -1931,13 +1931,13 @@ abstract class AppLocalizations {
   /// No description provided for @notificationSettings.
   ///
   /// In ko, this message translates to:
-  /// **'알림 설정'**
+  /// **'알림'**
   String get notificationSettings;
 
   /// No description provided for @notificationGeneral.
   ///
   /// In ko, this message translates to:
-  /// **'일반 설정'**
+  /// **'일반'**
   String get notificationGeneral;
 
   /// No description provided for @notificationSoccer.

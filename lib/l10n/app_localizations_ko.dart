@@ -974,10 +974,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get notificationPermissionTitle => '알림 권한 필요';
 
   @override
-  String get notificationSettings => '알림 설정';
+  String get notificationSettings => '알림';
 
   @override
-  String get notificationGeneral => '일반 설정';
+  String get notificationGeneral => '일반';
 
   @override
   String get notificationSoccer => '축구';

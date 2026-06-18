@@ -993,10 +993,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationPermissionTitle => 'Permission Required';
 
   @override
-  String get notificationSettings => 'Notification Settings';
+  String get notificationSettings => 'Notification';
 
   @override
-  String get notificationGeneral => 'General Settings';
+  String get notificationGeneral => 'General';
 
   @override
   String get notificationSoccer => 'Soccer';
