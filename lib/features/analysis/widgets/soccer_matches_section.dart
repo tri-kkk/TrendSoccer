@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
-import 'package:trendsoccer/features/analysis/analysis_layout_dummy.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/services/admob_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
@@ -68,19 +67,6 @@ class SoccerMatchesSection extends ConsumerWidget {
         );
 
         if (filtered.isEmpty) {
-          if (AnalysisLayoutDummy.enabled) {
-            final dummyMatches =
-                AnalysisLayoutDummy.getSoccerMatches(dateStr);
-            if (dummyMatches.isNotEmpty) {
-              return _buildMatchesSliver(
-                ref: ref,
-                itemCount: dummyMatches.length,
-                cardBuilder: (index) =>
-                    _LayoutDummySoccerCard(data: dummyMatches[index]),
-              );
-            }
-          }
-
           return SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 48),
@@ -139,43 +125,6 @@ Widget _buildMatchesSliver({
       childCount: sliverItemCount,
     ),
   );
-}
-
-class _LayoutDummySoccerCard extends StatelessWidget {
-  const _LayoutDummySoccerCard({required this.data});
-
-  final Map<String, dynamic> data;
-
-  @override
-  Widget build(BuildContext context) {
-    final matchDate = data['matchDate']?.toString() ?? '';
-
-    return AnalysisCard(
-      leagueId: data['leagueCode']?.toString() ?? '',
-      leagueName: localizedLeagueName(
-        context,
-        data['leagueName']?.toString(),
-        data['leagueNameKo']?.toString() ?? data['leagueName']?.toString() ?? '',
-      ),
-      date: matchDate,
-      homeTeam: localizedTeamName(
-        context,
-        data['homeTeam']?.toString() ?? '',
-        data['homeTeamKo']?.toString(),
-      ),
-      awayTeam: localizedTeamName(
-        context,
-        data['awayTeam']?.toString() ?? '',
-        data['awayTeamKo']?.toString(),
-      ),
-      matchTime: data['matchTime']?.toString() ?? '',
-      alwaysActiveAnalyzeButton: true,
-      isPremiumPick: false,
-      pickDirection: null,
-      winRate: null,
-      onAnalyze: () {},
-    );
-  }
 }
 
 class _SoccerAnalysisCardItem extends ConsumerWidget {

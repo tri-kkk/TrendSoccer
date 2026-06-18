@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdmobService {
@@ -26,6 +25,5 @@ class AdmobService {
 
   static Future<void> initialize() async {
     await MobileAds.instance.initialize();
-    debugPrint('[ADMOB] init complete');
   }
 }

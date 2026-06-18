@@ -20,8 +20,7 @@ class _PremiumAdWrapperState extends ConsumerState<PremiumAdWrapper> {
   @override
   void initState() {
     super.initState();
-    debugPrint('[ADMOB] widget mounted: ${widget.adUnitId}');
-        _loadAd();
+    _loadAd();
   }
 
   void _loadAd() {
@@ -31,12 +30,10 @@ class _PremiumAdWrapperState extends ConsumerState<PremiumAdWrapper> {
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          debugPrint('[ADMOB] loaded: ${widget.adUnitId}');
-                    if (mounted) setState(() => _isLoaded = true);
+          if (mounted) setState(() => _isLoaded = true);
         },
         onAdFailedToLoad: (ad, error) {
-          debugPrint('[ADMOB] FAILED: code=${error.code}, msg=${error.message}');
-                    ad.dispose();
+          ad.dispose();
         },
       ),
     )..load();
