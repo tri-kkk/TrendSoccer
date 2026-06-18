@@ -60,6 +60,32 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
     }
   }
 
+  Future<void> _onRefresh() async {
+    final date = ref.read(todayDateProvider);
+    ref.invalidate(premiumPicksProvider(date));
+    ref.invalidate(premiumPickStatsProvider);
+    invalidateBaseballComboPicks(ref);
+
+    await Future.wait([
+      ref.read(premiumPicksProvider(date).future),
+      ref.read(premiumPickStatsProvider.future),
+      ref.read(baseballComboPicksProvider.future),
+    ]);
+  }
+
+  Widget _wrapWithRefreshIndicator({required Widget child}) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+
+    return RefreshIndicator(
+      onRefresh: _onRefresh,
+      color: semantic.interactivePrimary,
+      backgroundColor: semantic.surfaceBase,
+      displacement: 40,
+      edgeOffset: 0,
+      child: child,
+    );
+  }
+
   Widget _buildSoccerSection(BuildContext context) {
     final l10n = context.l10n;
     final date = ref.watch(todayDateProvider);
@@ -108,56 +134,59 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
           );
         }
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const PremiumPickStatsCard(showCTA: false),
-              const SizedBox(height: TsSpacing.lg),
-              ...picks.asMap().entries.map((entry) {
-                final card = entry.value;
-                final match = card.match;
-                final leagueId = leagueIdForCard(match.league);
+        return _wrapWithRefreshIndicator(
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const PremiumPickStatsCard(showCTA: false),
+                const SizedBox(height: TsSpacing.lg),
+                ...picks.asMap().entries.map((entry) {
+                  final card = entry.value;
+                  final match = card.match;
+                  final leagueId = leagueIdForCard(match.league);
 
-                return Padding(
-                  padding: EdgeInsets.only(
-                    bottom: entry.key < picks.length - 1 ? TsSpacing.lg : 0,
-                  ),
-                  child: AnalysisCard(
-                    leagueId: leagueId,
-                    leagueName: localizedLeagueName(
-                      context,
-                      match.league.nameEn,
-                      match.league.name,
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: entry.key < picks.length - 1 ? TsSpacing.lg : 0,
                     ),
-                    leagueLogoUrl: match.league.icon,
-                    date: formatSoccerCardDate(match.matchDate),
-                    homeTeam: localizedTeamName(
-                      context,
-                      match.homeTeam.name,
-                      null,
+                    child: AnalysisCard(
+                      leagueId: leagueId,
+                      leagueName: localizedLeagueName(
+                        context,
+                        match.league.nameEn,
+                        match.league.name,
+                      ),
+                      leagueLogoUrl: match.league.icon,
+                      date: formatSoccerCardDate(match.matchDate),
+                      homeTeam: localizedTeamName(
+                        context,
+                        match.homeTeam.name,
+                        null,
+                      ),
+                      awayTeam: localizedTeamName(
+                        context,
+                        match.awayTeam.name,
+                        null,
+                      ),
+                      matchTime: match.matchTime,
+                      homeLogoUrl: match.homeTeam.logo,
+                      awayLogoUrl: match.awayTeam.logo,
+                      isPremiumPick: true,
+                      pickDirection: pickDirectionFromCard(card),
+                      winRate: winRateLabelFromCard(card),
+                      onAnalyze: () => context.push(
+                        '/analysis/soccer/match-report/${match.matchId}',
+                        extra: MatchHeaderData.fromSoccerCard(card),
+                      ),
                     ),
-                    awayTeam: localizedTeamName(
-                      context,
-                      match.awayTeam.name,
-                      null,
-                    ),
-                    matchTime: match.matchTime,
-                    homeLogoUrl: match.homeTeam.logo,
-                    awayLogoUrl: match.awayTeam.logo,
-                    isPremiumPick: true,
-                    pickDirection: pickDirectionFromCard(card),
-                    winRate: winRateLabelFromCard(card),
-                    onAnalyze: () => context.push(
-                      '/analysis/soccer/match-report/${match.matchId}',
-                      extra: MatchHeaderData.fromSoccerCard(card),
-                    ),
-                  ),
-                );
-              }),
-              const SizedBox(height: TsSpacing.xl),
-            ],
+                  );
+                }),
+                const SizedBox(height: TsSpacing.xl),
+              ],
+            ),
           ),
         );
       },
@@ -207,51 +236,54 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
         );
         final hasData = comboCards.isNotEmpty;
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-          child: Column(
-            children: [
-              ComboDashboard(
-                dateTitle: dashboard.dateTitle,
-                comboCountText: dashboard.subtitle,
-                dateTabs: dashboard.dateChips,
-                selectedDateIndex: dashboard.selectedDateIndex,
-                onDateSelected: (i) => setState(() => _selectedComboDateIndex = i),
-                comboCount: dashboard.comboCount,
-                accuracy: dashboard.accuracy,
-                avgOdds: dashboard.avgOdds,
-                safeHitRate: dashboard.safeRate,
-                safeHitDetail: dashboard.safeRecord,
-                highOddsHitRate: dashboard.highRate,
-                highOddsHitDetail: dashboard.highRecord,
-              ),
-              const SizedBox(height: TsSpacing.lg),
-              if (hasData)
-                ...comboCards.asMap().entries.map((entry) {
-                  final combo = entry.value;
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      bottom: entry.key < comboCards.length - 1 ? TsSpacing.md : 0,
-                    ),
-                    child: ComboCard(
-                      leagueId: combo.league.toLowerCase(),
-                      comboCount:
-                          ComboUiMapper.comboCountFromLabel(combo.comboCount),
-                      comboType: ComboUiMapper.typeFromComboType(combo.comboType),
-                      status: ComboUiMapper.statusFromType(combo.statusType),
-                      matches: combo.matches
-                          .map((m) => ComboUiMapper.toMatchRow(context, m))
-                          .toList(),
-                      aiSections: combo.aiSections,
-                      totalOdds: combo.totalOdd.toStringAsFixed(2),
-                      confidence: combo.reliability,
-                    ),
-                  );
-                })
-              else
-                const TsEmptyState(type: TsEmptyStateType.defaultState),
-              const SizedBox(height: TsSpacing.xl),
-            ],
+        return _wrapWithRefreshIndicator(
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
+            child: Column(
+              children: [
+                ComboDashboard(
+                  dateTitle: dashboard.dateTitle,
+                  comboCountText: dashboard.subtitle,
+                  dateTabs: dashboard.dateChips,
+                  selectedDateIndex: dashboard.selectedDateIndex,
+                  onDateSelected: (i) => setState(() => _selectedComboDateIndex = i),
+                  comboCount: dashboard.comboCount,
+                  accuracy: dashboard.accuracy,
+                  avgOdds: dashboard.avgOdds,
+                  safeHitRate: dashboard.safeRate,
+                  safeHitDetail: dashboard.safeRecord,
+                  highOddsHitRate: dashboard.highRate,
+                  highOddsHitDetail: dashboard.highRecord,
+                ),
+                const SizedBox(height: TsSpacing.lg),
+                if (hasData)
+                  ...comboCards.asMap().entries.map((entry) {
+                    final combo = entry.value;
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: entry.key < comboCards.length - 1 ? TsSpacing.md : 0,
+                      ),
+                      child: ComboCard(
+                        leagueId: combo.league.toLowerCase(),
+                        comboCount:
+                            ComboUiMapper.comboCountFromLabel(combo.comboCount),
+                        comboType: ComboUiMapper.typeFromComboType(combo.comboType),
+                        status: ComboUiMapper.statusFromType(combo.statusType),
+                        matches: combo.matches
+                            .map((m) => ComboUiMapper.toMatchRow(context, m))
+                            .toList(),
+                        aiSections: combo.aiSections,
+                        totalOdds: combo.totalOdd.toStringAsFixed(2),
+                        confidence: combo.reliability,
+                      ),
+                    );
+                  })
+                else
+                  const TsEmptyState(type: TsEmptyStateType.defaultState),
+                const SizedBox(height: TsSpacing.xl),
+              ],
+            ),
           ),
         );
       },
