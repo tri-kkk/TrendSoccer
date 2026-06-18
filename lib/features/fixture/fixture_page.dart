@@ -262,12 +262,32 @@ class _FixturePageState extends ConsumerState<FixturePage>
   }
 
   void _onFixtureRefresh() {
-    if (ref.read(fixtureSelectedSportProvider) == 'baseball') {
+    unawaited(_onRefresh());
+  }
+
+  Future<void> _onRefresh() async {
+    final sport = ref.read(fixtureSelectedSportProvider);
+    final selectedDate = ref.read(fixtureSelectedDateProvider);
+
+    if (sport == 'baseball') {
       _clearBaseballDateCache();
     }
     invalidateFixtureData(ref);
-    if (ref.read(fixtureSelectedSportProvider) == 'baseball') {
-      unawaited(_loadBaseballDate(ref.read(fixtureSelectedDateProvider)));
+
+    if (sport == 'baseball') {
+      await _loadBaseballDate(selectedDate);
+      await _fetchBaseballNow();
+    } else {
+      await Future.wait([
+        ref.read(soccerFixturesProvider.future),
+        _fetchLiveNow(),
+      ]);
+    }
+
+    if (!mounted) return;
+    final matches = ref.read(allFixturesWithLiveProvider).value;
+    if (matches != null) {
+      await _refreshAlarmStatesForDate(matches, selectedDate);
     }
   }
 
@@ -1125,9 +1145,16 @@ class _FixturePageState extends ConsumerState<FixturePage>
             _goToPreviousDate(selectedDateIndex);
           }
         },
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
+        child: RefreshIndicator(
+          onRefresh: _onRefresh,
+          color: semantic.interactivePrimary,
+          backgroundColor: semantic.surfaceBase,
+          displacement: 40,
+          edgeOffset: 0,
+          child: CustomScrollView(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
             SliverAppBar(
               pinned: true,
               floating: true,
@@ -1200,6 +1227,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
               padding: EdgeInsets.only(bottom: TsSpacing.lg),
             ),
           ],
+          ),
         ),
       ),
     );

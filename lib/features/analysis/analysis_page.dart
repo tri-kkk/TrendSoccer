@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/providers/baseball_combo_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/providers/language_provider.dart';
@@ -54,6 +55,22 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
     );
+  }
+
+  Future<void> _onRefresh() async {
+    ref.invalidate(analysisSoccerMatchesProvider);
+    ref.invalidate(premiumPickStatsProvider);
+    ref.invalidate(baseballAnalysisMatchesProvider);
+    ref.invalidate(baseballComboStatsProvider);
+
+    clearSoccerAnalysisEmptyCache();
+
+    await Future.wait([
+      ref.read(analysisSoccerMatchesProvider.future),
+      ref.read(premiumPickStatsProvider.future),
+      ref.read(baseballAnalysisMatchesProvider.future),
+      ref.read(baseballComboStatsProvider.future),
+    ]);
   }
 
   @override
@@ -337,9 +354,16 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
             );
           }
         },
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
+        child: RefreshIndicator(
+          onRefresh: _onRefresh,
+          color: semantic.interactivePrimary,
+          backgroundColor: semantic.surfaceBase,
+          displacement: 40,
+          edgeOffset: 0,
+          child: CustomScrollView(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
             SliverAppBar(
               pinned: true,
               floating: true,
@@ -417,6 +441,7 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
             padding: EdgeInsets.only(bottom: TsSpacing.lg),
           ),
         ],
+          ),
         ),
       ),
     );
