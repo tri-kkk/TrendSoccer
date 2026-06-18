@@ -159,7 +159,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           ),
           if (_isOffline)
             Positioned.fill(
-              child: Container(
+              child: Material(
                 color: semantic.surfaceRaised,
                 child: NetworkErrorWidget(
                   onRetry: () async {
