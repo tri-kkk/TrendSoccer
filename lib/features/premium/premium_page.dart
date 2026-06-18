@@ -24,6 +24,7 @@ import 'package:trendsoccer/shared/widgets/combo/combo_card.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_dashboard.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/toggle/sports_toggle.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class PremiumPage extends ConsumerStatefulWidget {
   const PremiumPage({super.key});
@@ -86,7 +87,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: TsSpacing.lg),
             TsButton(
               label: l10n.retry,
               variant: TsButtonVariant.primary,
@@ -108,12 +109,12 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
         }
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const PremiumPickStatsCard(showCTA: false),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               ...picks.asMap().entries.map((entry) {
                 final card = entry.value;
                 final match = card.match;
@@ -121,7 +122,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
 
                 return Padding(
                   padding: EdgeInsets.only(
-                    bottom: entry.key < picks.length - 1 ? 16 : 0,
+                    bottom: entry.key < picks.length - 1 ? TsSpacing.lg : 0,
                   ),
                   child: AnalysisCard(
                     leagueId: leagueId,
@@ -155,7 +156,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                   ),
                 );
               }),
-              const SizedBox(height: 24),
+              const SizedBox(height: TsSpacing.xl),
             ],
           ),
         );
@@ -182,7 +183,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: TsSpacing.lg),
             TsButton(
               label: l10n.retry,
               variant: TsButtonVariant.primary,
@@ -207,7 +208,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
         final hasData = comboCards.isNotEmpty;
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
           child: Column(
             children: [
               ComboDashboard(
@@ -224,13 +225,13 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                 highOddsHitRate: dashboard.highRate,
                 highOddsHitDetail: dashboard.highRecord,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               if (hasData)
                 ...comboCards.asMap().entries.map((entry) {
                   final combo = entry.value;
                   return Padding(
                     padding: EdgeInsets.only(
-                      bottom: entry.key < comboCards.length - 1 ? 12 : 0,
+                      bottom: entry.key < comboCards.length - 1 ? TsSpacing.md : 0,
                     ),
                     child: ComboCard(
                       leagueId: combo.league.toLowerCase(),
@@ -249,7 +250,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                 })
               else
                 const TsEmptyState(type: TsEmptyStateType.defaultState),
-              const SizedBox(height: 24),
+              const SizedBox(height: TsSpacing.xl),
             ],
           ),
         );
@@ -270,7 +271,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
             BlendMode.srcIn,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: TsSpacing.md),
         Expanded(
           child: Text(
             text,
@@ -293,7 +294,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -306,7 +307,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                       BlendMode.srcIn,
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: TsSpacing.xxl),
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -317,7 +318,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: TsSpacing.sm),
                       Text(
                         l10n.premiumSubscribeBenefitsLine1,
                         style: TsType.bodyLBold.copyWith(
@@ -325,7 +326,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: TsSpacing.sm),
                       Text(
                         l10n.premiumSubscribeAfter,
                         style: TsType.bodyLBold.copyWith(
@@ -335,10 +336,10 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: TsSpacing.xxl),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(TsSpacing.lg),
                     decoration: BoxDecoration(
                       color: semantic.surfaceBase,
                       borderRadius: BorderRadius.circular(8),
@@ -352,19 +353,19 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                             color: semantic.interactivePrimary,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: TsSpacing.lg),
                         _buildBenefitRow(semantic, l10n.premiumBenefit24h),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: TsSpacing.lg),
                         _buildBenefitRow(
                           semantic,
                           l10n.premiumBenefitPremiumPick,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: TsSpacing.lg),
                         _buildBenefitRow(
                           semantic,
                           l10n.premiumBenefitBaseballAi,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: TsSpacing.lg),
                         SizedBox(
                           width: double.infinity,
                           child: TsButton(
@@ -390,7 +391,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            padding: const EdgeInsets.fromLTRB(TsSpacing.lg, TsSpacing.lg, TsSpacing.lg, 0),
             child: SportsToggle(
               selectedSport: _selectedSport,
               onChanged: (sport) {
@@ -405,7 +406,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
             ),
           ),
           // Matches [AnalysisPage]: SizedBox below SportsToggle before first body block.
-          const SizedBox(height: 16),
+          const SizedBox(height: TsSpacing.lg),
           if (_selectedSport == SportType.soccer)
             Expanded(child: _buildSoccerSection(context))
           else

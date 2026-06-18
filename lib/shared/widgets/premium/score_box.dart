@@ -6,6 +6,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 enum ScoreBoxResult { win, draw, lose }
 
@@ -111,7 +112,7 @@ class ScoreBox extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildEmblem(semantic, brightness),
-        const SizedBox(height: 8),
+        const SizedBox(height: TsSpacing.sm),
         Container(
           width: 40,
           height: 40,

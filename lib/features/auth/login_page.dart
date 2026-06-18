@@ -13,6 +13,7 @@ import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -127,7 +128,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (var i = 0; i < titleLines.length; i++) ...[
-          if (i > 0) const SizedBox(height: 4),
+          if (i > 0) const SizedBox(height: TsSpacing.xs),
           Text(
             titleLines[i],
             style: TsType.displayHero.copyWith(color: semantic.textPrimary),
@@ -148,7 +149,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
       child: Container(
         constraints: const BoxConstraints(minHeight: 48),
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg, vertical: TsSpacing.sm),
         decoration: BoxDecoration(
           color: semantic.surfaceContainer,
           border: Border.all(color: semantic.borderDefault),
@@ -158,7 +159,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset(iconAsset, width: 24, height: 24),
-            const SizedBox(width: 8),
+            const SizedBox(width: TsSpacing.sm),
             Text(
               label,
               style: TsType.bodyLBold.copyWith(color: semantic.textPrimary),
@@ -192,7 +193,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
         color: semantic.surfaceOverlay,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+      padding: const EdgeInsets.fromLTRB(TsSpacing.xl, TsSpacing.md, TsSpacing.xl, TsSpacing.xl),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -204,7 +205,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TsSpacing.lg),
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
@@ -212,7 +213,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
               style: TsType.headingH3.copyWith(color: semantic.textPrimary),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TsSpacing.lg),
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
@@ -220,14 +221,14 @@ class _LoginPageState extends ConsumerState<LoginPage>
               style: TsType.bodyLBold.copyWith(color: semantic.textSecondary),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TsSpacing.lg),
           _buildSocialLoginButton(
             semantic: semantic,
             iconAsset: TsAssets.socialGoogle,
             label: l10n.loginGoogle,
             onTap: _isLoading ? null : _onGoogleLoginTap,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: TsSpacing.md),
           _buildSocialLoginButton(
             semantic: semantic,
             iconAsset: TsAssets.socialNaver,
@@ -292,7 +293,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 48),
+                      padding: const EdgeInsets.fromLTRB(TsSpacing.lg, 0, TsSpacing.lg, TsSpacing.xxxl),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -303,7 +304,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                               child: _buildHeroTitle(semantic, titleLines),
                             ),
                           ),
-                          const SizedBox(height: 48),
+                          const SizedBox(height: TsSpacing.xxxl),
                           FadeTransition(
                             opacity: _buttonFadeAnimation,
                             child: TsButton(

@@ -5,6 +5,7 @@ import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class MaintenancePage extends StatelessWidget {
   const MaintenancePage({
@@ -25,7 +26,7 @@ class MaintenancePage extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: TsSpacing.xl),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -38,13 +39,13 @@ class MaintenancePage extends StatelessWidget {
                     BlendMode.srcIn,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: TsSpacing.xl),
                 Text(
                   l10n.maintenanceTitle,
                   style: TsType.headingH2.copyWith(color: semantic.textPrimary),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: TsSpacing.sm),
                 Text(
                   subtitle,
                   style: TsType.bodyLRegular.copyWith(

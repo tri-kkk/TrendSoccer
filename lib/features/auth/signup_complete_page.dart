@@ -11,6 +11,7 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class SignupCompletePage extends ConsumerStatefulWidget {
   const SignupCompletePage({super.key});
@@ -81,7 +82,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
           height: 24,
           colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: TsSpacing.md),
         Expanded(
           child: Text(
             text,
@@ -102,7 +103,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(TsSpacing.lg),
       decoration: BoxDecoration(
         color: semantic.surfaceBase,
         borderRadius: BorderRadius.circular(8),
@@ -114,9 +115,9 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
             header,
             style: TsType.bodyLRegular.copyWith(color: headerColor),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TsSpacing.lg),
           for (var i = 0; i < benefits.length; i++) ...[
-            if (i > 0) const SizedBox(height: 16),
+            if (i > 0) const SizedBox(height: TsSpacing.lg),
             _benefitRow(
               text: benefits[i],
               textColor: textColor,
@@ -162,10 +163,10 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
         body: Center(
         child: SingleChildScrollView(
           padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 32,
-            bottom: 32 + MediaQuery.of(context).padding.bottom,
+            left: TsSpacing.lg,
+            right: TsSpacing.lg,
+            top: TsSpacing.xxl,
+            bottom: TsSpacing.xxl + MediaQuery.of(context).padding.bottom,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -179,22 +180,22 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
                   BlendMode.srcIn,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               Text(
                 l10n.signupCompleteTitle,
                 style: TsType.displayHero.copyWith(color: semantic.textPrimary),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: TsSpacing.sm),
               Text(
                 l10n.signupCompleteStartPrompt,
                 style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg, vertical: TsSpacing.md),
                 decoration: BoxDecoration(
                   color: semantic.interactivePrimary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -207,7 +208,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
                   textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               _benefitsCard(
                 semantic: semantic,
                 header: l10n.signupCompleteFreeBenefitsHeader,
@@ -220,7 +221,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
                   l10n.signupCompleteFreeBenefit3,
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               _benefitsCard(
                 semantic: semantic,
                 header: l10n.signupCompletePremiumBenefitsHeader,
@@ -233,7 +234,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
                   l10n.signupCompletePremiumBenefit3,
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               TsButton(
                 label: l10n.signupCompletePremiumUpgrade,
                 variant: TsButtonVariant.primary,
@@ -242,7 +243,7 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
                   context.go('/menu/subscribe');
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               if (_showManualHome)
                 TsButton(
                   label: l10n.signupCompleteGoHome,

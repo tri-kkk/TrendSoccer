@@ -4,6 +4,7 @@ import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/shared/widgets/filter/ts_filter_chip.dart';
 import 'package:trendsoccer/shared/widgets/fixture/fixture_league_logo.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class FixtureLeagueFilters extends StatelessWidget {
   const FixtureLeagueFilters({
@@ -37,7 +38,7 @@ class FixtureLeagueFilters extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
         itemCount: leagues.length + 2,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: TsSpacing.sm),
         itemBuilder: (context, index) {
           if (index == 0) {
             return TsFilterChip(

@@ -114,7 +114,7 @@ class _H2HSectionState extends State<H2HSection> {
           ),
           if (i < meetings.length - 1)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2),
+              padding: const EdgeInsets.symmetric(horizontal: TsSpacing.xxs),
               child: Icon(
                 Icons.arrow_forward_ios,
                 size: 12,
@@ -131,7 +131,7 @@ class _H2HSectionState extends State<H2HSection> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(TsSpacing.lg),
       decoration: BoxDecoration(
         color: semantic.surfaceOverlay,
         borderRadius: BorderRadius.circular(8),
@@ -169,13 +169,13 @@ class _H2HSectionState extends State<H2HSection> {
                 value: '${widget.homeWins}',
                 type: CircleBadgeType.win,
               ),
-              const SizedBox(width: 48),
+              const SizedBox(width: TsSpacing.xxxl),
               CircleBadge(
                 label: l10n.labelDraw,
                 value: '${widget.draws}',
                 type: CircleBadgeType.draw,
               ),
-              const SizedBox(width: 48),
+              const SizedBox(width: TsSpacing.xxxl),
               CircleBadge(
                 label: l10n.soccerStatLosses,
                 value: '${widget.awayWins}',
@@ -289,7 +289,7 @@ class _H2HSectionState extends State<H2HSection> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg, vertical: TsSpacing.md),
       decoration: BoxDecoration(
         color: semantic.surfaceBase,
         borderRadius: BorderRadius.circular(16),
@@ -305,7 +305,7 @@ class _H2HSectionState extends State<H2HSection> {
             firstChild: const SizedBox.shrink(),
             secondChild: Column(
               children: [
-                const SizedBox(height: 12),
+                const SizedBox(height: TsSpacing.md),
                 inner,
               ],
             ),

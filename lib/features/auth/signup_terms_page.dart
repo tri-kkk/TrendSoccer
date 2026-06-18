@@ -14,6 +14,7 @@ import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class SignupTermsPage extends ConsumerStatefulWidget {
   const SignupTermsPage({super.key});
@@ -122,9 +123,9 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
           behavior: HitTestBehavior.opaque,
           child: _checkIcon(checked, semantic),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: TsSpacing.sm),
         tag,
-        const SizedBox(width: 8),
+        const SizedBox(width: TsSpacing.sm),
         Expanded(
           child: GestureDetector(
             onTap: onToggle,
@@ -185,10 +186,10 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
         child: Center(
           child: SingleChildScrollView(
             padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 48,
-              bottom: 48 + MediaQuery.of(context).padding.bottom,
+              left: TsSpacing.lg,
+              right: TsSpacing.lg,
+              top: TsSpacing.xxxl,
+              bottom: TsSpacing.xxxl + MediaQuery.of(context).padding.bottom,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -201,19 +202,19 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
                       width: 240,
                       height: 240,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: TsSpacing.lg),
                     Text(
                       l10n.signupTermsHeadingLine1,
                       style: TsType.headingH2.copyWith(color: semantic.textSecondary),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: TsSpacing.sm),
                     Text(
                       l10n.signupTermsHeadingLine2,
                       style: TsType.headingH2.copyWith(color: semantic.textPrimary),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: TsSpacing.lg),
                     Text(
                       l10n.signupTermsHint,
                       style: TsType.bodyMRegular.copyWith(color: semantic.textTertiary),
@@ -221,10 +222,10 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: TsSpacing.xl),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(TsSpacing.lg),
                   decoration: BoxDecoration(
                     color: semantic.surfaceBase,
                     borderRadius: BorderRadius.circular(8),
@@ -236,7 +237,7 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
                         onTap: _toggleAgreeAll,
                         behavior: HitTestBehavior.opaque,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg, vertical: TsSpacing.md),
                           decoration: BoxDecoration(
                             color: semantic.surfaceContainer,
                             borderRadius: BorderRadius.circular(8),
@@ -244,7 +245,7 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
                           child: Row(
                             children: [
                               _radioIcon(_agreeAll, semantic),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: TsSpacing.sm),
                               Text(
                                 l10n.signupAgreeAll,
                                 style: TsType.bodyLRegular.copyWith(color: semantic.textPrimary),
@@ -253,9 +254,9 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: TsSpacing.lg),
                       Container(height: 1, color: semantic.borderSubtle),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: TsSpacing.lg),
                       _termsRow(
                         context: context,
                         semantic: semantic,
@@ -271,7 +272,7 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
                           );
                         },
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: TsSpacing.lg),
                       _termsRow(
                         context: context,
                         semantic: semantic,
@@ -287,7 +288,7 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
                           );
                         },
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: TsSpacing.lg),
                       _termsRow(
                         context: context,
                         semantic: semantic,
@@ -299,7 +300,7 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: TsSpacing.xl),
                 TsButton(
                   label: l10n.signupSubmit,
                   variant: TsButtonVariant.primary,

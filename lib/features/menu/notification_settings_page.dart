@@ -12,6 +12,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/toggle/ts_toggle.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class NotificationSettingsPage extends ConsumerStatefulWidget {
   const NotificationSettingsPage({super.key});
@@ -190,10 +191,10 @@ class _NotificationSettingsPageState
             )
           : SingleChildScrollView(
               padding: EdgeInsets.only(
-                left: 16,
-                right: 16,
-                top: 16,
-                bottom: 16 + MediaQuery.of(context).padding.bottom,
+                left: TsSpacing.lg,
+                right: TsSpacing.lg,
+                top: TsSpacing.lg,
+                bottom: TsSpacing.lg + MediaQuery.of(context).padding.bottom,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -227,7 +228,7 @@ class _NotificationSettingsPageState
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: TsSpacing.lg),
                   _SectionBlock(
                     title: l10n.notificationSoccer,
                     children: [
@@ -321,7 +322,7 @@ class _NotificationSettingsPageState
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: TsSpacing.lg),
                   _SectionBlock(
                     title: l10n.notificationBaseball,
                     children: [
@@ -409,9 +410,9 @@ class _SectionBlock extends StatelessWidget {
           title,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: TsSpacing.lg),
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(TsSpacing.lg),
           decoration: BoxDecoration(
             color: semantic.surfaceOverlay,
             borderRadius: BorderRadius.circular(16),

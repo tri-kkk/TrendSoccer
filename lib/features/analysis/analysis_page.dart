@@ -24,6 +24,7 @@ import 'package:trendsoccer/shared/widgets/filter/ts_filter_chip.dart';
 import 'package:trendsoccer/shared/widgets/league/ts_league_icon.dart';
 import 'package:trendsoccer/shared/widgets/navigation/date_tab_bar.dart';
 import 'package:trendsoccer/shared/widgets/toggle/sports_toggle.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class AnalysisPage extends ConsumerStatefulWidget {
   const AnalysisPage({super.key});
@@ -191,7 +192,7 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: soccerAnalysisLeagueChips.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: TsSpacing.sm),
         itemBuilder: (context, index) {
           final chip = soccerAnalysisLeagueChips[index];
           final isSelected = chip.isAll
@@ -237,7 +238,7 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: baseballAnalysisLeagueChips.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: TsSpacing.sm),
         itemBuilder: (context, index) {
           final chip = baseballAnalysisLeagueChips[index];
           final isSelected = chip.isAll
@@ -366,7 +367,7 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
             ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              padding: const EdgeInsets.fromLTRB(TsSpacing.lg, TsSpacing.lg, TsSpacing.lg, 0),
               child: SportsToggle(
                 selectedSport: _selectedSport,
                 onChanged: (sport) {
@@ -382,7 +383,7 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              padding: const EdgeInsets.fromLTRB(TsSpacing.lg, TsSpacing.lg, TsSpacing.lg, 0),
               child: isSoccer
                   ? PremiumPickStatsCard(
                       showCTA: true,
@@ -394,7 +395,7 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(TsSpacing.lg),
               child: isSoccer
                   ? _buildSoccerFilterChips()
                   : _buildBaseballLeagueFilterChips(),
@@ -413,7 +414,7 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
             child: SizedBox(height: 56),
           ),
           const SliverPadding(
-            padding: EdgeInsets.only(bottom: 16),
+            padding: EdgeInsets.only(bottom: TsSpacing.lg),
           ),
         ],
         ),

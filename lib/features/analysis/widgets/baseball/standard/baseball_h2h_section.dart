@@ -153,7 +153,7 @@ Widget _buildWinBadge(
 }) {
   final semantic = Theme.of(context).extension<TsSemanticColors>()!;
   return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+    padding: const EdgeInsets.symmetric(horizontal: TsSpacing.sm, vertical: TsSpacing.xxs),
     decoration: BoxDecoration(
       color: isHomeWinner
           ? TsColors.brandPrimary500.withValues(alpha: 0.2)

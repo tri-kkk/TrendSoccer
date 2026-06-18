@@ -37,6 +37,7 @@ import 'package:trendsoccer/shared/widgets/fixture/fixture_status.dart';
 import 'package:trendsoccer/shared/widgets/navigation/date_tab_bar.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 import 'package:trendsoccer/shared/widgets/toggle/sports_toggle.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class FixturePage extends ConsumerStatefulWidget {
   const FixturePage({super.key});
@@ -925,7 +926,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
       slivers.add(
         SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.fromLTRB(16, gi == 0 ? 0 : 16, 16, 8),
+            padding: EdgeInsets.fromLTRB(TsSpacing.lg, gi == 0 ? 0 : TsSpacing.lg, TsSpacing.lg, TsSpacing.sm),
             child: FixtureLeagueHeader(
               leagueName: group.leagueName,
               leagueNameEn: group.leagueNameEn,
@@ -938,7 +939,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
       slivers.add(
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
             child: FixtureMatchesCard(
               children: [
                 for (final match in group.matches)
@@ -957,7 +958,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
         slivers.add(
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+              padding: const EdgeInsets.fromLTRB(TsSpacing.lg, TsSpacing.lg, TsSpacing.lg, TsSpacing.lg),
               child: PremiumAdWrapper(
                 adUnitId: AdmobService.fixtureBannerAdUnitId,
               ),
@@ -995,7 +996,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
                   context.l10n.fixtureLoadFailed,
                   style: TextStyle(color: semantic.textSecondary),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: TsSpacing.lg),
                 TsButton(
                   label: context.l10n.retry,
                   variant: TsButtonVariant.primary,
@@ -1155,7 +1156,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(TsSpacing.lg),
                 child: SportsToggle(
                   selectedSport: selectedSport,
                   onChanged: (sport) {
@@ -1172,7 +1173,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                padding: const EdgeInsets.fromLTRB(TsSpacing.lg, 0, TsSpacing.lg, TsSpacing.lg),
                 child: _buildLeagueFilters(
                   leagues,
                   isLiveFilter: isLiveFilter,
@@ -1196,7 +1197,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
               child: SizedBox(height: 56),
             ),
             const SliverPadding(
-              padding: EdgeInsets.only(bottom: 16),
+              padding: EdgeInsets.only(bottom: TsSpacing.lg),
             ),
           ],
         ),

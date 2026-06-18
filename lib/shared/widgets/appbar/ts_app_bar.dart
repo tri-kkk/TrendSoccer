@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/back_button.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 enum TsAppBarLocation { home, backTitle }
 
@@ -75,7 +76,7 @@ class _TsAppBarToolbar extends StatelessWidget {
             color: semantic.surfaceRaised,
             border: Border(bottom: bottomBorder),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg, vertical: TsSpacing.md),
           child: Row(
             children: [
               leading ?? const SizedBox.shrink(),
@@ -85,7 +86,7 @@ class _TsAppBarToolbar extends StatelessWidget {
           ),
         ),
       TsAppBarLocation.backTitle => Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
           decoration: BoxDecoration(
             color: semantic.surfaceRaised,
             border: Border(bottom: bottomBorder),

@@ -8,6 +8,7 @@ import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class SubscribeFailPage extends StatelessWidget {
   const SubscribeFailPage({super.key});
@@ -48,12 +49,12 @@ class SubscribeFailPage extends StatelessWidget {
         builder: (context, constraints) {
           final bottom = MediaQuery.paddingOf(context).bottom;
           return SingleChildScrollView(
-            padding: EdgeInsets.only(bottom: bottom + 24),
+            padding: EdgeInsets.only(bottom: bottom + TsSpacing.xl),
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -66,22 +67,22 @@ class SubscribeFailPage extends StatelessWidget {
                           BlendMode.srcIn,
                         ),
                       ),
-                      const SizedBox(height: 48),
+                      const SizedBox(height: TsSpacing.xxxl),
                       Text(
                         l10n.subscribeFailMessage,
                         style: TsType.headingH2.copyWith(color: semantic.textPrimary),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: TsSpacing.sm),
                       Text(
                         l10n.subscribeFailDescription,
                         style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 48),
+                      const SizedBox(height: TsSpacing.xxxl),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(TsSpacing.lg),
                         decoration: BoxDecoration(
                           color: semantic.surfaceContainer,
                           borderRadius: BorderRadius.circular(8),
@@ -101,7 +102,7 @@ class SubscribeFailPage extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: TsSpacing.lg),
                             Opacity(
                               opacity: 0.3,
                               child: Row(
@@ -121,7 +122,7 @@ class SubscribeFailPage extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 48),
+                      const SizedBox(height: TsSpacing.xxxl),
                       SizedBox(
                         width: double.infinity,
                         child: TsButton(
@@ -130,7 +131,7 @@ class SubscribeFailPage extends StatelessWidget {
                           onPressed: () => context.go('/menu/subscribe'),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: TsSpacing.sm),
                       SizedBox(
                         width: double.infinity,
                         child: TsButton(

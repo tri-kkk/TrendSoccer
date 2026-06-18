@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class BlurableSection extends StatelessWidget {
   const BlurableSection({
@@ -35,7 +36,7 @@ class BlurableSection extends StatelessWidget {
         Positioned.fill(
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(TsSpacing.sm),
               child: Text(
                 blurMessage ?? '',
                 style: TsType.bodyMRegular.copyWith(

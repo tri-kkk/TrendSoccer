@@ -41,7 +41,7 @@ class TsBottomSheet extends StatelessWidget {
       child: ColoredBox(
         color: semantic.surfaceOverlay,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+          padding: const EdgeInsets.fromLTRB(TsSpacing.xl, TsSpacing.md, TsSpacing.xl, TsSpacing.xl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,

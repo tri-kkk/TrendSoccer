@@ -4,6 +4,7 @@ import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 enum FixtureMatchStatus {
   scheduled,
@@ -99,7 +100,7 @@ class _FixtureStatusState extends State<FixtureStatus> with TickerProviderStateM
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: TsSpacing.sm),
                 Text(
                   widget.timeText ?? l10n.fixtureLive,
                   style: TsType.labelSRegular.copyWith(color: TsColors.systemError500),

@@ -16,6 +16,7 @@ import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class BaseballMatchesSection extends ConsumerWidget {
   const BaseballMatchesSection({
@@ -41,13 +42,13 @@ class BaseballMatchesSection extends ConsumerWidget {
     return matchesAsync.when(
       loading: () => const SliverToBoxAdapter(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 48),
+          padding: EdgeInsets.symmetric(vertical: TsSpacing.xxxl),
           child: Center(child: CircularProgressIndicator()),
         ),
       ),
       error: (error, stackTrace) => SliverToBoxAdapter(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 32),
+          padding: const EdgeInsets.symmetric(vertical: TsSpacing.xxl),
           child: Center(
             child: _InlineError(
               semantic: semantic,
@@ -66,7 +67,7 @@ class BaseballMatchesSection extends ConsumerWidget {
         if (filtered.isEmpty) {
           return SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 48),
+              padding: const EdgeInsets.symmetric(vertical: TsSpacing.xxxl),
               child: Center(
                 child: TsEmptyState(
                   title: context.l10n.analysisNoBaseballScheduled,
@@ -100,7 +101,7 @@ Widget _buildMatchesSliver({
       (context, index) {
         if (showAd && index == 1) {
           return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            padding: const EdgeInsets.fromLTRB(TsSpacing.lg, TsSpacing.sm, TsSpacing.lg, TsSpacing.sm),
             child: PremiumAdWrapper(
               adUnitId: AdmobService.analysisBannerAdUnitId,
             ),
@@ -110,10 +111,10 @@ Widget _buildMatchesSliver({
         final cardIndex = showAd && index > 1 ? index - 1 : index;
         return Padding(
           padding: EdgeInsets.fromLTRB(
-            16,
-            cardIndex == 0 ? 0 : 8,
-            16,
-            cardIndex == itemCount - 1 ? 0 : 8,
+            TsSpacing.lg,
+            cardIndex == 0 ? 0 : TsSpacing.sm,
+            TsSpacing.lg,
+            cardIndex == itemCount - 1 ? 0 : TsSpacing.sm,
           ),
           child: cardBuilder(cardIndex),
         );
@@ -171,7 +172,7 @@ class _InlineError extends StatelessWidget {
           style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: TsSpacing.lg),
         TsButton(
           label: l10n.retry,
           variant: TsButtonVariant.primary,

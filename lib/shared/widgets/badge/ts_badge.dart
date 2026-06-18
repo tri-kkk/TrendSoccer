@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 enum TsBadgeType { pick, good, pass, premium, trial, free }
 
@@ -25,7 +26,7 @@ class TsBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.sm, vertical: TsSpacing.xs),
         child: Text(
           label,
           style: TsType.bodyMBold.copyWith(color: textColor),

@@ -218,7 +218,7 @@ class BaseballStandardTabError extends StatelessWidget {
     final l10n = context.l10n;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 48),
+      padding: const EdgeInsets.symmetric(vertical: TsSpacing.xxxl),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

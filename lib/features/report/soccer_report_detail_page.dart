@@ -165,19 +165,19 @@ class SoccerReportDetailPage extends ConsumerWidget {
                   size: 32,
                   color: colors.textSecondary,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: TsSpacing.md),
                 Text(
                   context.l10n.premiumExclusiveContent,
                   style: TsType.headingH3.copyWith(color: colors.textSecondary),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: TsSpacing.sm),
                 Text(
                   context.l10n.subscribeToUnlock,
                   style: TsType.labelSRegular.copyWith(color: colors.textTertiary),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: TsSpacing.lg),
                 TsButton(
                   label: context.l10n.subscribeNow,
                   variant: TsButtonVariant.primary,

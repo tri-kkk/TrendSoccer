@@ -131,7 +131,7 @@ class ComboMatchRow extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: TsSpacing.sm),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

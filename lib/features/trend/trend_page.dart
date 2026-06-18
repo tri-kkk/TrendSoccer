@@ -26,6 +26,7 @@ import 'package:trendsoccer/shared/widgets/cards/baseball_today_combo_card.dart'
 import 'package:trendsoccer/shared/widgets/ads/premium_ad_wrapper.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class TrendPage extends ConsumerStatefulWidget {
   const TrendPage({super.key});
@@ -179,7 +180,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
               final ad = _topBanners[index];
               final isLast = index == _topBanners.length - 1;
               return Container(
-                margin: EdgeInsets.only(right: isLast ? 0 : 8),
+                margin: EdgeInsets.only(right: isLast ? 0 : TsSpacing.sm),
                 child: GestureDetector(
                   onTap: () => _handleAdClick(ad),
                   child: ClipRRect(
@@ -205,7 +206,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
           ),
         ),
         if (_topBanners.length > 1) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: TsSpacing.sm),
           _buildBannerIndicator(),
         ],
       ],
@@ -264,7 +265,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         for (var i = 0; i < _topBanners.length; i++) ...[
-          if (i > 0) const SizedBox(width: 8),
+          if (i > 0) const SizedBox(width: TsSpacing.sm),
           i == _currentBannerPage
               ? Container(
                   width: 20,
@@ -306,12 +307,12 @@ class _TrendPageState extends ConsumerState<TrendPage> {
           ),
         ),
         if (_bottomBanners.length > 1) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: TsSpacing.sm),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               for (var i = 0; i < _bottomBanners.length; i++) ...[
-                if (i > 0) const SizedBox(width: 8),
+                if (i > 0) const SizedBox(width: TsSpacing.sm),
                 i == _currentBottomBannerPage
                     ? Container(
                         width: 20,
@@ -384,12 +385,12 @@ class _TrendPageState extends ConsumerState<TrendPage> {
           ),
         ),
         if (_directAdBanners.length > 1) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: TsSpacing.sm),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               for (var i = 0; i < _directAdBanners.length; i++) ...[
-                if (i > 0) const SizedBox(width: 8),
+                if (i > 0) const SizedBox(width: TsSpacing.sm),
                 i == _currentDirectAdBannerPage
                     ? Container(
                         width: 20,
@@ -489,7 +490,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
                 color: sem.surfaceBase,
                 borderRadius: BorderRadius.circular(12),
               ),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(TsSpacing.lg),
               child: Column(
                 children: [
                   Row(
@@ -505,7 +506,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
                               shape: BoxShape.circle,
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: TsSpacing.sm),
                           Container(
                             width: 60,
                             height: 12,
@@ -526,7 +527,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: TsSpacing.lg),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -561,7 +562,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: TsSpacing.xs),
                           Container(
                             width: 32,
                             height: 12,
@@ -626,13 +627,13 @@ class _TrendPageState extends ConsumerState<TrendPage> {
                       colorFilter:
                           ColorFilter.mode(sem.textPrimary, BlendMode.srcIn),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: TsSpacing.lg),
                     Text(
                       context.l10n.trendEmptyTitle,
                       style: TsType.headingH3.copyWith(color: sem.textPrimary),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: TsSpacing.sm),
                     Text(
                       context.l10n.trendEmptySubtitle1,
                       style:
@@ -755,23 +756,23 @@ class _TrendPageState extends ConsumerState<TrendPage> {
       backgroundColor: semantic.surfaceRaised,
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(TsSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (showTopBannerArea) ...[
                 _buildTopBannerSection(semantic),
-                const SizedBox(height: 16),
+                const SizedBox(height: TsSpacing.lg),
               ],
               if (showBottomBannerArea) ...[
                 _buildBottomBannerSection(semantic, showBottomAds),
-                const SizedBox(height: 16),
+                const SizedBox(height: TsSpacing.lg),
               ],
               _buildSectionHeader(
                 title: context.l10n.trendSoccerAnalysis,
                 onMoreTap: () => context.go('/analysis'),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               PremiumPickStatsCard(
                 showCTA: true,
                 onCTATap: () {
@@ -782,24 +783,24 @@ class _TrendPageState extends ConsumerState<TrendPage> {
                   }
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               _buildSoccerCards(),
               if (showDirectAdBannerArea) ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: TsSpacing.lg),
                 _buildDirectAdBannerSection(semantic, showBottomAds),
               ],
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               _buildSectionHeader(
                 title: context.l10n.trendBaseballAnalysis,
                 onMoreTap: () => context.go('/analysis?sport=baseball'),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               const BaseballTodayComboCard(),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               _buildBaseballCards(),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               PremiumAdWrapper(adUnitId: AdmobService.trendBannerAdUnitId),
-              const SizedBox(height: 24),
+              const SizedBox(height: TsSpacing.xl),
             ],
           ),
         ),

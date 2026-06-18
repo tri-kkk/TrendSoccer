@@ -40,15 +40,15 @@ class SeasonTeamStatsSection extends StatelessWidget {
               Row(
                 children: [
                   Expanded(child: TeamStatGaugeCard(data: items[0])),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: TsSpacing.sm),
                   Expanded(child: TeamStatGaugeCard(data: items[1])),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: TsSpacing.sm),
               Row(
                 children: [
                   Expanded(child: TeamStatGaugeCard(data: items[2])),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: TsSpacing.sm),
                   Expanded(child: TeamStatGaugeCard(data: items[3])),
                 ],
               ),

@@ -59,7 +59,7 @@ class _BaseballPremiumTabState extends ConsumerState<BaseballPremiumTab> {
       return KeyedSubtree(
         key: const ValueKey<Object>('baseball_report_premium_error'),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
           child: BaseballPremiumTabError(
             onRetry: () {
               ref.invalidate(baseballMatchDetailProvider(widget.matchId));
@@ -74,7 +74,7 @@ class _BaseballPremiumTabState extends ConsumerState<BaseballPremiumTab> {
       return const KeyedSubtree(
         key: ValueKey<Object>('baseball_report_premium_loading'),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.symmetric(horizontal: TsSpacing.lg),
           child: BaseballPremiumTabLoading(),
         ),
       );
@@ -102,7 +102,7 @@ class _BaseballPremiumTabState extends ConsumerState<BaseballPremiumTab> {
     return KeyedSubtree(
       key: const ValueKey<Object>('baseball_report_premium'),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        padding: const EdgeInsets.fromLTRB(TsSpacing.lg, 0, TsSpacing.lg, TsSpacing.xl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -190,7 +190,7 @@ class BaseballPremiumTabError extends StatelessWidget {
     final l10n = context.l10n;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 48),
+      padding: const EdgeInsets.symmetric(vertical: TsSpacing.xxxl),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -389,7 +389,7 @@ class _OverUnderSection extends StatelessWidget {
             children: [
               Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg, vertical: TsSpacing.xs),
                   decoration: BoxDecoration(
                     color: TsColors.systemWarning500.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
@@ -699,7 +699,7 @@ class _SeasonTeamStatsSection extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: TsSpacing.sm),
                         Expanded(
                           child: TeamStatGaugeCard(
                             data: _toGaugeData(
@@ -710,7 +710,7 @@ class _SeasonTeamStatsSection extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: TsSpacing.sm),
                     Row(
                       children: [
                         Expanded(
@@ -721,7 +721,7 @@ class _SeasonTeamStatsSection extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: TsSpacing.sm),
                         Expanded(
                           child: TeamStatGaugeCard(
                             data: _toGaugeData(

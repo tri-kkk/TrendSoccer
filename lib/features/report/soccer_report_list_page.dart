@@ -12,6 +12,7 @@ import 'package:trendsoccer/shared/widgets/appbar/ts_app_bar.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class SoccerReportListPage extends ConsumerWidget {
   const SoccerReportListPage({super.key});
@@ -41,7 +42,7 @@ class SoccerReportListPage extends ConsumerWidget {
                 style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               TsButton(
                 label: l10n.retry,
                 variant: TsButtonVariant.primary,
@@ -63,15 +64,15 @@ class SoccerReportListPage extends ConsumerWidget {
 
           return SingleChildScrollView(
             padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 16,
-              bottom: 16 + MediaQuery.paddingOf(context).bottom,
+              left: TsSpacing.lg,
+              right: TsSpacing.lg,
+              top: TsSpacing.lg,
+              bottom: TsSpacing.lg + MediaQuery.paddingOf(context).bottom,
             ),
             child: Column(
               children: [
                 for (var i = 0; i < posts.length; i++) ...[
-                  if (i > 0) const SizedBox(height: 16),
+                  if (i > 0) const SizedBox(height: TsSpacing.lg),
                   _ReportCard(
                     post: posts[i],
                     onTap: () => context.push('/menu/reports/soccer/${posts[i].slug}'),
@@ -104,7 +105,7 @@ class _ReportCard extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(TsSpacing.lg),
         decoration: BoxDecoration(
           color: semantic.surfaceBase,
           borderRadius: BorderRadius.circular(16),
@@ -127,7 +128,7 @@ class _ReportCard extends StatelessWidget {
                     : _thumbnailFallback(semantic),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: TsSpacing.lg),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,14 +137,14 @@ class _ReportCard extends StatelessWidget {
                     post.date,
                     style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TsSpacing.sm),
                   Text(
                     post.title,
                     style: TsType.bodyLBold.copyWith(color: semantic.textPrimary),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TsSpacing.sm),
                   Text(
                     post.description,
                     style: TsType.labelSRegular.copyWith(color: semantic.textSecondary),

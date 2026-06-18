@@ -172,10 +172,10 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 16,
-          bottom: 16 + MediaQuery.paddingOf(context).bottom,
+          left: TsSpacing.lg,
+          right: TsSpacing.lg,
+          top: TsSpacing.lg,
+          bottom: TsSpacing.lg + MediaQuery.paddingOf(context).bottom,
         ),
         child: Form(
           key: _formKey,
@@ -249,7 +249,7 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
                     ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: TsSpacing.xl),
             ],
           ),
         ),

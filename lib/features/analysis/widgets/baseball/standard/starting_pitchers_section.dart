@@ -502,7 +502,7 @@ class _PitcherSide {
     );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: TsSpacing.sm, vertical: TsSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -551,7 +551,7 @@ class _PitcherSide {
     final thirdStatLabel = _isMlb ? 'K/9' : 'K';
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: TsSpacing.sm, vertical: TsSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -597,7 +597,7 @@ class _PitcherSide {
     ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: TsSpacing.sm, vertical: TsSpacing.md),
       child: chipWidgets.isEmpty
           ? const SizedBox.shrink()
           : Column(
@@ -614,7 +614,7 @@ class _PitcherSide {
 
   Widget buildPreviousSeason(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: TsSpacing.sm, vertical: TsSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class TsLoadingOverlay extends StatelessWidget {
   const TsLoadingOverlay({
@@ -34,7 +35,7 @@ class TsLoadingOverlay extends StatelessWidget {
                       color: Theme.of(context).colorScheme.primary,
                     ),
                     if (message != null) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: TsSpacing.lg),
                       Text(
                         message!,
                         style: TsType.bodyLRegular.copyWith(color: Colors.white),

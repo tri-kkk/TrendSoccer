@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 abstract final class TsToast {
   static void success(BuildContext context, String message) {
@@ -17,7 +18,7 @@ abstract final class TsToast {
         ),
         backgroundColor: sem.textPrimary,
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        margin: const EdgeInsets.fromLTRB(TsSpacing.lg, 0, TsSpacing.lg, TsSpacing.lg),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         duration: const Duration(seconds: 3),
       ),
@@ -58,7 +59,7 @@ abstract final class TsToast {
         ),
         backgroundColor: backgroundColor,
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        margin: const EdgeInsets.fromLTRB(TsSpacing.lg, 0, TsSpacing.lg, TsSpacing.lg),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         duration: duration,
       ),

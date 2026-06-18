@@ -203,7 +203,7 @@ class _OuLineRow extends StatelessWidget {
               if (line.isBaseLine) ...[
                 const SizedBox(width: TsSpacing.sm),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: TsSpacing.sm, vertical: TsSpacing.xxs),
                   decoration: BoxDecoration(
                     color: _baselineChipBg,
                     borderRadius: BorderRadius.circular(8),

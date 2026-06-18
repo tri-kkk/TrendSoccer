@@ -5,6 +5,7 @@ import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 enum ComboStatus { inProgress, partial, hit, miss }
 
@@ -46,7 +47,7 @@ class ComboStatusBadge extends StatelessWidget {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     final (bg, fg, label) = _style(semantic, context.l10n);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: TsSpacing.sm, vertical: TsSpacing.xs),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(8),

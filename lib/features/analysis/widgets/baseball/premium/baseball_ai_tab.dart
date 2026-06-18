@@ -155,7 +155,7 @@ class BaseballAiTabError extends StatelessWidget {
     final l10n = context.l10n;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 48),
+      padding: const EdgeInsets.symmetric(vertical: TsSpacing.xxxl),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -330,7 +330,7 @@ class _AnalysisTextBox extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg, vertical: TsSpacing.md),
       decoration: BoxDecoration(
         color: semantic.surfaceBase,
         borderRadius: BorderRadius.circular(8),

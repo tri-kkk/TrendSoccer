@@ -197,7 +197,7 @@ class _MissingHeaderState extends StatelessWidget {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 48),
+      padding: const EdgeInsets.symmetric(vertical: TsSpacing.xxxl),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

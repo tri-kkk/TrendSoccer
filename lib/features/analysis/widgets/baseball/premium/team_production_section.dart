@@ -50,13 +50,13 @@ class TeamProductionSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (var i = 0; i < items.length; i++) ...[
-                if (i > 0) const SizedBox(height: 8),
+                if (i > 0) const SizedBox(height: TsSpacing.sm),
                 TeamStatGaugeCard(data: items[i]),
               ],
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg, vertical: TsSpacing.md),
                 decoration: BoxDecoration(
                   color: semantic.surfaceContainer,
                   borderRadius: BorderRadius.circular(8),

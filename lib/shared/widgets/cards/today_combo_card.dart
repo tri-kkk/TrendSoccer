@@ -102,7 +102,7 @@ class TodayComboCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(TsSpacing.md),
                   decoration: BoxDecoration(
                     color: semantic.surfaceContainer,
                     borderRadius: BorderRadius.circular(8),
@@ -131,7 +131,7 @@ class TodayComboCard extends StatelessWidget {
               const SizedBox(width: TsSpacing.sm),
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(TsSpacing.md),
                   decoration: BoxDecoration(
                     color: semantic.surfaceContainer,
                     borderRadius: BorderRadius.circular(8),
@@ -160,7 +160,7 @@ class TodayComboCard extends StatelessWidget {
               const SizedBox(width: TsSpacing.sm),
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(TsSpacing.md),
                   decoration: BoxDecoration(
                     color: semantic.surfaceContainer,
                     borderRadius: BorderRadius.circular(8),

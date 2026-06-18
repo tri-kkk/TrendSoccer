@@ -7,6 +7,7 @@ import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class SubscribeSheet extends ConsumerWidget {
   const SubscribeSheet({super.key, required this.sport});
@@ -28,8 +29,8 @@ class SubscribeSheet extends ConsumerWidget {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       padding: EdgeInsets.only(
-        top: 12,
-        bottom: 24 + MediaQuery.of(context).padding.bottom,
+        top: TsSpacing.md,
+        bottom: TsSpacing.xl + MediaQuery.of(context).padding.bottom,
         left: 24,
         right: 24,
       ),
@@ -47,17 +48,17 @@ class SubscribeSheet extends ConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TsSpacing.lg),
           Text(
             l10n.premiumExclusiveContent,
             style: TsType.headingH3.copyWith(color: semantic.textPrimary),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TsSpacing.lg),
           Text(
             description,
             style: TsType.bodyLBold.copyWith(color: semantic.textSecondary),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TsSpacing.lg),
           SizedBox(
             width: double.infinity,
             child: TsButton(
@@ -69,7 +70,7 @@ class SubscribeSheet extends ConsumerWidget {
               },
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: TsSpacing.sm),
           SizedBox(
             width: double.infinity,
             child: TsButton(

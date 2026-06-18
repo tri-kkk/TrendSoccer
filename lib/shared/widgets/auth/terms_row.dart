@@ -35,7 +35,7 @@ class TermsRow extends StatelessWidget {
         ),
         const SizedBox(width: TsSpacing.sm),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: TsSpacing.xxs),
           decoration: BoxDecoration(
             color: isRequired ? semantic.interactivePrimary : semantic.surfaceContainer,
             borderRadius: BorderRadius.circular(4),

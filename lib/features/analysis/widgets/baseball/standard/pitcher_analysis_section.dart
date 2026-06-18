@@ -48,7 +48,7 @@ class PitcherAnalysisSection extends StatelessWidget {
         const SizedBox(height: TsSpacing.sm),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg, vertical: TsSpacing.md),
           decoration: BoxDecoration(
             color: semantic.surfaceBase,
             borderRadius: BorderRadius.circular(8),

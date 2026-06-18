@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class TsBackButton extends StatelessWidget {
   const TsBackButton({this.onPressed, super.key});
@@ -30,7 +31,7 @@ class TsBackButton extends StatelessWidget {
           customBorder: const CircleBorder(),
           borderRadius: BorderRadius.circular(999),
           child: Padding(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(TsSpacing.sm),
             child: SvgPicture.asset(
               TsAssets.iconArrowBack,
               width: 24,

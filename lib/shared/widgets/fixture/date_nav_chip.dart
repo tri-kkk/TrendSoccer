@@ -4,6 +4,7 @@ import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 enum DateNavChipType { today, live, date }
 
@@ -89,7 +90,7 @@ class _TodayChip extends StatelessWidget {
       child: Container(
         width: expandWidth ? double.infinity : null,
         constraints: expandWidth ? null : const BoxConstraints(minWidth: 80),
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.md),
         decoration: BoxDecoration(
           color: isActive ? semantic.interactivePrimary : semantic.surfaceContainer,
           borderRadius: BorderRadius.circular(8),
@@ -99,7 +100,7 @@ class _TodayChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(dayLabel, style: dayStyle),
-            const SizedBox(height: 2),
+            const SizedBox(height: TsSpacing.xxs),
             Text(dateLabel, style: dateStyle),
           ],
         ),
@@ -127,7 +128,7 @@ class _LiveChip extends StatelessWidget {
       height: _dateNavChipHeight,
       child: Container(
         constraints: const BoxConstraints(minWidth: 80),
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.md),
         decoration: BoxDecoration(
           color: isActive ? TsColors.systemError500 : semantic.surfaceContainer,
           borderRadius: BorderRadius.circular(8),
@@ -169,7 +170,7 @@ class _DateChip extends StatelessWidget {
       child: Container(
         width: expandWidth ? double.infinity : null,
         constraints: expandWidth ? null : const BoxConstraints(minWidth: 80),
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.md),
         decoration: BoxDecoration(
           color: isActive ? semantic.interactivePrimary : semantic.surfaceContainer,
           borderRadius: BorderRadius.circular(8),
@@ -179,7 +180,7 @@ class _DateChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(dayLabel, style: dayStyle),
-            const SizedBox(height: 2),
+            const SizedBox(height: TsSpacing.xxs),
             Text(dateLabel, style: dateStyle),
           ],
         ),

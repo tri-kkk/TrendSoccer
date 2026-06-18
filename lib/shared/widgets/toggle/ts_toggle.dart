@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class TsToggle extends StatelessWidget {
   const TsToggle({
@@ -27,7 +28,7 @@ class TsToggle extends StatelessWidget {
             borderRadius: BorderRadius.circular(999),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(2),
+            padding: const EdgeInsets.all(TsSpacing.xxs),
             child: AnimatedAlign(
               duration: const Duration(milliseconds: 200),
               alignment: value ? Alignment.centerRight : Alignment.centerLeft,

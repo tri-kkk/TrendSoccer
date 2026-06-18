@@ -26,9 +26,9 @@ class FixtureMatchesCard extends StatelessWidget {
         children: [
           for (var i = 0; i < children.length; i++) ...[
             if (i > 0) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: TsSpacing.sm),
               Divider(height: 1, thickness: 1, color: semantic.borderSubtle),
-              const SizedBox(height: 8),
+              const SizedBox(height: TsSpacing.sm),
             ],
             children[i],
           ],

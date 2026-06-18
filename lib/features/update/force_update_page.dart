@@ -12,6 +12,7 @@ import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class ForceUpdatePage extends ConsumerStatefulWidget {
   const ForceUpdatePage({
@@ -97,7 +98,7 @@ class _ForceUpdatePageState extends ConsumerState<ForceUpdatePage> {
         body: SafeArea(
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: TsSpacing.xl),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -110,7 +111,7 @@ class _ForceUpdatePageState extends ConsumerState<ForceUpdatePage> {
                       BlendMode.srcIn,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: TsSpacing.xl),
                   Text(
                     l10n.forceUpdateTitle,
                     style: TsType.headingH2.copyWith(
@@ -118,7 +119,7 @@ class _ForceUpdatePageState extends ConsumerState<ForceUpdatePage> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TsSpacing.sm),
                   Text(
                     subtitle,
                     style: TsType.bodyLRegular.copyWith(
@@ -126,14 +127,14 @@ class _ForceUpdatePageState extends ConsumerState<ForceUpdatePage> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: TsSpacing.xxl),
                   TsButton(
                     label: l10n.forceUpdateButton,
                     variant: TsButtonVariant.primary,
                     onPressed: _openStore,
                   ),
                   if (!_loadingConfig && !_isForceUpdateRequired) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: TsSpacing.md),
                     TextButton(
                       onPressed: _skipUpdate,
                       child: Text(

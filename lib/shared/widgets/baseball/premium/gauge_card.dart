@@ -32,7 +32,7 @@ class GaugeCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(TsSpacing.xs),
       decoration: BoxDecoration(
         color: semantic.surfaceContainer,
         borderRadius: BorderRadius.circular(8),

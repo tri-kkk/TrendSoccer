@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class DateTabItem {
   const DateTabItem({
@@ -157,7 +158,7 @@ class _DateTab extends StatelessWidget {
       child: Container(
         width: expanded ? null : double.infinity,
         height: DateTabBar.barHeight,
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.xs),
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(color: borderColor, width: 2),
@@ -172,7 +173,7 @@ class _DateTab extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: TsSpacing.xxs),
             Text(
               item.dateLabel,
               style: TsType.bodyLRegular.copyWith(color: dateColor),

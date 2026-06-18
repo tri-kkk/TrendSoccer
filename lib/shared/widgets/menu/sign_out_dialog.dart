@@ -21,10 +21,10 @@ class SignOutDialog {
         return Dialog(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 32),
+          insetPadding: const EdgeInsets.symmetric(horizontal: TsSpacing.xxl),
           child: Container(
             width: w,
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(TsSpacing.xl),
             decoration: BoxDecoration(
               color: semantic.surfaceOverlay,
               borderRadius: BorderRadius.circular(16),

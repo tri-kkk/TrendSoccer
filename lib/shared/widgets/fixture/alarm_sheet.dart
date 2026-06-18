@@ -10,6 +10,7 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/notification/notification_permission_dialog.dart';
 import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class AlarmSheet extends ConsumerStatefulWidget {
   const AlarmSheet({
@@ -209,8 +210,8 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       padding: EdgeInsets.only(
-        top: 16,
-        bottom: 24 + MediaQuery.of(context).padding.bottom,
+        top: TsSpacing.lg,
+        bottom: TsSpacing.xl + MediaQuery.of(context).padding.bottom,
         left: 16,
         right: 16,
       ),
@@ -227,7 +228,7 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TsSpacing.lg),
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
@@ -235,12 +236,12 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
               style: TsType.headingH3.copyWith(color: semantic.textPrimary),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TsSpacing.lg),
           Container(height: 1, color: semantic.borderSubtle),
-          const SizedBox(height: 16),
+          const SizedBox(height: TsSpacing.lg),
           if (_isLoading)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
+              padding: const EdgeInsets.symmetric(vertical: TsSpacing.xl),
               child: CircularProgressIndicator(
                 color: semantic.interactivePrimary,
               ),
@@ -252,7 +253,7 @@ class _AlarmSheetState extends ConsumerState<AlarmSheet> {
               final eventKey = event.key;
               return Padding(
                 padding: EdgeInsets.only(
-                  bottom: index < eventLabels.length - 1 ? 16 : 0,
+                  bottom: index < eventLabels.length - 1 ? TsSpacing.lg : 0,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

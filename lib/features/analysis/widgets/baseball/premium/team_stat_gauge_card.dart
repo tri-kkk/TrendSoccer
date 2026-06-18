@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 class GaugeData {
   const GaugeData({
@@ -32,7 +33,7 @@ class TeamStatGaugeCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(TsSpacing.xs),
       decoration: BoxDecoration(
         color: semantic.surfaceContainer,
         borderRadius: BorderRadius.circular(8),
@@ -45,7 +46,7 @@ class TeamStatGaugeCard extends StatelessWidget {
             style: tertiaryStyle,
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: TsSpacing.sm),
           SizedBox(
             width: double.infinity,
             height: 8,
@@ -65,9 +66,9 @@ class TeamStatGaugeCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: TsSpacing.sm),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: TsSpacing.xs),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

@@ -48,10 +48,10 @@ class PrivacyPolicyPage extends ConsumerWidget {
         ),
         data: (content) => SingleChildScrollView(
           padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 16,
-            bottom: 16 + MediaQuery.paddingOf(context).bottom,
+            left: TsSpacing.lg,
+            right: TsSpacing.lg,
+            top: TsSpacing.lg,
+            bottom: TsSpacing.lg + MediaQuery.paddingOf(context).bottom,
           ),
           child: MarkdownBody(
             data: content,
@@ -153,7 +153,7 @@ class _LegalErrorState extends StatelessWidget {
     final l10n = context.l10n;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(TsSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -162,7 +162,7 @@ class _LegalErrorState extends StatelessWidget {
               style: TsType.bodyMRegular.copyWith(color: semantic.textSecondary),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: TsSpacing.lg),
             TsButton(
               label: l10n.retry,
               variant: TsButtonVariant.secondary,

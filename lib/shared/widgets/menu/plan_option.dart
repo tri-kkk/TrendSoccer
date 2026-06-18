@@ -36,7 +36,7 @@ class PlanOption extends StatelessWidget {
       child: Container(
         height: 48,
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg, vertical: TsSpacing.md),
         decoration: BoxDecoration(
           color: isSelected
               ? TsColors.brandPrimary500.withValues(alpha: 0.2)
@@ -72,7 +72,7 @@ class PlanOption extends StatelessWidget {
             if (type == PlanOptionType.threeMonth) ...[
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: TsSpacing.sm, vertical: TsSpacing.xxs),
                 decoration: BoxDecoration(
                   color: TsColors.brandPrimary500.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(4),

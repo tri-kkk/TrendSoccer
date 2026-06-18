@@ -136,7 +136,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
             color: Colors.transparent,
             child: Container(
               width: 348,
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(TsSpacing.xl),
               decoration: BoxDecoration(
                 color: semantic.surfaceOverlay,
                 borderRadius: BorderRadius.circular(16),
@@ -151,14 +151,14 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                       color: semantic.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: TsSpacing.xl),
                   Text(
                     dialogContext.l10n.signOutMessage,
                     style: TsType.bodyLRegular.copyWith(
                       color: semantic.textSecondary,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: TsSpacing.xl),
                   Row(
                     children: [
                       Expanded(
@@ -168,7 +168,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                           onPressed: () => Navigator.of(dialogContext).pop(),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: TsSpacing.sm),
                       Expanded(
                         child: TsButton(
                           label: dialogContext.l10n.signOutConfirm,
@@ -212,7 +212,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                 color: Colors.transparent,
                 child: Container(
                   width: 380,
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(TsSpacing.xl),
                   decoration: BoxDecoration(
                     color: semantic.surfaceOverlay,
                     borderRadius: BorderRadius.circular(16),
@@ -227,21 +227,21 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                           color: semantic.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: TsSpacing.lg),
                       Text(
                         dialogContext.l10n.deleteAccountMessage,
                         style: TsType.bodyLRegular.copyWith(
                           color: semantic.textSecondary,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: TsSpacing.lg),
                       Text(
                         dialogContext.l10n.deleteAccountHint,
                         style: TsType.bodyLRegular.copyWith(
                           color: semantic.textSecondary,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: TsSpacing.lg),
                       Container(
                         height: 48,
                         decoration: BoxDecoration(
@@ -265,17 +265,17 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                               color: semantic.textTertiary,
                             ),
                             contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
+                              horizontal: TsSpacing.lg,
                             ),
                             border: InputBorder.none,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: TsSpacing.lg),
                       if (isDeleting)
                         Center(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            padding: const EdgeInsets.symmetric(vertical: TsSpacing.sm),
                             child: CircularProgressIndicator(
                               color: semantic.interactivePrimary,
                             ),
@@ -294,7 +294,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                                 },
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: TsSpacing.sm),
                             Expanded(
                               child: TsButton(
                                 label: dialogContext.l10n.deleteAccountConfirm,
@@ -371,10 +371,10 @@ class _MenuPageState extends ConsumerState<MenuPage> {
         bottom: false,
         child: SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
-            16,
-            16,
-            16,
-            16 + MediaQuery.of(context).padding.bottom,
+            TsSpacing.lg,
+            TsSpacing.lg,
+            TsSpacing.lg,
+            TsSpacing.lg + MediaQuery.of(context).padding.bottom,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -383,11 +383,11 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                 GuestBanner(onJoinTap: () => context.push('/login'))
               else
                 ProfileCard(name: auth.userName, email: auth.userEmail),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
 
               if (isLoggedIn) ...[
                 TsSectionHeader(title: l10n.menuSubscribeInfoSection),
-                const SizedBox(height: 16),
+                const SizedBox(height: TsSpacing.lg),
                 Builder(
                   builder: (context) {
                     final planType = _planTicketType(auth.planType);
@@ -404,19 +404,19 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                     );
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: TsSpacing.lg),
               ],
               TsSectionHeader(title: l10n.menuExploreSection),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               MenuListItem(
                 iconAsset: TsAssets.iconBlog,
                 label: l10n.menuMatchPreview,
                 onTap: () => context.go('/menu/reports/soccer'),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
 
               TsSectionHeader(title: l10n.menuSettingsSection),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -425,13 +425,13 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                     label: l10n.menuLanguage,
                     onTap: () => _showLanguageSheet(context),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TsSpacing.sm),
                   MenuListItem(
                     iconAsset: TsAssets.iconTheme,
                     label: l10n.menuTheme,
                     onTap: () => _showThemeSheet(context),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TsSpacing.sm),
                   MenuListItem(
                     iconAsset: TsAssets.iconNotifications,
                     label: l10n.menuNotification,
@@ -439,10 +439,10 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
 
               TsSectionHeader(title: l10n.menuOthers),
-              const SizedBox(height: 16),
+              const SizedBox(height: TsSpacing.lg),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -451,25 +451,25 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                     label: l10n.menuAbout,
                     onTap: () => context.push('/menu/about'),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TsSpacing.sm),
                   MenuListItem(
                     iconAsset: TsAssets.iconPrivacyTip,
                     label: l10n.menuPrivacyPolicy,
                     onTap: () => context.go('/menu/privacy'),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TsSpacing.sm),
                   MenuListItem(
                     iconAsset: TsAssets.iconVerified,
                     label: l10n.menuTermsOfService,
                     onTap: () => context.go('/menu/terms'),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TsSpacing.sm),
                   MenuListItem(
                     iconAsset: TsAssets.iconHelp,
                     label: l10n.menuHelpCenter,
                     onTap: () => context.go('/menu/help'),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: TsSpacing.sm),
                   MenuListItem(
                     iconAsset: TsAssets.iconVersionInfo,
                     label: l10n.menuAppVersion,
@@ -480,7 +480,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
               ),
 
               if (isLoggedIn) ...[
-                const SizedBox(height: 24),
+                const SizedBox(height: TsSpacing.xl),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -496,7 +496,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: TsSpacing.lg),
                     Opacity(
                       opacity: 0.5,
                       child: Container(
@@ -505,7 +505,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                         color: semantic.textPrimary,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: TsSpacing.lg),
                     GestureDetector(
                       onTap: () => _showDeleteAccountDialog(context),
                       child: Opacity(
@@ -522,7 +522,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                 ),
               ],
 
-              const SizedBox(height: 24),
+              const SizedBox(height: TsSpacing.xl),
             ],
           ),
         ),
@@ -562,10 +562,10 @@ class _ThemeBottomSheetState extends ConsumerState<_ThemeBottomSheet> {
         color: semantic.surfaceOverlay,
         child: Padding(
           padding: EdgeInsets.fromLTRB(
-            24,
-            12,
-            24,
-            24 + MediaQuery.of(context).padding.bottom,
+            TsSpacing.xl,
+            TsSpacing.md,
+            TsSpacing.xl,
+            TsSpacing.xl + MediaQuery.of(context).padding.bottom,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -700,10 +700,10 @@ class _LanguageBottomSheetState extends ConsumerState<_LanguageBottomSheet> {
         color: semantic.surfaceOverlay,
         child: Padding(
           padding: EdgeInsets.fromLTRB(
-            24,
-            12,
-            24,
-            24 + MediaQuery.of(context).padding.bottom,
+            TsSpacing.xl,
+            TsSpacing.md,
+            TsSpacing.xl,
+            TsSpacing.xl + MediaQuery.of(context).padding.bottom,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

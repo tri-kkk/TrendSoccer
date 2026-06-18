@@ -15,6 +15,7 @@ import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/navigation/ts_bottom_navigation.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 class SubscribePage extends ConsumerStatefulWidget {
   const SubscribePage({super.key});
 
@@ -327,10 +328,10 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           ),
           body: SingleChildScrollView(
             padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 24,
-              bottom: 16 + MediaQuery.paddingOf(context).bottom,
+              left: TsSpacing.lg,
+              right: TsSpacing.lg,
+              top: TsSpacing.xl,
+              bottom: TsSpacing.lg + MediaQuery.paddingOf(context).bottom,
             ),
             child: switch (planType) {
               PlanType.trial => _buildTrialStatusContent(context, semantic, auth),
@@ -360,7 +361,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(TsSpacing.xl),
       decoration: BoxDecoration(
         color: semantic.surfaceBase,
         borderRadius: BorderRadius.circular(16),
@@ -377,20 +378,20 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
               BlendMode.srcIn,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: TsSpacing.lg),
           Text(
             l10n.subscribeTrialActive,
             style: TsType.headingH2.copyWith(color: semantic.textPrimary),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: TsSpacing.sm),
           Text(
             l10n.subscribeTrialMessage,
             style: TsType.bodyLRegular.copyWith(color: semantic.textSecondary),
             textAlign: TextAlign.center,
           ),
           if (trialExpiresAt != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: TsSpacing.sm),
             Text(
               _formatTrialRemaining(context, trialExpiresAt),
               style: TsType.bodyMBold.copyWith(
@@ -399,7 +400,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
               textAlign: TextAlign.center,
             ),
           ],
-          const SizedBox(height: 24),
+          const SizedBox(height: TsSpacing.xl),
           SizedBox(
             width: double.infinity,
             child: TsButton(
@@ -422,12 +423,12 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           l10n.subscribeHeaderLine1,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: TsSpacing.sm),
         Text(
           l10n.subscribeHeaderLine2,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: TsSpacing.lg),
         _buildPlanCard(
           semantic: semantic,
           title: l10n.subscribePlanFree,
@@ -442,7 +443,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
             l10n.subscribeFreeBenefit4,
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: TsSpacing.md),
         _buildPlanCard(
           semantic: semantic,
           title: l10n.subscribePlanPremium,
@@ -458,12 +459,12 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
             l10n.subscribePremiumBenefit5,
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: TsSpacing.lg),
         Text(
           l10n.subscribeSelectProduct,
           style: TsType.headingH2.copyWith(color: semantic.textPrimary),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: TsSpacing.md),
         _buildPlanOption(
           semantic: semantic,
           price: l10n.subscribePriceQuarterly,
@@ -472,7 +473,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           discountLabel: l10n.subscribeDiscount,
           onTap: () => setState(() => _selectedPlanIndex = 0),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: TsSpacing.md),
         _buildPlanOption(
           semantic: semantic,
           price: l10n.subscribePriceMonthly,
@@ -481,7 +482,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           discountLabel: null,
           onTap: () => setState(() => _selectedPlanIndex = 1),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: TsSpacing.lg),
         SizedBox(
           width: double.infinity,
           child: TsButton(
@@ -490,7 +491,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
             onPressed: _startPremium,
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: TsSpacing.xl),
       ],
     );
   }
@@ -506,7 +507,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(TsSpacing.lg),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(8),
@@ -518,12 +519,12 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title, style: TsType.headingH3.copyWith(color: titleColor)),
-          const SizedBox(height: 16),
+          const SizedBox(height: TsSpacing.lg),
           Container(height: 1, color: dividerColor),
-          const SizedBox(height: 16),
+          const SizedBox(height: TsSpacing.lg),
           ...benefits.map(
             (b) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: TsSpacing.sm),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -536,7 +537,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
                       BlendMode.srcIn,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: TsSpacing.md),
                   Expanded(
                     child: Text(
                       b,
@@ -566,7 +567,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
       onTap: onTap,
       child: Container(
         height: 48,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
         decoration: BoxDecoration(
           color: isSelected
               ? semantic.interactivePrimary.withValues(alpha: 0.2)
@@ -603,12 +604,12 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
                     )
                   : null,
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: TsSpacing.lg),
             Text(
               price,
               style: TsType.bodyLRegular.copyWith(color: semantic.textPrimary),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: TsSpacing.sm),
             Text(
               period,
               style: TsType.labelSRegular.copyWith(
@@ -618,7 +619,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
             const Spacer(),
             if (discountLabel != null)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: TsSpacing.sm, vertical: TsSpacing.xxs),
                 decoration: BoxDecoration(
                   color: semantic.interactivePrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(4),

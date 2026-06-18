@@ -10,13 +10,14 @@ import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/badge/ts_badge.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/logo/ts_logo.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 /// Layout metrics shared by the tab-shell AppBar and Analysis/Fixture SliverAppBar.
 abstract final class TsShellAppBarMetrics {
   static const double barHeight = 56;
   static const double logoHeight = 32;
   static const EdgeInsets contentPadding = EdgeInsets.symmetric(
-    horizontal: 16,
+    horizontal: TsSpacing.lg,
   );
 
   static double get contentHeight => barHeight - contentPadding.vertical;
@@ -86,7 +87,7 @@ class TsShellAppBarContent extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TsBadge(type: badgeForPlan(auth.planType)),
-                const SizedBox(width: 8),
+                const SizedBox(width: TsSpacing.sm),
                 GestureDetector(
                   onTap: () => context.go('/menu'),
                   child: SvgPicture.asset(
@@ -123,7 +124,7 @@ class TsShellAppBarTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
       child: TsShellAppBarContent(
         auth: auth,
         onLogoTap: onLogoTap,

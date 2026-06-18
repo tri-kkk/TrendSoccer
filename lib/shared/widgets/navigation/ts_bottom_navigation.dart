@@ -41,7 +41,7 @@ class TsBottomNavigation extends StatelessWidget {
 
     return Container(
       height: barHeight,
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: TsSpacing.md),
       decoration: BoxDecoration(
         color: semantic.surfaceRaised,
         border: Border(
@@ -89,7 +89,7 @@ class _NavTabItem extends StatelessWidget {
       child: SizedBox(
         height: 56,
         child: Padding(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(TsSpacing.sm),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

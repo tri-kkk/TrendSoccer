@@ -48,7 +48,7 @@ class OverUnderSection extends StatelessWidget {
             children: [
               Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg, vertical: TsSpacing.xs),
                   decoration: BoxDecoration(
                     color: TsColors.systemWarning500.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),

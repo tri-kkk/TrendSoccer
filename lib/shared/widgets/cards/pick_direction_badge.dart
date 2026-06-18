@@ -4,6 +4,7 @@ import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
+import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
 enum PickDirection { home, draw, away }
 
@@ -27,7 +28,7 @@ class PickDirectionBadge extends StatelessWidget {
     return SizedBox(
       width: 48,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.sm, vertical: TsSpacing.xs),
         decoration: BoxDecoration(
           color: semantic.surfaceOverlay,
           borderRadius: BorderRadius.circular(8),
