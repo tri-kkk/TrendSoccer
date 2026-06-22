@@ -23,6 +23,7 @@ import 'package:trendsoccer/shared/widgets/menu/menu_list_item.dart';
 import 'package:trendsoccer/shared/widgets/menu/plan_ticket.dart';
 import 'package:trendsoccer/shared/widgets/menu/profile_card.dart';
 import 'package:trendsoccer/shared/widgets/notification/notification_permission_dialog.dart';
+import 'package:trendsoccer/shared/widgets/dialogs/exit_dialog.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
 import 'package:trendsoccer/shared/widgets/radio/ts_radio_button.dart';
 import 'package:trendsoccer/shared/widgets/section/ts_section_header.dart';
@@ -363,7 +364,13 @@ class _MenuPageState extends ConsumerState<MenuPage> {
     final auth = ref.watch(authProvider);
     final isLoggedIn = auth.isLoggedIn;
 
-    return TsLoadingOverlay(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        showExitDialog(context);
+      },
+      child: TsLoadingOverlay(
       isLoading: _isDeletingAccount,
       child: Scaffold(
       backgroundColor: semantic.surfaceRaised,
@@ -528,6 +535,7 @@ class _MenuPageState extends ConsumerState<MenuPage> {
         ),
       ),
       ),
+    ),
     );
   }
 }

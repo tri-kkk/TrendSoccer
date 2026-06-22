@@ -126,16 +126,26 @@ class _BaseballMatchReportPageState
               homeLogoUrl: header.homeTeamLogo,
               awayLogoUrl: header.awayTeamLogo,
               selectedTab: _selectedTab,
-              onTabChanged: (tab) {
-                if (tab == ReportTab.premium) {
-                  if (!ref.read(authProvider).hasFullAccess) {
-                    showSubscribeSheet(context, SportType.baseball);
-                    return;
-                  }
-                }
-                setState(() => _selectedTab = tab);
-              },
+              onTabChanged: (_) {},
+              showTabToggle: false,
             ),
+            const SizedBox(height: TsSpacing.lg),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
+              child: ReportToggle(
+                selectedTab: _selectedTab,
+                onChanged: (tab) {
+                  if (tab == ReportTab.premium) {
+                    if (!ref.read(authProvider).hasFullAccess) {
+                      showSubscribeSheet(context, SportType.baseball);
+                      return;
+                    }
+                  }
+                  setState(() => _selectedTab = tab);
+                },
+              ),
+            ),
+            const SizedBox(height: TsSpacing.lg),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               switchInCurve: Curves.easeInOut,

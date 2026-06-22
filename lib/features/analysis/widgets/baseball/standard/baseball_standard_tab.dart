@@ -51,7 +51,12 @@ class BaseballStandardTab extends ConsumerWidget {
         return KeyedSubtree(
           key: const ValueKey<Object>('baseball_report_standard'),
           child: Padding(
-            padding: const EdgeInsets.all(TsSpacing.lg),
+            padding: const EdgeInsets.fromLTRB(
+              TsSpacing.lg,
+              0,
+              TsSpacing.lg,
+              TsSpacing.lg,
+            ),
             child: _BaseballStandardContent(
               matchId: matchId,
               parsed: parsed,

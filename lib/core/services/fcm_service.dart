@@ -295,6 +295,7 @@ class FCMService {
 
     try {
       final dio = Dio();
+      debugPrint('[FCM] registerDevice: locale=$locale');
       await dio.post<dynamic>(
         'https://www.trendsoccer.com/api/v1/mobile/devices',
         data: <String, String>{

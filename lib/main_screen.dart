@@ -11,7 +11,6 @@ import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/appbar/ts_shell_app_bar_content.dart';
 import 'package:trendsoccer/shared/widgets/empty/network_error_widget.dart';
-import 'package:trendsoccer/shared/widgets/exit_back_handler.dart';
 import 'package:trendsoccer/shared/widgets/navigation/ts_bottom_navigation.dart';
 
 const List<String> _tabPaths = [
@@ -125,10 +124,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       ],
     );
 
-    return ExitBackHandler(
-      child: Stack(
-        children: [
-          Scaffold(
+    return Stack(
+      children: [
+        Scaffold(
             backgroundColor: semantic.surfaceRaised,
             body: tabContent,
             bottomNavigationBar: SafeArea(
@@ -172,7 +170,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               ),
             ),
         ],
-      ),
     );
   }
 }

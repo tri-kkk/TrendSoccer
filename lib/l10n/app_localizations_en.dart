@@ -616,9 +616,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exitTitle => 'Exit App';
 
   @override
-  String get exitToastMessage => 'Press back again to exit';
-
-  @override
   String get filterAll => 'All';
 
   @override

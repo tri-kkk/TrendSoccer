@@ -603,9 +603,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exitTitle => '앱 종료';
 
   @override
-  String get exitToastMessage => '한 번 더 누르면 종료됩니다';
-
-  @override
   String get filterAll => '전체';
 
   @override
@@ -618,7 +615,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fixtureInterrupted => '중단';
 
   @override
-  String get statusPostponed => '연기';
+  String get statusPostponed => 'PPD';
 
   @override
   String get statusInterrupted => '중단';

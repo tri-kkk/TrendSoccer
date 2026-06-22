@@ -30,36 +30,48 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   Future<void> _onSplashComplete() async {
     if (!mounted) return;
 
-    final config = await ref.read(appConfigServiceProvider).fetchConfig();
-    if (!mounted) return;
+    try {
+      final config = await ref
+          .read(appConfigServiceProvider)
+          .fetchConfig()
+          .timeout(const Duration(seconds: 5), onTimeout: () => null);
 
-    if (config == null) {
-      await _proceedToApp();
-      return;
-    }
-
-    if (config.maintenanceMode) {
-      context.go('/maintenance', extra: config.maintenanceMessage);
-      return;
-    }
-
-    final packageInfo = await PackageInfo.fromPlatform();
-    final currentVersion = packageInfo.version;
-
-    if (VersionUtils.isVersionOutdated(
-      currentVersion,
-      config.minSupportedVersion,
-    )) {
       if (!mounted) return;
-      context.go('/force-update', extra: config.updateMessage);
-      return;
+
+      if (config != null) {
+        if (config.maintenanceMode) {
+          context.go('/maintenance', extra: config.maintenanceMessage);
+          return;
+        }
+
+        final packageInfo = await PackageInfo.fromPlatform();
+        final currentVersion = packageInfo.version;
+
+        if (VersionUtils.isVersionOutdated(
+          currentVersion,
+          config.minSupportedVersion,
+        )) {
+          if (!mounted) return;
+          context.go('/force-update', extra: config.updateMessage);
+          return;
+        }
+      }
+    } on Object {
+      // Config fetch failed — continue to app.
     }
 
     await _proceedToApp();
   }
 
   Future<void> _proceedToApp() async {
-    await ref.read(authProvider).initFromStoredToken();
+    try {
+      await ref
+          .read(authProvider)
+          .initFromStoredToken()
+          .timeout(const Duration(seconds: 5));
+    } on Object {
+      // Auth init failed — continue as guest.
+    }
     if (!mounted) return;
     context.go('/trend');
   }

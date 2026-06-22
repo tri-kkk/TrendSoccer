@@ -51,6 +51,7 @@ class BaseballStatus {
     'PST',
     'POSTPONED',
     'POST',
+    'PP',
   };
   static const _scheduled = {'NS', 'SCHEDULED', 'TBD'};
 

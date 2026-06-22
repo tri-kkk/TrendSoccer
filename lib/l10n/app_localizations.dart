@@ -1214,12 +1214,6 @@ abstract class AppLocalizations {
   /// **'앱 종료'**
   String get exitTitle;
 
-  /// No description provided for @exitToastMessage.
-  ///
-  /// In ko, this message translates to:
-  /// **'한 번 더 누르면 종료됩니다'**
-  String get exitToastMessage;
-
   /// No description provided for @filterAll.
   ///
   /// In ko, this message translates to:
@@ -1247,7 +1241,7 @@ abstract class AppLocalizations {
   /// No description provided for @statusPostponed.
   ///
   /// In ko, this message translates to:
-  /// **'연기'**
+  /// **'PPD'**
   String get statusPostponed;
 
   /// No description provided for @statusInterrupted.

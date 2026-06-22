@@ -12,8 +12,31 @@ const baseballLeaguePriority = {
   'CPBL': 3,
 };
 
+const soccerLeaguePriority = {
+  'WC': 0,
+  'UCL': 1,
+  'CL': 1,
+  'UEL': 2,
+  'UECL': 3,
+  'UNL': 4,
+  'PL': 5,
+  'PD': 6,
+  'BL1': 7,
+  'SA': 8,
+  'FL1': 9,
+  'DED': 10,
+  'MLS': 11,
+  'KL': 12,
+  'KL1': 12,
+  'KL2': 12,
+  'J1': 13,
+};
+
 int _baseballLeagueSortKey(String code) =>
     baseballLeaguePriority[code.toUpperCase()] ?? 99;
+
+int _soccerLeagueSortKey(String code) =>
+    soccerLeaguePriority[code.toUpperCase()] ?? 50;
 
 void _sortBaseballLeagueGroups(List<FixtureLeagueGroup> groups) {
   groups.sort((a, b) {
@@ -29,6 +52,26 @@ void _sortBaseballLeagueOptions(List<FixtureLeagueOption> options) {
   options.sort((a, b) {
     final priorityA = _baseballLeagueSortKey(a.code);
     final priorityB = _baseballLeagueSortKey(b.code);
+    final cmp = priorityA.compareTo(priorityB);
+    if (cmp != 0) return cmp;
+    return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+  });
+}
+
+void _sortSoccerLeagueGroups(List<FixtureLeagueGroup> groups) {
+  groups.sort((a, b) {
+    final priorityA = _soccerLeagueSortKey(a.leagueCode);
+    final priorityB = _soccerLeagueSortKey(b.leagueCode);
+    final cmp = priorityA.compareTo(priorityB);
+    if (cmp != 0) return cmp;
+    return a.leagueName.toLowerCase().compareTo(b.leagueName.toLowerCase());
+  });
+}
+
+void _sortSoccerLeagueOptions(List<FixtureLeagueOption> options) {
+  options.sort((a, b) {
+    final priorityA = _soccerLeagueSortKey(a.code);
+    final priorityB = _soccerLeagueSortKey(b.code);
     final cmp = priorityA.compareTo(priorityB);
     if (cmp != 0) return cmp;
     return a.name.toLowerCase().compareTo(b.name.toLowerCase());
@@ -378,7 +421,7 @@ List<FixtureLeagueOption> _extractLeagueOptions(
   if (sport == 'baseball') {
     _sortBaseballLeagueOptions(options);
   } else {
-    options.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    _sortSoccerLeagueOptions(options);
   }
   return options;
 }
@@ -424,6 +467,8 @@ final fixtureLeagueGroupsProvider =
     final groups = groupMatchesByLeague(matches);
     if (sport == 'baseball') {
       _sortBaseballLeagueGroups(groups);
+    } else {
+      _sortSoccerLeagueGroups(groups);
     }
     return groups;
   });

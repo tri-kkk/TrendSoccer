@@ -23,6 +23,7 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/shared/widgets/empty/network_error_widget.dart';
+import 'package:trendsoccer/shared/widgets/dialogs/exit_dialog.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/baseball_today_combo_card.dart';
 import 'package:trendsoccer/shared/widgets/ads/premium_ad_wrapper.dart';
@@ -792,7 +793,13 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     final showDirectAdBannerArea =
         showBottomAds && (_loadingBanners || _directAdBanners.isNotEmpty);
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        showExitDialog(context);
+      },
+      child: Scaffold(
       backgroundColor: semantic.surfaceRaised,
       body: RefreshIndicator(
         onRefresh: _onRefresh,
@@ -853,6 +860,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
           ),
         ),
       ),
+    ),
     );
   }
 }

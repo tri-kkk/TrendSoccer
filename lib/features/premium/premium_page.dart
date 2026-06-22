@@ -23,6 +23,7 @@ import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_card.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_dashboard.dart';
+import 'package:trendsoccer/shared/widgets/dialogs/exit_dialog.dart';
 import 'package:trendsoccer/shared/widgets/empty/network_error_widget.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/toggle/sports_toggle.dart';
@@ -286,7 +287,13 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
 
     if (!AccessGate.canViewPremiumContent(planType: auth.planType)) {
       final l10n = context.l10n;
-      return Scaffold(
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          showExitDialog(context);
+        },
+        child: Scaffold(
         backgroundColor: semantic.surfaceRaised,
         body: SafeArea(
           child: Center(
@@ -379,10 +386,17 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
             ),
           ),
         ),
+      ),
       );
     }
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        showExitDialog(context);
+      },
+      child: Scaffold(
       backgroundColor: semantic.surfaceRaised,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -410,6 +424,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
             Expanded(child: _buildBaseballSection(context)),
         ],
       ),
+    ),
     );
   }
 }

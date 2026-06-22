@@ -39,7 +39,9 @@ abstract final class FixtureBaseballContent {
     if (match.status == 'scheduled' || match.status == 'cancelled') {
       return null;
     }
-    if (match.status == 'postponed' || match.status == 'interrupted') {
+    if (match.status == 'postponed' ||
+        match.status == 'interrupted' ||
+        BaseballStatus.isPostponed(match.rawStatus)) {
       if (match.homeScore == null && match.awayScore == null) {
         return null;
       }

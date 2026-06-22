@@ -345,6 +345,7 @@ String normalizeMatchStatus(String raw) {
     case 'PST':
     case 'POSTPONED':
     case 'POST':
+    case 'PP':
       return 'postponed';
     case 'CANC':
     case 'CANCELLED':

@@ -19,6 +19,7 @@ class MatchHeader extends StatelessWidget {
     this.leagueLogoUrl,
     this.homeLogoUrl,
     this.awayLogoUrl,
+    this.showTabToggle = true,
     super.key,
   });
 
@@ -32,6 +33,7 @@ class MatchHeader extends StatelessWidget {
   final String? awayLogoUrl;
   final ReportTab selectedTab;
   final ValueChanged<ReportTab> onTabChanged;
+  final bool showTabToggle;
 
   static const TextStyle _vsTextStyle = TextStyle(
     fontFamily: 'Poppins',
@@ -147,8 +149,10 @@ class MatchHeader extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: TsSpacing.lg),
-          ReportToggle(selectedTab: selectedTab, onChanged: onTabChanged),
+          if (showTabToggle) ...[
+            const SizedBox(height: TsSpacing.lg),
+            ReportToggle(selectedTab: selectedTab, onChanged: onTabChanged),
+          ],
         ],
       ),
     );
