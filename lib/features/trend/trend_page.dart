@@ -17,7 +17,9 @@ import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/services/ad_service.dart';
 import 'package:trendsoccer/core/services/admob_service.dart';
+import 'package:trendsoccer/core/services/announcement_service.dart';
 import 'package:trendsoccer/core/services/review_service.dart';
+import 'package:trendsoccer/core/utils/api_language_helper.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
@@ -25,6 +27,7 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/shared/widgets/empty/network_error_widget.dart';
+import 'package:trendsoccer/shared/widgets/dialogs/announcement_dialog.dart';
 import 'package:trendsoccer/shared/widgets/dialogs/exit_dialog.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/baseball_today_combo_card.dart';
@@ -76,6 +79,8 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     _loadBanners();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_checkAnnouncement());
+
       Future<void>.delayed(const Duration(seconds: 3), () {
         if (!mounted) return;
         final prefs = ref.read(sharedPreferencesProvider);
@@ -84,6 +89,18 @@ class _TrendPageState extends ConsumerState<TrendPage> {
         unawaited(reviewService.requestReviewIfEligible());
       });
     });
+  }
+
+  Future<void> _checkAnnouncement() async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    final locale = getApiLanguage(prefs);
+    final service = AnnouncementService(prefs);
+
+    final config = await service.fetchAnnouncement(locale);
+    if (!mounted || config == null) return;
+    if (!service.shouldShow(config)) return;
+
+    await showAnnouncementDialog(context, config, service);
   }
 
   @override
