@@ -10,12 +10,14 @@ class FixtureTeamRow extends StatelessWidget {
     required this.teamName,
     this.teamLogoUrl,
     this.score,
+    this.scoreStyle,
     super.key,
   });
 
   final String teamName;
   final String? teamLogoUrl;
   final String? score;
+  final TextStyle? scoreStyle;
 
   Widget _logo(TsSemanticColors semantic) {
     Widget ph() {
@@ -73,7 +75,7 @@ class FixtureTeamRow extends StatelessWidget {
             ],
           ),
         ),
-        if (score != null) Text(score!, style: primaryStyle),
+        if (score != null) Text(score!, style: scoreStyle ?? primaryStyle),
       ],
     );
   }

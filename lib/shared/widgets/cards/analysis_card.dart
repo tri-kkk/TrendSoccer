@@ -152,12 +152,15 @@ class AnalysisCard extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      child: Container(
+      child: Material(
+        color: semantic.surfaceBase,
+        borderRadius: BorderRadius.circular(12),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onAnalyze,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
           padding: const EdgeInsets.all(TsSpacing.lg),
-          decoration: BoxDecoration(
-            color: semantic.surfaceBase,
-            borderRadius: BorderRadius.circular(12),
-          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
@@ -283,6 +286,8 @@ class AnalysisCard extends StatelessWidget {
             ],
             _buildAnalyzeButton(context, semantic),
           ],
+        ),
+          ),
         ),
       ),
     );

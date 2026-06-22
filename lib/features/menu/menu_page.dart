@@ -320,22 +320,11 @@ class _MenuPageState extends ConsumerState<MenuPage> {
                                             Navigator.of(dialogContext).pop();
                                           }
                                           if (context.mounted) {
-                                            final messenger =
-                                                ScaffoldMessenger.of(context);
-                                            messenger.clearSnackBars();
-                                            messenger.showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  resolveApiError(
-                                                    context,
-                                                    e,
-                                                  ),
-                                                ),
-                                                duration: const Duration(
-                                                  seconds: 5,
-                                                ),
-                                                behavior:
-                                                    SnackBarBehavior.floating,
+                                            TsToast.error(
+                                              context,
+                                              resolveApiError(
+                                                context,
+                                                e,
                                               ),
                                             );
                                           }

@@ -49,6 +49,7 @@ class AdService {
         },
       );
           } catch (e) {
+            // Non-fatal: ad impression tracking failed; ad display is unaffected.
           }
   }
 }

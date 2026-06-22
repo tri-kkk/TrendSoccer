@@ -445,7 +445,8 @@ class SupabaseAuthProvider extends ChangeNotifier {
     try {
       await loadProfile(jwt: jwt);
     } catch (e) {
-          }
+      // Non-fatal: profile refresh after signup failed; user can retry from menu.
+    }
   }
 
   void _syncStateFromUserProfile(UserProfile profile) {
@@ -612,7 +613,8 @@ class SupabaseAuthProvider extends ChangeNotifier {
         await FCMService().migrateToUser();
         await Future<void>.delayed(const Duration(milliseconds: 500));
       } catch (e) {
-              }
+        // Non-fatal: FCM device registration/migration failed; push may be stale.
+      }
     } on ApiException catch (e) {
       if (e.code == 'CONSENT_REQUIRED') {
                 _markConsentRequired();
@@ -648,6 +650,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
           csrfToken = data['csrfToken']?.toString();
         }
               } catch (e) {
+                // Non-fatal: CSRF token fetch failed; local sign-out still proceeds.
               }
 
       if (csrfToken != null) {
@@ -657,6 +660,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
             data: {'csrfToken': csrfToken},
           );
                   } catch (e) {
+                    // Non-fatal: server sign-out call failed; local session cleared.
                   }
       }
 

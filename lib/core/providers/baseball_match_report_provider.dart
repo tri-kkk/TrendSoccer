@@ -76,7 +76,8 @@ final baseballPitcherAnalysisProvider =
         }
       }
     } catch (e) {
-          }
+      // Non-fatal: supplemental pitcher stats unavailable; section uses defaults.
+    }
   }
 
   if (league == 'MLB') {
@@ -104,7 +105,8 @@ final baseballPitcherAnalysisProvider =
         );
       }
     } catch (e) {
-          }
+      // Non-fatal: MLB pitcher stats fetch failed; fallback match fields used.
+    }
   }
 
   if (league == 'MLB') {

@@ -9,6 +9,7 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/error_resolver.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
+import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 
 class HelpCenterPage extends ConsumerStatefulWidget {
   const HelpCenterPage({super.key});
@@ -123,28 +124,13 @@ class _HelpCenterPageState extends ConsumerState<HelpCenterPage> {
       _titleController.clear();
       _messageController.clear();
       _formKey.currentState?.reset();
-      final messenger = ScaffoldMessenger.of(context);
-      messenger.clearSnackBars();
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.helpCenterSubmitSuccess),
-          duration: const Duration(seconds: 5),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      TsToast.success(context, context.l10n.helpCenterSubmitSuccess);
       return;
     }
 
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.clearSnackBars();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          resolveApiError(context, result),
-        ),
-        duration: const Duration(seconds: 5),
-        behavior: SnackBarBehavior.floating,
-      ),
+    TsToast.error(
+      context,
+      resolveApiError(context, result),
     );
   }
 

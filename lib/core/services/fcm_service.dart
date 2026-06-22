@@ -1,8 +1,8 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -295,7 +295,6 @@ class FCMService {
 
     try {
       final dio = Dio();
-      debugPrint('[FCM] registerDevice: locale=$locale');
       await dio.post<dynamic>(
         'https://www.trendsoccer.com/api/v1/mobile/devices',
         data: <String, String>{
@@ -356,6 +355,7 @@ class FCMService {
         ),
       );
           } catch (e) {
+            // Non-fatal: FCM device unregister failed; token may remain on server.
           }
   }
 
@@ -375,7 +375,8 @@ class FCMService {
         return Uint8List.fromList(response.data!);
       }
     } catch (e) {
-          }
+      // Non-fatal: notification image download failed; show without large icon.
+    }
     return null;
   }
 
@@ -429,7 +430,8 @@ class FCMService {
         navigateFromPushData(Map<String, dynamic>.from(decoded));
       }
     } catch (e) {
-          }
+      // Non-fatal: notification tap payload parse failed; skip deep link.
+    }
   }
 
   /// Handle notification tap (background)

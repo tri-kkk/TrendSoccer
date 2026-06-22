@@ -14,6 +14,7 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/loading/ts_loading_overlay.dart';
+import 'package:trendsoccer/shared/widgets/toast/ts_toast.dart';
 import 'package:trendsoccer/shared/widgets/navigation/ts_bottom_navigation.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 class SubscribePage extends ConsumerStatefulWidget {
@@ -88,17 +89,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
   }
 
   void _showVerifyPendingSnackBar() {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.clearSnackBars();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          context.l10n.errorPaymentPending,
-        ),
-        duration: Duration(seconds: 5),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    TsToast.error(context, context.l10n.errorPaymentPending);
   }
 
   Future<_IapPurchaseOutcome> _waitForIapPurchaseResult(IAPService iap) async {
@@ -125,15 +116,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
               _isLoading = true;
               _loadingMessage = context.l10n.subscribeIapRestoring;
             });
-            final messenger = ScaffoldMessenger.of(context);
-            messenger.clearSnackBars();
-            messenger.showSnackBar(
-              SnackBar(
-                content: Text(context.l10n.subscribeAlreadyOwned),
-                duration: Duration(seconds: 5),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+            TsToast.info(context, context.l10n.subscribeAlreadyOwned);
           }
           unawaited(iap.restoreAndVerify());
         case IapPurchaseEventType.error:
@@ -145,15 +128,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
                 _isLoading = true;
                 _loadingMessage = context.l10n.subscribeIapRestoring;
               });
-              final messenger = ScaffoldMessenger.of(context);
-              messenger.clearSnackBars();
-              messenger.showSnackBar(
-                SnackBar(
-                  content: Text(context.l10n.subscribeAlreadyOwned),
-                  duration: Duration(seconds: 5),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+              TsToast.info(context, context.l10n.subscribeAlreadyOwned);
             }
             unawaited(iap.restoreAndVerify());
             return;
@@ -210,15 +185,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     final initiated = await iap.buySubscription(basePlanId);
     if (!initiated) {
             if (mounted) {
-        final messenger = ScaffoldMessenger.of(context);
-        messenger.clearSnackBars();
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.subscribeIapCannotStart),
-            duration: Duration(seconds: 5),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        TsToast.error(context, context.l10n.subscribeIapCannotStart);
       }
       return _IapAttemptResult.canceled;
     }
@@ -262,15 +229,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
           return;
         case _IapAttemptResult.unavailable:
           if (!mounted) return;
-          final messenger = ScaffoldMessenger.of(context);
-          messenger.clearSnackBars();
-          messenger.showSnackBar(
-            SnackBar(
-              content: Text(context.l10n.subscribeIapUnavailable),
-              duration: Duration(seconds: 5),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          TsToast.error(context, context.l10n.subscribeIapUnavailable);
       }
     } finally {
       if (mounted) {

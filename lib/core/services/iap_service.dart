@@ -232,6 +232,7 @@ class IAPService {
                     return jwt;
         }
               } catch (e) {
+                // Non-fatal: stored JWT read failed; try other auth sources.
               }
     }
 
@@ -241,16 +242,18 @@ class IAPService {
       if (jwt != null && jwt.isNotEmpty) {
                 return jwt;
       }
-          } catch (e) {
-          }
+    } catch (e) {
+      // Non-fatal: SharedPreferences JWT read failed; try other auth sources.
+    }
 
     try {
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null && session.accessToken.isNotEmpty) {
                 return session.accessToken;
       }
-          } catch (e) {
-          }
+    } catch (e) {
+      // Non-fatal: Supabase session read failed; try secure token storage.
+    }
 
     try {
       if (ref != null) {
@@ -265,8 +268,9 @@ class IAPService {
                     return token;
         }
       }
-          } catch (e) {
-          }
+    } catch (e) {
+      // Non-fatal: secure token read failed; purchase verify may be anonymous.
+    }
 
         return null;
   }
@@ -305,8 +309,9 @@ class IAPService {
     }
     try {
       await ref.read(authProvider).loadProfile();
-          } catch (e) {
-          }
+    } catch (e) {
+      // Non-fatal: profile refresh after IAP verify failed; UI already navigates.
+    }
   }
 
   Future<void> _emitVerifiedPurchase({
@@ -460,8 +465,9 @@ class IAPService {
     }
     try {
       await _iap.completePurchase(purchase);
-          } catch (e) {
-          }
+    } catch (e) {
+      // Non-fatal: Play purchase completion failed; may retry on next launch.
+    }
   }
 
   void dispose() {

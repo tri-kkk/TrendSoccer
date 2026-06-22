@@ -53,6 +53,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
 
   final Set<String> _alarmEnabledMatchIds = {};
   int _alarmRefreshGeneration = 0;
+  final Map<String, DateTime> _scoreChangedMatches = {};
   final Map<String, Map<String, dynamic>> _lastKnownSoccerLiveStates = {};
   final Map<String, DateTime> _soccerFinishedCacheAt = {};
   static const _soccerFinishedCacheTtl = Duration(minutes: 5);
@@ -152,6 +153,97 @@ class _FixturePageState extends ConsumerState<FixturePage>
         normalizeMatchStatus(raw) == 'finished';
   }
 
+  void _cleanExpiredScoreChanges() {
+    final now = DateTime.now();
+    _scoreChangedMatches.removeWhere(
+      (_, time) => now.difference(time).inSeconds > 3,
+    );
+  }
+
+  void _markScoreChanged(String matchId) {
+    _scoreChangedMatches[matchId] = DateTime.now();
+  }
+
+  bool _detectFixtureScoreChanges(
+    List<FixtureMatch> previousMatches,
+    List<FixtureMatch> newMatches,
+  ) {
+    var changed = false;
+    final previousById = <String, FixtureMatch>{
+      for (final match in previousMatches) match.matchId.toString(): match,
+    };
+
+    for (final newMatch in newMatches) {
+      final matchId = newMatch.matchId.toString();
+      final prevMatch = previousById[matchId];
+      if (prevMatch == null) continue;
+
+      final prevHome = prevMatch.homeScore ?? 0;
+      final prevAway = prevMatch.awayScore ?? 0;
+      final newHome = newMatch.homeScore ?? 0;
+      final newAway = newMatch.awayScore ?? 0;
+
+      if (prevHome != newHome || prevAway != newAway) {
+        _markScoreChanged(matchId);
+        final apiMatchId = newMatch.apiMatchId;
+        if (apiMatchId != null) {
+          _markScoreChanged(apiMatchId.toString());
+        }
+        changed = true;
+      }
+    }
+
+    _cleanExpiredScoreChanges();
+    return changed;
+  }
+
+  bool _detectSoccerScoreChanges(Map<String, LiveMatchData> newLiveData) {
+    var changed = false;
+
+    for (final entry in newLiveData.entries) {
+      final id = entry.key;
+      final newLive = entry.value;
+      final prev = _lastKnownSoccerLiveStates[id];
+      if (prev == null) continue;
+
+      final prevHome = (prev['homeScore'] as num?)?.toInt() ?? 0;
+      final prevAway = (prev['awayScore'] as num?)?.toInt() ?? 0;
+
+      if (prevHome != newLive.homeScore || prevAway != newLive.awayScore) {
+        _markScoreChanged(id);
+        changed = true;
+      }
+    }
+
+    _cleanExpiredScoreChanges();
+    return changed;
+  }
+
+  DateTime? _scoreChangeTimeForMatch(FixtureMatch match) {
+    final matchId = match.matchId.toString();
+    final direct = _scoreChangedMatches[matchId];
+    if (direct != null) return direct;
+
+    final apiMatchId = match.apiMatchId;
+    if (apiMatchId != null) {
+      return _scoreChangedMatches[apiMatchId.toString()];
+    }
+    return null;
+  }
+
+  void _notifyScoreChangesIfNeeded(bool changed) {
+    if (!changed || !mounted) return;
+    setState(() {});
+    Future<void>.delayed(const Duration(seconds: 3), () {
+      if (!mounted) return;
+      final before = _scoreChangedMatches.length;
+      _cleanExpiredScoreChanges();
+      if (before != _scoreChangedMatches.length) {
+        setState(() {});
+      }
+    });
+  }
+
   void _cacheSoccerLiveStates(Map<String, LiveMatchData> liveData) {
     final now = DateTime.now();
     for (final entry in liveData.entries) {
@@ -241,11 +333,14 @@ class _FixturePageState extends ConsumerState<FixturePage>
               }
     }
 
+    final scoreChanged = _detectSoccerScoreChanges(liveData);
     final effective = _effectiveSoccerLiveMap(liveData);
     if (liveData.isEmpty && effective.isNotEmpty) {
           }
 
     ref.read(liveMatchesProvider.notifier).state = effective;
+
+    _notifyScoreChangesIfNeeded(scoreChanged);
 
     if (effective.values.any((live) => live.isFinished)) {
       final base = ref.read(soccerPolledFixturesProvider) ??
@@ -397,11 +492,14 @@ class _FixturePageState extends ConsumerState<FixturePage>
 
       final merged =
           mergeBaseballTodayFixtures(base, dateMatches, selectedDate);
+      final scoreChanged = _detectFixtureScoreChanges(base, merged);
       _baseballDateCache[selectedDate] = dateMatches;
       _publishBaseballCache();
             ref.read(baseballPolledFixturesProvider.notifier).state = merged;
+      _notifyScoreChangesIfNeeded(scoreChanged);
     } catch (e) {
-          }
+      // Non-fatal: baseball live poll merge failed; cached fixtures remain visible.
+    }
   }
 
   bool _shouldPollBaseball() {
@@ -767,7 +865,8 @@ class _FixturePageState extends ConsumerState<FixturePage>
           _showAlarmToggleToast(match, enabled: false);
         }
       } catch (e) {
-              }
+        // Non-fatal: alarm disable API failed; bell state may be out of sync.
+      }
       return;
     }
 
@@ -787,7 +886,8 @@ class _FixturePageState extends ConsumerState<FixturePage>
         _showAlarmToggleToast(match, enabled: true);
       }
     } catch (e) {
-          }
+      // Non-fatal: alarm enable API failed; bell state may be out of sync.
+    }
   }
 
   FixtureMatchStatus _toFixtureStatus(
@@ -924,6 +1024,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
       onNotificationTap: _isAlarmEligible(match, live: live)
           ? () => _onNotificationTap(match)
           : null,
+      scoreChangeAt: _scoreChangeTimeForMatch(match),
     );
   }
 
