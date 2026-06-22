@@ -13,9 +13,11 @@ import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_combo_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
+import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/services/ad_service.dart';
 import 'package:trendsoccer/core/services/admob_service.dart';
+import 'package:trendsoccer/core/services/review_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
@@ -72,6 +74,16 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     _baseballCardsPageController =
         PageController(viewportFraction: _analysisCardViewportFraction);
     _loadBanners();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future<void>.delayed(const Duration(seconds: 3), () {
+        if (!mounted) return;
+        final prefs = ref.read(sharedPreferencesProvider);
+        final reviewService = ReviewService(prefs);
+        reviewService.recordLaunch();
+        unawaited(reviewService.requestReviewIfEligible());
+      });
+    });
   }
 
   @override
