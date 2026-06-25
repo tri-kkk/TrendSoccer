@@ -4,7 +4,6 @@ import 'package:trendsoccer/core/utils/match_date_formatter.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/features/analysis/models/baseball_standard_parser.dart';
-import 'package:trendsoccer/features/analysis/models/soccer_analysis_parser.dart';
 
 class MatchHeaderData {
   const MatchHeaderData({
@@ -96,22 +95,6 @@ class MatchHeaderData {
       matchDate: card.matchDate,
       matchTime: card.matchTime,
       matchTimestamp: card.matchTimestamp,
-    );
-  }
-
-  factory MatchHeaderData.fromSoccerStandardParsed(
-    SoccerStandardAnalysisParsed parsed, {
-    required int matchId,
-  }) {
-    return MatchHeaderData(
-      matchId: matchId,
-      homeTeam: parsed.homeTeam,
-      awayTeam: parsed.awayTeam,
-      homeTeamLogo: parsed.homeLogoUrl,
-      awayTeamLogo: parsed.awayLogoUrl,
-      leagueIconId: parsed.leagueId,
-      matchDate: parsed.matchDateDisplay,
-      matchTimestamp: parsed.matchTimestampUtc,
     );
   }
 

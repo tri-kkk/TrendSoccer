@@ -7,7 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:trendsoccer/core/router/app_router.dart';
+import 'package:trendsoccer/core/navigation/app_navigation.dart';
 import 'package:trendsoccer/core/constants/alarm_preference_keys.dart';
 import 'package:trendsoccer/core/services/token_service.dart';
 
@@ -453,7 +453,7 @@ class FCMService {
             return;
     }
 
-        AppRouter.router.go('/fixture?sport=$sport&filter=live');
+        AppNavigation.go('/fixture?sport=$sport&filter=live');
   }
 
   /// Get JWT from multiple sources

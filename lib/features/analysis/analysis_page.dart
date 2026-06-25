@@ -24,7 +24,7 @@ import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
 import 'package:trendsoccer/shared/widgets/filter/ts_filter_chip.dart';
 import 'package:trendsoccer/shared/widgets/league/ts_league_icon.dart';
 import 'package:trendsoccer/shared/widgets/navigation/date_tab_bar.dart';
-import 'package:trendsoccer/shared/widgets/dialogs/exit_dialog.dart';
+import 'package:trendsoccer/shared/widgets/exit_pop_scope.dart';
 import 'package:trendsoccer/shared/widgets/toggle/sports_toggle.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
@@ -327,12 +327,7 @@ class _AnalysisPageState extends ConsumerState<AnalysisPage> {
       }
     }
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        showExitDialog(context);
-      },
+    return ExitPopScope(
       child: Scaffold(
       backgroundColor: semantic.surfaceRaised,
       body: GestureDetector(

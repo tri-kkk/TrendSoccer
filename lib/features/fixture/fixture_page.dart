@@ -27,7 +27,7 @@ import 'package:trendsoccer/features/fixture/fixture_soccer_content.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/shared/widgets/ads/premium_ad_wrapper.dart';
 import 'package:trendsoccer/shared/widgets/appbar/ts_shell_app_bar_content.dart';
-import 'package:trendsoccer/shared/widgets/dialogs/exit_dialog.dart';
+import 'package:trendsoccer/shared/widgets/exit_pop_scope.dart';
 import 'package:trendsoccer/shared/widgets/empty/network_error_widget.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/fixture/alarm_sheet.dart';
@@ -1225,12 +1225,7 @@ class _FixturePageState extends ConsumerState<FixturePage>
       selectedDateStr: selectedDateStr,
     );
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        showExitDialog(context);
-      },
+    return ExitPopScope(
       child: Scaffold(
       backgroundColor: semantic.surfaceRaised,
       body: GestureDetector(

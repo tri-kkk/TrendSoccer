@@ -28,7 +28,7 @@ import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/shared/widgets/empty/network_error_widget.dart';
 import 'package:trendsoccer/shared/widgets/dialogs/announcement_dialog.dart';
-import 'package:trendsoccer/shared/widgets/dialogs/exit_dialog.dart';
+import 'package:trendsoccer/shared/widgets/exit_pop_scope.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/baseball_today_combo_card.dart';
 import 'package:trendsoccer/shared/widgets/ads/premium_ad_wrapper.dart';
@@ -210,55 +210,134 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     }
   }
 
-  Widget _buildTopBannerCarousel() {
+  Widget _buildBannerImage({
+    required String imageUrl,
+    required double height,
+    required BoxFit fit,
+    required BorderRadius borderRadius,
+    bool placeholderUsesBorderRadius = false,
+    Widget? errorWidget,
+  }) {
     final semantic = Theme.of(context).extension<TsSemanticColors>()!;
 
+    Widget buildPlaceholder() {
+      if (placeholderUsesBorderRadius) {
+        return Container(
+          height: height,
+          decoration: BoxDecoration(
+            color: semantic.surfaceContainer,
+            borderRadius: borderRadius,
+          ),
+        );
+      }
+      return Container(
+        color: semantic.surfaceContainer,
+        height: height,
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: borderRadius,
+      child: CachedNetworkImage(
+        imageUrl: imageUrl,
+        fit: fit,
+        width: double.infinity,
+        height: height,
+        placeholder: (_, _) => buildPlaceholder(),
+        errorWidget: (_, _, _) =>
+            errorWidget ??
+            Container(
+              color: semantic.surfaceContainer,
+              height: height,
+            ),
+      ),
+    );
+  }
+
+  Widget _buildPageIndicator(int itemCount, int currentPage) {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (var i = 0; i < itemCount; i++) ...[
+          if (i > 0) const SizedBox(width: TsSpacing.sm),
+          i == currentPage
+              ? Container(
+                  width: 20,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: TsColors.brandPrimary500,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                )
+              : Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: semantic.textDisabled,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildBannerCarousel({
+    required double height,
+    required PageController controller,
+    required List<Map<String, dynamic>> items,
+    required int currentPage,
+    required ValueChanged<int> onPageChanged,
+    required Widget Function(BuildContext context, int index, Map<String, dynamic> ad)
+        itemBuilder,
+    bool padEnds = true,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
-          height: _topBannerHeight,
+          height: height,
           child: PageView.builder(
-            controller: _bannerController,
-            padEnds: false,
-            onPageChanged: (index) {
-              setState(() => _currentBannerPage = index);
-            },
-            itemCount: _topBanners.length,
-            itemBuilder: (context, index) {
-              final ad = _topBanners[index];
-              final isLast = index == _topBanners.length - 1;
-              return Container(
-                margin: EdgeInsets.only(right: isLast ? 0 : TsSpacing.sm),
-                child: GestureDetector(
-                  onTap: () => _handleAdClick(ad),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: CachedNetworkImage(
-                      imageUrl: ad['image_url'] as String? ?? '',
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: _topBannerHeight,
-                      placeholder: (_, _) => Container(
-                        color: semantic.surfaceContainer,
-                        height: _topBannerHeight,
-                      ),
-                      errorWidget: (_, _, _) => Container(
-                        color: semantic.surfaceContainer,
-                        height: _topBannerHeight,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
+            controller: controller,
+            padEnds: padEnds,
+            onPageChanged: onPageChanged,
+            itemCount: items.length,
+            itemBuilder: (context, index) =>
+                itemBuilder(context, index, items[index]),
           ),
         ),
-        if (_topBanners.length > 1) ...[
+        if (items.length > 1) ...[
           const SizedBox(height: TsSpacing.sm),
-          _buildBannerIndicator(),
+          _buildPageIndicator(items.length, currentPage),
         ],
       ],
+    );
+  }
+
+  Widget _buildTopBannerCarousel() {
+    return _buildBannerCarousel(
+      height: _topBannerHeight,
+      controller: _bannerController,
+      items: _topBanners,
+      currentPage: _currentBannerPage,
+      onPageChanged: (index) => setState(() => _currentBannerPage = index),
+      padEnds: false,
+      itemBuilder: (context, index, ad) {
+        final isLast = index == _topBanners.length - 1;
+        return Container(
+          margin: EdgeInsets.only(right: isLast ? 0 : TsSpacing.sm),
+          child: GestureDetector(
+            onTap: () => _handleAdClick(ad),
+            child: _buildBannerImage(
+              imageUrl: ad['image_url'] as String? ?? '',
+              height: _topBannerHeight,
+              fit: BoxFit.cover,
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -285,130 +364,39 @@ class _TrendPageState extends ConsumerState<TrendPage> {
   }
 
   Widget _buildBottomBanner(Map<String, dynamic> ad) {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
     return GestureDetector(
       onTap: () => _handleAdClick(ad),
-      child: ClipRRect(
+      child: _buildBannerImage(
+        imageUrl: ad['image_url'] as String? ?? '',
+        height: _bottomBannerHeight,
+        fit: BoxFit.cover,
         borderRadius: BorderRadius.circular(12),
-        child: CachedNetworkImage(
-          imageUrl: ad['image_url'] as String? ?? '',
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: _bottomBannerHeight,
-          placeholder: (_, _) => Container(
-            color: semantic.surfaceContainer,
-            height: _bottomBannerHeight,
-          ),
-          errorWidget: (_, _, _) => Container(
-            color: semantic.surfaceContainer,
-            height: _bottomBannerHeight,
-          ),
-        ),
       ),
     );
   }
 
   Widget _buildDirectAdBanner(Map<String, dynamic> ad) {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-
     return GestureDetector(
       onTap: () => _handleAdClick(ad),
-      child: ClipRRect(
+      child: _buildBannerImage(
+        imageUrl: ad['image_url'] as String? ?? '',
+        height: _directAdBannerHeight,
+        fit: BoxFit.fitWidth,
         borderRadius: BorderRadius.circular(TsSpacing.md),
-        child: CachedNetworkImage(
-          imageUrl: ad['image_url'] as String? ?? '',
-          width: double.infinity,
-          height: _directAdBannerHeight,
-          fit: BoxFit.fitWidth,
-          placeholder: (context, url) => Container(
-            height: _directAdBannerHeight,
-            decoration: BoxDecoration(
-              color: semantic.surfaceContainer,
-              borderRadius: BorderRadius.circular(TsSpacing.md),
-            ),
-          ),
-          errorWidget: (context, url, error) => const SizedBox.shrink(),
-        ),
+        placeholderUsesBorderRadius: true,
+        errorWidget: const SizedBox.shrink(),
       ),
     );
   }
 
-  Widget _buildBannerIndicator() {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        for (var i = 0; i < _topBanners.length; i++) ...[
-          if (i > 0) const SizedBox(width: TsSpacing.sm),
-          i == _currentBannerPage
-              ? Container(
-                  width: 20,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: TsColors.brandPrimary500,
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                )
-              : Container(
-                  width: 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: semantic.textDisabled,
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                ),
-        ],
-      ],
-    );
-  }
-
   Widget _buildBottomBannerCarousel() {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(
-          height: _bottomBannerHeight,
-          child: PageView.builder(
-            controller: _bottomBannerController,
-            onPageChanged: (index) {
-              setState(() => _currentBottomBannerPage = index);
-            },
-            itemCount: _bottomBanners.length,
-            itemBuilder: (context, index) =>
-                _buildBottomBanner(_bottomBanners[index]),
-          ),
-        ),
-        if (_bottomBanners.length > 1) ...[
-          const SizedBox(height: TsSpacing.sm),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (var i = 0; i < _bottomBanners.length; i++) ...[
-                if (i > 0) const SizedBox(width: TsSpacing.sm),
-                i == _currentBottomBannerPage
-                    ? Container(
-                        width: 20,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: TsColors.brandPrimary500,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      )
-                    : Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: semantic.textDisabled,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-              ],
-            ],
-          ),
-        ],
-      ],
+    return _buildBannerCarousel(
+      height: _bottomBannerHeight,
+      controller: _bottomBannerController,
+      items: _bottomBanners,
+      currentPage: _currentBottomBannerPage,
+      onPageChanged: (index) => setState(() => _currentBottomBannerPage = index),
+      itemBuilder: (context, index, ad) => _buildBottomBanner(ad),
     );
   }
 
@@ -441,52 +429,14 @@ class _TrendPageState extends ConsumerState<TrendPage> {
   }
 
   Widget _buildDirectAdBannerCarousel() {
-    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(
-          height: _directAdBannerHeight,
-          child: PageView.builder(
-            controller: _directAdBannerController,
-            onPageChanged: (index) {
-              setState(() => _currentDirectAdBannerPage = index);
-            },
-            itemCount: _directAdBanners.length,
-            itemBuilder: (context, index) =>
-                _buildDirectAdBanner(_directAdBanners[index]),
-          ),
-        ),
-        if (_directAdBanners.length > 1) ...[
-          const SizedBox(height: TsSpacing.sm),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (var i = 0; i < _directAdBanners.length; i++) ...[
-                if (i > 0) const SizedBox(width: TsSpacing.sm),
-                i == _currentDirectAdBannerPage
-                    ? Container(
-                        width: 20,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: TsColors.brandPrimary500,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      )
-                    : Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: semantic.textDisabled,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-              ],
-            ],
-          ),
-        ],
-      ],
+    return _buildBannerCarousel(
+      height: _directAdBannerHeight,
+      controller: _directAdBannerController,
+      items: _directAdBanners,
+      currentPage: _currentDirectAdBannerPage,
+      onPageChanged: (index) =>
+          setState(() => _currentDirectAdBannerPage = index),
+      itemBuilder: (context, index, ad) => _buildDirectAdBanner(ad),
     );
   }
 
@@ -822,12 +772,7 @@ class _TrendPageState extends ConsumerState<TrendPage> {
     final showDirectAdBannerArea =
         showBottomAds && (_loadingBanners || _directAdBanners.isNotEmpty);
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        showExitDialog(context);
-      },
+    return ExitPopScope(
       child: Scaffold(
       backgroundColor: semantic.surfaceRaised,
       body: RefreshIndicator(

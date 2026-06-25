@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/core/models/match_header_data.dart';
+import 'package:trendsoccer/core/navigation/app_navigation.dart';
+import 'package:trendsoccer/core/navigation/navigator_keys.dart';
 import 'package:trendsoccer/features/analysis/baseball_match_report_page.dart';
 import 'package:trendsoccer/features/analysis/analysis_page.dart';
 import 'package:trendsoccer/features/analysis/soccer_match_report_page.dart';
@@ -28,12 +30,13 @@ import 'package:trendsoccer/main_screen.dart';
 
 /// v2 app routing: tab shell + auth/splash stubs.
 abstract final class AppRouter {
-  static final GlobalKey<NavigatorState> rootNavigatorKey =
-      GlobalKey<NavigatorState>(debugLabel: 'root');
-  static final GlobalKey<NavigatorState> shellNavigatorKey =
-      GlobalKey<NavigatorState>(debugLabel: 'shell');
+  static final GlobalKey<NavigatorState> rootNavigatorKey = NavigatorKeys.root;
+  static final GlobalKey<NavigatorState> shellNavigatorKey = NavigatorKeys.shell;
 
-  static final GoRouter router = GoRouter(
+  static final GoRouter router = _createRouter();
+
+  static GoRouter _createRouter() {
+    final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
     routes: [
@@ -183,4 +186,7 @@ abstract final class AppRouter {
       ),
     ],
   );
+    AppNavigation.bind(router);
+    return router;
+  }
 }

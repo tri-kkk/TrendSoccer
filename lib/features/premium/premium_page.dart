@@ -23,7 +23,7 @@ import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_card.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_dashboard.dart';
-import 'package:trendsoccer/shared/widgets/dialogs/exit_dialog.dart';
+import 'package:trendsoccer/shared/widgets/exit_pop_scope.dart';
 import 'package:trendsoccer/shared/widgets/empty/network_error_widget.dart';
 import 'package:trendsoccer/shared/widgets/empty/ts_empty_state.dart';
 import 'package:trendsoccer/shared/widgets/toggle/sports_toggle.dart';
@@ -287,12 +287,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
 
     if (!AccessGate.canViewPremiumContent(planType: auth.planType)) {
       final l10n = context.l10n;
-      return PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (didPop, result) {
-          if (didPop) return;
-          showExitDialog(context);
-        },
+      return ExitPopScope(
         child: Scaffold(
         backgroundColor: semantic.surfaceRaised,
         body: SafeArea(
@@ -390,12 +385,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
       );
     }
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        showExitDialog(context);
-      },
+    return ExitPopScope(
       child: Scaffold(
       backgroundColor: semantic.surfaceRaised,
       body: Column(
