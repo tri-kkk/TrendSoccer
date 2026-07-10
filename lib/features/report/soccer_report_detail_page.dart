@@ -67,10 +67,14 @@ class SoccerReportDetailPage extends ConsumerWidget {
 
   static const _predictionSectionMarkers = [
     '## TrendSoccer Prediction',
+    '## TrendSoccer Analysis',
     '## TrendSoccer 분석',
     '## 트렌드사커 예측',
+    '## 트렌드사커 분석',
     '## Prediction',
+    '## Analysis',
     '## 예측',
+    '## 분석',
   ];
 
   static (String body, String? heading, String? predictionBody)

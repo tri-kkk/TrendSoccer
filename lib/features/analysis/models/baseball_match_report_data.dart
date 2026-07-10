@@ -167,7 +167,7 @@ final BaseballMatchReportData baseballMatchReportDummy = BaseballMatchReportData
   awayWinProb: '42%',
   homeWinProb: '58%',
   winProbDescription:
-      '홈팀이 투수력과 최근 상대전적에서 우위를 점하고 있어 승리 확률이 높게 산출되었습니다.',
+      '홈팀이 투수력과 최근 상대전적에서 우위를 점하고 있어 승리 가능성이 높게 산출되었습니다.',
   ouBaseLine: '8',
   ouOverOdds: '1.96',
   ouUnderOdds: '1.91',

@@ -119,7 +119,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutDescription.
   ///
   /// In ko, this message translates to:
-  /// **'TrendSoccer는 AI 기반 실시간 분석으로 경기 흐름을 예측합니다. 프리미어리그부터 챔피언스리그까지, 모든 빅매치를 전문가 수준의 인사이트로 경험하세요.'**
+  /// **'TrendSoccer는 AI 기반 실시간 분석으로 경기 흐름을 분석합니다. 프리미어리그부터 챔피언스리그까지, 모든 빅매치를 전문가 수준의 인사이트로 경험하세요.'**
   String get aboutDescription;
 
   /// No description provided for @aboutFeatureAiDesc.
@@ -149,13 +149,13 @@ abstract class AppLocalizations {
   /// No description provided for @aboutFeatureOddsDesc.
   ///
   /// In ko, this message translates to:
-  /// **'배당 무브먼트에 따른 마켓 모니터링'**
+  /// **'지수 무브먼트에 따른 마켓 모니터링'**
   String get aboutFeatureOddsDesc;
 
   /// No description provided for @aboutFeatureOddsTitle.
   ///
   /// In ko, this message translates to:
-  /// **'실시간 배당 분석'**
+  /// **'실시간 지수 분석'**
   String get aboutFeatureOddsTitle;
 
   /// No description provided for @aboutFeaturesSection.
@@ -335,7 +335,7 @@ abstract class AppLocalizations {
   /// No description provided for @analysisPremiumPick.
   ///
   /// In ko, this message translates to:
-  /// **'프리미엄 분석'**
+  /// **'프리미엄 리포트'**
   String get analysisPremiumPick;
 
   /// No description provided for @analysisTabBaseball.
@@ -443,7 +443,7 @@ abstract class AppLocalizations {
   /// No description provided for @baseballAiWinProbabilityHint.
   ///
   /// In ko, this message translates to:
-  /// **'AI 기반 승리 확률 분석입니다.'**
+  /// **'AI 기반 승리 가능성 분석입니다.'**
   String get baseballAiWinProbabilityHint;
 
   /// No description provided for @baseballBaseline.
@@ -533,7 +533,7 @@ abstract class AppLocalizations {
   /// No description provided for @baseballHomeAwayWinRate.
   ///
   /// In ko, this message translates to:
-  /// **'최근 10경기 승률'**
+  /// **'10경기 전력 분석'**
   String get baseballHomeAwayWinRate;
 
   /// No description provided for @baseballOddsBaseline.
@@ -545,7 +545,7 @@ abstract class AppLocalizations {
   /// No description provided for @baseballOverUnder.
   ///
   /// In ko, this message translates to:
-  /// **'오버&언더'**
+  /// **'득점 분석'**
   String get baseballOverUnder;
 
   /// No description provided for @baseballProductionBatterEdge.
@@ -653,7 +653,7 @@ abstract class AppLocalizations {
   /// No description provided for @baseballSectionOdds.
   ///
   /// In ko, this message translates to:
-  /// **'Odds'**
+  /// **'지수'**
   String get baseballSectionOdds;
 
   /// No description provided for @baseballSectionPitchers.
@@ -719,7 +719,7 @@ abstract class AppLocalizations {
   /// No description provided for @baseballWinProbability.
   ///
   /// In ko, this message translates to:
-  /// **'승리 확률'**
+  /// **'승리 가능성'**
   String get baseballWinProbability;
 
   /// No description provided for @baseballWinsLosses.
@@ -737,7 +737,7 @@ abstract class AppLocalizations {
   /// No description provided for @cardCheckPick.
   ///
   /// In ko, this message translates to:
-  /// **'오늘의 픽 확인하기 →'**
+  /// **'분석 리포트 확인 →'**
   String get cardCheckPick;
 
   /// No description provided for @cardCheckPickShort.
@@ -749,37 +749,37 @@ abstract class AppLocalizations {
   /// No description provided for @cardComboCheck.
   ///
   /// In ko, this message translates to:
-  /// **'오늘의 조합 확인하기 →'**
+  /// **'다경기 분석 확인 →'**
   String get cardComboCheck;
 
   /// No description provided for @cardComboCount.
   ///
   /// In ko, this message translates to:
-  /// **'조합 수'**
+  /// **'경기 수'**
   String get cardComboCount;
 
   /// No description provided for @cardComboDefaultSubtitle.
   ///
   /// In ko, this message translates to:
-  /// **'오늘의 AI 조합을 확인하세요.'**
+  /// **'AI 다경기 분석을 확인하세요.'**
   String get cardComboDefaultSubtitle;
 
   /// No description provided for @cardComboLeagueHint.
   ///
   /// In ko, this message translates to:
-  /// **'매일 3대 리그 AI 분석 조합 제공'**
+  /// **'3대 리그 AI 다경기 분석'**
   String get cardComboLeagueHint;
 
   /// No description provided for @cardComboTodayCount.
   ///
   /// In ko, this message translates to:
-  /// **'오늘 조합 {count}개'**
+  /// **'오늘 다경기 분석 {count}개'**
   String cardComboTodayCount(int count);
 
   /// No description provided for @cardHitRate.
   ///
   /// In ko, this message translates to:
-  /// **'적중률'**
+  /// **'정확도'**
   String get cardHitRate;
 
   /// No description provided for @cardNextUpdate.
@@ -791,19 +791,19 @@ abstract class AppLocalizations {
   /// No description provided for @cardPickCount.
   ///
   /// In ko, this message translates to:
-  /// **'픽 개수'**
+  /// **'리포트 수'**
   String get cardPickCount;
 
   /// No description provided for @cardStreak.
   ///
   /// In ko, this message translates to:
-  /// **'현재 연승'**
+  /// **'연속 일치'**
   String get cardStreak;
 
   /// No description provided for @cardTodayCombo.
   ///
   /// In ko, this message translates to:
-  /// **'오늘의 추천 조합'**
+  /// **'오늘의 다경기 분석'**
   String get cardTodayCombo;
 
   /// No description provided for @cardTodayPick.
@@ -857,13 +857,13 @@ abstract class AppLocalizations {
   /// No description provided for @comboAvgOdds.
   ///
   /// In ko, this message translates to:
-  /// **'평균 배당'**
+  /// **'평균 지수'**
   String get comboAvgOdds;
 
   /// No description provided for @comboComboCount.
   ///
   /// In ko, this message translates to:
-  /// **'조합 수'**
+  /// **'경기 수'**
   String get comboComboCount;
 
   /// No description provided for @comboDashboardToday.
@@ -875,13 +875,13 @@ abstract class AppLocalizations {
   /// No description provided for @comboFoldCount.
   ///
   /// In ko, this message translates to:
-  /// **'{count} COMBO'**
+  /// **'{count}경기'**
   String comboFoldCount(int count);
 
   /// No description provided for @comboHighOdds.
   ///
   /// In ko, this message translates to:
-  /// **'고배당'**
+  /// **'고지수'**
   String get comboHighOdds;
 
   /// No description provided for @comboMatchFail.
@@ -893,7 +893,7 @@ abstract class AppLocalizations {
   /// No description provided for @comboMatchHit.
   ///
   /// In ko, this message translates to:
-  /// **'적중'**
+  /// **'일치'**
   String get comboMatchHit;
 
   /// No description provided for @comboMatchPending.
@@ -905,7 +905,7 @@ abstract class AppLocalizations {
   /// No description provided for @comboPicksCompleted.
   ///
   /// In ko, this message translates to:
-  /// **'{count}개 AI 조합 분석 완료'**
+  /// **'{count}개 다경기 분석 완료'**
   String comboPicksCompleted(int count);
 
   /// No description provided for @comboReliability.
@@ -917,7 +917,7 @@ abstract class AppLocalizations {
   /// No description provided for @comboResultHitCount.
   ///
   /// In ko, this message translates to:
-  /// **'{count}개 적중'**
+  /// **'{count}개 일치'**
   String comboResultHitCount(int count);
 
   /// No description provided for @comboResultInProgressCount.
@@ -929,31 +929,31 @@ abstract class AppLocalizations {
   /// No description provided for @comboResultMissCount.
   ///
   /// In ko, this message translates to:
-  /// **'{count}개 미적중'**
+  /// **'{count}개 미일치'**
   String comboResultMissCount(int count);
 
   /// No description provided for @comboResultPartialCount.
   ///
   /// In ko, this message translates to:
-  /// **'{count}개 부분 적중'**
+  /// **'{count}개 부분 일치'**
   String comboResultPartialCount(int count);
 
   /// No description provided for @comboSafe.
   ///
   /// In ko, this message translates to:
-  /// **'안전형'**
+  /// **'안정형'**
   String get comboSafe;
 
   /// No description provided for @comboSafeHitRate.
   ///
   /// In ko, this message translates to:
-  /// **'안전형 적중률'**
+  /// **'안정형 정확도'**
   String get comboSafeHitRate;
 
   /// No description provided for @comboStatusHit.
   ///
   /// In ko, this message translates to:
-  /// **'적중'**
+  /// **'일치'**
   String get comboStatusHit;
 
   /// No description provided for @comboStatusInProgress.
@@ -965,7 +965,7 @@ abstract class AppLocalizations {
   /// No description provided for @comboStatusMiss.
   ///
   /// In ko, this message translates to:
-  /// **'미적중'**
+  /// **'미일치'**
   String get comboStatusMiss;
 
   /// No description provided for @comboStatusPartial.
@@ -977,19 +977,19 @@ abstract class AppLocalizations {
   /// No description provided for @comboTotalOdds.
   ///
   /// In ko, this message translates to:
-  /// **'총 배당'**
+  /// **'총 지수'**
   String get comboTotalOdds;
 
   /// No description provided for @comboTypeHigh.
   ///
   /// In ko, this message translates to:
-  /// **'고배당'**
+  /// **'고지수'**
   String get comboTypeHigh;
 
   /// No description provided for @comboTypeSafe.
   ///
   /// In ko, this message translates to:
-  /// **'안전형'**
+  /// **'안정형'**
   String get comboTypeSafe;
 
   /// No description provided for @comboWin.
@@ -1001,7 +1001,7 @@ abstract class AppLocalizations {
   /// No description provided for @confidenceAccuracy.
   ///
   /// In ko, this message translates to:
-  /// **'정합도'**
+  /// **'일치도'**
   String get confidenceAccuracy;
 
   /// No description provided for @confirm.
@@ -1061,7 +1061,7 @@ abstract class AppLocalizations {
   /// No description provided for @emptyPremiumPickTitle.
   ///
   /// In ko, this message translates to:
-  /// **'오늘의 픽이 없습니다.'**
+  /// **'분석 리포트가 없습니다.'**
   String get emptyPremiumPickTitle;
 
   /// No description provided for @errorGeneric.
@@ -1385,7 +1385,7 @@ abstract class AppLocalizations {
   /// No description provided for @guestBannerSubtitle.
   ///
   /// In ko, this message translates to:
-  /// **'분석 카드, 프리미엄 픽 등 모든 기능 이용'**
+  /// **'분석 카드, 프리미엄 리포트 등 모든 기능'**
   String get guestBannerSubtitle;
 
   /// No description provided for @guestBannerTitle.
@@ -1499,13 +1499,13 @@ abstract class AppLocalizations {
   /// No description provided for @labelOdds.
   ///
   /// In ko, this message translates to:
-  /// **'배당'**
+  /// **'지수'**
   String get labelOdds;
 
   /// No description provided for @labelPrediction.
   ///
   /// In ko, this message translates to:
-  /// **'예측'**
+  /// **'분석'**
   String get labelPrediction;
 
   /// No description provided for @labelRecommend.
@@ -1517,13 +1517,13 @@ abstract class AppLocalizations {
   /// No description provided for @labelOver.
   ///
   /// In ko, this message translates to:
-  /// **'오버'**
+  /// **'Over'**
   String get labelOver;
 
   /// No description provided for @labelUnder.
   ///
   /// In ko, this message translates to:
-  /// **'언더'**
+  /// **'Under'**
   String get labelUnder;
 
   /// No description provided for @labelWin.
@@ -1613,7 +1613,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginSheetDesc.
   ///
   /// In ko, this message translates to:
-  /// **'H2H 상대전적부터 팀 심층 분석까지, 당신의 예측을 완성할 데이터를 확인하세요.'**
+  /// **'H2H 상대전적부터 팀 심층 분석까지, 당신의 분석을 완성할 데이터를 확인하세요.'**
   String get loginSheetDesc;
 
   /// No description provided for @loginSheetTitle.
@@ -1631,7 +1631,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginSubtitle.
   ///
   /// In ko, this message translates to:
-  /// **'프리미엄 AI가 읽어내는 축구와 야구의 흐름.\n정교한 데이터로 예측의 정확도를 높이세요.'**
+  /// **'프리미엄 AI가 읽어내는 축구와 야구의 흐름.\n정교한 데이터로 분석의 정확도를 높이세요.'**
   String get loginSubtitle;
 
   /// No description provided for @loginSuccess.
@@ -1643,7 +1643,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginTitle.
   ///
   /// In ko, this message translates to:
-  /// **'Better Data,\nSmarter Picks,\nFor Your Choice.'**
+  /// **'Better Data,\nSmarter Analysis Reports,\nFor Your Choice.'**
   String get loginTitle;
 
   /// No description provided for @matchAlarmDisabledGoSettings.
@@ -2201,7 +2201,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumBenefitPremiumPick.
   ///
   /// In ko, this message translates to:
-  /// **'PREMIUM PICK 무제한'**
+  /// **'프리미엄 리포트 무제한'**
   String get premiumBenefitPremiumPick;
 
   /// No description provided for @premiumBenefitsTitle.
@@ -2213,7 +2213,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumComboLoadFailed.
   ///
   /// In ko, this message translates to:
-  /// **'야구 AI 조합을 불러오지 못했습니다.'**
+  /// **'야구 AI 다경기 분석을 불러오지 못했습니다.'**
   String get premiumComboLoadFailed;
 
   /// No description provided for @premiumExclusiveContent.
@@ -2231,7 +2231,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumNoHighConfidence.
   ///
   /// In ko, this message translates to:
-  /// **'오늘 고신뢰도 픽이 없습니다'**
+  /// **'오늘 고신뢰도 리포트가 없습니다'**
   String get premiumNoHighConfidence;
 
   /// No description provided for @parserReasonBasis.
@@ -2261,7 +2261,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumNonSubscriberSubtitle.
   ///
   /// In ko, this message translates to:
-  /// **'AI 분석, PREMIUM PICK, 야구 조합\n광고 없는 쾌적한 환경'**
+  /// **'AI 분석, 프리미엄 리포트, 야구 다경기 분석\n광고 없는 환경'**
   String get premiumNonSubscriberSubtitle;
 
   /// No description provided for @premiumNonSubscriberTitle.
@@ -2273,7 +2273,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumPickLoadFailed.
   ///
   /// In ko, this message translates to:
-  /// **'프리미엄 픽 목록을 불러오지 못했습니다.'**
+  /// **'프리미엄 리포트 목록을 불러오지 못했습니다.'**
   String get premiumPickLoadFailed;
 
   /// No description provided for @premiumSubscribeAfter.
@@ -2285,7 +2285,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumSubscribeBenefitsLine1.
   ///
   /// In ko, this message translates to:
-  /// **'PREMIUM PICK과 야구 AI 조합 분석을'**
+  /// **'프리미엄 리포트와 야구 다경기 분석을'**
   String get premiumSubscribeBenefitsLine1;
 
   /// No description provided for @premiumSubscribeNow.
@@ -2303,13 +2303,13 @@ abstract class AppLocalizations {
   /// No description provided for @subscribeToUnlock.
   ///
   /// In ko, this message translates to:
-  /// **'프리미엄 구독으로 전체 예측을 확인하세요'**
+  /// **'프리미엄 구독으로 전체 분석을 확인하세요'**
   String get subscribeToUnlock;
 
   /// No description provided for @premiumSubscribeSheetBaseballDesc.
   ///
   /// In ko, this message translates to:
-  /// **'승리 확률, 오버&언더, 시즌 통계 등 AI 분석 데이터를 이용해보세요.'**
+  /// **'승리 가능성, 득점 분석, 시즌 통계 등 AI 분석 데이터를 이용해보세요.'**
   String get premiumSubscribeSheetBaseballDesc;
 
   /// No description provided for @premiumSubscribeSheetSoccerDesc.
@@ -2573,7 +2573,7 @@ abstract class AppLocalizations {
   /// No description provided for @signupCompletePremiumBenefit2.
   ///
   /// In ko, this message translates to:
-  /// **'PREMIUM PICK 무제한'**
+  /// **'프리미엄 리포트 무제한'**
   String get signupCompletePremiumBenefit2;
 
   /// No description provided for @signupCompletePremiumBenefit3.
@@ -2795,7 +2795,7 @@ abstract class AppLocalizations {
   /// No description provided for @soccerFinalProbability.
   ///
   /// In ko, this message translates to:
-  /// **'최종 예측 확률'**
+  /// **'최종 분석 확률'**
   String get soccerFinalProbability;
 
   /// No description provided for @soccerH2h.
@@ -2963,13 +2963,13 @@ abstract class AppLocalizations {
   /// No description provided for @soccerReasonFirstGoalAway.
   ///
   /// In ko, this message translates to:
-  /// **'원정 선득점 승률'**
+  /// **'원정 선제골 전력'**
   String get soccerReasonFirstGoalAway;
 
   /// No description provided for @soccerReasonFirstGoalHome.
   ///
   /// In ko, this message translates to:
-  /// **'홈 선득점 승률'**
+  /// **'홈 선제골 전력'**
   String get soccerReasonFirstGoalHome;
 
   /// No description provided for @soccerSeasonAway.
@@ -2999,7 +2999,7 @@ abstract class AppLocalizations {
   /// No description provided for @soccerStatFirstGoalRate.
   ///
   /// In ko, this message translates to:
-  /// **'선제골 승률'**
+  /// **'선제골 전력'**
   String get soccerStatFirstGoalRate;
 
   /// No description provided for @soccerStatGoalDifference.
@@ -3065,13 +3065,13 @@ abstract class AppLocalizations {
   /// No description provided for @soccerStatWinProb.
   ///
   /// In ko, this message translates to:
-  /// **'승리 확률'**
+  /// **'승리 가능성'**
   String get soccerStatWinProb;
 
   /// No description provided for @soccerStatWinRate.
   ///
   /// In ko, this message translates to:
-  /// **'승률'**
+  /// **'전력 분석'**
   String get soccerStatWinRate;
 
   /// No description provided for @soccerStatWins.
@@ -3281,7 +3281,7 @@ abstract class AppLocalizations {
   /// No description provided for @subscribePremiumBenefit2.
   ///
   /// In ko, this message translates to:
-  /// **'축구 프리미엄픽 무제한'**
+  /// **'축구 프리미엄 리포트 무제한'**
   String get subscribePremiumBenefit2;
 
   /// No description provided for @subscribePremiumBenefit3.
@@ -3293,7 +3293,7 @@ abstract class AppLocalizations {
   /// No description provided for @subscribePremiumBenefit4.
   ///
   /// In ko, this message translates to:
-  /// **'야구 조합 픽'**
+  /// **'야구 다경기 분석'**
   String get subscribePremiumBenefit4;
 
   /// No description provided for @subscribePremiumBenefit5.
@@ -3473,7 +3473,7 @@ abstract class AppLocalizations {
   /// No description provided for @todayCombination.
   ///
   /// In ko, this message translates to:
-  /// **'오늘의 추천 조합'**
+  /// **'오늘의 다경기 분석'**
   String get todayCombination;
 
   /// No description provided for @todayPremiumPick.

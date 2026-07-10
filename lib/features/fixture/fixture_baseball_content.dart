@@ -74,6 +74,9 @@ abstract final class FixtureBaseballContent {
 
     if (match.status == 'finished' ||
         BaseballStatus.isFinished(match.rawStatus)) {
+      if (match.rawStatus.trim().toUpperCase() == 'PEN') {
+        return 'Pen';
+      }
       return l10n.fixtureStatusFinal;
     }
 

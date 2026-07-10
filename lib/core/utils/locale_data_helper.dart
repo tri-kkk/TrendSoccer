@@ -75,26 +75,42 @@ String baseballAsianLeagueApiLookupTeam(String? nameEn, String? nameKo) {
   return _optionalLocalizedName(nameEn) ?? (nameEn?.trim() ?? '');
 }
 
-/// Localizes Korean streak text from API (e.g. "2연승" → "2 Win").
+/// Localizes streak text from API (e.g. "2연승" → "2 Streak" in English).
 String localizedStreak(BuildContext context, String? streak) {
   if (streak == null || streak.isEmpty) return '';
   if (streak == '-') return streak;
   if (isKoreanLocale(context)) {
-    final winMatch = RegExp(r'^(\d+) Win$').firstMatch(streak);
-    if (winMatch != null) return '${winMatch.group(1)}연승';
-    return streak;
+    return _koreanStreakDisplay(streak);
   }
 
-  final match = RegExp(r'(\d+)(연승|연패|무)').firstMatch(streak);
+  final match = RegExp(r'(\d+)(연승|연속 일치|연속|연패|무)').firstMatch(streak);
   if (match != null) {
     final count = match.group(1);
     final type = match.group(2);
     return switch (type) {
-      '연승' => '$count Win',
+      '연승' || '연속 일치' || '연속' => '$count Streak',
       '연패' => '$count Loss',
       '무' => '$count Draw',
       _ => streak,
     };
   }
+  return streak;
+}
+
+String _koreanStreakDisplay(String streak) {
+  final alreadyFormatted = RegExp(r'^(\d+) 연속$').firstMatch(streak);
+  if (alreadyFormatted != null) return streak;
+
+  final winFromEn = RegExp(r'^(\d+) Win$').firstMatch(streak);
+  if (winFromEn != null) return '${winFromEn.group(1)} 연속';
+
+  final streakFromEn = RegExp(r'^(\d+) (?:Consecutive Matches|Streak)$')
+      .firstMatch(streak);
+  if (streakFromEn != null) return '${streakFromEn.group(1)} 연속';
+
+  final koWin =
+      RegExp(r'^(\d+)(?:연승|연속(?:\s*일치)?)$').firstMatch(streak);
+  if (koWin != null) return '${koWin.group(1)} 연속';
+
   return streak;
 }

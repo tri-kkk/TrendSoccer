@@ -14,24 +14,24 @@ abstract final class AccessGate {
 
   /// Whether standard match analysis is visible for this plan at this kickoff time.
   ///
-  /// Unlock windows before kickoff (web `premium/page.tsx` pattern):
-  /// - **&lt; 1h** until match: all tiers, including [PlanType.none] (guest).
-  /// - **1h–2h**: logged-in only ([PlanType.free], [PlanType.trial], [PlanType.premium]).
-  /// - **2h–24h**: [PlanType.premium] or [PlanType.trial] only.
-  /// - **≥ 24h**: locked for everyone.
+  /// - [PlanType.premium] / [PlanType.trial]: always unlocked (no time restriction).
+  /// - **&lt; 1h** until match: all remaining tiers, including [PlanType.none] (guest).
+  /// - **1h–2h**: logged-in only ([PlanType.free]).
+  /// - **≥ 2h**: locked for [PlanType.free] and [PlanType.none].
   ///
   /// After kickoff (negative hours), the &lt; 1h rule applies → unlocked for all.
   static bool canViewStandardAnalysis({
     required DateTime matchTimestamp,
     required PlanType planType,
   }) {
+    if (planType == PlanType.premium || planType == PlanType.trial) {
+      return true;
+    }
+
     final hours = _hoursUntilMatchUtc(matchTimestamp);
 
     if (hours < 1) return true;
     if (hours < 2) return planType != PlanType.none;
-    if (hours < 24) {
-      return planType == PlanType.premium || planType == PlanType.trial;
-    }
     return false;
   }
 
@@ -69,13 +69,17 @@ abstract final class AccessGate {
   /// Time remaining until this tier’s standard-analysis window opens; `null` if already unlocked.
   ///
   /// Unlock thresholds before kickoff:
-  /// - [PlanType.premium] / [PlanType.trial]: 24 hours before match.
+  /// - [PlanType.premium] / [PlanType.trial]: no lock (`null`).
   /// - [PlanType.free]: 2 hours before match.
   /// - [PlanType.none] (guest): 1 hour before match.
   static Duration? timeUntilUnlock({
     required DateTime matchTimestamp,
     required PlanType planType,
   }) {
+    if (planType == PlanType.premium || planType == PlanType.trial) {
+      return null;
+    }
+
     if (canViewStandardAnalysis(
       matchTimestamp: matchTimestamp,
       planType: planType,
@@ -86,10 +90,9 @@ abstract final class AccessGate {
     final now = DateTime.now().toUtc();
     final match = matchTimestamp.toUtc();
     final unlockAt = switch (planType) {
-      PlanType.premium || PlanType.trial =>
-        match.subtract(const Duration(hours: 24)),
       PlanType.free => match.subtract(const Duration(hours: 2)),
       PlanType.none => match.subtract(const Duration(hours: 1)),
+      PlanType.premium || PlanType.trial => match,
     };
 
     final remaining = unlockAt.difference(now);

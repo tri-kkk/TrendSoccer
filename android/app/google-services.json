@@ -14,11 +14,27 @@
       },
       "oauth_client": [
         {
+          "client_id": "969836267510-5ks77k27j03v4b2r773ngr0riskm86a1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.trendsoccer.app",
+            "certificate_hash": "534bed597ea2a40f86e3e91a31ed6e2b078e70ef"
+          }
+        },
+        {
           "client_id": "969836267510-7mfd712i7obn0erdblg0552r9bcuul00.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.trendsoccer.app",
             "certificate_hash": "c30255640d8bc6d1e67e8d15ef3fa8efdbdd3933"
+          }
+        },
+        {
+          "client_id": "969836267510-82tvo2gpk0q4evjofhblkp2hkkfg6klo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.trendsoccer.app",
+            "certificate_hash": "7f88a2896c4123048023b55fc028e13daa62038c"
           }
         },
         {

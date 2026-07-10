@@ -19,7 +19,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutDescription =>
-      'TrendSoccer predicts match flow with AI-powered real-time analysis. From the Premier League to the Champions League, experience every big match with expert-level insights.';
+      'TrendSoccer analyzes match flow with AI-powered real-time insights. From the Premier League to the Champions League, experience every big match with expert-level analysis.';
 
   @override
   String get aboutFeatureAiDesc =>
@@ -36,10 +36,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutFeatureLeaguesTitle => 'Global league coverage';
 
   @override
-  String get aboutFeatureOddsDesc => 'Market monitoring based on odds movement';
+  String get aboutFeatureOddsDesc =>
+      'Market monitoring based on index movement';
 
   @override
-  String get aboutFeatureOddsTitle => 'Real-time odds analysis';
+  String get aboutFeatureOddsTitle => 'Real-time index analysis';
 
   @override
   String get aboutFeaturesSection => 'Key features';
@@ -142,7 +143,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get analysisNoResult => 'No analysis result available.';
 
   @override
-  String get analysisPremiumPick => 'Premium Analysis';
+  String get analysisPremiumPick => 'Premium Report';
 
   @override
   String get analysisTabBaseball => 'Baseball Analysis';
@@ -199,7 +200,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get baseballAiWinProbabilityHint =>
-      'AI-based win probability analysis.';
+      'AI-based win likelihood analysis.';
 
   @override
   String get baseballBaseline => 'Line';
@@ -246,13 +247,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get baseballHomeAwayRecord => 'Home & away record';
 
   @override
-  String get baseballHomeAwayWinRate => 'Win rate (last 10)';
+  String get baseballHomeAwayWinRate => 'Strength (last 10)';
 
   @override
   String get baseballOddsBaseline => 'Line';
 
   @override
-  String get baseballOverUnder => 'Over/under';
+  String get baseballOverUnder => 'Score analysis';
 
   @override
   String baseballProductionBatterEdge(String team, String value) {
@@ -311,7 +312,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get baseballSectionH2h => 'Head to Head';
 
   @override
-  String get baseballSectionOdds => 'Odds';
+  String get baseballSectionOdds => 'Index';
 
   @override
   String get baseballSectionPitchers => 'Starting Pitchers';
@@ -345,7 +346,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get baseballWeakness => 'Weaknesses';
 
   @override
-  String get baseballWinProbability => 'Win probability';
+  String get baseballWinProbability => 'Win likelihood';
 
   @override
   String baseballWinsLosses(int wins, int losses) {
@@ -356,45 +357,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
-  String get cardCheckPick => 'Check today\'s pick →';
+  String get cardCheckPick => 'Check analysis report →';
 
   @override
   String get cardCheckPickShort => 'Check now →';
 
   @override
-  String get cardComboCheck => 'Check today\'s combo →';
+  String get cardComboCheck => 'Check multi-match analysis →';
 
   @override
-  String get cardComboCount => 'Combos';
+  String get cardComboCount => 'Matches';
 
   @override
-  String get cardComboDefaultSubtitle => 'Check today\'s AI combo.';
+  String get cardComboDefaultSubtitle => 'Check AI multi-match analysis.';
 
   @override
-  String get cardComboLeagueHint => 'Daily AI combos for top leagues';
+  String get cardComboLeagueHint => 'Daily AI multi-match for top leagues';
 
   @override
   String cardComboTodayCount(int count) {
-    return '$count combos today';
+    return '$count multi-match today';
   }
 
   @override
-  String get cardHitRate => 'Hit rate';
+  String get cardHitRate => 'Accuracy';
 
   @override
   String get cardNextUpdate => 'Next update in';
 
   @override
-  String get cardPickCount => 'Picks';
+  String get cardPickCount => 'Reports';
 
   @override
-  String get cardStreak => 'Current streak';
+  String get cardStreak => 'Match streak';
 
   @override
-  String get cardTodayCombo => 'Today\'s combo';
+  String get cardTodayCombo => 'Multi-match analysis';
 
   @override
-  String get cardTodayPick => 'Today\'s pick';
+  String get cardTodayPick => 'Today\'s featured match';
 
   @override
   String get cardUpdateLabel => 'Update';
@@ -419,34 +420,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get comboAiWarning => 'Caution';
 
   @override
-  String get comboAvgOdds => 'Avg. odds';
+  String get comboAvgOdds => 'Average index';
 
   @override
-  String get comboComboCount => 'Combos';
+  String get comboComboCount => 'Matches';
 
   @override
   String get comboDashboardToday => 'Today';
 
   @override
   String comboFoldCount(int count) {
-    return '$count COMBO';
+    return '$count matches';
   }
 
   @override
-  String get comboHighOdds => 'High odds';
+  String get comboHighOdds => 'High index';
 
   @override
-  String get comboMatchFail => 'Miss';
+  String get comboMatchFail => 'Mismatch';
 
   @override
-  String get comboMatchHit => 'Hit';
+  String get comboMatchHit => 'Match';
 
   @override
   String get comboMatchPending => 'Pending';
 
   @override
   String comboPicksCompleted(int count) {
-    return '$count AI combos analyzed';
+    return '$count multi-match analyses done';
   }
 
   @override
@@ -454,7 +455,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String comboResultHitCount(int count) {
-    return '$count hit';
+    return '$count match';
   }
 
   @override
@@ -464,46 +465,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String comboResultMissCount(int count) {
-    return '$count miss';
+    return '$count mismatch';
   }
 
   @override
   String comboResultPartialCount(int count) {
-    return '$count partial';
+    return '$count partial match';
   }
 
   @override
-  String get comboSafe => 'Safe';
+  String get comboSafe => 'Stable';
 
   @override
-  String get comboSafeHitRate => 'Safe hit rate';
+  String get comboSafeHitRate => 'Stable accuracy';
 
   @override
-  String get comboStatusHit => 'Hit';
+  String get comboStatusHit => 'Match';
 
   @override
   String get comboStatusInProgress => 'In progress';
 
   @override
-  String get comboStatusMiss => 'Miss';
+  String get comboStatusMiss => 'Mismatch';
 
   @override
   String get comboStatusPartial => 'Partial';
 
   @override
-  String get comboTotalOdds => 'Total odds';
+  String get comboTotalOdds => 'Total index';
 
   @override
-  String get comboTypeHigh => 'High odds';
+  String get comboTypeHigh => 'High index';
 
   @override
-  String get comboTypeSafe => 'Safe';
+  String get comboTypeSafe => 'Stable';
 
   @override
   String get comboWin => 'Win';
 
   @override
-  String get confidenceAccuracy => 'Accuracy';
+  String get confidenceAccuracy => 'Match rate';
 
   @override
   String get confirm => 'OK';
@@ -534,7 +535,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emptyPremiumPickSubtitle => 'Check again at 6 AM or 6 PM.';
 
   @override
-  String get emptyPremiumPickTitle => 'No picks for today.';
+  String get emptyPremiumPickTitle => 'No reports for today.';
 
   @override
   String get errorGeneric => 'Something went wrong.';
@@ -705,7 +706,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get guestBannerCta => 'Start your free Premium trial →';
 
   @override
-  String get guestBannerSubtitle => 'Analysis cards, Premium Picks, and more';
+  String get guestBannerSubtitle => 'Analysis cards, Premium Reports, and more';
 
   @override
   String get guestBannerTitle => 'Sign up now for a 48-hour free trial';
@@ -763,13 +764,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelHomeShort => 'H';
 
   @override
-  String get labelOdds => 'Odds';
+  String get labelOdds => 'Index';
 
   @override
-  String get labelPrediction => 'Prediction';
+  String get labelPrediction => 'Analysis';
 
   @override
-  String get labelRecommend => 'Pick';
+  String get labelRecommend => 'Analysis';
 
   @override
   String get labelOver => 'Over';
@@ -823,7 +824,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loginSheetDesc =>
-      'From H2H records to in-depth team analysis, explore the data to complete your predictions.';
+      'From H2H records to in-depth team analysis, explore the data to complete your analysis.';
 
   @override
   String get loginSheetTitle => 'The smarter choice starts here.';
@@ -833,13 +834,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loginSubtitle =>
-      'AI-powered soccer and baseball analysis.\nElevate your predictions with precision data.';
+      'AI-powered soccer and baseball analysis.\nElevate your analysis with precision data.';
 
   @override
   String get loginSuccess => 'Signed in successfully';
 
   @override
-  String get loginTitle => 'Better Data,\nSmarter Picks,\nFor Your Choice.';
+  String get loginTitle =>
+      'Better Data,\nSmarter Analysis Reports,\nFor Your Choice.';
 
   @override
   String get matchAlarmDisabledGoSettings => 'Go to Settings';
@@ -1138,13 +1140,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumBenefitBaseballAi => 'Baseball AI Analysis';
 
   @override
-  String get premiumBenefitPremiumPick => 'Unlimited PREMIUM PICK';
+  String get premiumBenefitPremiumPick => 'Unlimited Premium Reports';
 
   @override
   String get premiumBenefitsTitle => 'Premium benefits';
 
   @override
-  String get premiumComboLoadFailed => 'Could not load baseball AI combos.';
+  String get premiumComboLoadFailed =>
+      'Could not load baseball AI multi-match analysis.';
 
   @override
   String get premiumExclusiveContent =>
@@ -1154,7 +1157,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumExclusiveShort => 'Premium only';
 
   @override
-  String get premiumNoHighConfidence => 'No high-confidence picks today';
+  String get premiumNoHighConfidence => 'No high-confidence reports today';
 
   @override
   String get parserReasonBasis => 'Basis';
@@ -1174,20 +1177,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumNonSubscriberSubtitle =>
-      'AI Analysis, PREMIUM PICK, Baseball Combos\nAd-free experience';
+      'AI Analysis, Premium Reports, Baseball Multi-Match\nAd-free experience';
 
   @override
   String get premiumNonSubscriberTitle => 'Premium Content';
 
   @override
-  String get premiumPickLoadFailed => 'Could not load premium picks.';
+  String get premiumPickLoadFailed => 'Could not load premium reports.';
 
   @override
   String get premiumSubscribeAfter => 'Available after subscribing.';
 
   @override
   String get premiumSubscribeBenefitsLine1 =>
-      'PREMIUM PICK and baseball AI combo analysis';
+      'Premium Reports and baseball multi-match analysis';
 
   @override
   String get premiumSubscribeNow => 'Subscribe Now';
@@ -1196,11 +1199,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subscribeNow => 'Subscribe now';
 
   @override
-  String get subscribeToUnlock => 'Subscribe to unlock full predictions';
+  String get subscribeToUnlock => 'Subscribe to unlock full analysis';
 
   @override
   String get premiumSubscribeSheetBaseballDesc =>
-      'Try AI analysis data including win probability, over/under, and season stats.';
+      'Try AI data including win likelihood, score analysis, and season stats.';
 
   @override
   String get premiumSubscribeSheetSoccerDesc =>
@@ -1341,7 +1344,7 @@ class AppLocalizationsEn extends AppLocalizations {
       '24-hour priority analysis access';
 
   @override
-  String get signupCompletePremiumBenefit2 => 'Unlimited PREMIUM PICK';
+  String get signupCompletePremiumBenefit2 => 'Unlimited Premium Reports';
 
   @override
   String get signupCompletePremiumBenefit3 => 'Baseball AI Analysis';
@@ -1548,10 +1551,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get soccerRecentForm => 'Recent form';
 
   @override
-  String get soccerReasonFirstGoalAway => 'Away first-goal win rate';
+  String get soccerReasonFirstGoalAway => 'Away first-goal strength';
 
   @override
-  String get soccerReasonFirstGoalHome => 'Home first-goal win rate';
+  String get soccerReasonFirstGoalHome => 'Home first-goal strength';
 
   @override
   String get soccerSeasonAway => 'Season away record';
@@ -1566,7 +1569,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get soccerStatComebackRate => 'Comeback rate';
 
   @override
-  String get soccerStatFirstGoalRate => 'First-goal win rate';
+  String get soccerStatFirstGoalRate => 'First-goal strength';
 
   @override
   String get soccerStatGoalDifference => 'Goal difference';
@@ -1599,10 +1602,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get soccerStatTeamStats => 'Team statistics';
 
   @override
-  String get soccerStatWinProb => 'Win probability';
+  String get soccerStatWinProb => 'Win likelihood';
 
   @override
-  String get soccerStatWinRate => 'Win rate';
+  String get soccerStatWinRate => 'Strength analysis';
 
   @override
   String get soccerStatWins => 'W';
@@ -1714,13 +1717,13 @@ class AppLocalizationsEn extends AppLocalizations {
       '24-hour priority access to all analysis';
 
   @override
-  String get subscribePremiumBenefit2 => 'Unlimited soccer Premium Picks';
+  String get subscribePremiumBenefit2 => 'Unlimited soccer Premium Reports';
 
   @override
   String get subscribePremiumBenefit3 => 'Full baseball AI analysis';
 
   @override
-  String get subscribePremiumBenefit4 => 'Baseball combo picks';
+  String get subscribePremiumBenefit4 => 'Baseball multi-match';
 
   @override
   String get subscribePremiumBenefit5 => 'Ad-free experience';
@@ -1815,10 +1818,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get today => 'Today';
 
   @override
-  String get todayCombination => 'Today\'s Combination';
+  String get todayCombination => 'Multi-match analysis';
 
   @override
-  String get todayPremiumPick => 'Today\'s Pick';
+  String get todayPremiumPick => 'Today\'s featured match';
 
   @override
   String get trendBaseballAnalysis => 'Baseball Analysis';
@@ -1829,7 +1832,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get trendEmptySubtitle2 =>
-      'Stay tuned for our smarter picks when the season resumes.';
+      'Stay tuned for smarter analysis when the season resumes.';
 
   @override
   String get trendEmptyTitle => 'Awaiting the Next Match';

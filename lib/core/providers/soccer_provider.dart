@@ -151,12 +151,15 @@ Future<List<SoccerAnalysisCard>> _fetchAnalysisSoccerMatches(
 ) async {
   final merged = <int, SoccerAnalysisCard>{};
   final today = DateTime.now().toUtc();
-  for (var dayOffset = 0; dayOffset < 7; dayOffset++) {
+  final futures = List.generate(7, (dayOffset) {
     final date = today.add(Duration(days: dayOffset));
     final month = date.month.toString().padLeft(2, '0');
     final day = date.day.toString().padLeft(2, '0');
     final dateStr = '${date.year}-$month-$day';
-    final dayMatches = await service.getMatches(date: dateStr);
+    return service.getMatches(date: dateStr);
+  });
+  final results = await Future.wait(futures);
+  for (final dayMatches in results) {
     for (final card in dayMatches) {
       merged[card.match.matchId] = card;
     }

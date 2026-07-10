@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
@@ -90,6 +91,85 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
 
   void _showVerifyPendingSnackBar() {
     TsToast.error(context, context.l10n.errorPaymentPending);
+  }
+
+  Future<void> _showActiveSubscriptionDialog(
+    BuildContext context,
+    SupabaseAuthProvider auth,
+  ) async {
+    final semantic = Theme.of(context).extension<TsSemanticColors>()!;
+    final l10n = context.l10n;
+    final expiry = auth.premiumExpiresAt;
+    final subscription = auth.subscriptionInfo;
+    final autoRenewing = subscription?.autoRenewing ?? true;
+    final isCancellationPending = subscription?.isCancellationPending ?? false;
+
+    final bodyLines = <String>[
+      l10n.subscribePremiumActive,
+      if (expiry != null)
+        l10n.planTicketExpiryDate(
+          DateFormat('yyyy.MM.dd').format(expiry.toLocal()),
+        ),
+      if (isCancellationPending)
+        l10n.subscriptionCancelPending
+      else if (autoRenewing)
+        '자동 갱신: 켜짐'
+      else
+        '자동 갱신: 꺼짐',
+    ];
+
+    await showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.4),
+      builder: (dialogContext) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: 348,
+              padding: const EdgeInsets.all(TsSpacing.xl),
+              decoration: BoxDecoration(
+                color: semantic.surfaceOverlay,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '이미 구독 중입니다',
+                    style: TsType.headingH2.copyWith(
+                      color: semantic.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: TsSpacing.xl),
+                  ...bodyLines.map(
+                    (line) => Padding(
+                      padding: const EdgeInsets.only(bottom: TsSpacing.sm),
+                      child: Text(
+                        line,
+                        style: TsType.bodyLRegular.copyWith(
+                          color: semantic.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: TsSpacing.xl),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TsButton(
+                      label: l10n.confirm,
+                      variant: TsButtonVariant.primary,
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<_IapPurchaseOutcome> _waitForIapPurchaseResult(IAPService iap) async {
@@ -217,6 +297,13 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
     try {
       if (!ref.read(authProvider).isLoggedIn) {
         context.push('/login');
+        return;
+      }
+
+      final auth = ref.read(authProvider);
+      if (auth.isPremium && !auth.isTrial) {
+        if (!mounted) return;
+        await _showActiveSubscriptionDialog(context, auth);
         return;
       }
 

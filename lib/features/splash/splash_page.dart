@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,17 +17,31 @@ class SplashPage extends ConsumerStatefulWidget {
 }
 
 class _SplashPageState extends ConsumerState<SplashPage> {
-  Timer? _navigationTimer;
+  String? _redirectPath;
+  Object? _redirectExtra;
 
   @override
   void initState() {
     super.initState();
-    _navigationTimer = Timer(const Duration(seconds: 2), _onSplashComplete);
+    _runSplash();
   }
 
-  Future<void> _onSplashComplete() async {
+  Future<void> _runSplash() async {
+    await Future.wait([
+      Future<void>.delayed(const Duration(seconds: 2)),
+      _initializeApp(),
+    ]);
     if (!mounted) return;
 
+    final redirectPath = _redirectPath;
+    if (redirectPath != null) {
+      context.go(redirectPath, extra: _redirectExtra);
+      return;
+    }
+    context.go('/trend');
+  }
+
+  Future<void> _initializeApp() async {
     try {
       final config = await ref
           .read(appConfigServiceProvider)
@@ -40,19 +52,18 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
       if (config != null) {
         if (config.maintenanceMode) {
-          context.go('/maintenance', extra: config.maintenanceMessage);
+          _redirectPath = '/maintenance';
+          _redirectExtra = config.maintenanceMessage;
           return;
         }
 
         final packageInfo = await PackageInfo.fromPlatform();
-        final currentVersion = packageInfo.version;
-
         if (VersionUtils.isVersionOutdated(
-          currentVersion,
+          packageInfo.version,
           config.minSupportedVersion,
         )) {
-          if (!mounted) return;
-          context.go('/force-update', extra: config.updateMessage);
+          _redirectPath = '/force-update';
+          _redirectExtra = config.updateMessage;
           return;
         }
       }
@@ -60,10 +71,6 @@ class _SplashPageState extends ConsumerState<SplashPage> {
       // Config fetch failed — continue to app.
     }
 
-    await _proceedToApp();
-  }
-
-  Future<void> _proceedToApp() async {
     try {
       await ref
           .read(authProvider)
@@ -72,14 +79,6 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     } on Object {
       // Auth init failed — continue as guest.
     }
-    if (!mounted) return;
-    context.go('/trend');
-  }
-
-  @override
-  void dispose() {
-    _navigationTimer?.cancel();
-    super.dispose();
   }
 
   @override

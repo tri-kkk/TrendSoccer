@@ -92,6 +92,10 @@ abstract final class FixtureSoccerContent {
       );
     }
     if (live != null && live.isFinished) {
+      if (live.status.trim().toUpperCase() == 'PEN' ||
+          match.rawStatus.trim().toUpperCase() == 'PEN') {
+        return 'Pen';
+      }
       return l10n.fixtureStatusFinal;
     }
     final raw = match.rawStatus.trim().toUpperCase();
@@ -115,6 +119,9 @@ abstract final class FixtureSoccerContent {
               )
             : l10n.fixtureLive;
       case 'finished':
+        if (match.rawStatus.trim().toUpperCase() == 'PEN') {
+          return 'Pen';
+        }
         return l10n.fixtureStatusFinal;
       case 'postponed':
         return l10n.statusPostponed;

@@ -48,7 +48,7 @@ class TsBadge extends StatelessWidget {
 
   static String _labelForType(TsBadgeType type) {
     return switch (type) {
-      TsBadgeType.pick => 'PICK',
+      TsBadgeType.pick => 'REPORT',
       TsBadgeType.good => 'GOOD',
       TsBadgeType.pass => 'PASS',
       TsBadgeType.premium => 'PREMIUM',

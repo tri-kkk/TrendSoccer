@@ -204,7 +204,7 @@ class ComboCard extends StatelessWidget {
                     const SizedBox(width: TsSpacing.sm),
                     Flexible(
                       child: Text(
-                        '$comboCount COMBO',
+                        l10n.comboFoldCount(comboCount),
                         style: TsType.bodyMBold.copyWith(
                           color: semantic.textPrimary,
                         ),

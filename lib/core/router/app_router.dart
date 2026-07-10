@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/navigation/app_navigation.dart';
 import 'package:trendsoccer/core/navigation/navigator_keys.dart';
+import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/features/analysis/baseball_match_report_page.dart';
 import 'package:trendsoccer/features/analysis/analysis_page.dart';
 import 'package:trendsoccer/features/analysis/soccer_match_report_page.dart';
@@ -39,6 +42,12 @@ abstract final class AppRouter {
     final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
+    observers: [
+      FirebaseAnalyticsObserver(
+        analytics: FirebaseAnalytics.instance,
+        nameExtractor: (settings) => settings.name ?? 'unknown',
+      ),
+    ],
     routes: [
       GoRoute(
         path: '/splash',
@@ -60,6 +69,12 @@ abstract final class AppRouter {
       ),
       GoRoute(
         path: '/login',
+        redirect: (context, state) {
+          final isLoggedIn =
+              ProviderScope.containerOf(context).read(authProvider).isLoggedIn;
+          if (isLoggedIn) return '/premium';
+          return null;
+        },
         builder: (context, state) => const LoginPage(),
       ),
       GoRoute(

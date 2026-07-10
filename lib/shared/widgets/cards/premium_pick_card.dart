@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/core/models/sport_type.dart';
@@ -158,13 +159,13 @@ class _PremiumPickCardState extends State<PremiumPickCard>
     }
 
     return ClipOval(
-      child: Image.network(
-        url,
+      child: CachedNetworkImage(
+        imageUrl: url,
         width: 16,
         height: 16,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) =>
-            _teamLogoPlaceholder(semantic),
+        placeholder: (context, _) => _teamLogoPlaceholder(semantic),
+        errorWidget: (context, _, _) => _teamLogoPlaceholder(semantic),
       ),
     );
   }

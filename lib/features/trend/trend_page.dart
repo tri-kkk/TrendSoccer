@@ -14,6 +14,7 @@ import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_combo_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
+import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/services/ad_service.dart';
 import 'package:trendsoccer/core/services/admob_service.dart';
@@ -694,7 +695,16 @@ class _TrendPageState extends ConsumerState<TrendPage> {
           ),
         ),
         data: (matches) {
-          final preview = matches.take(_maxSoccerPreviewCards).toList();
+          final validDates =
+              soccerAnalysisDateTimes().map(fixtureDateString).toList();
+          final filtered = matches
+              .where(
+                (card) => validDates.any(
+                  (dateStr) => soccerMatchIsOnDate(card, dateStr),
+                ),
+              )
+              .toList();
+          final preview = filtered.take(_maxSoccerPreviewCards).toList();
           if (preview.isEmpty) {
             return _buildAnalysisEmptyCard(context);
           }

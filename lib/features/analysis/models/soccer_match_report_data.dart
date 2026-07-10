@@ -208,7 +208,7 @@ final SoccerMatchReportData soccerMatchReportDummy = SoccerMatchReportData(
   patternStats: '1-3-2',
   gradeBadge: 'pick',
   reasoningItems: [
-    '홈팀 최근 10경기 승률 80%로 원정팀 대비 파워차 우위',
+    '홈팀 최근 10경기 전력 분석 80%로 원정팀 대비 파워차 우위',
     '선제골 확률 홈팀 65%로 선취득점 기대가 높음',
     '상대전적 최근 5경기 3승으로 승리 패턴·확률 우위',
   ],
@@ -281,7 +281,7 @@ final SoccerMatchReportData soccerMatchReportDummy = SoccerMatchReportData(
   h2hInsights: [
     '최근 5경기 중 3경기 홈팀 승리',
     '평균 득점 2.7골로 높은 편',
-    '오버 2.5 확률 60%로 공격적 경기 예상',
+    '고득점 2.5 확률 60%로 공격적 경기 분석',
   ],
   homeTeamAnalysis: TeamAnalysisPremiumData(
     wins10: 6,

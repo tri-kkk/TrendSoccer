@@ -318,6 +318,24 @@ class _LoginPageState extends ConsumerState<LoginPage>
                   ],
                 ),
               ),
+              Positioned.fill(
+                child: AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) => IgnorePointer(
+                    ignoring: _controller.isDismissed,
+                    child: child,
+                  ),
+                  child: FadeTransition(
+                    opacity: _controller,
+                    child: GestureDetector(
+                      onTap: _handleBack,
+                      child: Container(
+                        color: const Color(0x99000000),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
               Align(
                 alignment: Alignment.bottomCenter,
                 child: SlideTransition(

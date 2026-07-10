@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:trendsoccer/core/services/app_config_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
@@ -14,7 +11,7 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
 
-class ForceUpdatePage extends ConsumerStatefulWidget {
+class ForceUpdatePage extends StatelessWidget {
   const ForceUpdatePage({
     super.key,
     this.updateMessage,
@@ -27,52 +24,15 @@ class ForceUpdatePage extends ConsumerStatefulWidget {
   static const _playStoreUrl =
       'https://play.google.com/store/apps/details?id=com.trendsoccer.app';
 
-  @override
-  ConsumerState<ForceUpdatePage> createState() => _ForceUpdatePageState();
-}
-
-class _ForceUpdatePageState extends ConsumerState<ForceUpdatePage> {
-  bool? _forceUpdate;
-  bool _loadingConfig = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _resolveForceUpdate();
-  }
-
-  Future<void> _resolveForceUpdate() async {
-    if (widget.forceUpdate != null) {
-      setState(() {
-        _forceUpdate = widget.forceUpdate;
-        _loadingConfig = false;
-      });
-      return;
-    }
-
-    final config = await ref.read(appConfigServiceProvider).fetchConfig();
-    if (!mounted) return;
-    setState(() {
-      _forceUpdate = config?.forceUpdate ?? false;
-      _loadingConfig = false;
-    });
-  }
-
-  bool get _isForceUpdateRequired => _forceUpdate ?? false;
-
   Future<void> _openStore() async {
-    final uri = Uri.parse(ForceUpdatePage._playStoreUrl);
+    final uri = Uri.parse(_playStoreUrl);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
-  void _skipUpdate() {
-    context.go('/trend');
-  }
-
   String _resolveUpdateMessage(BuildContext context, AppLocalizations l10n) {
-    final apiMessage = widget.updateMessage?.trim();
+    final apiMessage = updateMessage?.trim();
     if (isKoreanLocale(context) &&
         apiMessage != null &&
         apiMessage.isNotEmpty) {
@@ -88,11 +48,7 @@ class _ForceUpdatePageState extends ConsumerState<ForceUpdatePage> {
     final subtitle = _resolveUpdateMessage(context, l10n);
 
     return PopScope(
-      canPop: !_isForceUpdateRequired,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop || _isForceUpdateRequired) return;
-        _skipUpdate();
-      },
+      canPop: false,
       child: Scaffold(
         backgroundColor: semantic.surfaceRaised,
         body: SafeArea(
@@ -133,18 +89,6 @@ class _ForceUpdatePageState extends ConsumerState<ForceUpdatePage> {
                     variant: TsButtonVariant.primary,
                     onPressed: _openStore,
                   ),
-                  if (!_loadingConfig && !_isForceUpdateRequired) ...[
-                    const SizedBox(height: TsSpacing.md),
-                    TextButton(
-                      onPressed: _skipUpdate,
-                      child: Text(
-                        l10n.forceUpdateSkip,
-                        style: TsType.bodyLRegular.copyWith(
-                          color: semantic.textSecondary,
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),

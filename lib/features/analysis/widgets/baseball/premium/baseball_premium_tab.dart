@@ -239,13 +239,18 @@ class _AiAnalysisSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(TsSpacing.md),
           ),
           child: Text(
-            parsed.grade,
+            _displayGrade(parsed.grade),
             style: TsType.bodyMBold.copyWith(color: semantic.textPrimary),
           ),
         ),
       ],
     );
   }
+}
+
+String _displayGrade(String grade) {
+  if (grade.toUpperCase() == 'PICK') return 'REPORT';
+  return grade;
 }
 
 Color _gradeBackgroundColor(String grade) {

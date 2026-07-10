@@ -19,7 +19,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aboutDescription =>
-      'TrendSoccer는 AI 기반 실시간 분석으로 경기 흐름을 예측합니다. 프리미어리그부터 챔피언스리그까지, 모든 빅매치를 전문가 수준의 인사이트로 경험하세요.';
+      'TrendSoccer는 AI 기반 실시간 분석으로 경기 흐름을 분석합니다. 프리미어리그부터 챔피언스리그까지, 모든 빅매치를 전문가 수준의 인사이트로 경험하세요.';
 
   @override
   String get aboutFeatureAiDesc => '4시즌 방대한 경기 데이터를 기반으로 구축';
@@ -34,10 +34,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get aboutFeatureLeaguesTitle => '글로벌 리그 지원';
 
   @override
-  String get aboutFeatureOddsDesc => '배당 무브먼트에 따른 마켓 모니터링';
+  String get aboutFeatureOddsDesc => '지수 무브먼트에 따른 마켓 모니터링';
 
   @override
-  String get aboutFeatureOddsTitle => '실시간 배당 분석';
+  String get aboutFeatureOddsTitle => '실시간 지수 분석';
 
   @override
   String get aboutFeaturesSection => '주요 기능';
@@ -138,7 +138,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get analysisNoResult => '분석 결과가 없습니다.';
 
   @override
-  String get analysisPremiumPick => '프리미엄 분석';
+  String get analysisPremiumPick => '프리미엄 리포트';
 
   @override
   String get analysisTabBaseball => '야구 분석';
@@ -192,7 +192,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get baseballAiTabLoadingHint => '최초 분석 시 10–15초 정도 소요될 수 있습니다.';
 
   @override
-  String get baseballAiWinProbabilityHint => 'AI 기반 승리 확률 분석입니다.';
+  String get baseballAiWinProbabilityHint => 'AI 기반 승리 가능성 분석입니다.';
 
   @override
   String get baseballBaseline => '기준선';
@@ -239,13 +239,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get baseballHomeAwayRecord => '홈&원정 성적';
 
   @override
-  String get baseballHomeAwayWinRate => '최근 10경기 승률';
+  String get baseballHomeAwayWinRate => '10경기 전력 분석';
 
   @override
   String get baseballOddsBaseline => '기준점';
 
   @override
-  String get baseballOverUnder => '오버&언더';
+  String get baseballOverUnder => '득점 분석';
 
   @override
   String baseballProductionBatterEdge(String team, String value) {
@@ -303,7 +303,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get baseballSectionH2h => 'Head to Head';
 
   @override
-  String get baseballSectionOdds => 'Odds';
+  String get baseballSectionOdds => '지수';
 
   @override
   String get baseballSectionPitchers => 'Starting Pitchers';
@@ -336,7 +336,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get baseballWeakness => '약점';
 
   @override
-  String get baseballWinProbability => '승리 확률';
+  String get baseballWinProbability => '승리 가능성';
 
   @override
   String baseballWinsLosses(int wins, int losses) {
@@ -347,42 +347,42 @@ class AppLocalizationsKo extends AppLocalizations {
   String get cancel => '취소';
 
   @override
-  String get cardCheckPick => '오늘의 픽 확인하기 →';
+  String get cardCheckPick => '분석 리포트 확인 →';
 
   @override
   String get cardCheckPickShort => '확인하기 →';
 
   @override
-  String get cardComboCheck => '오늘의 조합 확인하기 →';
+  String get cardComboCheck => '다경기 분석 확인 →';
 
   @override
-  String get cardComboCount => '조합 수';
+  String get cardComboCount => '경기 수';
 
   @override
-  String get cardComboDefaultSubtitle => '오늘의 AI 조합을 확인하세요.';
+  String get cardComboDefaultSubtitle => 'AI 다경기 분석을 확인하세요.';
 
   @override
-  String get cardComboLeagueHint => '매일 3대 리그 AI 분석 조합 제공';
+  String get cardComboLeagueHint => '3대 리그 AI 다경기 분석';
 
   @override
   String cardComboTodayCount(int count) {
-    return '오늘 조합 $count개';
+    return '오늘 다경기 분석 $count개';
   }
 
   @override
-  String get cardHitRate => '적중률';
+  String get cardHitRate => '정확도';
 
   @override
   String get cardNextUpdate => '다음 업데이트까지';
 
   @override
-  String get cardPickCount => '픽 개수';
+  String get cardPickCount => '리포트 수';
 
   @override
-  String get cardStreak => '현재 연승';
+  String get cardStreak => '연속 일치';
 
   @override
-  String get cardTodayCombo => '오늘의 추천 조합';
+  String get cardTodayCombo => '오늘의 다경기 분석';
 
   @override
   String get cardTodayPick => '오늘의 추천 경기';
@@ -409,34 +409,34 @@ class AppLocalizationsKo extends AppLocalizations {
   String get comboAiWarning => '주의사항';
 
   @override
-  String get comboAvgOdds => '평균 배당';
+  String get comboAvgOdds => '평균 지수';
 
   @override
-  String get comboComboCount => '조합 수';
+  String get comboComboCount => '경기 수';
 
   @override
   String get comboDashboardToday => '오늘';
 
   @override
   String comboFoldCount(int count) {
-    return '$count COMBO';
+    return '$count경기';
   }
 
   @override
-  String get comboHighOdds => '고배당';
+  String get comboHighOdds => '고지수';
 
   @override
   String get comboMatchFail => '실패';
 
   @override
-  String get comboMatchHit => '적중';
+  String get comboMatchHit => '일치';
 
   @override
   String get comboMatchPending => '대기';
 
   @override
   String comboPicksCompleted(int count) {
-    return '$count개 AI 조합 분석 완료';
+    return '$count개 다경기 분석 완료';
   }
 
   @override
@@ -444,7 +444,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String comboResultHitCount(int count) {
-    return '$count개 적중';
+    return '$count개 일치';
   }
 
   @override
@@ -454,46 +454,46 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String comboResultMissCount(int count) {
-    return '$count개 미적중';
+    return '$count개 미일치';
   }
 
   @override
   String comboResultPartialCount(int count) {
-    return '$count개 부분 적중';
+    return '$count개 부분 일치';
   }
 
   @override
-  String get comboSafe => '안전형';
+  String get comboSafe => '안정형';
 
   @override
-  String get comboSafeHitRate => '안전형 적중률';
+  String get comboSafeHitRate => '안정형 정확도';
 
   @override
-  String get comboStatusHit => '적중';
+  String get comboStatusHit => '일치';
 
   @override
   String get comboStatusInProgress => '진행중';
 
   @override
-  String get comboStatusMiss => '미적중';
+  String get comboStatusMiss => '미일치';
 
   @override
   String get comboStatusPartial => '부분';
 
   @override
-  String get comboTotalOdds => '총 배당';
+  String get comboTotalOdds => '총 지수';
 
   @override
-  String get comboTypeHigh => '고배당';
+  String get comboTypeHigh => '고지수';
 
   @override
-  String get comboTypeSafe => '안전형';
+  String get comboTypeSafe => '안정형';
 
   @override
   String get comboWin => '승';
 
   @override
-  String get confidenceAccuracy => '정합도';
+  String get confidenceAccuracy => '일치도';
 
   @override
   String get confirm => '확인';
@@ -523,7 +523,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get emptyPremiumPickSubtitle => '오전 6시 또는 오후 6시에 다시 확인해 주세요.';
 
   @override
-  String get emptyPremiumPickTitle => '오늘의 픽이 없습니다.';
+  String get emptyPremiumPickTitle => '분석 리포트가 없습니다.';
 
   @override
   String get errorGeneric => '오류가 발생했습니다.';
@@ -691,7 +691,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get guestBannerCta => '지금 바로 프리미엄 체험하기 →';
 
   @override
-  String get guestBannerSubtitle => '분석 카드, 프리미엄 픽 등 모든 기능 이용';
+  String get guestBannerSubtitle => '분석 카드, 프리미엄 리포트 등 모든 기능';
 
   @override
   String get guestBannerTitle => '지금 가입하고 48시간 무료 체험';
@@ -748,19 +748,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String get labelHomeShort => 'H';
 
   @override
-  String get labelOdds => '배당';
+  String get labelOdds => '지수';
 
   @override
-  String get labelPrediction => '예측';
+  String get labelPrediction => '분석';
 
   @override
   String get labelRecommend => '추천';
 
   @override
-  String get labelOver => '오버';
+  String get labelOver => 'Over';
 
   @override
-  String get labelUnder => '언더';
+  String get labelUnder => 'Under';
 
   @override
   String get labelWin => '승';
@@ -807,7 +807,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get loginNaverFailed => '네이버 로그인에 실패했습니다. 다시 시도해주세요.';
 
   @override
-  String get loginSheetDesc => 'H2H 상대전적부터 팀 심층 분석까지, 당신의 예측을 완성할 데이터를 확인하세요.';
+  String get loginSheetDesc => 'H2H 상대전적부터 팀 심층 분석까지, 당신의 분석을 완성할 데이터를 확인하세요.';
 
   @override
   String get loginSheetTitle => '더 스마트한 선택의 시작.';
@@ -817,13 +817,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get loginSubtitle =>
-      '프리미엄 AI가 읽어내는 축구와 야구의 흐름.\n정교한 데이터로 예측의 정확도를 높이세요.';
+      '프리미엄 AI가 읽어내는 축구와 야구의 흐름.\n정교한 데이터로 분석의 정확도를 높이세요.';
 
   @override
   String get loginSuccess => '로그인 성공';
 
   @override
-  String get loginTitle => 'Better Data,\nSmarter Picks,\nFor Your Choice.';
+  String get loginTitle =>
+      'Better Data,\nSmarter Analysis Reports,\nFor Your Choice.';
 
   @override
   String get matchAlarmDisabledGoSettings => '설정으로 이동';
@@ -1119,13 +1120,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get premiumBenefitBaseballAi => '야구 AI Analysis';
 
   @override
-  String get premiumBenefitPremiumPick => 'PREMIUM PICK 무제한';
+  String get premiumBenefitPremiumPick => '프리미엄 리포트 무제한';
 
   @override
   String get premiumBenefitsTitle => '프리미엄 혜택';
 
   @override
-  String get premiumComboLoadFailed => '야구 AI 조합을 불러오지 못했습니다.';
+  String get premiumComboLoadFailed => '야구 AI 다경기 분석을 불러오지 못했습니다.';
 
   @override
   String get premiumExclusiveContent => '프리미엄 전용 콘텐츠입니다.';
@@ -1134,7 +1135,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get premiumExclusiveShort => '프리미엄 전용 콘텐츠';
 
   @override
-  String get premiumNoHighConfidence => '오늘 고신뢰도 픽이 없습니다';
+  String get premiumNoHighConfidence => '오늘 고신뢰도 리포트가 없습니다';
 
   @override
   String get parserReasonBasis => '근거';
@@ -1154,19 +1155,19 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get premiumNonSubscriberSubtitle =>
-      'AI 분석, PREMIUM PICK, 야구 조합\n광고 없는 쾌적한 환경';
+      'AI 분석, 프리미엄 리포트, 야구 다경기 분석\n광고 없는 환경';
 
   @override
   String get premiumNonSubscriberTitle => '프리미엄 전용 콘텐츠';
 
   @override
-  String get premiumPickLoadFailed => '프리미엄 픽 목록을 불러오지 못했습니다.';
+  String get premiumPickLoadFailed => '프리미엄 리포트 목록을 불러오지 못했습니다.';
 
   @override
   String get premiumSubscribeAfter => '구독 후 이용하실 수 있습니다.';
 
   @override
-  String get premiumSubscribeBenefitsLine1 => 'PREMIUM PICK과 야구 AI 조합 분석을';
+  String get premiumSubscribeBenefitsLine1 => '프리미엄 리포트와 야구 다경기 분석을';
 
   @override
   String get premiumSubscribeNow => '지금 구독하기';
@@ -1175,11 +1176,11 @@ class AppLocalizationsKo extends AppLocalizations {
   String get subscribeNow => '지금 구독하기';
 
   @override
-  String get subscribeToUnlock => '프리미엄 구독으로 전체 예측을 확인하세요';
+  String get subscribeToUnlock => '프리미엄 구독으로 전체 분석을 확인하세요';
 
   @override
   String get premiumSubscribeSheetBaseballDesc =>
-      '승리 확률, 오버&언더, 시즌 통계 등 AI 분석 데이터를 이용해보세요.';
+      '승리 가능성, 득점 분석, 시즌 통계 등 AI 분석 데이터를 이용해보세요.';
 
   @override
   String get premiumSubscribeSheetSoccerDesc =>
@@ -1314,7 +1315,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get signupCompletePremiumBenefit1 => '24시간 우선 분석 접근';
 
   @override
-  String get signupCompletePremiumBenefit2 => 'PREMIUM PICK 무제한';
+  String get signupCompletePremiumBenefit2 => '프리미엄 리포트 무제한';
 
   @override
   String get signupCompletePremiumBenefit3 => '야구 AI Analysis';
@@ -1428,7 +1429,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get soccerEventYellowCard => '경고';
 
   @override
-  String get soccerFinalProbability => '최종 예측 확률';
+  String get soccerFinalProbability => '최종 분석 확률';
 
   @override
   String get soccerH2h => 'H2H';
@@ -1516,10 +1517,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get soccerRecentForm => '최근 폼';
 
   @override
-  String get soccerReasonFirstGoalAway => '원정 선득점 승률';
+  String get soccerReasonFirstGoalAway => '원정 선제골 전력';
 
   @override
-  String get soccerReasonFirstGoalHome => '홈 선득점 승률';
+  String get soccerReasonFirstGoalHome => '홈 선제골 전력';
 
   @override
   String get soccerSeasonAway => '시즌 원정 성적';
@@ -1534,7 +1535,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get soccerStatComebackRate => '역전률';
 
   @override
-  String get soccerStatFirstGoalRate => '선제골 승률';
+  String get soccerStatFirstGoalRate => '선제골 전력';
 
   @override
   String get soccerStatGoalDifference => '득실비';
@@ -1567,10 +1568,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get soccerStatTeamStats => '팀 상세 통계';
 
   @override
-  String get soccerStatWinProb => '승리 확률';
+  String get soccerStatWinProb => '승리 가능성';
 
   @override
-  String get soccerStatWinRate => '승률';
+  String get soccerStatWinRate => '전력 분석';
 
   @override
   String get soccerStatWins => '승';
@@ -1678,13 +1679,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get subscribePremiumBenefit1 => '모든 분석 24시간 우선 접근';
 
   @override
-  String get subscribePremiumBenefit2 => '축구 프리미엄픽 무제한';
+  String get subscribePremiumBenefit2 => '축구 프리미엄 리포트 무제한';
 
   @override
   String get subscribePremiumBenefit3 => 'AI 야구 분석 전체 공개';
 
   @override
-  String get subscribePremiumBenefit4 => '야구 조합 픽';
+  String get subscribePremiumBenefit4 => '야구 다경기 분석';
 
   @override
   String get subscribePremiumBenefit5 => '광고 없는 경험';
@@ -1778,7 +1779,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get today => '오늘';
 
   @override
-  String get todayCombination => '오늘의 추천 조합';
+  String get todayCombination => '오늘의 다경기 분석';
 
   @override
   String get todayPremiumPick => '오늘의 추천 경기';
