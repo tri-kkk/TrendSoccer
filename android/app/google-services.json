@@ -38,6 +38,14 @@
           }
         },
         {
+          "client_id": "969836267510-9bbq1hmmt3j3er26eqso2hjmmem7ceve.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.trendsoccer.app",
+            "certificate_hash": "8c327419a1fb8e04d6d613d1539c656873a279ea"
+          }
+        },
+        {
           "client_id": "969836267510-527f4vc6flh16b7dm9s8bjn0dd88eon7.apps.googleusercontent.com",
           "client_type": 3
         }

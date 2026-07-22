@@ -867,7 +867,6 @@ class _TrendBaseballCard extends StatelessWidget {
       awayLogoUrl: card.awayTeamLogo,
       isPremiumPick: false,
       pickDirection: null,
-      winRate: null,
       onAnalyze: () => context.push(
         '/analysis/baseball/match-report/${card.detailMatchId}',
         extra: MatchHeaderData.fromBaseballCard(card),
@@ -910,7 +909,6 @@ class _TrendSoccerCard extends StatelessWidget {
       awayLogoUrl: match.awayTeam.logo,
       isPremiumPick: false,
       pickDirection: null,
-      winRate: null,
       onAnalyze: () => context.push(
         '/analysis/soccer/match-report/${match.matchId}',
         extra: MatchHeaderData.fromSoccerCard(card),

@@ -563,26 +563,41 @@ final premiumPickStatsProvider =
   }
 });
 
-PickDirection? pickDirectionFromCard(SoccerAnalysisCard card) {
-  final raw = card.prediction?.direction?.toLowerCase();
+PickDirection? _pickDirectionFromRaw(String? raw) {
   if (raw == null || raw.isEmpty) return null;
-  if (raw.contains('home') || raw == 'h' || raw.contains('홈')) {
+  final normalized = raw.toLowerCase().trim();
+  if (normalized.contains('home') || normalized == 'h' || normalized.contains('홈')) {
     return PickDirection.home;
   }
-  if (raw.contains('draw') || raw == 'd' || raw.contains('무')) {
+  if (normalized.contains('draw') || normalized == 'd' || normalized.contains('무')) {
     return PickDirection.draw;
   }
-  if (raw.contains('away') || raw == 'a' || raw.contains('원정')) {
+  if (normalized.contains('away') || normalized == 'a' || normalized.contains('원정')) {
     return PickDirection.away;
   }
   return null;
 }
 
-String? winRateLabelFromCard(SoccerAnalysisCard card) {
-  final confidence = card.prediction?.confidence;
+PickDirection? pickDirectionFromCard(SoccerAnalysisCard card) {
+  final prediction = card.prediction;
+  final fromDirection = _pickDirectionFromRaw(prediction?.direction);
+  if (fromDirection != null) return fromDirection;
+  return _pickDirectionFromRaw(prediction?.recommendation?.pick);
+}
+
+String? _winRateLabelFromConfidence(double? confidence) {
   if (confidence == null) return null;
   if (confidence <= 1) return '${(confidence * 100).round()}%';
   return '${confidence.round()}%';
+}
+
+String? winRateLabelFromCard(SoccerAnalysisCard card) {
+  final prediction = card.prediction;
+  final fromConfidence = _winRateLabelFromConfidence(prediction?.confidence);
+  if (fromConfidence != null) return fromConfidence;
+
+  // RecommendationInfo has no dedicated confidence field; only prediction carries it.
+  return null;
 }
 
 /// Maps API [LeagueInfo] to local [TsLeagueIcon] / filter chip ids.

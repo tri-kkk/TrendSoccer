@@ -425,17 +425,26 @@ class _PitcherStatsCard extends StatelessWidget {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            value,
-            style: TsType.headingH3.copyWith(color: semantic.textPrimary),
-            textAlign: TextAlign.center,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.center,
+            child: Text(
+              value,
+              style: TsType.headingH3.copyWith(color: semantic.textPrimary),
+              maxLines: 1,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           const SizedBox(height: TsSpacing.sm),
           Text(
             label,
             style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+            maxLines: 1,
             textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

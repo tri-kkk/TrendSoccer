@@ -27,7 +27,6 @@ class AnalysisCard extends StatelessWidget {
     this.onAnalyze,
     this.isPremiumPick = false,
     this.pickDirection,
-    this.winRate,
     this.alwaysActiveAnalyzeButton = false,
     super.key,
   });
@@ -46,7 +45,6 @@ class AnalysisCard extends StatelessWidget {
   final VoidCallback? onAnalyze;
   final bool isPremiumPick;
   final PickDirection? pickDirection;
-  final String? winRate;
   final bool alwaysActiveAnalyzeButton;
 
   Widget _teamLogo(BuildContext context, String? url) {
@@ -143,6 +141,38 @@ class AnalysisCard extends StatelessWidget {
       label: l10n.analysisCardViewAnalysis,
       variant: TsButtonVariant.primary,
       onPressed: onAnalyze,
+    );
+  }
+
+  String _pickPreviewLabel(BuildContext context) {
+    final l10n = context.l10n;
+    return switch (pickDirection!) {
+      PickDirection.home => '$homeTeam ${l10n.labelWin}',
+      PickDirection.away => '$awayTeam ${l10n.labelWin}',
+      PickDirection.draw => l10n.pickDirectionDraw,
+    };
+  }
+
+  Widget _buildPickPreview(BuildContext context, TsSemanticColors semantic) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: TsSpacing.md,
+        vertical: TsSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: semantic.surfaceContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        _pickPreviewLabel(context),
+        style: TsType.labelSBold.copyWith(
+          color: semantic.interactivePrimary,
+        ),
+        textAlign: TextAlign.center,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
     );
   }
 
@@ -256,32 +286,8 @@ class AnalysisCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: TsSpacing.md),
-            if (isPremiumPick &&
-                pickDirection != null &&
-                winRate != null) ...[
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: TsSpacing.md,
-                  vertical: TsSpacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: semantic.surfaceContainer,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    PickDirectionBadge(pick: pickDirection!),
-                    const SizedBox(width: 10),
-                    Text(
-                      winRate!,
-                      style: TsType.bodyMBold.copyWith(
-                        color: semantic.interactivePrimary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            if (isPremiumPick && pickDirection != null) ...[
+              _buildPickPreview(context, semantic),
               const SizedBox(height: TsSpacing.lg),
             ],
             _buildAnalyzeButton(context, semantic),

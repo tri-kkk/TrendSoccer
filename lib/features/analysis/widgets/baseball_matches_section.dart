@@ -126,7 +126,6 @@ class _BaseballAnalysisCardItem extends StatelessWidget {
       awayLogoUrl: card.awayTeamLogo,
       isPremiumPick: false,
       pickDirection: null,
-      winRate: null,
       onAnalyze: () => context.push(
         '/analysis/baseball/match-report/${card.detailMatchId}',
         extra: MatchHeaderData.fromBaseballCard(card),

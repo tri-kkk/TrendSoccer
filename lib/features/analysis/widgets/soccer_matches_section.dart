@@ -147,7 +147,6 @@ class _SoccerAnalysisCardItem extends ConsumerWidget {
       alwaysActiveAnalyzeButton: true,
       isPremiumPick: false,
       pickDirection: null,
-      winRate: null,
       onAnalyze: () => context.push(
         '/analysis/soccer/match-report/${match.matchId}',
         extra: MatchHeaderData.fromSoccerCard(card),

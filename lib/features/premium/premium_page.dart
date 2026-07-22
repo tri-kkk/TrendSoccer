@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/models/match_header_data.dart';
+import 'package:trendsoccer/core/models/soccer_models.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/navigation/subscribe_navigation.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
@@ -20,6 +21,7 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/features/premium/combo/combo_parser.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
 import 'package:trendsoccer/shared/widgets/cards/analysis_card.dart';
+import 'package:trendsoccer/shared/widgets/cards/pick_direction_badge.dart';
 import 'package:trendsoccer/shared/widgets/cards/premium_pick_stats_card.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_card.dart';
 import 'package:trendsoccer/shared/widgets/combo/combo_dashboard.dart';
@@ -94,6 +96,17 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
     final date = ref.watch(todayDateProvider);
     final picksAsync = ref.watch(premiumPicksProvider(date));
     final teamLogoMap = ref.watch(teamLogoMapProvider);
+    final analysisMatches = ref.watch(analysisSoccerMatchesProvider);
+    final predictionMap = <int, SoccerPrediction>{};
+    final analysisList = analysisMatches.asData?.value;
+    if (analysisList != null) {
+      for (final analysisCard in analysisList) {
+        final prediction = analysisCard.prediction;
+        if (prediction != null) {
+          predictionMap[analysisCard.match.matchId] = prediction;
+        }
+      }
+    }
 
     return picksAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -129,6 +142,13 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                   final card = entry.value;
                   final match = card.match;
                   final leagueId = leagueIdForCard(match.league);
+                  final analysisPrediction = predictionMap[match.matchId];
+                  final pickDirection = pickDirectionFromCard(card) ??
+                      _pickDirectionFromPrediction(analysisPrediction);
+                  final homeLogoUrl = match.homeTeam.logo ??
+                      findTeamLogo(teamLogoMap, match.homeTeam.name);
+                  final awayLogoUrl = match.awayTeam.logo ??
+                      findTeamLogo(teamLogoMap, match.awayTeam.name);
 
                   return Padding(
                     padding: EdgeInsets.only(
@@ -154,17 +174,25 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                         null,
                       ),
                       matchTime: match.matchTime,
-                      homeLogoUrl: match.homeTeam.logo ??
-                          findTeamLogo(teamLogoMap, match.homeTeam.name),
-                      awayLogoUrl: match.awayTeam.logo ??
-                          findTeamLogo(teamLogoMap, match.awayTeam.name),
+                      homeLogoUrl: homeLogoUrl,
+                      awayLogoUrl: awayLogoUrl,
                       isPremiumPick: true,
-                      pickDirection: pickDirectionFromCard(card),
-                      winRate: winRateLabelFromCard(card),
-                      onAnalyze: () => context.push(
-                        '/analysis/soccer/match-report/${match.matchId}',
-                        extra: MatchHeaderData.fromSoccerCard(card),
-                      ),
+                      pickDirection: pickDirection,
+                      onAnalyze: () {
+                        final header = MatchHeaderData.fromSoccerCard(card);
+                        context.push(
+                          '/analysis/soccer/match-report/${match.matchId}',
+                          extra: header.mergeWith(
+                            MatchHeaderData(
+                              matchId: match.matchId,
+                              homeTeam: header.homeTeam,
+                              awayTeam: header.awayTeam,
+                              homeTeamLogo: homeLogoUrl,
+                              awayTeamLogo: awayLogoUrl,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   );
                 }),
@@ -420,4 +448,25 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
     ),
     );
   }
+}
+
+PickDirection? _pickDirectionFromRaw(String? raw) {
+  if (raw == null || raw.isEmpty) return null;
+  final normalized = raw.toLowerCase().trim();
+  if (normalized.contains('home') || normalized == 'h' || normalized.contains('홈')) {
+    return PickDirection.home;
+  }
+  if (normalized.contains('draw') || normalized == 'd' || normalized.contains('무')) {
+    return PickDirection.draw;
+  }
+  if (normalized.contains('away') || normalized == 'a' || normalized.contains('원정')) {
+    return PickDirection.away;
+  }
+  return null;
+}
+
+PickDirection? _pickDirectionFromPrediction(SoccerPrediction? prediction) {
+  if (prediction == null) return null;
+  return _pickDirectionFromRaw(prediction.direction) ??
+      _pickDirectionFromRaw(prediction.recommendation?.pick);
 }
