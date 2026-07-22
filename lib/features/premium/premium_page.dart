@@ -93,6 +93,7 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
     final l10n = context.l10n;
     final date = ref.watch(todayDateProvider);
     final picksAsync = ref.watch(premiumPicksProvider(date));
+    final teamLogoMap = ref.watch(teamLogoMapProvider);
 
     return picksAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -153,8 +154,10 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                         null,
                       ),
                       matchTime: match.matchTime,
-                      homeLogoUrl: match.homeTeam.logo,
-                      awayLogoUrl: match.awayTeam.logo,
+                      homeLogoUrl: match.homeTeam.logo ??
+                          findTeamLogo(teamLogoMap, match.homeTeam.name),
+                      awayLogoUrl: match.awayTeam.logo ??
+                          findTeamLogo(teamLogoMap, match.awayTeam.name),
                       isPremiumPick: true,
                       pickDirection: pickDirectionFromCard(card),
                       winRate: winRateLabelFromCard(card),
