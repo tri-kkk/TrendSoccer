@@ -59,49 +59,55 @@ class AnalysisResultSection extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Row(
-                children: [
-                  _ResultGridCell(
-                    label: l10n.labelPrediction,
-                    value: prediction,
-                    semantic: semantic,
-                  ),
-                  const SizedBox(width: TsSpacing.sm),
-                  _ResultGridCell(
-                    label: l10n.soccerStatWinProb,
-                    value: winProbability,
-                    semantic: semantic,
-                  ),
-                  const SizedBox(width: TsSpacing.sm),
-                  _ResultGridCell(
-                    label: l10n.soccerStatPowerDiff,
-                    value: powerDiff,
-                    semantic: semantic,
-                  ),
-                ],
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _ResultGridCell(
+                      label: l10n.labelPrediction,
+                      value: prediction,
+                      semantic: semantic,
+                    ),
+                    const SizedBox(width: TsSpacing.sm),
+                    _ResultGridCell(
+                      label: l10n.soccerStatWinProb,
+                      value: winProbability,
+                      semantic: semantic,
+                    ),
+                    const SizedBox(width: TsSpacing.sm),
+                    _ResultGridCell(
+                      label: l10n.soccerStatPowerDiff,
+                      value: powerDiff,
+                      semantic: semantic,
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: TsSpacing.sm),
-              Row(
-                children: [
-                  _ResultGridCell(
-                    label: l10n.soccerStatAnalyzedMatches,
-                    value: analysisMatchCount,
-                    semantic: semantic,
-                  ),
-                  const SizedBox(width: TsSpacing.sm),
-                  _ResultGridCell(
-                    label: l10n.soccerStatPattern,
-                    value: patternMatchCount,
-                    semantic: semantic,
-                  ),
-                  const SizedBox(width: TsSpacing.sm),
-                  _ResultGridCell(
-                    label: l10n.labelRecommend,
-                    value: '',
-                    semantic: semantic,
-                    valueWidget: TsBadge(type: _badgeType(gradeBadgeType)),
-                  ),
-                ],
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _ResultGridCell(
+                      label: l10n.soccerStatAnalyzedMatches,
+                      value: analysisMatchCount,
+                      semantic: semantic,
+                    ),
+                    const SizedBox(width: TsSpacing.sm),
+                    _ResultGridCell(
+                      label: l10n.soccerStatPattern,
+                      value: patternMatchCount,
+                      semantic: semantic,
+                    ),
+                    const SizedBox(width: TsSpacing.sm),
+                    _ResultGridCell(
+                      label: l10n.labelRecommend,
+                      value: '',
+                      semantic: semantic,
+                      valueWidget: TsBadge(type: _badgeType(gradeBadgeType)),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -134,13 +140,19 @@ class _ResultGridCell extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              label,
-              style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
-              textAlign: TextAlign.center,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: Text(
+                label,
+                style: TsType.labelSRegular.copyWith(color: semantic.textTertiary),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
             ),
             const SizedBox(height: TsSpacing.sm),
             valueWidget ??
