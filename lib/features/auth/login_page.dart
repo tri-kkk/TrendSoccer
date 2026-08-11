@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -5,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/models/api_response.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/services/analytics_service.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
@@ -72,42 +75,80 @@ class _LoginPageState extends ConsumerState<LoginPage>
     _controller.forward();
   }
 
+  void _reportLoginFailure(String provider, String reason) {
+    unawaited(
+      AnalyticsService.logLoginFailure(provider: provider, reason: reason),
+    );
+  }
+
+  void _showLoginFailureMessage(String provider, AuthLoginException error) {
+    if (!mounted || error.reason == 'cancelled') return;
+
+    final l10n = context.l10n;
+    final message = switch (error.reason) {
+      'timeout' => l10n.errorNetworkTimeout,
+      'network_error' => l10n.errorNetworkTimeout,
+      'token_null' => l10n.errorLogin,
+      'sdk_error' =>
+        provider == 'naver' ? l10n.errorNaverLoginFailed : l10n.errorLogin,
+      'profile_load_failed' => l10n.errorUnauthorized,
+      'api_error' when error.cause != null =>
+        resolveApiError(context, error.cause),
+      _ => l10n.errorUnknown,
+    };
+    TsToast.error(context, message);
+  }
+
   Future<void> _onNaverLoginTap() async {
+    unawaited(AnalyticsService.logLoginAttempt(provider: 'naver'));
     setState(() => _isLoading = true);
     try {
-      final result = await ref.read(authProvider).loginWithNaver();
+      await ref.read(authProvider).loginWithNaver();
       if (!mounted) return;
-      setState(() => _isLoading = false);
 
-      if (result['cancelled'] == true) return;
+      if (!ref.read(authProvider).isLoggedIn) {
+        _reportLoginFailure('naver', 'profile_load_failed');
+        TsToast.error(context, context.l10n.errorUnauthorized);
+        return;
+      }
 
-      if (result['isNewUser'] == true || result['requiresConsent'] == true) {
+      final auth = ref.read(authProvider);
+      if (auth.needsConsent) {
         context.go('/signup/terms');
       } else {
         context.go('/trend');
       }
+    } on AuthLoginException catch (e) {
+      if (!mounted) return;
+      _reportLoginFailure('naver', e.reason);
+      _showLoginFailureMessage('naver', e);
     } on ApiException catch (e) {
       if (!mounted) return;
-      setState(() => _isLoading = false);
+      _reportLoginFailure('naver', 'api_error');
       TsToast.error(context, resolveApiError(context, e));
     } catch (e) {
       if (!mounted) return;
-      setState(() => _isLoading = false);
+      _reportLoginFailure('naver', 'unknown');
       TsToast.error(context, resolveApiError(context, e));
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   Future<void> _onGoogleLoginTap() async {
+    unawaited(AnalyticsService.logLoginAttempt(provider: 'google'));
     setState(() => _isLoading = true);
     try {
       await ref.read(authProvider).loginWithGoogle();
       if (!mounted) return;
-      setState(() => _isLoading = false);
 
-      if (!ref.read(authProvider).isLoggedIn) return;
-
-      await ref.read(authProvider).loadProfile();
-      if (!mounted) return;
+      if (!ref.read(authProvider).isLoggedIn) {
+        _reportLoginFailure('google', 'profile_load_failed');
+        TsToast.error(context, context.l10n.errorUnauthorized);
+        return;
+      }
 
       final auth = ref.read(authProvider);
       if (auth.needsConsent) {
@@ -116,10 +157,22 @@ class _LoginPageState extends ConsumerState<LoginPage>
         TsToast.success(context, context.l10n.loginSuccess);
         context.go('/trend');
       }
+    } on AuthLoginException catch (e) {
+      if (!mounted) return;
+      _reportLoginFailure('google', e.reason);
+      _showLoginFailureMessage('google', e);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      _reportLoginFailure('google', 'api_error');
+      TsToast.error(context, resolveApiError(context, e));
     } catch (e) {
       if (!mounted) return;
-      setState(() => _isLoading = false);
+      _reportLoginFailure('google', 'unknown');
       TsToast.error(context, resolveApiError(context, e));
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 

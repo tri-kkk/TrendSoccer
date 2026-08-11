@@ -3,6 +3,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract final class AppConfig {
+  static const Duration apiConnectTimeout = Duration(seconds: 15);
+  static const Duration apiReceiveTimeout = Duration(seconds: 20);
+  static const Duration apiSendTimeout = Duration(seconds: 20);
+
   static String get supabaseUrl => dotenv.env['SUPABASE_URL']!;
 
   static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY']!;
@@ -27,7 +31,12 @@ abstract final class AppConfig {
 
   static Dio get dio {
     return _dio ??= Dio(
-      BaseOptions(baseUrl: apiBaseUrl),
+      BaseOptions(
+        baseUrl: apiBaseUrl,
+        connectTimeout: apiConnectTimeout,
+        receiveTimeout: apiReceiveTimeout,
+        sendTimeout: apiSendTimeout,
+      ),
     );
   }
 
@@ -35,8 +44,9 @@ abstract final class AppConfig {
     return _webDio ??= Dio(
       BaseOptions(
         baseUrl: webApiBaseUrl,
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 30),
+        connectTimeout: apiConnectTimeout,
+        receiveTimeout: apiReceiveTimeout,
+        sendTimeout: apiSendTimeout,
         headers: const {'Accept': 'application/json'},
       ),
     );

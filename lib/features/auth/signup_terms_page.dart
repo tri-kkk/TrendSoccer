@@ -50,6 +50,7 @@ class _SignupTermsPageState extends ConsumerState<SignupTermsPage> {
 
     if (!ok) {
       TsToast.error(context, context.l10n.signupErrorProcessing);
+      return;
     }
     context.push('/signup/complete');
   }

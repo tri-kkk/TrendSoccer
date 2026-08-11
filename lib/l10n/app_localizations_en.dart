@@ -1337,9 +1337,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signupCompleteFreeBenefitsHeader => 'Free benefits';
 
   @override
-  String get signupCompleteGoHome => 'Go to Home';
-
-  @override
   String get signupCompletePremiumBenefit1 =>
       '24-hour priority analysis access';
 

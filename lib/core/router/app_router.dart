@@ -51,10 +51,12 @@ abstract final class AppRouter {
     routes: [
       GoRoute(
         path: '/splash',
+        name: 'splash',
         builder: (context, state) => const SplashPage(),
       ),
       GoRoute(
         path: '/maintenance',
+        name: 'maintenance',
         builder: (context, state) {
           final message = state.extra is String ? state.extra! as String : null;
           return MaintenancePage(maintenanceMessage: message);
@@ -62,6 +64,7 @@ abstract final class AppRouter {
       ),
       GoRoute(
         path: '/force-update',
+        name: 'force_update',
         builder: (context, state) {
           final message = state.extra is String ? state.extra! as String : null;
           return ForceUpdatePage(updateMessage: message);
@@ -69,6 +72,7 @@ abstract final class AppRouter {
       ),
       GoRoute(
         path: '/login',
+        name: 'login',
         redirect: (context, state) {
           final isLoggedIn =
               ProviderScope.containerOf(context).read(authProvider).isLoggedIn;
@@ -79,18 +83,22 @@ abstract final class AppRouter {
       ),
       GoRoute(
         path: '/signup/terms',
+        name: 'signup_terms',
         builder: (context, state) => const SignupTermsPage(),
       ),
       GoRoute(
         path: '/signup/complete',
+        name: 'signup_complete',
         builder: (context, state) => const SignupCompletePage(),
       ),
       GoRoute(
         path: '/menu/subscribe',
+        name: 'subscribe',
         builder: (context, state) => const SubscribePage(),
       ),
       GoRoute(
         path: '/menu/subscribe/success',
+        name: 'subscribe_success',
         builder: (context, state) {
           final months = state.extra is int ? state.extra! as int : 3;
           return SubscribeSuccessPage(months: months);
@@ -98,14 +106,17 @@ abstract final class AppRouter {
       ),
       GoRoute(
         path: '/menu/subscribe/fail',
+        name: 'subscribe_fail',
         builder: (context, state) => const SubscribeFailPage(),
       ),
       GoRoute(
         path: '/menu/about',
+        name: 'about',
         builder: (context, state) => const AboutPage(),
       ),
       GoRoute(
         path: '/analysis/soccer/match-report/:matchId',
+        name: 'soccer_match_report',
         builder: (context, state) {
           final matchId = state.pathParameters['matchId'] ?? '';
           final extra = state.extra;
@@ -121,6 +132,7 @@ abstract final class AppRouter {
       ),
       GoRoute(
         path: '/analysis/baseball/match-report/:matchId',
+        name: 'baseball_match_report',
         builder: (context, state) {
           final matchId = state.pathParameters['matchId'] ?? '';
           final headerData = MatchHeaderData.fromRouteExtra(state.extra);
@@ -136,63 +148,79 @@ abstract final class AppRouter {
         routes: [
           GoRoute(
             path: '/trend',
+            name: 'trend',
             pageBuilder: (context, state) => NoTransitionPage(
               key: state.pageKey,
+              name: state.name,
               child: const TrendPage(),
             ),
           ),
           GoRoute(
             path: '/analysis',
+            name: 'analysis',
             pageBuilder: (context, state) => NoTransitionPage(
               key: state.pageKey,
+              name: state.name,
               child: const AnalysisPage(),
             ),
           ),
           GoRoute(
             path: '/fixture',
+            name: 'fixture',
             pageBuilder: (context, state) => NoTransitionPage(
               key: state.pageKey,
+              name: state.name,
               child: const FixturePage(),
             ),
           ),
           GoRoute(
             path: '/premium',
+            name: 'premium',
             pageBuilder: (context, state) => NoTransitionPage(
               key: state.pageKey,
+              name: state.name,
               child: const PremiumPage(),
             ),
           ),
           GoRoute(
             path: '/menu',
+            name: 'menu',
             pageBuilder: (context, state) => NoTransitionPage(
               key: state.pageKey,
+              name: state.name,
               child: const MenuPage(),
             ),
             routes: [
               GoRoute(
                 path: 'reports/soccer',
+                name: 'menu_reports_soccer',
                 builder: (context, state) => const SoccerReportListPage(),
               ),
               GoRoute(
                 path: 'reports/soccer/:slug',
+                name: 'menu_report_soccer_detail',
                 builder: (context, state) => SoccerReportDetailPage(
                   slug: state.pathParameters['slug'] ?? '',
                 ),
               ),
               GoRoute(
                 path: 'privacy',
+                name: 'menu_privacy',
                 builder: (context, state) => const PrivacyPolicyPage(),
               ),
               GoRoute(
                 path: 'terms',
+                name: 'menu_terms',
                 builder: (context, state) => const TermsOfServicePage(),
               ),
               GoRoute(
                 path: 'help',
+                name: 'menu_help',
                 builder: (context, state) => const HelpCenterPage(),
               ),
               GoRoute(
                 path: 'notification-settings',
+                name: 'menu_notification_settings',
                 builder: (context, state) => const NotificationSettingsPage(),
               ),
             ],

@@ -1309,9 +1309,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get signupCompleteFreeBenefitsHeader => '무료 혜택';
 
   @override
-  String get signupCompleteGoHome => '홈으로 이동';
-
-  @override
   String get signupCompletePremiumBenefit1 => '24시간 우선 분석 접근';
 
   @override

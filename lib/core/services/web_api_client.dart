@@ -33,11 +33,14 @@ class _WebAuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final token = await _tokenService.getToken();
-    if (token != null && token.isNotEmpty) {
-      options.headers['Authorization'] = 'Bearer $token';
+    try {
+      final token = await _tokenService.getToken();
+      if (token != null && token.isNotEmpty) {
+        options.headers['Authorization'] = 'Bearer $token';
+      }
+    } finally {
+      handler.next(options);
     }
-    handler.next(options);
   }
 
   @override

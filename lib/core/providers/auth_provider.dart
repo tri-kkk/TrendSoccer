@@ -24,6 +24,18 @@ final authProvider = ChangeNotifierProvider<SupabaseAuthProvider>(
   (ref) => SupabaseAuthProvider(ref),
 );
 
+/// Thrown by [SupabaseAuthProvider.loginWithGoogle] and [loginWithNaver]
+/// with a stable [reason] for analytics (no PII).
+class AuthLoginException implements Exception {
+  const AuthLoginException(this.reason, [this.cause]);
+
+  final String reason;
+  final Object? cause;
+
+  @override
+  String toString() => 'AuthLoginException($reason)';
+}
+
 class SubscriptionInfo {
   const SubscriptionInfo({
     this.status,
@@ -111,6 +123,8 @@ class SupabaseAuthProvider extends ChangeNotifier {
   SupabaseAuthProvider(this._ref);
 
   final Ref _ref;
+
+  static const _authOperationTimeout = Duration(seconds: 30);
 
   static const _authJwtKey = 'auth_jwt';
   static const _authProviderKey = 'auth_provider';
@@ -288,7 +302,23 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
   ApiException _mapAuthException(ApiException e) => e;
 
-  Never _handleMobileAuthDioException(DioException e, {required String logLabel}) {
+  bool _isDioTimeout(DioException e) {
+    return e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.sendTimeout;
+  }
+
+  AuthLoginException _authLoginExceptionFromDio(
+    DioException e, {
+    required String logLabel,
+  }) {
+    if (_isDioTimeout(e)) {
+      return const AuthLoginException('timeout');
+    }
+    if (e.type == DioExceptionType.connectionError) {
+      return const AuthLoginException('network_error');
+    }
+
     final statusCode = e.response?.statusCode;
     final responseData = e.response?.data;
 
@@ -303,24 +333,24 @@ class SupabaseAuthProvider extends ChangeNotifier {
         final errorCode = errorMap['code'] ?? '';
         final daysLeft = errorMap['daysLeft'];
 
-        
         if (errorCode == 'COOLDOWN_ACTIVE') {
           final days = daysLeft is num ? daysLeft.toInt() : 7;
-          throw Exception('COOLDOWN_ACTIVE:$days');
+          return AuthLoginException('api_error', Exception('COOLDOWN_ACTIVE:$days'));
         }
       }
     }
 
     if (statusCode == 401) {
-      throw Exception('NAVER_AUTH_EXPIRED');
+      return AuthLoginException('api_error', Exception('NAVER_AUTH_EXPIRED'));
     }
 
     if (statusCode == 400) {
-      throw Exception('EMAIL_REQUIRED');
+      return AuthLoginException('api_error', Exception('EMAIL_REQUIRED'));
     }
 
-        throw Exception(
-      logLabel == 'Google' ? 'LOGIN_FAILED' : 'NAVER_LOGIN_FAILED',
+    return AuthLoginException(
+      'api_error',
+      Exception(logLabel == 'Google' ? 'LOGIN_FAILED' : 'NAVER_LOGIN_FAILED'),
     );
   }
 
@@ -564,16 +594,24 @@ class SupabaseAuthProvider extends ChangeNotifier {
     return headers;
   }
 
-  Future<void> loadProfile({String? jwt}) async {
+  Future<void> loadProfile({String? jwt, bool throwOnError = false}) async {
     const url = _meUrl;
-        try {
+    try {
       final headers = await _buildMeRequestHeaders(jwt: jwt);
-      
-      final dio = Dio();
-      final response = await dio.get<dynamic>(
-        url,
-        options: Options(headers: headers),
+
+      final dio = Dio(
+        BaseOptions(
+          connectTimeout: AppConfig.apiConnectTimeout,
+          receiveTimeout: AppConfig.apiReceiveTimeout,
+          sendTimeout: AppConfig.apiSendTimeout,
+        ),
       );
+      final response = await dio
+          .get<dynamic>(
+            url,
+            options: Options(headers: headers),
+          )
+          .timeout(_authOperationTimeout);
       final raw = response.data;
 
       Map<String, dynamic>? responseData;
@@ -590,10 +628,16 @@ class SupabaseAuthProvider extends ChangeNotifier {
         if (error is Map<String, dynamic>) {
           final apiError = ApiError.fromJson(error);
           if (apiError.code == 'CONSENT_REQUIRED') {
-                        _markConsentRequired();
+            _markConsentRequired();
             return;
           }
+          if (throwOnError) {
+            throw AuthLoginException('profile_load_failed', ApiException.fromApiError(apiError));
+          }
           throw ApiException.fromApiError(apiError);
+        }
+        if (throwOnError) {
+          throw const AuthLoginException('profile_load_failed');
         }
         throw const ApiException(
           code: 'REQUEST_FAILED',
@@ -603,10 +647,12 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
       final user = _extractMeUser(responseData);
       if (user == null) {
-                return;
+        if (throwOnError) {
+          throw const AuthLoginException('profile_load_failed');
+        }
+        return;
       }
 
-            
       _applyMeUserJson(user);
       try {
         await FCMService().registerDevice();
@@ -615,22 +661,43 @@ class SupabaseAuthProvider extends ChangeNotifier {
       } catch (e) {
         // Non-fatal: FCM device registration/migration failed; push may be stale.
       }
+    } on AuthLoginException {
+      rethrow;
+    } on TimeoutException {
+      if (throwOnError) {
+        throw const AuthLoginException('timeout');
+      }
     } on ApiException catch (e) {
       if (e.code == 'CONSENT_REQUIRED') {
-                _markConsentRequired();
+        _markConsentRequired();
         return;
       }
-          } on DioException catch (e) {
+      if (throwOnError) {
+        throw AuthLoginException('profile_load_failed', e);
+      }
+    } on DioException catch (e) {
       final statusCode = e.response?.statusCode;
       if (statusCode == 401) {
-                await signOut();
+        await signOut();
+        if (throwOnError) {
+          throw const AuthLoginException('profile_load_failed');
+        }
         return;
       }
       if (statusCode == 409 || _responseIndicatesConsentRequired(e.response?.data)) {
-                _markConsentRequired();
+        _markConsentRequired();
         return;
       }
-          }
+      if (throwOnError) {
+        if (_isDioTimeout(e)) {
+          throw const AuthLoginException('timeout');
+        }
+        if (e.type == DioExceptionType.connectionError) {
+          throw const AuthLoginException('network_error');
+        }
+        throw AuthLoginException('profile_load_failed', e);
+      }
+    }
   }
 
   Future<void> signOut() async {
@@ -698,50 +765,59 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
   Future<void> loginWithGoogle() async {
     try {
-            final googleSignIn = GoogleSignIn(
+      final googleSignIn = GoogleSignIn(
         serverClientId: AppConfig.googleWebClientId,
       );
-      final account = await googleSignIn.signIn();
-      if (account == null) return;
-
-            final authentication = await account.authentication;
-      final accessToken = authentication.accessToken;
-            if (accessToken == null) {
-        throw Exception('Google sign-in failed: accessToken is null');
+      final account = await googleSignIn.signIn().timeout(_authOperationTimeout);
+      if (account == null) {
+        throw const AuthLoginException('cancelled');
       }
 
-            try {
-        final response =
-            await _ref.read(authServiceProvider).googleAuth(accessToken);
-                await _applyLoginResponse(response, LoginMethod.google);
-        final session = Supabase.instance.client.auth.currentSession;
+      final authentication =
+          await account.authentication.timeout(_authOperationTimeout);
+      final accessToken = authentication.accessToken;
+      if (accessToken == null) {
+        throw const AuthLoginException('token_null');
+      }
+
+      try {
+        final response = await _ref
+            .read(authServiceProvider)
+            .googleAuth(accessToken)
+            .timeout(_authOperationTimeout);
+        await _applyLoginResponse(response, LoginMethod.google);
         await loadProfile(
-          jwt: session?.accessToken ?? response.session.accessToken,
+          jwt: response.session.accessToken,
+          throwOnError: true,
         );
       } on ApiException catch (e) {
-        throw _mapAuthException(e);
+        throw AuthLoginException('api_error', _mapAuthException(e));
       } on DioException catch (e) {
-        _handleMobileAuthDioException(e, logLabel: 'Google');
+        throw _authLoginExceptionFromDio(e, logLabel: 'Google');
       }
-    } catch (e) {
-            if (e is ApiException) {
-              }
-      if (e is DioException) {
-              }
+    } on AuthLoginException {
       rethrow;
+    } on TimeoutException {
+      throw const AuthLoginException('timeout');
+    } catch (e) {
+      throw AuthLoginException('sdk_error', e);
     }
   }
 
-  Future<Map<String, dynamic>> loginWithNaver() async {
+  Future<void> loginWithNaver() async {
     try {
-            final result = await FlutterNaverLogin.logIn();
+      final result =
+          await FlutterNaverLogin.logIn().timeout(_authOperationTimeout);
 
       if (result.status == NaverLoginStatus.loggedOut) {
-                return {'cancelled': true};
+        throw const AuthLoginException('cancelled');
       }
 
       if (result.status == NaverLoginStatus.error) {
-                throw Exception('Naver login failed: ${result.errorMessage}');
+        throw AuthLoginException(
+          'sdk_error',
+          Exception('Naver login failed: ${result.errorMessage}'),
+        );
       }
 
       final loginToken = result.accessToken;
@@ -749,22 +825,25 @@ class SupabaseAuthProvider extends ChangeNotifier {
       if (loginToken != null && loginToken.accessToken.isNotEmpty) {
         naverAccessToken = loginToken.accessToken;
       } else {
-        final tokenResult = await FlutterNaverLogin.getCurrentAccessToken();
+        final tokenResult = await FlutterNaverLogin.getCurrentAccessToken()
+            .timeout(_authOperationTimeout);
         naverAccessToken = tokenResult.accessToken;
       }
 
       if (naverAccessToken.isEmpty) {
-        throw Exception('Naver access token is empty');
+        throw const AuthLoginException('token_null');
       }
 
-            try {
-        final response =
-            await _ref.read(authServiceProvider).naverAuth(naverAccessToken);
-        
+      try {
+        final response = await _ref
+            .read(authServiceProvider)
+            .naverAuth(naverAccessToken)
+            .timeout(_authOperationTimeout);
+
         final jwt = response.session.accessToken;
         await _persistNaverAuthSession(jwt);
         await _applyLoginResponse(response, LoginMethod.naver);
-        await loadProfile(jwt: jwt);
+        await loadProfile(jwt: jwt, throwOnError: true);
 
         final user = response.user;
         final email = user.email;
@@ -777,22 +856,20 @@ class SupabaseAuthProvider extends ChangeNotifier {
           unawaited(_persistUserEmail(email));
           notifyListeners();
         }
-        
-        return {
-          'isNewUser': user.isNewUser,
-          'requiresConsent': needsConsent,
-          'user': user,
-        };
       } on ApiException catch (e) {
-        throw _mapAuthException(e);
+        throw AuthLoginException('api_error', _mapAuthException(e));
       } on DioException catch (e) {
-        _handleMobileAuthDioException(e, logLabel: 'Naver');
+        throw _authLoginExceptionFromDio(e, logLabel: 'Naver');
       }
-    } catch (e) {
-            if (e.toString().contains('cancelled')) {
-        return {'cancelled': true};
-      }
+    } on AuthLoginException {
       rethrow;
+    } on TimeoutException {
+      throw const AuthLoginException('timeout');
+    } catch (e) {
+      if (e.toString().contains('cancelled')) {
+        throw const AuthLoginException('cancelled');
+      }
+      throw AuthLoginException('sdk_error', e);
     }
   }
 

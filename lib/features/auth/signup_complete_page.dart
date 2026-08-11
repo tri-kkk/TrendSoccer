@@ -23,9 +23,6 @@ class SignupCompletePage extends ConsumerStatefulWidget {
 class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
   Timer? _redirectTimer;
   int _countdown = 5;
-  bool _countdownFinished = false;
-
-  bool get _showManualHome => _countdownFinished || _redirectTimer == null;
 
   @override
   void initState() {
@@ -36,7 +33,6 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
   void _startCountdown() {
     _cancelRedirect();
     _countdown = 5;
-    _countdownFinished = false;
     _redirectTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) {
         _cancelRedirect();
@@ -44,7 +40,6 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
       }
       setState(() => _countdown--);
       if (_countdown <= 0) {
-        _countdownFinished = true;
         _cancelRedirect();
         TsToast.success(context, context.l10n.signupCompleteSuccessToast);
         context.go('/trend');
@@ -244,20 +239,13 @@ class _SignupCompletePageState extends ConsumerState<SignupCompletePage> {
                 },
               ),
               const SizedBox(height: TsSpacing.lg),
-              if (_showManualHome)
-                TsButton(
-                  label: l10n.signupCompleteGoHome,
-                  variant: TsButtonVariant.secondary,
-                  onPressed: _goHome,
-                )
-              else
-                Text(
-                  l10n.signupCompleteCountdown(_countdown),
-                  style: TsType.labelSRegular.copyWith(
-                    color: semantic.textTertiary,
-                  ),
-                  textAlign: TextAlign.center,
+              Text(
+                l10n.signupCompleteCountdown(_countdown),
+                style: TsType.labelSRegular.copyWith(
+                  color: semantic.textTertiary,
                 ),
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),

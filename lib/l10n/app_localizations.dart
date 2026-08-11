@@ -2558,12 +2558,6 @@ abstract class AppLocalizations {
   /// **'무료 혜택'**
   String get signupCompleteFreeBenefitsHeader;
 
-  /// No description provided for @signupCompleteGoHome.
-  ///
-  /// In ko, this message translates to:
-  /// **'홈으로 이동'**
-  String get signupCompleteGoHome;
-
   /// No description provided for @signupCompletePremiumBenefit1.
   ///
   /// In ko, this message translates to:
