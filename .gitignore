@@ -39,3 +39,6 @@ Thumbs.db          # Windows
 *.jks
 *.keystore
 key.properties
+
+# Local release artifact archives (not committed)
+build_archive/
