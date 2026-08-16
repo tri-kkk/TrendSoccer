@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdmobService {
@@ -16,6 +18,15 @@ class AdmobService {
   static const String _testBanner =
       'ca-app-pub-3940256099942544/6300978111';
 
+  static final Completer<void> _readyCompleter = Completer<void>();
+
+  static bool _initAttempted = false;
+  static bool _initSucceeded = false;
+
+  static Future<void> get ready => _readyCompleter.future;
+
+  static bool get initSucceeded => _initSucceeded;
+
   static String get trendBannerAdUnitId =>
       _useTestAds ? _testBanner : _prodTrendBanner;
   static String get analysisBannerAdUnitId =>
@@ -24,6 +35,23 @@ class AdmobService {
       _useTestAds ? _testBanner : _prodFixtureBanner;
 
   static Future<void> initialize() async {
-    await MobileAds.instance.initialize();
+    if (_initAttempted) {
+      return ready;
+    }
+    _initAttempted = true;
+
+    try {
+      await MobileAds.instance.initialize().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => throw TimeoutException('AdmobService.initialize'),
+      );
+      _initSucceeded = true;
+    } on Object {
+      _initSucceeded = false;
+    } finally {
+      if (!_readyCompleter.isCompleted) {
+        _readyCompleter.complete();
+      }
+    }
   }
 }

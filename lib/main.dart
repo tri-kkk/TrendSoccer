@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +27,49 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
 }
 
+Future<void> _deferredInitFcm() async {
+  try {
+    await FCMService()
+        .init()
+        .timeout(const Duration(seconds: 10), onTimeout: () {});
+  } on Object {
+    // Non-fatal: app continues without push notifications.
+  }
+}
+
+Future<void> _deferredInitIap(IAPService iapService) async {
+  try {
+    await iapService
+        .init()
+        .timeout(const Duration(seconds: 10), onTimeout: () {});
+  } on Object {
+    // Non-fatal: purchase flow reports unavailable via IAPService.ready.
+  }
+}
+
+Future<void> _deferredInitAdmob() async {
+  try {
+    await AdmobService.initialize().timeout(
+      const Duration(seconds: 10),
+      onTimeout: () {},
+    );
+  } on Object {
+    // Non-fatal: ads remain hidden when load fails.
+  }
+}
+
+void _schedulePostFrameDeferredInits(IAPService iapService) {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(
+      Future.wait<void>([
+        _deferredInitFcm(),
+        _deferredInitIap(iapService),
+        _deferredInitAdmob(),
+      ]),
+    );
+  });
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -33,13 +78,6 @@ Future<void> main() async {
   await Firebase.initializeApp();
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  try {
-    final fcmService = FCMService();
-    await fcmService.init();
-  } on Object {
-    // Non-fatal: app continues without push notifications.
-  }
 
   await Supabase.initialize(
     url: AppConfig.supabaseUrl,
@@ -57,9 +95,6 @@ Future<void> main() async {
   // ignore: avoid_print
   final prefs = await SharedPreferences.getInstance();
   final iapService = IAPService();
-  await iapService.init();
-
-  await AdmobService.initialize();
 
   runApp(
     ProviderScope(
@@ -70,6 +105,8 @@ Future<void> main() async {
       child: const TrendSoccerApp(),
     ),
   );
+
+  _schedulePostFrameDeferredInits(iapService);
 }
 
 class TrendSoccerApp extends ConsumerStatefulWidget {
@@ -115,4 +152,3 @@ class _TrendSoccerAppState extends ConsumerState<TrendSoccerApp> {
     );
   }
 }
-

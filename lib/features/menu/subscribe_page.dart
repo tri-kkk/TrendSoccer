@@ -243,6 +243,7 @@ class _SubscribePageState extends ConsumerState<SubscribePage> {
 
   Future<_IapAttemptResult> _startGooglePlayPurchase() async {
     final iap = ref.read(iapServiceProvider);
+    await iap.ready;
     final basePlanId = _selectedBasePlanId;
 
     

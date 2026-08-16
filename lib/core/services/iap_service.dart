@@ -61,47 +61,70 @@ class IAPService {
 
   bool _isAvailable = false;
   bool _initialized = false;
+  bool _initSucceeded = false;
   List<ProductDetails> _products = const [];
 
+  final Completer<void> _readyCompleter = Completer<void>();
+
   bool get isAvailable => _isAvailable;
+  bool get initSucceeded => _initSucceeded;
+  Future<void> get ready => _readyCompleter.future;
   List<ProductDetails> get products => List.unmodifiable(_products);
   Stream<IapPurchaseEvent> get purchaseEvents => _purchaseEventsController.stream;
 
   Future<void> init() async {
     if (_initialized) {
-            return;
+      return ready;
     }
 
-    _isAvailable = await _iap.isAvailable();
-    
-    if (!_isAvailable) {
+    try {
+      _isAvailable = await _iap.isAvailable().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => throw TimeoutException('IAPService.isAvailable'),
+      );
+
+      if (!_isAvailable) {
+        return;
+      }
+
+      _purchaseSubscription ??= _iap.purchaseStream.listen(
+        _onPurchaseUpdate,
+        onError: (Object error, StackTrace stackTrace) {
+          _purchaseEventsController.add(
+            IapPurchaseEvent(
+              type: IapPurchaseEventType.error,
+              message: error.toString(),
+            ),
+          );
+        },
+      );
+
+      final response = await _iap
+          .queryProductDetails(_productIds)
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw TimeoutException('IAPService.queryProductDetails'),
+          );
+      if (response.error != null) {
+      }
+      if (response.notFoundIDs.isNotEmpty) {
+      }
+
+      _products = response.productDetails;
+      _initSucceeded = _products.isNotEmpty;
+
+      await restorePurchases().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => throw TimeoutException('IAPService.restorePurchases'),
+      );
+    } on Object {
+      _initSucceeded = false;
+    } finally {
       _initialized = true;
-      return;
+      if (!_readyCompleter.isCompleted) {
+        _readyCompleter.complete();
+      }
     }
-
-    _purchaseSubscription ??= _iap.purchaseStream.listen(
-      _onPurchaseUpdate,
-      onError: (Object error, StackTrace stackTrace) {
-                _purchaseEventsController.add(
-          IapPurchaseEvent(
-            type: IapPurchaseEventType.error,
-            message: error.toString(),
-          ),
-        );
-      },
-    );
-
-    final response = await _iap.queryProductDetails(_productIds);
-    if (response.error != null) {
-          }
-    if (response.notFoundIDs.isNotEmpty) {
-          }
-
-    _products = response.productDetails;
-
-    _initialized = true;
-
-        await restorePurchases();
   }
 
   ProductDetails? findProduct(String productId) {

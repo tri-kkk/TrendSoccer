@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/services/admob_service.dart';
 
 class PremiumAdWrapper extends ConsumerStatefulWidget {
   const PremiumAdWrapper({required this.adUnitId, super.key});
@@ -16,15 +19,27 @@ class PremiumAdWrapper extends ConsumerStatefulWidget {
 class _PremiumAdWrapperState extends ConsumerState<PremiumAdWrapper> {
   BannerAd? _bannerAd;
   bool _isLoaded = false;
+  bool _loadScheduled = false;
 
   @override
   void initState() {
     super.initState();
-    _loadAd();
+    _scheduleAdLoad();
   }
 
-  void _loadAd() {
-        _bannerAd = BannerAd(
+  void _scheduleAdLoad() {
+    if (_loadScheduled) return;
+    _loadScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_loadAdWhenReady());
+    });
+  }
+
+  Future<void> _loadAdWhenReady() async {
+    await AdmobService.ready;
+    if (!mounted || !AdmobService.initSucceeded) return;
+
+    _bannerAd = BannerAd(
       adUnitId: widget.adUnitId,
       size: AdSize.banner,
       request: const AdRequest(),
