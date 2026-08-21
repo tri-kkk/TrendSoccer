@@ -20,6 +20,7 @@ import 'package:trendsoccer/core/providers/language_provider.dart';
 import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
 import 'package:trendsoccer/core/providers/theme_provider.dart';
 import 'package:trendsoccer/core/navigation/app_navigation.dart';
+import 'package:trendsoccer/design_system/tokens/ts_theme.dart';
 import 'package:trendsoccer/features_v2/router/app_router.dart';
 
 @pragma('vm:entry-point')
@@ -137,14 +138,8 @@ class _TrendSoccerAppState extends ConsumerState<TrendSoccerApp> {
       debugShowCheckedModeBanner: false,
       title: 'TrendSoccer',
       themeMode: themeMode,
-      theme: ThemeData(
-        colorSchemeSeed: const Color(0xFF00D26A),
-        brightness: Brightness.light,
-      ),
-      darkTheme: ThemeData(
-        colorSchemeSeed: const Color(0xFF00D26A),
-        brightness: Brightness.dark,
-      ),
+      theme: buildTsTheme(Brightness.light),
+      darkTheme: buildTsTheme(Brightness.dark),
       locale: Locale(language.name),
       localizationsDelegates: const [
         AppLocalizations.delegate,
