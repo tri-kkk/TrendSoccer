@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/models/premium_pick_stats.dart';
 import 'package:trendsoccer/core/models/sport_type.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
@@ -21,20 +22,6 @@ String _pickDirectionLabel(BuildContext context, String code) {
     'away' => l10n.pickDirectionAway,
     _ => code,
   };
-}
-
-class RecentWinData {
-  const RecentWinData({
-    required this.homeTeam,
-    required this.awayTeam,
-    required this.pickDirection,
-  });
-
-  final String homeTeam;
-  final String awayTeam;
-
-  /// `home`, `draw`, `away`, or display fallback.
-  final String pickDirection;
 }
 
 class PremiumPickCard extends StatefulWidget {

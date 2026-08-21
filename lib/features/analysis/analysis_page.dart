@@ -14,7 +14,7 @@ import 'package:trendsoccer/core/providers/language_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
-import 'package:trendsoccer/features/analysis/analysis_dummy_data.dart';
+import 'package:trendsoccer/core/models/league_filter_chips.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball_matches_section.dart';
 import 'package:trendsoccer/features/analysis/widgets/soccer_matches_section.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';

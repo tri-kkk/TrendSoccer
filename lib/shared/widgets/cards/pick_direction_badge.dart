@@ -5,8 +5,7 @@ import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_type.dart';
 import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/theme/tokens/ts_spacing.dart';
-
-enum PickDirection { home, draw, away }
+import 'package:trendsoccer/core/models/pick_direction.dart';
 
 class PickDirectionBadge extends StatelessWidget {
   const PickDirectionBadge({required this.pick, super.key});

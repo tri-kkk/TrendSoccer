@@ -8,7 +8,7 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/access_gate.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/shared/widgets/buttons/ts_button.dart';
-import 'package:trendsoccer/shared/widgets/cards/pick_direction_badge.dart';
+import 'package:trendsoccer/core/models/pick_direction.dart';
 import 'package:trendsoccer/shared/widgets/league/ts_league_icon.dart';
 
 class AnalysisCard extends StatelessWidget {

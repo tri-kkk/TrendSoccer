@@ -7,8 +7,8 @@ import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/services/soccer_service.dart';
 import 'package:trendsoccer/core/services/web_api_client.dart';
 import 'package:trendsoccer/core/theme/ts_assets.dart';
-import 'package:trendsoccer/features/analysis/analysis_dummy_data.dart';
-import 'package:trendsoccer/shared/widgets/cards/pick_direction_badge.dart';
+import 'package:trendsoccer/core/models/league_filter_chips.dart';
+import 'package:trendsoccer/core/models/pick_direction.dart';
 
 DateTime? _lastSoccerAnalysisEmptyCheck;
 const _soccerEmptyCheckInterval = Duration(minutes: 30);

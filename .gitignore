@@ -42,3 +42,8 @@ key.properties
 
 # Local release artifact archives (not committed)
 build_archive/
+# local scratch
+tmp_*.json
+verify_log.txt
+aab_check/
+aab_check.zip

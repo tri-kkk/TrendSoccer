@@ -11,6 +11,7 @@ import 'package:trendsoccer/core/theme/ts_semantic_colors.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/features/analysis/models/baseball_standard_parser.dart';
+import 'package:trendsoccer/features/analysis/models/match_header_from_baseball.dart';
 import 'package:trendsoccer/features/analysis/models/parser_labels.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/premium/baseball_premium_tab.dart';
 import 'package:trendsoccer/features/analysis/widgets/baseball/standard/baseball_standard_tab.dart';
@@ -55,7 +56,7 @@ class _BaseballMatchReportPageState
     final labels = ParserLabels.from(context.l10n);
     final locale = Localizations.localeOf(context).languageCode;
     final apiHeader = ref.watch(baseballMatchDetailProvider(matchId)).maybeWhen(
-          data: (raw) => MatchHeaderData.fromBaseballStandardParsed(
+          data: (raw) => matchHeaderFromBaseballStandard(
             parseBaseballStandardDetail(raw, labels: labels, locale: locale),
             matchId: matchId,
           ),

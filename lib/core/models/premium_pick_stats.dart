@@ -1,4 +1,16 @@
-import 'package:trendsoccer/shared/widgets/cards/premium_pick_card.dart';
+class RecentWinData {
+  const RecentWinData({
+    required this.homeTeam,
+    required this.awayTeam,
+    required this.pickDirection,
+  });
+
+  final String homeTeam;
+  final String awayTeam;
+
+  /// `home`, `draw`, `away`, or display fallback.
+  final String pickDirection;
+}
 
 /// Parsed display model for `/api/premium-picks/stats`.
 class PremiumPickStatsView {
