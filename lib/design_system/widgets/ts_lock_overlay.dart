@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
@@ -30,12 +32,16 @@ class TsLockOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: c.scrim,
-        borderRadius: TsRadius.md,
-      ),
-      padding: switch (size) {
+    return ClipRRect(
+      borderRadius: TsRadius.md,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+        child: Container(
+          decoration: BoxDecoration(
+            color: c.scrim,
+            borderRadius: TsRadius.md,
+          ),
+          padding: switch (size) {
         TsLockSize.normal => const EdgeInsets.symmetric(
             vertical: TsSpacing.xl,
             horizontal: TsSpacing.lg,
@@ -108,6 +114,8 @@ class TsLockOverlay extends StatelessWidget {
             ],
           ),
       },
+        ),
+      ),
     );
   }
 }
