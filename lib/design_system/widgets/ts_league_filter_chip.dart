@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
@@ -42,7 +44,7 @@ class TsLeagueFilterChip extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TsLeagueIcon(leagueId, size: TsSpacing.lg),
+                  TsLeagueIcon(leagueId, size: TsIconSize.xs),
                   const SizedBox(width: TsSpacing.xs),
                   Text(
                     label,

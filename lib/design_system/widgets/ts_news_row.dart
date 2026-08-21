@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
@@ -50,7 +52,7 @@ class TsNewsRow extends StatelessWidget {
                   child: thumbnail ??
                       TsIcon(
                         TsIcons.imageNotSupported,
-                        size: TsSpacing.xl,
+                        size: TsIconSize.md,
                         color: c.textTertiary,
                       ),
                 ),

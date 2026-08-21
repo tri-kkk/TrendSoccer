@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:trendsoccer/core/assets/ts_assets.dart';
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
 
 class TsLeagueIcon extends StatelessWidget {
-  const TsLeagueIcon(this.leagueId, {this.size = 16, super.key});
+  const TsLeagueIcon(this.leagueId, {this.size = TsIconSize.xs, super.key});
 
   final String leagueId;
   final double size;

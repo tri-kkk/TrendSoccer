@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
@@ -47,7 +49,7 @@ class TsEmptyState extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          TsIcon(icon, size: TsSpacing.xxxl, color: c.textTertiary),
+          TsIcon(icon, size: TsIconSize.lg, color: c.textTertiary),
           const SizedBox(height: TsSpacing.sm),
           Text(
             title,

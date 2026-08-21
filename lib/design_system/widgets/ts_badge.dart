@@ -11,11 +11,15 @@ class TsBadge extends StatelessWidget {
   const TsBadge({
     required this.label,
     this.tone = TsBadgeTone.neutral,
+    this.expand = false,
+    this.textAlign,
     super.key,
   });
 
   final String label;
   final TsBadgeTone tone;
+  final bool expand;
+  final TextAlign? textAlign;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +42,7 @@ class TsBadge extends StatelessWidget {
         labelColor = c.primary;
     }
 
-    return DecoratedBox(
+    final badge = DecoratedBox(
       decoration: BoxDecoration(
         color: background,
         borderRadius: TsRadius.xs,
@@ -51,8 +55,12 @@ class TsBadge extends StatelessWidget {
         child: Text(
           label,
           style: TsType.labelXsBold.copyWith(color: labelColor),
+          textAlign: textAlign,
         ),
       ),
     );
+
+    if (!expand) return badge;
+    return SizedBox(width: double.infinity, child: badge);
   }
 }

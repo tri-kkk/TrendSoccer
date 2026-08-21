@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
@@ -55,10 +57,10 @@ class TsMatchCard extends StatelessWidget {
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
     Widget emblem(String? id) => id != null
-        ? TsLeagueIcon(id, size: TsSpacing.xl)
+        ? TsLeagueIcon(id, size: TsIconSize.md)
         : TsIcon(
             TsIcons.imageNotSupported,
-            size: TsSpacing.xl,
+            size: TsIconSize.md,
             color: c.textTertiary,
           );
 
@@ -140,7 +142,7 @@ class TsMatchCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                TsLeagueIcon(leagueId, size: 20),
+                TsLeagueIcon(leagueId, size: TsIconSize.sm),
                 const SizedBox(width: TsSpacing.sm),
                 Expanded(
                   child: Text(

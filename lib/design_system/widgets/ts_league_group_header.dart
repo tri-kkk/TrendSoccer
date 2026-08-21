@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
@@ -34,7 +36,7 @@ class TsLeagueGroupHeader extends StatelessWidget {
       child: Row(
         children: [
           if (showIcon) ...[
-            TsLeagueIcon(leagueId, size: TsSpacing.xl),
+            TsLeagueIcon(leagueId, size: TsIconSize.md),
             const SizedBox(width: TsSpacing.sm),
           ],
           Expanded(
@@ -54,7 +56,7 @@ class TsLeagueGroupHeader extends StatelessWidget {
               onTap: onToggleCollapse,
               child: TsIcon(
                 collapsed! ? TsIcons.keyboardArrowDown : TsIcons.keyboardArrowUp,
-                size: 20,
+                size: TsIconSize.sm,
                 color: c.textPrimary,
               ),
             ),

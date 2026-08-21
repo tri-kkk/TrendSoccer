@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
@@ -19,6 +21,7 @@ class TsRecentPickCard extends StatelessWidget {
     required this.pickedTeam,
     required this.resultLabel,
     required this.resultTone,
+    this.leagueIcon,
     this.homeScore,
     this.awayScore,
     this.homeEmblemId,
@@ -35,6 +38,7 @@ class TsRecentPickCard extends StatelessWidget {
   final String pickedTeam;
   final String resultLabel;
   final TsBadgeTone resultTone;
+  final Widget? leagueIcon;
   final String? homeScore;
   final String? awayScore;
   final String? homeEmblemId;
@@ -46,10 +50,10 @@ class TsRecentPickCard extends StatelessWidget {
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
     Widget emblem(String? id) => id != null
-        ? TsLeagueIcon(id, size: TsSpacing.lg)
+        ? TsLeagueIcon(id, size: TsIconSize.xs)
         : TsIcon(
             TsIcons.imageNotSupported,
-            size: TsSpacing.lg,
+            size: TsIconSize.xs,
             color: c.textTertiary,
           );
 
@@ -95,7 +99,7 @@ class TsRecentPickCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                TsLeagueIcon(leagueId, size: TsSpacing.lg),
+                leagueIcon ?? TsLeagueIcon(leagueId, size: TsIconSize.xs),
                 const SizedBox(width: TsSpacing.xs),
                 Expanded(
                   child: Text(

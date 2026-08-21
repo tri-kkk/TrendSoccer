@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/icons/ts_logo.dart';
@@ -59,7 +61,7 @@ class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
                     onTap: onBack,
                     child: TsIcon(
                       TsIcons.arrowBack,
-                      size: TsSpacing.xl,
+                      size: TsIconSize.md,
                       color: c.textPrimary,
                     ),
                   ),
@@ -110,7 +112,7 @@ class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
                         onTap: onAvatarTap,
                         child: TsIcon(
                           TsIcons.accountCircle,
-                          size: TsSpacing.xl,
+                          size: TsIconSize.md,
                           color: c.textPrimary,
                         ),
                       ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icon_spec.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
@@ -37,7 +39,7 @@ class TsButton extends StatelessWidget {
         size == TsButtonSize.large ? TsSpacing.xxxl : TsSpacing.xxl;
     final horizontalPadding =
         size == TsButtonSize.large ? TsSpacing.lg : TsSpacing.md;
-    final iconSize = size == TsButtonSize.large ? 20.0 : TsSpacing.lg;
+    final iconSize = size == TsButtonSize.large ? TsIconSize.sm : TsIconSize.xs;
     final textStyle =
         size == TsButtonSize.large ? TsType.bodyLBold : TsType.bodyMBold;
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
@@ -86,7 +88,7 @@ class TsAnalysisCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                TsLeagueIcon(leagueId, size: TsSpacing.lg),
+                TsLeagueIcon(leagueId, size: TsIconSize.xs),
                 const SizedBox(width: TsSpacing.sm),
                 Expanded(
                   child: Text(

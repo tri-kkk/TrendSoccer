@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
@@ -7,8 +9,8 @@ import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
 
-class TsH2hMatchRow extends StatelessWidget {
-  const TsH2hMatchRow({
+class TsH2HMatchRow extends StatelessWidget {
+  const TsH2HMatchRow({
     required this.dateLabel,
     required this.homeTeam,
     required this.awayTeam,
@@ -30,10 +32,10 @@ class TsH2hMatchRow extends StatelessWidget {
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
     Widget emblem(String? id) => id != null
-        ? TsLeagueIcon(id, size: TsSpacing.lg)
+        ? TsLeagueIcon(id, size: TsIconSize.xs)
         : TsIcon(
             TsIcons.imageNotSupported,
-            size: TsSpacing.lg,
+            size: TsIconSize.xs,
             color: c.textTertiary,
           );
 

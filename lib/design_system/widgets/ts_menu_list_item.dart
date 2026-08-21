@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icon_spec.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
@@ -33,7 +35,7 @@ class TsMenuListItem extends StatelessWidget {
         child: Row(
           children: [
             if (icon != null) ...[
-              TsIcon(icon!, size: TsSpacing.xl, color: c.textSecondary),
+              TsIcon(icon!, size: TsIconSize.md, color: c.textSecondary),
               const SizedBox(width: TsSpacing.md),
             ],
             Expanded(
@@ -51,7 +53,7 @@ class TsMenuListItem extends StatelessWidget {
             else
               TsIcon(
                 TsIcons.chevronRight,
-                size: TsSpacing.xl,
+                size: TsIconSize.md,
                 color: c.textSecondary,
               ),
           ],

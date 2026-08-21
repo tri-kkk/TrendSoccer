@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
@@ -53,8 +55,8 @@ class TsComboMatchRow extends StatelessWidget {
         result == TsComboResult.inProgress ? c.error : c.textTertiary;
 
     Widget emblem(String? id) => id != null
-        ? TsLeagueIcon(id, size: 20)
-        : TsIcon(TsIcons.imageNotSupported, size: 20, color: c.textTertiary);
+        ? TsLeagueIcon(id, size: TsIconSize.sm)
+        : TsIcon(TsIcons.imageNotSupported, size: TsIconSize.sm, color: c.textTertiary);
 
     Widget teamRow({
       required String letter,

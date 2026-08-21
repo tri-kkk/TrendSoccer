@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
-import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 
 enum TsBannerRatio { h50, h160, h214 }
@@ -29,15 +30,15 @@ class TsBannerSlot extends StatelessWidget {
       case TsBannerRatio.h50:
         width = 320;
         height = 50;
-        iconSize = TsSpacing.xl;
+        iconSize = TsIconSize.md;
       case TsBannerRatio.h160:
         width = null;
         height = 160;
-        iconSize = TsSpacing.xxxl;
+        iconSize = TsIconSize.lg;
       case TsBannerRatio.h214:
         width = null;
         height = 214;
-        iconSize = TsSpacing.xxxl;
+        iconSize = TsIconSize.lg;
     }
 
     final banner = Container(

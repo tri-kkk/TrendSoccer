@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
@@ -39,7 +41,7 @@ class TsMatchHero extends StatelessWidget {
     Widget teamColumn(String? emblemId, String name) {
       return Column(
         children: [
-          emblem(emblemId, TsSpacing.xxxl),
+          emblem(emblemId, TsIconSize.lg),
           const SizedBox(height: TsSpacing.sm),
           Text(
             name,
@@ -64,7 +66,7 @@ class TsMatchHero extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Center(child: TsLeagueIcon(leagueId, size: TsSpacing.xl)),
+          Center(child: TsLeagueIcon(leagueId, size: TsIconSize.md)),
           const SizedBox(height: TsSpacing.lg),
           Row(
             children: [

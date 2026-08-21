@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
@@ -90,7 +92,7 @@ class _Segment extends StatelessWidget {
           children: [
             TsIcon(
               icon,
-              size: TsSpacing.lg,
+              size: TsIconSize.xs,
               color: selected ? c.onPrimary : c.primary,
             ),
             const SizedBox(width: TsSpacing.xs),

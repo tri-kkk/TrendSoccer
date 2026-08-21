@@ -2,6 +2,8 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
@@ -60,7 +62,7 @@ class TsLockOverlay extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              TsIcon(TsIcons.lock, size: TsSpacing.xl, color: c.onScrim),
+              TsIcon(TsIcons.lock, size: TsIconSize.md, color: c.onScrim),
               const SizedBox(height: TsSpacing.md),
               Text(
                 headline,
@@ -86,7 +88,7 @@ class TsLockOverlay extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              TsIcon(TsIcons.lock, size: TsSpacing.xl, color: c.onScrim),
+              TsIcon(TsIcons.lock, size: TsIconSize.md, color: c.onScrim),
               const SizedBox(height: TsSpacing.md),
               Text(
                 headline,
@@ -105,7 +107,7 @@ class TsLockOverlay extends StatelessWidget {
         TsLockSize.inline => Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TsIcon(TsIcons.lock, size: TsSpacing.lg, color: c.onScrim),
+              TsIcon(TsIcons.lock, size: TsIconSize.xs, color: c.onScrim),
               const SizedBox(width: TsSpacing.sm),
               Text(
                 headline,

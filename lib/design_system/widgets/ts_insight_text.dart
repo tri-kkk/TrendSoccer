@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icon_spec.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
@@ -47,7 +49,7 @@ class TsInsightText extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TsIcon(icon, size: 20, color: iconColor),
+          TsIcon(icon, size: TsIconSize.sm, color: iconColor),
           const SizedBox(width: TsSpacing.sm),
           Expanded(
             child: Text(

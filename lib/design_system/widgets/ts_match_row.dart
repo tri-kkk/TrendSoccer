@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
@@ -50,8 +52,8 @@ class TsMatchRow extends StatelessWidget {
         status == TsMatchRowStatus.live || status == TsMatchRowStatus.finished;
 
     Widget emblem(String? id) => id != null
-        ? TsLeagueIcon(id, size: 20)
-        : TsIcon(TsIcons.imageNotSupported, size: 20, color: c.textTertiary);
+        ? TsLeagueIcon(id, size: TsIconSize.sm)
+        : TsIcon(TsIcons.imageNotSupported, size: TsIconSize.sm, color: c.textTertiary);
 
     Widget teamRow({
       required String letter,
@@ -107,7 +109,7 @@ class TsMatchRow extends StatelessWidget {
         onTap: onAlarmTap,
         child: TsIcon(
           alarmOn! ? TsIcons.notifications : TsIcons.notificationsNone,
-          size: 20,
+          size: TsIconSize.sm,
           color: alarmOn! ? c.primary : c.textTertiary,
         ),
       );
