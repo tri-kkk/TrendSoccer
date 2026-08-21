@@ -6,7 +6,7 @@ import 'package:trendsoccer/core/models/soccer_models.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/services/soccer_service.dart';
 import 'package:trendsoccer/core/services/web_api_client.dart';
-import 'package:trendsoccer/core/theme/ts_assets.dart';
+import 'package:trendsoccer/core/assets/ts_assets.dart';
 import 'package:trendsoccer/core/models/league_filter_chips.dart';
 import 'package:trendsoccer/core/models/pick_direction.dart';
 
