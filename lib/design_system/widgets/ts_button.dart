@@ -20,15 +20,20 @@ class TsButton extends StatelessWidget {
     this.style = TsButtonStyle.primary,
     this.size = TsButtonSize.large,
     this.icon,
+    this.iconWidget,
     this.expand = false,
     super.key,
-  });
+  }) : assert(
+          icon == null || iconWidget == null,
+          'Pass either icon or iconWidget, not both',
+        );
 
   final String label;
   final VoidCallback? onPressed;
   final TsButtonStyle style;
   final TsButtonSize size;
   final TsIconSpec? icon;
+  final Widget? iconWidget;
   final bool expand;
 
   @override
@@ -89,7 +94,10 @@ class TsButton extends StatelessWidget {
                 mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (icon != null) ...[
+                  if (iconWidget != null) ...[
+                    iconWidget!,
+                    const SizedBox(width: TsSpacing.sm),
+                  ] else if (icon != null) ...[
                     TsIcon(icon!, size: iconSize, color: labelColor),
                     const SizedBox(width: TsSpacing.sm),
                   ],
