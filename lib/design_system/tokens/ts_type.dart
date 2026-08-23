@@ -19,7 +19,7 @@ abstract final class TsType {
     fontSize: 28,
     height: 34 / 28,
     fontWeight: FontWeight.w800,
-    letterSpacing: -0.72,
+    letterSpacing: -0.56,
   );
 
   static const TextStyle h1 = TextStyle(

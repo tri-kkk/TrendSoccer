@@ -18,9 +18,11 @@ abstract final class TsColors {
 
   static const Color neutral0 = Color(0xFFFFFFFF);
   static const Color neutral25 = Color(0xFFF6F7F9);
+  static const Color neutral35 = Color(0xFFF2F3F5);
   static const Color neutral50 = Color(0xFFEDEFF2);
   static const Color neutral100 = Color(0xFFDDE1E6);
   static const Color neutral200 = Color(0xFFD3D8DF);
+  static const Color neutral250 = Color(0xFFB4B8BF);
   static const Color neutral300 = Color(0xFFA8AEB8);
   static const Color neutral400 = Color(0xFF8A919C);
   static const Color neutral500 = Color(0xFF6B7280);
@@ -30,10 +32,8 @@ abstract final class TsColors {
   static const Color neutral800 = Color(0xFF26282C);
   static const Color neutral850 = Color(0xFF202226);
   static const Color neutral900 = Color(0xFF1A1B1E);
+  static const Color neutral925 = Color(0xFF16181C);
   static const Color neutral950 = Color(0xFF0E0F10);
-  static const Color neutralInk = Color(0xFF16181C);
-  static const Color neutralLight = Color(0xFFB4B8BF);
-  static const Color neutralLighter = Color(0xFFF2F3F5);
 
   static const Color cyan400 = Color(0xFF22D3EE);
   static const Color cyan700 = Color(0xFF0E7490);
