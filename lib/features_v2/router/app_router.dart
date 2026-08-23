@@ -76,7 +76,12 @@ final GoRouter appRouter = GoRouter(
     _r('/menu/subscribe', 'subscribe', const SubscribeScreen()),
     _r('/menu/payment/success', 'paymentSuccess', const PaymentSuccessScreen()),
     _r('/menu/payment/failed', 'paymentFailed', const PaymentFailedScreen()),
-    _r('/force-update', 'forceUpdate', const ForceUpdateScreen()),
+    GoRoute(
+      path: '/force-update',
+      name: 'forceUpdate',
+      builder: (_, s) =>
+          ForceUpdateScreen(args: s.extra as ForceUpdateArgs?),
+    ),
     _r('/billing-loading', 'billingLoading', const BillingLoadingScreen()),
     StatefulShellRoute.indexedStack(
       builder: (context, state, shell) => MainShell(navigationShell: shell),
