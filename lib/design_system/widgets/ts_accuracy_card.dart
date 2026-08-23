@@ -349,7 +349,6 @@ class _RecentPickCard extends StatelessWidget {
     };
 
     return TsRecentPickCard(
-      leagueId: '',
       leagueIcon: pick.leagueIcon,
       leagueLabel: pick.leagueLabel,
       dateLabel: pick.dateLabel,

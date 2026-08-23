@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
 
 import 'package:trendsoccer/design_system/widgets/ts_team_emblem.dart';
-import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
@@ -12,7 +11,7 @@ import 'package:trendsoccer/design_system/widgets/ts_badge.dart';
 
 class TsRecentPickCard extends StatelessWidget {
   const TsRecentPickCard({
-    required this.leagueId,
+    required this.leagueIcon,
     required this.leagueLabel,
     required this.dateLabel,
     required this.homeTeam,
@@ -20,7 +19,6 @@ class TsRecentPickCard extends StatelessWidget {
     required this.pickedTeam,
     required this.resultLabel,
     required this.resultTone,
-    this.leagueIcon,
     this.homeScore,
     this.awayScore,
     this.homeEmblemUrl,
@@ -29,7 +27,7 @@ class TsRecentPickCard extends StatelessWidget {
     super.key,
   });
 
-  final String leagueId;
+  final Widget leagueIcon;
   final String leagueLabel;
   final String dateLabel;
   final String homeTeam;
@@ -37,7 +35,6 @@ class TsRecentPickCard extends StatelessWidget {
   final String pickedTeam;
   final String resultLabel;
   final TsBadgeTone resultTone;
-  final Widget? leagueIcon;
   final String? homeScore;
   final String? awayScore;
   final String? homeEmblemUrl;
@@ -90,7 +87,7 @@ class TsRecentPickCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                leagueIcon ?? TsLeagueIcon(leagueId, size: TsIconSize.xs),
+                leagueIcon,
                 const SizedBox(width: TsSpacing.xs),
                 Expanded(
                   child: Text(
