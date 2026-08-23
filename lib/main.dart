@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
@@ -73,6 +74,11 @@ void _schedulePostFrameDeferredInits(IAPService iapService) {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   await dotenv.load(fileName: '.env');
 
@@ -152,6 +158,8 @@ class _TrendSoccerAppState extends ConsumerState<TrendSoccerApp> {
         Locale('en'),
       ],
       routerConfig: appRouter,
+      builder: (context, child) =>
+          MediaQuery.withNoTextScaling(child: child!),
     );
   }
 }
