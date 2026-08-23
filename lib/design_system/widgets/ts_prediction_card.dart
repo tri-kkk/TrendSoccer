@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
 
-import 'package:trendsoccer/design_system/icons/ts_icon.dart';
-import 'package:trendsoccer/design_system/icons/ts_icons.dart';
-import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
+import 'package:trendsoccer/design_system/widgets/ts_team_emblem.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
@@ -16,7 +14,7 @@ class TsPredictionCard extends StatelessWidget {
   const TsPredictionCard({
     required this.pickTeam,
     required this.probabilityLabel,
-    this.pickEmblemId,
+    this.pickEmblemUrl,
     this.resultLabel,
     this.resultTone = TsBadgeTone.positive,
     this.homeFraction,
@@ -30,7 +28,7 @@ class TsPredictionCard extends StatelessWidget {
 
   final String pickTeam;
   final String probabilityLabel;
-  final String? pickEmblemId;
+  final String? pickEmblemUrl;
   final String? resultLabel;
   final TsBadgeTone resultTone;
   final double? homeFraction;
@@ -44,13 +42,7 @@ class TsPredictionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
-    final emblem = pickEmblemId != null
-        ? TsLeagueIcon(pickEmblemId!, size: TsIconSize.md)
-        : TsIcon(
-            TsIcons.imageNotSupported,
-            size: TsIconSize.md,
-            color: c.textTertiary,
-          );
+    final emblem = TsTeamEmblem(pickEmblemUrl, size: TsIconSize.md);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

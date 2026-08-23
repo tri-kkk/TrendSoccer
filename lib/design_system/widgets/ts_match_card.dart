@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
 
-import 'package:trendsoccer/design_system/icons/ts_icon.dart';
-import 'package:trendsoccer/design_system/icons/ts_icons.dart';
+import 'package:trendsoccer/design_system/widgets/ts_team_emblem.dart';
 import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
@@ -22,8 +21,8 @@ class TsMatchCard extends StatelessWidget {
     required this.homeTeam,
     required this.awayTeam,
     this.density = TsMatchCardDensity.card,
-    this.homeEmblemId,
-    this.awayEmblemId,
+    this.homeEmblemUrl,
+    this.awayEmblemUrl,
     this.hasAnalysis = false,
     this.analysisLabel = 'AI ANALYSIS',
     this.pickLabel,
@@ -41,8 +40,8 @@ class TsMatchCard extends StatelessWidget {
   final String homeTeam;
   final String awayTeam;
   final TsMatchCardDensity density;
-  final String? homeEmblemId;
-  final String? awayEmblemId;
+  final String? homeEmblemUrl;
+  final String? awayEmblemUrl;
   final bool hasAnalysis;
   final String analysisLabel;
   final String? pickLabel;
@@ -56,20 +55,12 @@ class TsMatchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
-    Widget emblem(String? id) => id != null
-        ? TsLeagueIcon(id, size: TsIconSize.md)
-        : TsIcon(
-            TsIcons.imageNotSupported,
-            size: TsIconSize.md,
-            color: c.textTertiary,
-          );
-
-    Widget teamRow(String? emblemId, String name) {
+    Widget teamRow(String? emblemUrl, String name) {
       return SizedBox(
         height: TsSpacing.xl,
         child: Row(
           children: [
-            emblem(emblemId),
+            TsTeamEmblem(emblemUrl, size: TsIconSize.md),
             const SizedBox(width: TsSpacing.sm),
             Expanded(
               child: Text(
@@ -165,9 +156,9 @@ class TsMatchCard extends StatelessWidget {
             const SizedBox(height: TsSpacing.md),
             Column(
               children: [
-                teamRow(homeEmblemId, homeTeam),
+                teamRow(homeEmblemUrl, homeTeam),
                 const SizedBox(height: TsSpacing.xs),
-                teamRow(awayEmblemId, awayTeam),
+                teamRow(awayEmblemUrl, awayTeam),
               ],
             ),
             if (prediction != null) ...[

@@ -4,7 +4,7 @@ import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
 
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
-import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
+import 'package:trendsoccer/design_system/widgets/ts_team_emblem.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
@@ -21,8 +21,8 @@ class TsMatchRow extends StatelessWidget {
     this.status = TsMatchRowStatus.scheduled,
     this.homeScore,
     this.awayScore,
-    this.homeEmblemId,
-    this.awayEmblemId,
+    this.homeEmblemUrl,
+    this.awayEmblemUrl,
     this.hasAnalysis = false,
     this.analysisLabel = 'AI',
     this.alarmOn,
@@ -37,8 +37,8 @@ class TsMatchRow extends StatelessWidget {
   final TsMatchRowStatus status;
   final String? homeScore;
   final String? awayScore;
-  final String? homeEmblemId;
-  final String? awayEmblemId;
+  final String? homeEmblemUrl;
+  final String? awayEmblemUrl;
   final bool hasAnalysis;
   final String analysisLabel;
   final bool? alarmOn;
@@ -51,13 +51,9 @@ class TsMatchRow extends StatelessWidget {
     final showScores =
         status == TsMatchRowStatus.live || status == TsMatchRowStatus.finished;
 
-    Widget emblem(String? id) => id != null
-        ? TsLeagueIcon(id, size: TsIconSize.sm)
-        : TsIcon(TsIcons.imageNotSupported, size: TsIconSize.sm, color: c.textTertiary);
-
     Widget teamRow({
       required String letter,
-      required String? emblemId,
+      required String? emblemUrl,
       required String name,
       required String? score,
     }) {
@@ -74,7 +70,7 @@ class TsMatchRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: TsSpacing.sm),
-            emblem(emblemId),
+            TsTeamEmblem(emblemUrl, size: TsIconSize.sm),
             const SizedBox(width: TsSpacing.sm),
             Expanded(
               child: Text(
@@ -145,14 +141,14 @@ class TsMatchRow extends StatelessWidget {
                   children: [
                     teamRow(
                       letter: 'H',
-                      emblemId: homeEmblemId,
+                      emblemUrl: homeEmblemUrl,
                       name: homeTeam,
                       score: homeScore,
                     ),
                     const SizedBox(height: TsSpacing.xs),
                     teamRow(
                       letter: 'A',
-                      emblemId: awayEmblemId,
+                      emblemUrl: awayEmblemUrl,
                       name: awayTeam,
                       score: awayScore,
                     ),

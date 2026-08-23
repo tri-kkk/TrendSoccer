@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
 
-import 'package:trendsoccer/design_system/icons/ts_icon.dart';
-import 'package:trendsoccer/design_system/icons/ts_icons.dart';
-import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
+import 'package:trendsoccer/design_system/widgets/ts_team_emblem.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
@@ -21,8 +19,8 @@ class TsComboMatchRow extends StatelessWidget {
     this.resultLabel,
     this.homeScore,
     this.awayScore,
-    this.homeEmblemId,
-    this.awayEmblemId,
+    this.homeEmblemUrl,
+    this.awayEmblemUrl,
     super.key,
   });
 
@@ -33,8 +31,8 @@ class TsComboMatchRow extends StatelessWidget {
   final String? resultLabel;
   final String? homeScore;
   final String? awayScore;
-  final String? homeEmblemId;
-  final String? awayEmblemId;
+  final String? homeEmblemUrl;
+  final String? awayEmblemUrl;
 
   String get _defaultResultLabel => switch (result) {
         TsComboResult.inProgress => 'In progress',
@@ -54,13 +52,9 @@ class TsComboMatchRow extends StatelessWidget {
     final timeColor =
         result == TsComboResult.inProgress ? c.error : c.textTertiary;
 
-    Widget emblem(String? id) => id != null
-        ? TsLeagueIcon(id, size: TsIconSize.sm)
-        : TsIcon(TsIcons.imageNotSupported, size: TsIconSize.sm, color: c.textTertiary);
-
     Widget teamRow({
       required String letter,
-      required String? emblemId,
+      required String? emblemUrl,
       required String name,
       required String? score,
     }) {
@@ -77,7 +71,7 @@ class TsComboMatchRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: TsSpacing.sm),
-            emblem(emblemId),
+            TsTeamEmblem(emblemUrl, size: TsIconSize.sm),
             const SizedBox(width: TsSpacing.sm),
             Expanded(
               child: Text(
@@ -126,14 +120,14 @@ class TsComboMatchRow extends StatelessWidget {
           children: [
             teamRow(
               letter: 'H',
-              emblemId: homeEmblemId,
+              emblemUrl: homeEmblemUrl,
               name: homeTeam,
               score: homeScore,
             ),
             const SizedBox(height: TsSpacing.xs),
             teamRow(
               letter: 'A',
-              emblemId: awayEmblemId,
+              emblemUrl: awayEmblemUrl,
               name: awayTeam,
               score: awayScore,
             ),

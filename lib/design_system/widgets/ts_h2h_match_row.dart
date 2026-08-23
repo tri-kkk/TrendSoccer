@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
 
-import 'package:trendsoccer/design_system/icons/ts_icon.dart';
-import 'package:trendsoccer/design_system/icons/ts_icons.dart';
-import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
+import 'package:trendsoccer/design_system/widgets/ts_team_emblem.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
@@ -15,8 +13,8 @@ class TsH2HMatchRow extends StatelessWidget {
     required this.homeTeam,
     required this.awayTeam,
     required this.scoreLabel,
-    this.homeEmblemId,
-    this.awayEmblemId,
+    this.homeEmblemUrl,
+    this.awayEmblemUrl,
     super.key,
   });
 
@@ -24,20 +22,12 @@ class TsH2HMatchRow extends StatelessWidget {
   final String homeTeam;
   final String awayTeam;
   final String scoreLabel;
-  final String? homeEmblemId;
-  final String? awayEmblemId;
+  final String? homeEmblemUrl;
+  final String? awayEmblemUrl;
 
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
-
-    Widget emblem(String? id) => id != null
-        ? TsLeagueIcon(id, size: TsIconSize.xs)
-        : TsIcon(
-            TsIcons.imageNotSupported,
-            size: TsIconSize.xs,
-            color: c.textTertiary,
-          );
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
@@ -67,7 +57,7 @@ class TsH2HMatchRow extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: TsSpacing.xs),
-                    emblem(homeEmblemId),
+                    TsTeamEmblem(homeEmblemUrl, size: TsIconSize.xs),
                   ],
                 ),
               ),
@@ -85,7 +75,7 @@ class TsH2HMatchRow extends StatelessWidget {
               Expanded(
                 child: Row(
                   children: [
-                    emblem(awayEmblemId),
+                    TsTeamEmblem(awayEmblemUrl, size: TsIconSize.xs),
                     const SizedBox(width: TsSpacing.xs),
                     Expanded(
                       child: Text(

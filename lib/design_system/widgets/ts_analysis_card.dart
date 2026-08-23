@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
 
-import 'package:trendsoccer/design_system/icons/ts_icon.dart';
-import 'package:trendsoccer/design_system/icons/ts_icons.dart';
+import 'package:trendsoccer/design_system/widgets/ts_team_emblem.dart';
 import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
@@ -20,8 +19,8 @@ class TsAnalysisCard extends StatelessWidget {
     required this.homeTeam,
     required this.awayTeam,
     this.status = TsAnalysisStatus.scheduled,
-    this.homeEmblemId,
-    this.awayEmblemId,
+    this.homeEmblemUrl,
+    this.awayEmblemUrl,
     this.centerLabel,
     this.subLabel,
     this.onTap,
@@ -33,8 +32,8 @@ class TsAnalysisCard extends StatelessWidget {
   final String homeTeam;
   final String awayTeam;
   final TsAnalysisStatus status;
-  final String? homeEmblemId;
-  final String? awayEmblemId;
+  final String? homeEmblemUrl;
+  final String? awayEmblemUrl;
   final String? centerLabel;
   final String? subLabel;
   final VoidCallback? onTap;
@@ -43,14 +42,10 @@ class TsAnalysisCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
-    Widget emblem(String? id, double size) => id != null
-        ? TsLeagueIcon(id, size: size)
-        : TsIcon(TsIcons.imageNotSupported, size: size, color: c.textTertiary);
-
-    Widget teamColumn(String? emblemId, String name) {
+    Widget teamColumn(String? emblemUrl, String name) {
       return Column(
         children: [
-          emblem(emblemId, 32),
+          TsTeamEmblem(emblemUrl, size: 32),
           const SizedBox(height: TsSpacing.xs),
           Text(
             name,
@@ -107,7 +102,7 @@ class TsAnalysisCard extends StatelessWidget {
             const SizedBox(height: TsSpacing.md),
             Row(
               children: [
-                Expanded(child: teamColumn(homeEmblemId, homeTeam)),
+                Expanded(child: teamColumn(homeEmblemUrl, homeTeam)),
                 const SizedBox(width: TsSpacing.sm),
                 Column(
                   children: [
@@ -123,7 +118,7 @@ class TsAnalysisCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(width: TsSpacing.sm),
-                Expanded(child: teamColumn(awayEmblemId, awayTeam)),
+                Expanded(child: teamColumn(awayEmblemUrl, awayTeam)),
               ],
             ),
           ],

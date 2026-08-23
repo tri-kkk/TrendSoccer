@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:trendsoccer/design_system/icons/ts_icon.dart';
-import 'package:trendsoccer/design_system/icons/ts_icons.dart';
-import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
+import 'package:trendsoccer/design_system/widgets/ts_team_emblem.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
@@ -24,8 +22,8 @@ class TsComboLegRow extends StatelessWidget {
     this.timeLabel,
     this.scoreLabel,
     this.reason,
-    this.homeEmblemId,
-    this.awayEmblemId,
+    this.homeEmblemUrl,
+    this.awayEmblemUrl,
     this.analysisCaption = 'Analysis',
     this.indexCaption = 'Index',
     super.key,
@@ -42,8 +40,8 @@ class TsComboLegRow extends StatelessWidget {
   final String? timeLabel;
   final String? scoreLabel;
   final String? reason;
-  final String? homeEmblemId;
-  final String? awayEmblemId;
+  final String? homeEmblemUrl;
+  final String? awayEmblemUrl;
   final String analysisCaption;
   final String indexCaption;
 
@@ -51,14 +49,10 @@ class TsComboLegRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
-    Widget emblem(String? id) => id != null
-        ? TsLeagueIcon(id, size: 40)
-        : TsIcon(TsIcons.imageNotSupported, size: 40, color: c.textTertiary);
-
-    Widget teamColumn(String? emblemId, String name, bool picked) {
+    Widget teamColumn(String? emblemUrl, String name, bool picked) {
       return Column(
         children: [
-          emblem(emblemId),
+          TsTeamEmblem(emblemUrl, size: 40),
           const SizedBox(height: TsSpacing.xs),
           Text(
             name,
@@ -80,7 +74,7 @@ class TsComboLegRow extends StatelessWidget {
           children: [
             Expanded(
               child: teamColumn(
-                homeEmblemId,
+                homeEmblemUrl,
                 homeTeam,
                 pick == TsComboPick.home,
               ),
@@ -109,7 +103,7 @@ class TsComboLegRow extends StatelessWidget {
             const SizedBox(width: TsSpacing.md),
             Expanded(
               child: teamColumn(
-                awayEmblemId,
+                awayEmblemUrl,
                 awayTeam,
                 pick == TsComboPick.away,
               ),

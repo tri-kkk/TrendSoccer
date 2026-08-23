@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
 
-import 'package:trendsoccer/design_system/icons/ts_icon.dart';
-import 'package:trendsoccer/design_system/icons/ts_icons.dart';
+import 'package:trendsoccer/design_system/widgets/ts_team_emblem.dart';
 import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
@@ -24,8 +23,8 @@ class TsRecentPickCard extends StatelessWidget {
     this.leagueIcon,
     this.homeScore,
     this.awayScore,
-    this.homeEmblemId,
-    this.awayEmblemId,
+    this.homeEmblemUrl,
+    this.awayEmblemUrl,
     this.onTap,
     super.key,
   });
@@ -41,28 +40,20 @@ class TsRecentPickCard extends StatelessWidget {
   final Widget? leagueIcon;
   final String? homeScore;
   final String? awayScore;
-  final String? homeEmblemId;
-  final String? awayEmblemId;
+  final String? homeEmblemUrl;
+  final String? awayEmblemUrl;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
-    Widget emblem(String? id) => id != null
-        ? TsLeagueIcon(id, size: TsIconSize.xs)
-        : TsIcon(
-            TsIcons.imageNotSupported,
-            size: TsIconSize.xs,
-            color: c.textTertiary,
-          );
-
-    Widget teamRow(String? emblemId, String name, String? score) {
+    Widget teamRow(String? emblemUrl, String name, String? score) {
       return SizedBox(
         height: 18,
         child: Row(
           children: [
-            emblem(emblemId),
+            TsTeamEmblem(emblemUrl, size: TsIconSize.xs),
             const SizedBox(width: TsSpacing.xs),
             Expanded(
               child: Text(
@@ -118,9 +109,9 @@ class TsRecentPickCard extends StatelessWidget {
             const SizedBox(height: TsSpacing.sm),
             Column(
               children: [
-                teamRow(homeEmblemId, homeTeam, homeScore),
+                teamRow(homeEmblemUrl, homeTeam, homeScore),
                 const SizedBox(height: TsSpacing.xs),
-                teamRow(awayEmblemId, awayTeam, awayScore),
+                teamRow(awayEmblemUrl, awayTeam, awayScore),
               ],
             ),
             const SizedBox(height: TsSpacing.sm),
