@@ -11,6 +11,18 @@ class MenuScreen extends StatelessWidget {
             spacing: 8,
             children: [
               const Text('MenuScreen'),
+              FilledButton(
+                onPressed: () => context.go('/login'),
+                child: const Text('/login'),
+              ),
+              FilledButton(
+                onPressed: () => context.go('/signup/terms'),
+                child: const Text('/signup/terms'),
+              ),
+              FilledButton(
+                onPressed: () => context.go('/signup/complete'),
+                child: const Text('/signup/complete'),
+              ),
               FilledButton(onPressed: () => context.go('/menu/notification-settings'), child: const Text('notification-settings')),
               FilledButton(onPressed: () => context.go('/menu/privacy'), child: const Text('privacy')),
               FilledButton(onPressed: () => context.go('/menu/terms'), child: const Text('terms')),

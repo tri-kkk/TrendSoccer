@@ -105,7 +105,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
     return Scaffold(
-      backgroundColor: c.canvas,
+      backgroundColor: c.surfaceRaised,
       body: SafeArea(
         child: Stack(
           children: [
@@ -116,7 +116,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               left: 0,
               right: 0,
               bottom: 157,
-              child: Center(child: _LoadingDots(color: c.surfaceRaised)),
+              child: Center(child: _LoadingDots(color: c.primary)),
             ),
           ],
         ),

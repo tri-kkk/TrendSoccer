@@ -22,5 +22,11 @@ ThemeData buildTsTheme(Brightness brightness) {
       surface: colors.surface,
       onSurface: colors.textPrimary,
     ),
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      },
+    ),
   );
 }

@@ -38,6 +38,7 @@ class _SignupTermsScreenState extends ConsumerState<SignupTermsScreen> {
       builder: (dialogContext) => Dialog(
         backgroundColor: Colors.transparent,
         child: TsConfirmDialog(
+          type: TsDialogType.destructive,
           title: 'Leave sign-up?',
           message:
               'Your account will not be activated until you agree to the terms.',

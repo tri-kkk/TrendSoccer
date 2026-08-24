@@ -18,7 +18,8 @@ class TsIcon extends StatelessWidget {
         Theme.of(context).extension<TsThemeColors>()!.textPrimary;
 
     return switch (spec) {
-      TsGlyph(:final icon) => Icon(icon, size: size, color: resolved),
+      TsGlyph(:final icon, :final fill) =>
+        Icon(icon, size: size, color: resolved, fill: fill),
       TsAssetIcon(:final path) => SvgPicture.asset(
           path,
           width: size,

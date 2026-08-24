@@ -19,7 +19,7 @@ abstract final class TsIcons {
   static const TsIconSpec privacyTip = TsGlyph(Symbols.privacy_tip);
   static const TsIconSpec help = TsGlyph(Symbols.help);
   static const TsIconSpec versionInfo = TsGlyph(Symbols.system_update);
-  static const TsIconSpec checkBox = TsGlyph(Symbols.check_box);
+  static const TsIconSpec checkBox = TsGlyph(Symbols.check_box, fill: 1);
   static const TsIconSpec indeterminateCheckBox =
       TsGlyph(Symbols.indeterminate_check_box);
   static const TsIconSpec checkBoxOutlineBlank =
@@ -28,7 +28,7 @@ abstract final class TsIcons {
       TsGlyph(Symbols.radio_button_checked);
   static const TsIconSpec radioButtonUnchecked =
       TsGlyph(Symbols.radio_button_unchecked);
-  static const TsIconSpec celebration = TsGlyph(Symbols.celebration);
+  static const TsIconSpec celebration = TsGlyph(Symbols.celebration, fill: 1);
   static const TsIconSpec rocketLaunch = TsGlyph(Symbols.rocket_launch);
   static const TsIconSpec warning = TsGlyph(Symbols.warning);
   static const TsIconSpec hourglassEmpty = TsGlyph(Symbols.hourglass_empty);

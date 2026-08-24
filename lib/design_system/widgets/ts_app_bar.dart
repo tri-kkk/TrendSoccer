@@ -42,9 +42,11 @@ class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return Material(
       color: c.canvas,
-      child: SizedBox(
-        height: 56,
-        child: switch (type) {
+      child: SafeArea(
+        bottom: false,
+        child: SizedBox(
+          height: 56,
+          child: switch (type) {
           TsAppBarType.title => Padding(
               padding: const EdgeInsets.all(TsSpacing.lg),
               child: Text(
@@ -122,6 +124,7 @@ class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             ),
         },
+        ),
       ),
     );
   }

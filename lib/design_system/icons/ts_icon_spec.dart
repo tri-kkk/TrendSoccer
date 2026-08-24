@@ -5,9 +5,10 @@ sealed class TsIconSpec {
 }
 
 final class TsGlyph extends TsIconSpec {
-  const TsGlyph(this.icon);
+  const TsGlyph(this.icon, {this.fill = 0});
 
   final IconData icon;
+  final double fill;
 }
 
 final class TsAssetIcon extends TsIconSpec {
