@@ -19,6 +19,7 @@ import 'package:trendsoccer/design_system/widgets/ts_menu_list_item.dart';
 import 'package:trendsoccer/design_system/widgets/ts_plan_ticket.dart';
 import 'package:trendsoccer/design_system/widgets/ts_profile_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_toast.dart';
+import 'package:trendsoccer/features_v2/menu/settings_sheets.dart';
 
 class MenuScreen extends ConsumerStatefulWidget {
   const MenuScreen({super.key});
@@ -225,13 +226,13 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                     label: 'Language',
                     icon: TsIcons.language,
                     value: _languageLabel(language),
-                    // TODO(11 Overlay): open sheet
+                    onTap: () => showLanguageSheet(context),
                   ),
                   TsMenuListItem(
                     label: 'Theme',
                     icon: TsIcons.theme,
                     value: _themeLabel(themeMode),
-                    // TODO(11 Overlay): open sheet
+                    onTap: () => showThemeSheet(context),
                   ),
                 ],
               ),
@@ -296,13 +297,13 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                     label: 'Language',
                     icon: TsIcons.language,
                     value: _languageLabel(language),
-                    // TODO(11 Overlay): open sheet
+                    onTap: () => showLanguageSheet(context),
                   ),
                   TsMenuListItem(
                     label: 'Theme',
                     icon: TsIcons.theme,
                     value: _themeLabel(themeMode),
-                    // TODO(11 Overlay): open sheet
+                    onTap: () => showThemeSheet(context),
                   ),
                 ],
               ),
