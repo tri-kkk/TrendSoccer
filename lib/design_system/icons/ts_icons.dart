@@ -19,22 +19,23 @@ abstract final class TsIcons {
   static const TsIconSpec privacyTip = TsGlyph(Symbols.privacy_tip);
   static const TsIconSpec help = TsGlyph(Symbols.help);
   static const TsIconSpec versionInfo = TsGlyph(Symbols.system_update);
-  static const TsIconSpec checkBox = TsGlyph(Symbols.check_box, fill: 1);
+  static const TsIconSpec checkBox = TsGlyph(Symbols.check_box);
   static const TsIconSpec indeterminateCheckBox =
       TsGlyph(Symbols.indeterminate_check_box);
   static const TsIconSpec checkBoxOutlineBlank =
-      TsGlyph(Symbols.check_box_outline_blank);
+      TsGlyph(Symbols.check_box_outline_blank, fill: 0);
   static const TsIconSpec radioButtonChecked =
       TsGlyph(Symbols.radio_button_checked);
   static const TsIconSpec radioButtonUnchecked =
-      TsGlyph(Symbols.radio_button_unchecked);
-  static const TsIconSpec celebration = TsGlyph(Symbols.celebration, fill: 1);
+      TsGlyph(Symbols.radio_button_unchecked, fill: 0);
+  static const TsIconSpec celebration = TsGlyph(Symbols.celebration);
   static const TsIconSpec rocketLaunch = TsGlyph(Symbols.rocket_launch);
   static const TsIconSpec warning = TsGlyph(Symbols.warning);
   static const TsIconSpec hourglassEmpty = TsGlyph(Symbols.hourglass_empty);
   static const TsIconSpec verified = TsGlyph(Symbols.verified);
   static const TsIconSpec check = TsGlyph(Symbols.check);
-  static const TsIconSpec checkCircleOutline = TsGlyph(Symbols.check_circle);
+  static const TsIconSpec checkCircleOutline =
+      TsGlyph(Symbols.check_circle, fill: 0);
   static const TsIconSpec arrowForwardIos = TsGlyph(Symbols.arrow_forward_ios);
   static const TsIconSpec keyboardArrowUp = TsGlyph(Symbols.keyboard_arrow_up);
   static const TsIconSpec keyboardArrowDown =
@@ -52,7 +53,7 @@ abstract final class TsIcons {
   static const TsIconSpec trendingUp = TsGlyph(Symbols.trending_up);
   static const TsIconSpec videocamOff = TsGlyph(Symbols.videocam_off);
   static const TsIconSpec imageNotSupported =
-      TsGlyph(Symbols.image_not_supported);
+      TsGlyph(Symbols.image_not_supported, fill: 0);
   static const TsIconSpec playCircle = TsGlyph(Symbols.play_circle);
   static const TsIconSpec homeFilled = TsGlyph(Symbols.home);
   static const TsIconSpec groups = TsGlyph(Symbols.groups);

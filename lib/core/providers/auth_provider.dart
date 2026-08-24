@@ -653,6 +653,9 @@ class SupabaseAuthProvider extends ChangeNotifier {
         return;
       }
 
+      // TODO(diagnostic): remove once subscription state is verified
+      debugPrint('[me] subscription=${user['subscription']}');
+
       _applyMeUserJson(user);
       try {
         await FCMService().registerDevice();

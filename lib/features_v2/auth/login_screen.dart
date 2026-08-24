@@ -49,8 +49,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
       context.go('/home');
     } on AuthLoginException catch (e) {
-      if (e.reason == 'cancelled') return;
       debugPrint('[login] AuthLoginException reason=${e.reason} cause=${e.cause}');
+      if (e.reason == 'cancelled') return;
       if (!mounted) return;
       final causeText = e.cause?.toString() ?? '';
       if (causeText.contains('COOLDOWN_ACTIVE')) {

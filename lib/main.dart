@@ -125,13 +125,46 @@ class TrendSoccerApp extends ConsumerStatefulWidget {
   ConsumerState<TrendSoccerApp> createState() => _TrendSoccerAppState();
 }
 
-class _TrendSoccerAppState extends ConsumerState<TrendSoccerApp> {
+class _TrendSoccerAppState extends ConsumerState<TrendSoccerApp>
+    with WidgetsBindingObserver {
+  DateTime? _lastProfileRefresh;
+  static const _minRefreshInterval = Duration(seconds: 60);
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FCMService().handleInitialMessage();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    _refreshProfileIfStale();
+  }
+
+  Future<void> _refreshProfileIfStale() async {
+    final auth = ref.read(authProvider);
+    if (!auth.isLoggedIn) return;
+
+    final now = DateTime.now();
+    final last = _lastProfileRefresh;
+    if (last != null && now.difference(last) < _minRefreshInterval) return;
+    _lastProfileRefresh = now;
+
+    try {
+      await auth.loadProfile();
+    } on Object catch (e) {
+      debugPrint('[resume] profile refresh failed: $e');
+    }
   }
 
   @override
