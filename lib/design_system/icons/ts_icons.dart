@@ -43,6 +43,8 @@ abstract final class TsIcons {
   static const TsIconSpec lock = TsGlyph(Symbols.lock);
   static const TsIconSpec phoneAndroid = TsGlyph(Symbols.phone_android);
   static const TsIconSpec chevronRight = TsGlyph(Symbols.chevron_right);
+  static const TsIconSpec logout = TsGlyph(Symbols.logout);
+  static const TsIconSpec delete = TsGlyph(Symbols.delete);
   static const TsIconSpec mailOutline = TsGlyph(Symbols.mail);
   static const TsIconSpec feedback = TsGlyph(Symbols.feedback);
   static const TsIconSpec analytics = TsGlyph(Symbols.analytics);

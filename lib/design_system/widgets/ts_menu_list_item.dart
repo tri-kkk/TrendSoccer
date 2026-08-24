@@ -30,9 +30,11 @@ class TsMenuListItem extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.all(TsSpacing.lg),
-        child: Row(
+      child: SizedBox(
+        height: 56,
+        child: Padding(
+          padding: const EdgeInsets.all(TsSpacing.lg),
+          child: Row(
           children: [
             if (icon != null) ...[
               TsIcon(icon!, size: TsIconSize.md, color: c.textSecondary),
@@ -59,6 +61,7 @@ class TsMenuListItem extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }
