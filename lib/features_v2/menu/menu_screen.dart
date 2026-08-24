@@ -398,16 +398,21 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
 
   String _premiumRenewalLabel(SupabaseAuthProvider auth) {
     final subscription = auth.subscriptionInfo;
-    if (subscription?.isCancellationPending ?? false) {
-      final accessUntil =
-          subscription?.expiresAt ?? auth.premiumExpiresAt;
-      if (accessUntil == null) return 'Access until -';
-      return 'Access until ${_formatPlanDate(accessUntil)}';
+    final expiry = subscription?.expiresAt ?? auth.premiumExpiresAt;
+    final isCancellationPending =
+        subscription?.isCancellationPending ?? false;
+
+    if (isCancellationPending) {
+      if (expiry != null) {
+        return 'Cancellation pending · access until ${_formatPlanDate(expiry)}';
+      }
+      return 'Cancellation pending';
     }
 
-    final renewsOn = subscription?.nextBillingDate;
-    if (renewsOn == null) return 'Renews on -';
-    return 'Renews on ${_formatPlanDate(renewsOn)}';
+    if (expiry != null) {
+      return 'Renews on ${_formatPlanDate(expiry)}';
+    }
+    return 'Premium active';
   }
 
   String _formatPlanDate(DateTime date) {
