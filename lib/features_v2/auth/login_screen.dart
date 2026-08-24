@@ -50,12 +50,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       context.go('/home');
     } on AuthLoginException catch (e) {
       if (e.reason == 'cancelled') return;
+      debugPrint('[login] AuthLoginException reason=${e.reason} cause=${e.cause}');
       if (!mounted) return;
+      final causeText = e.cause?.toString() ?? '';
+      if (causeText.contains('COOLDOWN_ACTIVE')) {
+        final days = int.tryParse(causeText.split(':').last.trim()) ?? 7;
+        _showErrorToast(
+          'This account was deleted. You can sign up again in $days days.',
+        );
+        return;
+      }
       _showErrorToast(_messageForAuthFailure(e.reason));
     } on TimeoutException {
       if (!mounted) return;
       _showErrorToast('Sign-in timed out. Please try again.');
-    } on Object {
+    } on Object catch (e) {
+      debugPrint('[login] unexpected: $e');
       if (!mounted) return;
       _showErrorToast('Sign-in failed. Please try again.');
     } finally {
@@ -80,6 +90,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         'timeout' => 'Sign-in timed out. Please try again.',
         'network_error' =>
           'Network error. Check your connection and try again.',
+        'api_error' =>
+          // TODO(diagnostic): remove code from user-facing copy once the cause is found
+          'Sign-in was rejected by the server. (api_error)',
+        'sdk_error' =>
+          // TODO(diagnostic): remove code from user-facing copy once the cause is found
+          'The sign-in provider reported an error. (sdk_error)',
+        'token_null' =>
+          // TODO(diagnostic): remove code from user-facing copy once the cause is found
+          'No sign-in token was returned. (token_null)',
+        'profile_load_failed' =>
+          // TODO(diagnostic): remove code from user-facing copy once the cause is found
+          'Signed in, but the profile could not load. (profile_load_failed)',
         _ => 'Sign-in failed. Please try again.',
       };
 

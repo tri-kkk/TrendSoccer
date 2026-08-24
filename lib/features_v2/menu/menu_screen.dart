@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
@@ -27,7 +28,11 @@ class MenuScreen extends ConsumerStatefulWidget {
 }
 
 class _MenuScreenState extends ConsumerState<MenuScreen> {
+  static const _playPackageId = 'com.trendsoccer.app';
+
   String _appVersion = '-';
+  final _deleteConfirmController = TextEditingController();
+  bool _deleteDialogOpen = false;
 
   @override
   void initState() {
@@ -35,11 +40,17 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     _loadAppVersion();
   }
 
+  @override
+  void dispose() {
+    _deleteConfirmController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadAppVersion() async {
     final info = await PackageInfo.fromPlatform();
     if (!mounted) return;
     setState(() {
-      _appVersion = 'v${info.version} (Build ${info.buildNumber})';
+      _appVersion = 'v${info.version}';
     });
   }
 
@@ -89,43 +100,70 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     }
   }
 
-  Future<void> _showDeleteAccountDialog() async {
-    final controller = TextEditingController();
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return ValueListenableBuilder<TextEditingValue>(
-          valueListenable: controller,
-          builder: (context, value, _) {
-            final canConfirm = value.text.trim() == 'DELETE';
-
-            return Dialog(
-              backgroundColor: Colors.transparent,
-              child: SizedBox(
-                width: 320,
-                child: TsConfirmDialog(
-                  type: TsDialogType.input,
-                  title: 'Delete account?',
-                  message:
-                      'All data is permanently removed. Type DELETE to confirm.',
-                  inputLabel: 'Confirmation',
-                  controller: controller,
-                  confirmLabel: 'Delete',
-                  cancelLabel: 'Cancel',
-                  onConfirm: canConfirm
-                      ? () => Navigator.of(dialogContext).pop(true)
-                      : null,
-                  onCancel: () => Navigator.of(dialogContext).pop(false),
-                ),
-              ),
-            );
-          },
-        );
-      },
+  Future<void> _openPlaySubscriptions() async {
+    final uri = Uri.parse(
+      'https://play.google.com/store/account/subscriptions?package=$_playPackageId',
     );
+    try {
+      final launched =
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched && mounted) {
+        _showToast(
+          'Unable to open Google Play subscriptions.',
+          TsToastType.error,
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      _showToast(
+        'Unable to open Google Play subscriptions.',
+        TsToastType.error,
+      );
+    }
+  }
 
-    controller.dispose();
+  Future<void> _showDeleteAccountDialog() async {
+    if (_deleteDialogOpen) return;
+    _deleteDialogOpen = true;
+    _deleteConfirmController.clear();
+
+    bool? confirmed;
+    try {
+      confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) {
+          return ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _deleteConfirmController,
+            builder: (context, value, _) {
+              final canConfirm = value.text.trim() == 'DELETE';
+
+              return Dialog(
+                backgroundColor: Colors.transparent,
+                child: SizedBox(
+                  width: 320,
+                  child: TsConfirmDialog(
+                    type: TsDialogType.input,
+                    title: 'Delete account?',
+                    message:
+                        'All data is permanently removed. Type DELETE to confirm.',
+                    inputLabel: 'Confirmation',
+                    controller: _deleteConfirmController,
+                    confirmLabel: 'Delete',
+                    cancelLabel: 'Cancel',
+                    onConfirm: canConfirm
+                        ? () => Navigator.of(dialogContext).pop(true)
+                        : null,
+                    onCancel: () => Navigator.of(dialogContext).pop(false),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      );
+    } finally {
+      _deleteDialogOpen = false;
+    }
 
     if (confirmed != true || !mounted) return;
 
@@ -234,7 +272,9 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                 subLabel: _planSubLabel(auth),
                 onAction: auth.planType == PlanType.trial
                     ? null
-                    : () => context.go('/menu/subscribe'),
+                    : auth.planType == PlanType.premium
+                        ? _openPlaySubscriptions
+                        : () => context.go('/menu/subscribe'),
               ),
               const SizedBox(height: TsSpacing.lg),
               _menuGroup(
@@ -243,7 +283,9 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                   TsMenuListItem(
                     label: 'Subscription',
                     icon: TsIcons.premium,
-                    onTap: () => context.go('/menu/subscribe'),
+                    onTap: auth.planType == PlanType.premium
+                        ? _openPlaySubscriptions
+                        : () => context.go('/menu/subscribe'),
                   ),
                   TsMenuListItem(
                     label: 'Notifications',
@@ -355,7 +397,15 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
   }
 
   String _premiumRenewalLabel(SupabaseAuthProvider auth) {
-    final renewsOn = auth.subscriptionInfo?.nextBillingDate;
+    final subscription = auth.subscriptionInfo;
+    if (subscription?.isCancellationPending ?? false) {
+      final accessUntil =
+          subscription?.expiresAt ?? auth.premiumExpiresAt;
+      if (accessUntil == null) return 'Access until -';
+      return 'Access until ${_formatPlanDate(accessUntil)}';
+    }
+
+    final renewsOn = subscription?.nextBillingDate;
     if (renewsOn == null) return 'Renews on -';
     return 'Renews on ${_formatPlanDate(renewsOn)}';
   }
