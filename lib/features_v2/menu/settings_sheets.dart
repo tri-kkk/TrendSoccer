@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -45,24 +47,26 @@ class _LanguageSheet extends ConsumerWidget {
         TsSheetOptionRow(
           label: 'English',
           selected: selected == AppLanguage.en,
-          onTap: () => _selectLanguage(context, ref, AppLanguage.en),
+          onTap: () => _selectLanguage(context, ref, selected, AppLanguage.en),
         ),
         TsSheetOptionRow(
           label: '한국어',
           selected: selected == AppLanguage.ko,
-          onTap: () => _selectLanguage(context, ref, AppLanguage.ko),
+          onTap: () => _selectLanguage(context, ref, selected, AppLanguage.ko),
         ),
       ],
     );
   }
 
-  Future<void> _selectLanguage(
+  void _selectLanguage(
     BuildContext context,
     WidgetRef ref,
+    AppLanguage current,
     AppLanguage language,
-  ) async {
-    await ref.read(languageProvider.notifier).setLanguage(language);
-    if (context.mounted) Navigator.pop(context);
+  ) {
+    Navigator.pop(context);
+    if (current == language) return;
+    unawaited(ref.read(languageProvider.notifier).setLanguage(language));
   }
 }
 
@@ -79,29 +83,31 @@ class _ThemeSheet extends ConsumerWidget {
         TsSheetOptionRow(
           label: 'System',
           selected: selected == ThemeMode.system,
-          onTap: () => _selectTheme(context, ref, ThemeMode.system),
+          onTap: () => _selectTheme(context, ref, selected, ThemeMode.system),
         ),
         TsSheetOptionRow(
           label: 'Light',
           selected: selected == ThemeMode.light,
-          onTap: () => _selectTheme(context, ref, ThemeMode.light),
+          onTap: () => _selectTheme(context, ref, selected, ThemeMode.light),
         ),
         TsSheetOptionRow(
           label: 'Dark',
           selected: selected == ThemeMode.dark,
-          onTap: () => _selectTheme(context, ref, ThemeMode.dark),
+          onTap: () => _selectTheme(context, ref, selected, ThemeMode.dark),
         ),
       ],
     );
   }
 
-  Future<void> _selectTheme(
+  void _selectTheme(
     BuildContext context,
     WidgetRef ref,
+    ThemeMode current,
     ThemeMode mode,
-  ) async {
-    await ref.read(themeModeProvider.notifier).setThemeMode(mode);
-    if (context.mounted) Navigator.pop(context);
+  ) {
+    Navigator.pop(context);
+    if (current == mode) return;
+    unawaited(ref.read(themeModeProvider.notifier).setThemeMode(mode));
   }
 }
 
