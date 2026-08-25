@@ -357,28 +357,31 @@ class SoccerService {
 
   Map<String, dynamic> calculateRecentStats(
     Map<String, dynamic> historyResponse, {
-    int windowSize = 30,
+    int windowDays = 30,
   }) {
     final picks = _extractHistoryPicks(historyResponse);
     if (picks.isEmpty) return {};
 
     final teamLogos = _extractTeamLogosFromHistoryPicks(picks);
+    final cutoff = DateTime.now().toUtc().subtract(Duration(days: windowDays));
 
     final settled = picks.where((pick) {
       final result = _readPickResult(pick)?.toUpperCase();
       return result == 'WIN' || result == 'LOSE';
     }).toList();
 
-    settled.sort((a, b) {
-      final aTime = _readCommenceTime(a);
-      final bTime = _readCommenceTime(b);
-      if (aTime == null && bTime == null) return 0;
-      if (aTime == null) return 1;
-      if (bTime == null) return -1;
-      return bTime.compareTo(aTime);
-    });
+    // Picks without a parseable date cannot belong to a day window.
+    final window = settled.where((pick) {
+      final time = _readCommenceTime(pick);
+      if (time == null) return false;
+      return !time.isBefore(cutoff);
+    }).toList()
+      ..sort((a, b) {
+        final aTime = _readCommenceTime(a)!;
+        final bTime = _readCommenceTime(b)!;
+        return bTime.compareTo(aTime);
+      });
 
-    final window = settled.take(windowSize).toList();
     if (window.isEmpty) return {};
 
     var wins = 0;

@@ -627,6 +627,26 @@ const _leagueNameToCode = <String, String>{
   'Copa Sudamericana': 'COSU',
 };
 
+/// English display name for an API league code.
+///
+/// First [_leagueNameToCode] entry per code wins when several names share one.
+/// Baseball codes MLB, KBO, NPB, CPBL map to themselves. Unknown codes pass through.
+String leagueDisplayNameForApiCode(String? apiCode) {
+  if (apiCode == null || apiCode.isEmpty) return apiCode ?? '';
+  final upper = apiCode.trim().toUpperCase();
+  switch (upper) {
+    case 'MLB':
+    case 'KBO':
+    case 'NPB':
+    case 'CPBL':
+      return upper;
+  }
+  for (final entry in _leagueNameToCode.entries) {
+    if (entry.value == upper) return entry.key;
+  }
+  return apiCode;
+}
+
 String? _lookupLeagueCodeFromName(String value) {
   final trimmed = value.trim();
   if (trimmed.isEmpty) return null;

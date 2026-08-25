@@ -1,14 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/assets/ts_assets.dart';
+import 'package:trendsoccer/core/models/premium_pick_stats.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/home_pick_history_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/services/soccer_service.dart';
 import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
 import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
+import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
@@ -18,6 +22,7 @@ import 'package:trendsoccer/design_system/widgets/ts_app_bar.dart';
 import 'package:trendsoccer/design_system/widgets/ts_banner_slot.dart';
 import 'package:trendsoccer/design_system/widgets/ts_badge.dart';
 import 'package:trendsoccer/design_system/widgets/ts_combo_today_card.dart';
+import 'package:trendsoccer/design_system/widgets/ts_empty_state.dart';
 import 'package:trendsoccer/design_system/widgets/ts_match_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_news_row.dart';
 import 'package:trendsoccer/design_system/widgets/ts_section_header.dart';
@@ -44,7 +49,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final hideMonetisation = auth.isPremium || auth.isTrial;
 
     final blocks = <Widget>[
-      _plainBlock(_buildAccuracyCard(context)),
+      _plainBlock(
+        _AccuracyCardSection(
+          period: _accuracyPeriod,
+          sport: _accuracySport,
+          onPeriodChanged: (period) => setState(() => _accuracyPeriod = period),
+          onSportChanged: (sport) => setState(() => _accuracySport = sport),
+        ),
+      ),
       // TODO(data): subscription upsell state and CTA destination
       if (!hideMonetisation)
         _plainBlock(
@@ -131,14 +143,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onAuthTap: () => context.go('/login'),
         tierLabel: 'PREMIUM',
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(top: TsSpacing.lg, bottom: TsSpacing.xl),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: _withGaps(blocks),
+      body: RefreshIndicator(
+        onRefresh: _onHomeRefresh,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(top: TsSpacing.lg, bottom: TsSpacing.xl),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: _withGaps(blocks),
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> _onHomeRefresh() async {
+    ref.invalidate(homePickHistoryProvider(_accuracySport));
+    await ref.read(homePickHistoryProvider(_accuracySport).future);
+    // TODO(data): also invalidate soccer analysis, baseball analysis, today's
+    // matches, combo picks, and news providers once those blocks are wired.
   }
 
   List<Widget> _withGaps(List<Widget> blocks) {
@@ -150,213 +173,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ..add(blocks[i]);
     }
     return spaced;
-  }
-
-  Widget _buildAccuracyCard(BuildContext context) {
-    final historyAsync = ref.watch(homePickHistoryProvider(_accuracySport));
-
-    return historyAsync.when(
-      loading: _accuracyLoadingSkeleton,
-      error: (error, stackTrace) => _accuracyCardWithRetry(
-        context,
-        onRetry: () => ref.invalidate(homePickHistoryProvider(_accuracySport)),
-      ),
-      data: (history) => _accuracyCardFromHistory(context, history),
-    );
-  }
-
-  Widget _accuracyLoadingSkeleton() {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            TsSkeletonBlock(TsSkeletonType.title, width: 160),
-            TsSkeletonBlock(TsSkeletonType.line, width: 88),
-          ],
-        ),
-        SizedBox(height: TsSpacing.md),
-        TsSkeletonBlock(TsSkeletonType.block),
-        SizedBox(height: TsSpacing.md),
-        TsSkeletonBlock(TsSkeletonType.line, width: 120),
-        SizedBox(height: TsSpacing.sm),
-        TsSkeletonBlock(TsSkeletonType.line, width: 200),
-        SizedBox(height: TsSpacing.lg),
-        TsSkeletonBlock(TsSkeletonType.title, width: 72),
-        SizedBox(height: TsSpacing.sm),
-        SizedBox(
-          height: 111,
-          child: Row(
-            children: [
-              Expanded(child: TsSkeletonBlock(TsSkeletonType.block)),
-              SizedBox(width: TsSpacing.sm),
-              Expanded(child: TsSkeletonBlock(TsSkeletonType.block)),
-              SizedBox(width: TsSpacing.sm),
-              Expanded(child: TsSkeletonBlock(TsSkeletonType.block)),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _accuracyCardWithRetry(
-    BuildContext context, {
-    required VoidCallback onRetry,
-  }) {
-    final c = Theme.of(context).extension<TsThemeColors>()!;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _accuracyCardFromHistory(context, const {}),
-        const SizedBox(height: TsSpacing.sm),
-        TextButton(
-          onPressed: onRetry,
-          child: Text(
-            'Retry',
-            style: TsType.labelSRegular.copyWith(color: c.textSecondary),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _accuracyCardFromHistory(
-    BuildContext context,
-    Map<String, dynamic> history,
-  ) {
-    final service = ref.read(soccerServiceProvider);
-    final windowSize =
-        _accuracyPeriod == TsAccuracyPeriod.d7 ? 7 : 30;
-    final stats = service.calculateRecentStats(
-      history,
-      windowSize: windowSize,
-    );
-
-    final wins = stats['wins'] as int? ?? 0;
-    final losses = stats['losses'] as int? ?? 0;
-    final total = stats['total'] as int? ?? 0;
-    final winRate = stats['winRate'] as int? ?? 0;
-    final streak = stats['streak'] as int? ?? 0;
-    final streakType = stats['streakType'] as String? ?? 'losing';
-    final streakSuffix = streakType == 'winning' ? 'W' : 'L';
-
-    final isBaseball = _accuracySport == TsSport.baseball;
-    final baselineFraction = isBaseball ? 0.50 : 0.33;
-    final baselineNoteLabel = isBaseball
-        ? 'Baseline 50% — coin flip'
-        : 'Baseline 33% — random pick';
-
-    final windowPicks = stats['windowPicks'];
-    final recentPicks = windowPicks is List
-        ? windowPicks
-            .whereType<Map>()
-            .map((pick) => Map<String, dynamic>.from(pick))
-            .take(3)
-            .map(_mapRecentPick)
-            .whereType<TsRecentPick>()
-            .toList()
-        : const <TsRecentPick>[];
-
-    return TsAccuracyCard(
-      titleLabel: 'Prediction accuracy',
-      period7Label: '7D',
-      period30Label: '30D',
-      initialPeriod: _accuracyPeriod,
-      onPeriodChanged: (period) => setState(() => _accuracyPeriod = period),
-      sport: _accuracySport,
-      onSportChanged: (sport) => setState(() => _accuracySport = sport),
-      valueLabel: '$winRate%',
-      winLossLabel: '${wins}W · ${losses}L',
-      accuracyFraction: winRate / 100,
-      baselineFraction: baselineFraction,
-      sampleLabel: 'Based on $total picks',
-      baselineNoteLabel: baselineNoteLabel,
-      streakLabel: '$streak$streakSuffix streak',
-      // TODO(data): next update countdown — no API field yet
-      nextUpdateLabel: 'Next update 02:24',
-      recentPicks: recentPicks,
-      recentLabel: 'Recent',
-      seeAllLabel: 'View picks',
-      onSeeAllPressed: () {
-        // TODO(data): navigate to full accuracy history
-      },
-    );
-  }
-
-  TsRecentPick? _mapRecentPick(Map<String, dynamic> pick) {
-    final resultRaw = pick['result']?.toString().toUpperCase();
-    final TsRecentPickResult? result;
-    switch (resultRaw) {
-      case 'WIN':
-        result = TsRecentPickResult.match;
-      case 'LOSE':
-        result = TsRecentPickResult.mismatch;
-      default:
-        return null;
-    }
-
-    final homeTeam = _readPickString(pick, const ['homeTeam', 'home_team', 'home']);
-    final awayTeam = _readPickString(pick, const ['awayTeam', 'away_team', 'away']);
-    if (homeTeam == null || awayTeam == null) return null;
-
-    final league = _readPickString(pick, const ['league']) ?? '';
-    final leagueId =
-        TsAssets.leagueIconIdFromApiCode(league) ?? league.toLowerCase();
-
-    final dateRaw = pick['date'] ??
-        pick['commence_time'] ??
-        pick['commenceTime'] ??
-        pick['matchDate'];
-    final dateLabel = dateRaw == null
-        ? ''
-        : formatSoccerCardDate(dateRaw.toString());
-
-    return TsRecentPick(
-      result: result,
-      homeTeamLabel: homeTeam,
-      awayTeamLabel: awayTeam,
-      homeScoreLabel: _pickScoreLabel(pick['homeScore'] ?? pick['home_score']),
-      awayScoreLabel: _pickScoreLabel(pick['awayScore'] ?? pick['away_score']),
-      pickedTeamLabel: _pickedTeamLabel(pick, homeTeam, awayTeam),
-      leagueLabel: league,
-      leagueIcon: TsLeagueIcon(leagueId, size: TsIconSize.xs),
-      dateLabel: dateLabel,
-    );
-  }
-
-  String? _readPickString(Map<String, dynamic> pick, List<String> keys) {
-    for (final key in keys) {
-      final value = pick[key];
-      if (value is String && value.trim().isNotEmpty) {
-        return value.trim();
-      }
-    }
-    return null;
-  }
-
-  String _pickScoreLabel(Object? value) {
-    if (value == null) return '-';
-    return value.toString();
-  }
-
-  String _pickedTeamLabel(
-    Map<String, dynamic> pick,
-    String homeTeam,
-    String awayTeam,
-  ) {
-    final predicted = pick['predicted']?.toString().toLowerCase().trim();
-    switch (predicted) {
-      case 'home':
-        return homeTeam;
-      case 'away':
-        return awayTeam;
-      case 'draw':
-        return 'Draw';
-      default:
-        return homeTeam;
-    }
   }
 
   Widget _plainBlock(Widget child) {
@@ -532,6 +348,375 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ],
     );
+  }
+}
+
+class _AccuracyCardSection extends ConsumerStatefulWidget {
+  const _AccuracyCardSection({
+    required this.period,
+    required this.sport,
+    required this.onPeriodChanged,
+    required this.onSportChanged,
+  });
+
+  final TsAccuracyPeriod period;
+  final TsSport sport;
+  final ValueChanged<TsAccuracyPeriod> onPeriodChanged;
+  final ValueChanged<TsSport> onSportChanged;
+
+  @override
+  ConsumerState<_AccuracyCardSection> createState() =>
+      _AccuracyCardSectionState();
+}
+
+class _AccuracyCardSectionState extends ConsumerState<_AccuracyCardSection> {
+  Timer? _countdownTimer;
+  String? _soccerNextUpdateLabel;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshSoccerCountdown();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 60), (_) {
+      _refreshSoccerCountdown();
+    });
+  }
+
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    super.dispose();
+  }
+
+  void _refreshSoccerCountdown() {
+    if (!mounted || widget.sport != TsSport.soccer) return;
+    final label =
+        'New picks in ${formatCountdown(nextKstUpdateRemaining())}';
+    if (_soccerNextUpdateLabel != label) {
+      setState(() => _soccerNextUpdateLabel = label);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final historyAsync = ref.watch(homePickHistoryProvider(widget.sport));
+
+    return historyAsync.when(
+      loading: _accuracyLoadingSkeleton,
+      error: (error, stackTrace) => _accuracyCardWithRetry(
+        context,
+        onRetry: () => ref.invalidate(homePickHistoryProvider(widget.sport)),
+      ),
+      data: (history) => _accuracyCardFromHistory(context, history),
+    );
+  }
+
+  Widget _accuracyLoadingSkeleton() {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TsSkeletonBlock(TsSkeletonType.title, width: 160),
+            TsSkeletonBlock(TsSkeletonType.line, width: 88),
+          ],
+        ),
+        SizedBox(height: TsSpacing.md),
+        TsSkeletonBlock(TsSkeletonType.block),
+        SizedBox(height: TsSpacing.md),
+        TsSkeletonBlock(TsSkeletonType.line, width: 120),
+        SizedBox(height: TsSpacing.sm),
+        TsSkeletonBlock(TsSkeletonType.line, width: 200),
+        SizedBox(height: TsSpacing.lg),
+        TsSkeletonBlock(TsSkeletonType.title, width: 72),
+        SizedBox(height: TsSpacing.sm),
+        SizedBox(
+          height: 111,
+          child: Row(
+            children: [
+              Expanded(child: TsSkeletonBlock(TsSkeletonType.block)),
+              SizedBox(width: TsSpacing.sm),
+              Expanded(child: TsSkeletonBlock(TsSkeletonType.block)),
+              SizedBox(width: TsSpacing.sm),
+              Expanded(child: TsSkeletonBlock(TsSkeletonType.block)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _accuracyCardWithRetry(
+    BuildContext context, {
+    required VoidCallback onRetry,
+  }) {
+    final c = Theme.of(context).extension<TsThemeColors>()!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _accuracyCardFromHistory(context, const {}),
+        const SizedBox(height: TsSpacing.sm),
+        TextButton(
+          onPressed: onRetry,
+          child: Text(
+            'Retry',
+            style: TsType.labelSRegular.copyWith(color: c.textSecondary),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _accuracyCardFromHistory(
+    BuildContext context,
+    Map<String, dynamic> history,
+  ) {
+    final service = ref.read(soccerServiceProvider);
+    final windowDays =
+        widget.period == TsAccuracyPeriod.d7 ? 7 : 30;
+    final stats = service.calculateRecentStats(
+      history,
+      windowDays: windowDays,
+    );
+
+    if (stats.isEmpty) {
+      return _accuracyCardEmpty(context);
+    }
+
+    final wins = stats['wins'] as int? ?? 0;
+    final losses = stats['losses'] as int? ?? 0;
+    final total = stats['total'] as int? ?? 0;
+    final winRate = stats['winRate'] as int? ?? 0;
+    final streak = stats['streak'] as int? ?? 0;
+    final streakType = stats['streakType'] as String? ?? 'losing';
+    final streakSuffix = streakType == 'winning' ? 'W' : 'L';
+
+    final isBaseball = widget.sport == TsSport.baseball;
+    final baselineFraction = isBaseball ? 0.50 : 0.33;
+    final baselineNoteLabel = isBaseball
+        ? 'Baseline 50% — random guess between two teams'
+        : 'Baseline 33% — random guess across three results';
+
+    final windowPicks = stats['windowPicks'];
+    final recentPicks = windowPicks is List
+        ? windowPicks
+            .whereType<Map>()
+            .map((pick) => Map<String, dynamic>.from(pick))
+            .take(10)
+            .map(_mapRecentPick)
+            .whereType<TsRecentPick>()
+            .toList()
+        : const <TsRecentPick>[];
+
+    return TsAccuracyCard(
+      titleLabel: 'Prediction accuracy',
+      period7Label: '7D',
+      period30Label: '30D',
+      initialPeriod: widget.period,
+      onPeriodChanged: widget.onPeriodChanged,
+      sport: widget.sport,
+      onSportChanged: widget.onSportChanged,
+      valueLabel: '$winRate%',
+      winLossLabel: '${wins}W · ${losses}L',
+      accuracyFraction: winRate / 100,
+      baselineFraction: baselineFraction,
+      sampleLabel: 'Based on $total picks',
+      baselineNoteLabel: baselineNoteLabel,
+      streakLabel: '$streak$streakSuffix streak',
+      nextUpdateLabel:
+          isBaseball ? null : _soccerNextUpdateLabel,
+      recentPicks: recentPicks,
+      recentLabel: 'Recent',
+      seeAllLabel: 'View picks',
+      onSeeAllPressed: () {
+        // TODO(data): navigate to full accuracy history
+      },
+    );
+  }
+
+  Widget _accuracyCardEmpty(BuildContext context) {
+    // Duplicates TsAccuracyCard chrome (surface, title, toggles) until the
+    // component gains a Figma state=empty — passing zeroed stats would still
+    // render the gauge and meta row, and there is no flag to suppress that body.
+    final c = Theme.of(context).extension<TsThemeColors>()!;
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 280),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: TsRadius.md,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(TsSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Prediction accuracy',
+                      style: TsType.h3.copyWith(color: c.textPrimary),
+                    ),
+                  ),
+                  const SizedBox(width: TsSpacing.sm),
+                  _buildPeriodToggle(c),
+                ],
+              ),
+              const SizedBox(height: TsSpacing.md),
+              ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 240),
+                child: TsSportToggle(
+                  active: widget.sport,
+                  onChanged: widget.onSportChanged,
+                ),
+              ),
+              const SizedBox(height: TsSpacing.lg),
+              const TsEmptyState(
+                title: 'No settled picks in this period',
+                description:
+                    'Try a longer window, or check back when the season resumes.',
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPeriodToggle(TsThemeColors c) {
+    return Container(
+      padding: const EdgeInsets.all(TsSpacing.xs),
+      decoration: BoxDecoration(
+        color: c.surfaceRaised,
+        borderRadius: TsRadius.full,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildPeriodSegment(
+            c,
+            '7D',
+            widget.period == TsAccuracyPeriod.d7,
+            () => widget.onPeriodChanged(TsAccuracyPeriod.d7),
+          ),
+          const SizedBox(width: TsSpacing.xs),
+          _buildPeriodSegment(
+            c,
+            '30D',
+            widget.period == TsAccuracyPeriod.d30,
+            () => widget.onPeriodChanged(TsAccuracyPeriod.d30),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPeriodSegment(
+    TsThemeColors c,
+    String label,
+    bool selected,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: selected ? c.primary : Colors.transparent,
+          borderRadius: TsRadius.full,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: TsSpacing.xs,
+            horizontal: TsSpacing.sm,
+          ),
+          child: Text(
+            label,
+            style: (selected ? TsType.labelSBold : TsType.labelSMedium).copyWith(
+              color: selected ? c.onPrimary : c.textTertiary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  TsRecentPick? _mapRecentPick(Map<String, dynamic> pick) {
+    final resultRaw = pick['result']?.toString().toUpperCase();
+    final TsRecentPickResult? result;
+    switch (resultRaw) {
+      case 'WIN':
+        result = TsRecentPickResult.match;
+      case 'LOSE':
+        result = TsRecentPickResult.mismatch;
+      default:
+        return null;
+    }
+
+    final homeTeam =
+        _readPickString(pick, const ['homeTeam', 'home_team', 'home']);
+    final awayTeam =
+        _readPickString(pick, const ['awayTeam', 'away_team', 'away']);
+    if (homeTeam == null || awayTeam == null) return null;
+
+    final league = _readPickString(pick, const ['league']) ?? '';
+    final leagueId =
+        TsAssets.leagueIconIdFromApiCode(league) ?? league.toLowerCase();
+
+    final dateRaw = pick['date'] ??
+        pick['commence_time'] ??
+        pick['commenceTime'] ??
+        pick['matchDate'];
+    final dateLabel = dateRaw == null
+        ? ''
+        : formatSoccerCardDate(dateRaw.toString());
+
+    return TsRecentPick(
+      result: result,
+      homeTeamLabel: homeTeam,
+      awayTeamLabel: awayTeam,
+      homeScoreLabel: _pickScoreLabel(pick['homeScore'] ?? pick['home_score']),
+      awayScoreLabel: _pickScoreLabel(pick['awayScore'] ?? pick['away_score']),
+      pickedTeamLabel: _pickedTeamLabel(pick, homeTeam, awayTeam),
+      leagueLabel: TsAssets.leagueDisplayName(league),
+      leagueIcon: TsLeagueIcon(leagueId, size: TsIconSize.xs),
+      dateLabel: dateLabel,
+    );
+  }
+
+  String? _readPickString(Map<String, dynamic> pick, List<String> keys) {
+    for (final key in keys) {
+      final value = pick[key];
+      if (value is String && value.trim().isNotEmpty) {
+        return value.trim();
+      }
+    }
+    return null;
+  }
+
+  String _pickScoreLabel(Object? value) {
+    if (value == null) return '-';
+    return value.toString();
+  }
+
+  String _pickedTeamLabel(
+    Map<String, dynamic> pick,
+    String homeTeam,
+    String awayTeam,
+  ) {
+    final predicted = pick['predicted']?.toString().toLowerCase().trim();
+    switch (predicted) {
+      case 'home':
+        return homeTeam;
+      case 'away':
+        return awayTeam;
+      case 'draw':
+        return 'Draw';
+      default:
+        return homeTeam;
+    }
   }
 }
 

@@ -53,7 +53,7 @@ class TsAccuracyCard extends StatefulWidget {
     required this.sampleLabel,
     required this.baselineNoteLabel,
     required this.streakLabel,
-    required this.nextUpdateLabel,
+    this.nextUpdateLabel,
     this.recentPicks = const [],
     this.recentLabel,
     this.seeAllLabel,
@@ -75,7 +75,7 @@ class TsAccuracyCard extends StatefulWidget {
   final String sampleLabel;
   final String baselineNoteLabel;
   final String streakLabel;
-  final String nextUpdateLabel;
+  final String? nextUpdateLabel;
   final List<TsRecentPick> recentPicks;
   final String? recentLabel;
   final String? seeAllLabel;
@@ -221,18 +221,21 @@ class _TsAccuracyCardState extends State<TsAccuracyCard> {
                     widget.streakLabel,
                     style: TsType.bodyMBold.copyWith(color: c.textPrimary),
                   ),
-                  const SizedBox(width: TsSpacing.sm),
-                  Text(
-                    '·',
-                    style: TsType.bodyMMedium.copyWith(color: c.textTertiary),
-                  ),
-                  const SizedBox(width: TsSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      widget.nextUpdateLabel,
-                      style: TsType.labelSMedium.copyWith(color: c.textTertiary),
+                  if (widget.nextUpdateLabel != null &&
+                      widget.nextUpdateLabel!.isNotEmpty) ...[
+                    const SizedBox(width: TsSpacing.sm),
+                    Text(
+                      '·',
+                      style: TsType.bodyMMedium.copyWith(color: c.textTertiary),
                     ),
-                  ),
+                    const SizedBox(width: TsSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        widget.nextUpdateLabel!,
+                        style: TsType.labelSMedium.copyWith(color: c.textTertiary),
+                      ),
+                    ),
+                  ],
                 ],
               ),
               if (showRecent) ...[

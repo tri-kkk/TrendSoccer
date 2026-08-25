@@ -542,7 +542,7 @@ final premiumPickStatsProvider =
 
   final history = await service.getPremiumPickHistory();
   if (history.isNotEmpty) {
-    final calculated = service.calculateRecentStats(history, windowSize: 30);
+    final calculated = service.calculateRecentStats(history, windowDays: 30);
     if (calculated.isNotEmpty) return calculated;
   }
 

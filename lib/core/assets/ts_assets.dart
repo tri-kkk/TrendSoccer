@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/models/fixture_models_v2.dart';
+
 /// Centralized bundle asset paths with theme-aware helpers.
 abstract final class TsAssets {
   static String logoHorizon(Brightness brightness) =>
@@ -45,6 +47,10 @@ abstract final class TsAssets {
     if (apiCode == null || apiCode.isEmpty) return null;
     return _apiLeagueCodeToIconId[apiCode.toUpperCase()];
   }
+
+  /// English display name for an API league code.
+  static String leagueDisplayName(String? apiCode) =>
+      leagueDisplayNameForApiCode(apiCode);
 
   static const _apiLeagueCodeToIconId = <String, String>{
     'PL': 'premier_league',
