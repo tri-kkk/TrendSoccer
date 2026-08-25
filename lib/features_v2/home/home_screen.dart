@@ -9,6 +9,7 @@ import 'package:trendsoccer/core/models/premium_pick_stats.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/home_pick_history_provider.dart';
+import 'package:trendsoccer/core/providers/home_combo_summary_provider.dart';
 import 'package:trendsoccer/core/providers/home_match_preview_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/services/soccer_service.dart';
@@ -116,6 +117,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
     );
+    final showComboBlock = ref.watch(
+      homeComboSummaryProvider.select(
+        (asyncValue) => asyncValue.when(
+          data: (summary) => summary.comboCount > 0,
+          loading: () => true,
+          error: (_, _) => true,
+        ),
+      ),
+    );
 
     final blocks = <Widget>[
       _plainBlock(
@@ -151,47 +161,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (showTodayMatchesBlock) const _TodayMatchesSection(),
       // TODO(data): promotional banner content
       _plainBlock(const TsBannerSlot(ratio: TsBannerRatio.h214)),
-      // TODO(data): baseballComboStatsProvider — multi-match combo card
-      _plainBlock(
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const TsSectionHeader(
-              title: 'Multi-Match Analysis',
-              subtitle: "Today's baseball combinations",
-            ),
-            const SizedBox(height: TsSpacing.sm),
-            TsComboTodayCard(
-                countValue: '4',
-                countLabel: 'combinations today',
-                leagues: [
-                  TsComboLeagueCount(
-                    icon: TsLeagueIcon('mlb', size: 28),
-                    countLabel: '1',
-                  ),
-                  TsComboLeagueCount(
-                    icon: TsLeagueIcon('kbo', size: 28),
-                    countLabel: '1',
-                  ),
-                  TsComboLeagueCount(
-                    icon: TsLeagueIcon('npb', size: 28),
-                    countLabel: '1',
-                  ),
-                ],
-                stableLabel: 'Stable',
-                aggressiveLabel: 'Aggressive',
-                stableValueLabel: '2',
-                aggressiveValueLabel: '1',
-                stableFraction: 0.67,
-                accuracyLabel: '58% accuracy · last 30',
-                ctaLabel: 'View combos',
-                onCtaPressed: () {
-                  // TODO(data): navigate to combo picks
-                },
-              ),
-          ],
-        ),
-      ),
+      if (showComboBlock) _plainBlock(const _ComboTodaySection()),
       // TODO(data): news feed provider
       _newsBlock(context),
       // TODO(data): secondary promotional banner content
@@ -229,13 +199,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.invalidate(baseballAnalysisMatchesProvider);
     ref.invalidate(homeAnalysisMatchesProvider);
     ref.invalidate(homeTodayMatchesProvider);
+    ref.invalidate(homeComboSummaryProvider);
     await Future.wait([
       ref.read(homePickHistoryProvider(_accuracySport).future),
       ref.read(homeTodayMatchesProvider.future),
       ref.read(homeAnalysisMatchesProvider(TsSport.soccer).future),
       ref.read(homeAnalysisMatchesProvider(TsSport.baseball).future),
+      ref.read(homeComboSummaryProvider.future),
     ]);
-    // TODO(data): also invalidate combo picks and news providers once wired.
+    // TODO(data): also invalidate news providers once wired.
   }
 
   List<Widget> _withGaps(List<Widget> blocks) {
@@ -798,6 +770,67 @@ class _AnalysisCarouselSection extends ConsumerWidget {
           height: 120,
           child: rail,
         ),
+      ],
+    );
+  }
+}
+
+class _ComboTodaySection extends ConsumerWidget {
+  const _ComboTodaySection();
+
+  void _retry(WidgetRef ref) {
+    ref.invalidate(homeComboSummaryProvider);
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final summaryAsync = ref.watch(homeComboSummaryProvider);
+
+    final card = summaryAsync.when(
+      loading: () => const TsSkeletonBlock(TsSkeletonType.block),
+      error: (error, stackTrace) => TsEmptyState(
+        type: TsEmptyType.failure,
+        title: 'Could not load combinations',
+        description: 'Check your connection and try again.',
+        actionLabel: 'Retry',
+        onAction: () => _retry(ref),
+      ),
+      data: (summary) => TsComboTodayCard(
+        countValue: summary.comboCount.toString(),
+        countLabel: 'combinations today',
+        leagues: [
+          for (final league in summary.leagueCounts)
+            TsComboLeagueCount(
+              icon: TsLeagueIcon(
+                TsAssets.leagueIconIdFromApiCode(league.leagueCode) ??
+                    league.leagueCode.toLowerCase(),
+                size: 28,
+              ),
+              countLabel: league.count.toString(),
+            ),
+        ],
+        stableLabel: 'Stable',
+        aggressiveLabel: 'Aggressive',
+        stableValueLabel: summary.stableCount.toString(),
+        aggressiveValueLabel: summary.aggressiveCount.toString(),
+        stableFraction: summary.stableFraction,
+        accuracyLabel: summary.accuracyLabel,
+        ctaLabel: 'View combinations',
+        onCtaPressed: () {
+          // TODO(data): navigate to combo picks
+        },
+      ),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const TsSectionHeader(
+          title: 'Multi-Match Analysis',
+          subtitle: "Today's baseball combinations",
+        ),
+        const SizedBox(height: TsSpacing.sm),
+        card,
       ],
     );
   }
