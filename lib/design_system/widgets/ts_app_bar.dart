@@ -87,7 +87,7 @@ class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const TsLogo(TsLogoType.horizon, height: TsSpacing.xl),
+                  const TsLogo(TsLogoType.horizon, height: TsSpacing.xxl),
                   TsButton(
                     label: authLabel,
                     style: TsButtonStyle.primary,
@@ -105,7 +105,7 @@ class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const TsLogo(TsLogoType.horizon, height: TsSpacing.xl),
+                  const TsLogo(TsLogoType.horizon, height: TsSpacing.xxl),
                   Row(
                     children: [
                       TsBadge(label: tierLabel, tone: TsBadgeTone.primary),
