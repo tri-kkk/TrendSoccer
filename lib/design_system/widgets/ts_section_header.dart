@@ -32,7 +32,7 @@ class TsSectionHeader extends StatelessWidget {
         Row(
           children: [
             if (icon != null) ...[
-              TsIcon(icon!, size: TsIconSize.sm, color: c.primary),
+              TsIcon(icon!, size: TsIconSize.sm, color: c.textPrimary),
               const SizedBox(width: TsSpacing.sm),
             ],
             Expanded(
