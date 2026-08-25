@@ -650,6 +650,8 @@ class _AccuracyCardSectionState extends ConsumerState<_AccuracyCardSection> {
       leagueLabel: TsAssets.leagueDisplayName(league),
       leagueIcon: TsLeagueIcon(leagueId, size: TsIconSize.xs),
       dateLabel: dateLabel,
+      homeEmblemUrl: _readPickLogo(pick, isHome: true),
+      awayEmblemUrl: _readPickLogo(pick, isHome: false),
     );
   }
 
@@ -661,6 +663,25 @@ class _AccuracyCardSectionState extends ConsumerState<_AccuracyCardSection> {
       }
     }
     return null;
+  }
+
+  String? _readPickLogo(Map<String, dynamic> pick, {required bool isHome}) {
+    return _readPickString(
+      pick,
+      isHome
+          ? const [
+              'homeTeamLogo',
+              'home_team_logo',
+              'homeLogo',
+              'home_logo',
+            ]
+          : const [
+              'awayTeamLogo',
+              'away_team_logo',
+              'awayLogo',
+              'away_logo',
+            ],
+    );
   }
 
   String _pickScoreLabel(Object? value) {

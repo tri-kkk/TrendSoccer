@@ -24,6 +24,8 @@ class TsRecentPick {
     required this.leagueLabel,
     required this.leagueIcon,
     required this.dateLabel,
+    this.homeEmblemUrl,
+    this.awayEmblemUrl,
   });
 
   final TsRecentPickResult result;
@@ -35,6 +37,8 @@ class TsRecentPick {
   final String leagueLabel;
   final Widget leagueIcon;
   final String dateLabel;
+  final String? homeEmblemUrl;
+  final String? awayEmblemUrl;
 }
 
 class TsAccuracyCard extends StatefulWidget {
@@ -362,6 +366,8 @@ class _RecentPickCard extends StatelessWidget {
       pickedTeam: pick.pickedTeamLabel,
       resultLabel: resultLabel,
       resultTone: resultTone,
+      homeEmblemUrl: pick.homeEmblemUrl,
+      awayEmblemUrl: pick.awayEmblemUrl,
     );
   }
 }
