@@ -101,7 +101,15 @@ class TsButton extends StatelessWidget {
                     TsIcon(icon!, size: iconSize, color: labelColor),
                     const SizedBox(width: TsSpacing.sm),
                   ],
-                  Text(label, style: textStyle.copyWith(color: labelColor)),
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: textStyle.copyWith(color: labelColor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ],
               ),
             ),
