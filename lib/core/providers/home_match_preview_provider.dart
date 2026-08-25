@@ -7,7 +7,7 @@ import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
 
 /// Cap for the home "today's matches" carousel (Figma shows five).
-const homeTodayMatchesLimit = 5;
+const homeTodayMatchesLimit = 10;
 
 /// Cap for the home analysis carousels (Figma shows seven).
 const homeAnalysisMatchesLimit = 7;
