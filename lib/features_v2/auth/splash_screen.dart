@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -35,6 +36,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         .timeout(const Duration(seconds: 3), onTimeout: () => null);
     await _minimumDisplay;
     if (!mounted) return;
+    if (kDebugMode &&
+        const String.fromEnvironment('FORCE_GATE') == 'billing') {
+      context.go('/billing-loading');
+      return;
+    }
     if (decision != null) {
       context.go('/force-update', extra: decision);
       return;
@@ -43,6 +49,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<ForceUpdateArgs?> _initialize() async {
+    // Debug-only gate override. Release builds cannot reach this —
+    // kDebugMode is a const false there and the branch is tree-shaken.
+    // Usage: flutter run --dart-define=FORCE_GATE=maintenance|update|billing
+    if (kDebugMode) {
+      const forced = String.fromEnvironment('FORCE_GATE');
+      if (forced == 'maintenance') {
+        return const ForceUpdateArgs(reason: ForceUpdateReason.maintenance);
+      }
+      if (forced == 'update') {
+        return const ForceUpdateArgs(reason: ForceUpdateReason.update);
+      }
+    }
+
     final results = await Future.wait<Object?>([
       _fetchConfig(),
       _restoreAuth(),

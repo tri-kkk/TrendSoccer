@@ -45,7 +45,7 @@ class _ForceUpdateScreenState extends ConsumerState<ForceUpdateScreen> {
 
   String get _defaultSubtitle => _isMaintenance
       ? 'We are working on it. Please try again shortly.'
-      : 'A new version is available. Update to keep using TrendSoccer.';
+      : 'A new version is available.\nUpdate to keep using TrendSoccer.';
 
   String get _subtitle {
     final serverMessage = widget.args?.message?.trim();
