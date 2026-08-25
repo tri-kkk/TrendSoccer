@@ -320,6 +320,30 @@ class BaseballService {
     }
   }
 
+  Future<Map<String, dynamic>> getBaseballPickHistory() async {
+    try {
+      final language = _apiLanguage();
+      final response = await _dio.get<dynamic>(
+        '/api/baseball/picks/history',
+        queryParameters: <String, String>{
+          'league': 'ALL',
+          'days': '60',
+          'limit': '200',
+          'language': language,
+        },
+      );
+      final raw = response.data;
+      final history = raw is Map<String, dynamic>
+          ? raw
+          : raw is Map
+              ? Map<String, dynamic>.from(raw)
+              : <String, dynamic>{};
+      return history;
+    } catch (e) {
+      return {};
+    }
+  }
+
   Future<List<BaseballAnalysisCard>> getUpcomingMatches() async {
     final today = DateTime.now();
     final todayDay = DateTime(today.year, today.month, today.day);

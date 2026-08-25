@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:trendsoccer/core/assets/ts_assets.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/providers/home_pick_history_provider.dart';
+import 'package:trendsoccer/core/providers/soccer_provider.dart';
+import 'package:trendsoccer/core/services/soccer_service.dart';
 import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
 import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
@@ -17,6 +21,7 @@ import 'package:trendsoccer/design_system/widgets/ts_combo_today_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_match_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_news_row.dart';
 import 'package:trendsoccer/design_system/widgets/ts_section_header.dart';
+import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
 import 'package:trendsoccer/design_system/widgets/ts_subscription_banner.dart';
 
@@ -39,38 +44,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final hideMonetisation = auth.isPremium || auth.isTrial;
 
     final blocks = <Widget>[
-      // TODO(data): premiumPickStatsProvider — accuracy card
-      _plainBlock(
-        TsAccuracyCard(
-            titleLabel: 'Prediction accuracy',
-            period7Label: '7D',
-            period30Label: '30D',
-            initialPeriod: _accuracyPeriod,
-            onPeriodChanged: (period) {
-              setState(() => _accuracyPeriod = period);
-              // TODO(data): fetch accuracy stats for selected period
-            },
-            sport: _accuracySport,
-            onSportChanged: (sport) {
-              setState(() => _accuracySport = sport);
-              // TODO(data): switch accuracy sport and reload stats
-            },
-            valueLabel: '45%',
-            winLossLabel: '19W · 23L',
-            accuracyFraction: 0.45,
-            baselineFraction: 0.33,
-            sampleLabel: 'Based on 42 picks',
-            baselineNoteLabel: 'Baseline 33% — random pick',
-            streakLabel: '3L streak',
-            nextUpdateLabel: 'Next update 02:24',
-            recentPicks: _accuracyRecentPicks,
-            recentLabel: 'Recent',
-            seeAllLabel: 'View picks',
-            onSeeAllPressed: () {
-              // TODO(data): navigate to full accuracy history
-            },
-          ),
-      ),
+      _plainBlock(_buildAccuracyCard(context)),
       // TODO(data): subscription upsell state and CTA destination
       if (!hideMonetisation)
         _plainBlock(
@@ -176,6 +150,213 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ..add(blocks[i]);
     }
     return spaced;
+  }
+
+  Widget _buildAccuracyCard(BuildContext context) {
+    final historyAsync = ref.watch(homePickHistoryProvider(_accuracySport));
+
+    return historyAsync.when(
+      loading: _accuracyLoadingSkeleton,
+      error: (error, stackTrace) => _accuracyCardWithRetry(
+        context,
+        onRetry: () => ref.invalidate(homePickHistoryProvider(_accuracySport)),
+      ),
+      data: (history) => _accuracyCardFromHistory(context, history),
+    );
+  }
+
+  Widget _accuracyLoadingSkeleton() {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TsSkeletonBlock(TsSkeletonType.title, width: 160),
+            TsSkeletonBlock(TsSkeletonType.line, width: 88),
+          ],
+        ),
+        SizedBox(height: TsSpacing.md),
+        TsSkeletonBlock(TsSkeletonType.block),
+        SizedBox(height: TsSpacing.md),
+        TsSkeletonBlock(TsSkeletonType.line, width: 120),
+        SizedBox(height: TsSpacing.sm),
+        TsSkeletonBlock(TsSkeletonType.line, width: 200),
+        SizedBox(height: TsSpacing.lg),
+        TsSkeletonBlock(TsSkeletonType.title, width: 72),
+        SizedBox(height: TsSpacing.sm),
+        SizedBox(
+          height: 111,
+          child: Row(
+            children: [
+              Expanded(child: TsSkeletonBlock(TsSkeletonType.block)),
+              SizedBox(width: TsSpacing.sm),
+              Expanded(child: TsSkeletonBlock(TsSkeletonType.block)),
+              SizedBox(width: TsSpacing.sm),
+              Expanded(child: TsSkeletonBlock(TsSkeletonType.block)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _accuracyCardWithRetry(
+    BuildContext context, {
+    required VoidCallback onRetry,
+  }) {
+    final c = Theme.of(context).extension<TsThemeColors>()!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _accuracyCardFromHistory(context, const {}),
+        const SizedBox(height: TsSpacing.sm),
+        TextButton(
+          onPressed: onRetry,
+          child: Text(
+            'Retry',
+            style: TsType.labelSRegular.copyWith(color: c.textSecondary),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _accuracyCardFromHistory(
+    BuildContext context,
+    Map<String, dynamic> history,
+  ) {
+    final service = ref.read(soccerServiceProvider);
+    final windowSize =
+        _accuracyPeriod == TsAccuracyPeriod.d7 ? 7 : 30;
+    final stats = service.calculateRecentStats(
+      history,
+      windowSize: windowSize,
+    );
+
+    final wins = stats['wins'] as int? ?? 0;
+    final losses = stats['losses'] as int? ?? 0;
+    final total = stats['total'] as int? ?? 0;
+    final winRate = stats['winRate'] as int? ?? 0;
+    final streak = stats['streak'] as int? ?? 0;
+    final streakType = stats['streakType'] as String? ?? 'losing';
+    final streakSuffix = streakType == 'winning' ? 'W' : 'L';
+
+    final isBaseball = _accuracySport == TsSport.baseball;
+    final baselineFraction = isBaseball ? 0.50 : 0.33;
+    final baselineNoteLabel = isBaseball
+        ? 'Baseline 50% — coin flip'
+        : 'Baseline 33% — random pick';
+
+    final windowPicks = stats['windowPicks'];
+    final recentPicks = windowPicks is List
+        ? windowPicks
+            .whereType<Map>()
+            .map((pick) => Map<String, dynamic>.from(pick))
+            .take(3)
+            .map(_mapRecentPick)
+            .whereType<TsRecentPick>()
+            .toList()
+        : const <TsRecentPick>[];
+
+    return TsAccuracyCard(
+      titleLabel: 'Prediction accuracy',
+      period7Label: '7D',
+      period30Label: '30D',
+      initialPeriod: _accuracyPeriod,
+      onPeriodChanged: (period) => setState(() => _accuracyPeriod = period),
+      sport: _accuracySport,
+      onSportChanged: (sport) => setState(() => _accuracySport = sport),
+      valueLabel: '$winRate%',
+      winLossLabel: '${wins}W · ${losses}L',
+      accuracyFraction: winRate / 100,
+      baselineFraction: baselineFraction,
+      sampleLabel: 'Based on $total picks',
+      baselineNoteLabel: baselineNoteLabel,
+      streakLabel: '$streak$streakSuffix streak',
+      // TODO(data): next update countdown — no API field yet
+      nextUpdateLabel: 'Next update 02:24',
+      recentPicks: recentPicks,
+      recentLabel: 'Recent',
+      seeAllLabel: 'View picks',
+      onSeeAllPressed: () {
+        // TODO(data): navigate to full accuracy history
+      },
+    );
+  }
+
+  TsRecentPick? _mapRecentPick(Map<String, dynamic> pick) {
+    final resultRaw = pick['result']?.toString().toUpperCase();
+    final TsRecentPickResult? result;
+    switch (resultRaw) {
+      case 'WIN':
+        result = TsRecentPickResult.match;
+      case 'LOSE':
+        result = TsRecentPickResult.mismatch;
+      default:
+        return null;
+    }
+
+    final homeTeam = _readPickString(pick, const ['homeTeam', 'home_team', 'home']);
+    final awayTeam = _readPickString(pick, const ['awayTeam', 'away_team', 'away']);
+    if (homeTeam == null || awayTeam == null) return null;
+
+    final league = _readPickString(pick, const ['league']) ?? '';
+    final leagueId =
+        TsAssets.leagueIconIdFromApiCode(league) ?? league.toLowerCase();
+
+    final dateRaw = pick['date'] ??
+        pick['commence_time'] ??
+        pick['commenceTime'] ??
+        pick['matchDate'];
+    final dateLabel = dateRaw == null
+        ? ''
+        : formatSoccerCardDate(dateRaw.toString());
+
+    return TsRecentPick(
+      result: result,
+      homeTeamLabel: homeTeam,
+      awayTeamLabel: awayTeam,
+      homeScoreLabel: _pickScoreLabel(pick['homeScore'] ?? pick['home_score']),
+      awayScoreLabel: _pickScoreLabel(pick['awayScore'] ?? pick['away_score']),
+      pickedTeamLabel: _pickedTeamLabel(pick, homeTeam, awayTeam),
+      leagueLabel: league,
+      leagueIcon: TsLeagueIcon(leagueId, size: TsIconSize.xs),
+      dateLabel: dateLabel,
+    );
+  }
+
+  String? _readPickString(Map<String, dynamic> pick, List<String> keys) {
+    for (final key in keys) {
+      final value = pick[key];
+      if (value is String && value.trim().isNotEmpty) {
+        return value.trim();
+      }
+    }
+    return null;
+  }
+
+  String _pickScoreLabel(Object? value) {
+    if (value == null) return '-';
+    return value.toString();
+  }
+
+  String _pickedTeamLabel(
+    Map<String, dynamic> pick,
+    String homeTeam,
+    String awayTeam,
+  ) {
+    final predicted = pick['predicted']?.toString().toLowerCase().trim();
+    switch (predicted) {
+      case 'home':
+        return homeTeam;
+      case 'away':
+        return awayTeam;
+      case 'draw':
+        return 'Draw';
+      default:
+        return homeTeam;
+    }
   }
 
   Widget _plainBlock(Widget child) {
@@ -411,43 +592,6 @@ class _NewsSample {
   final String source;
   final String timeLabel;
 }
-
-// TODO(data): replace with premiumPickStatsProvider
-const _accuracyRecentPicks = <TsRecentPick>[
-  TsRecentPick(
-    result: TsRecentPickResult.match,
-    homeTeamLabel: 'Espanyol',
-    awayTeamLabel: 'Levante',
-    homeScoreLabel: '2',
-    awayScoreLabel: '1',
-    pickedTeamLabel: 'Espanyol',
-    leagueLabel: 'La Liga',
-    leagueIcon: TsLeagueIcon('la_liga', size: TsIconSize.xs),
-    dateLabel: '8.14',
-  ),
-  TsRecentPick(
-    result: TsRecentPickResult.mismatch,
-    homeTeamLabel: 'Getafe',
-    awayTeamLabel: 'Osasuna',
-    homeScoreLabel: '0',
-    awayScoreLabel: '1',
-    pickedTeamLabel: 'Getafe',
-    leagueLabel: 'La Liga',
-    leagueIcon: TsLeagueIcon('la_liga', size: TsIconSize.xs),
-    dateLabel: '8.13',
-  ),
-  TsRecentPick(
-    result: TsRecentPickResult.match,
-    homeTeamLabel: 'LA Galaxy',
-    awayTeamLabel: 'Seattle',
-    homeScoreLabel: '3',
-    awayScoreLabel: '2',
-    pickedTeamLabel: 'LA Galaxy',
-    leagueLabel: 'MLS',
-    leagueIcon: TsLeagueIcon('mls', size: TsIconSize.xs),
-    dateLabel: '8.12',
-  ),
-];
 
 // TODO(data): replace with soccer analysis matches provider
 const _soccerAnalysisSamples = <_AnalysisSample>[

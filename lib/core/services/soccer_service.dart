@@ -395,11 +395,18 @@ class SoccerService {
     final winRate = total > 0 ? ((wins / total) * 100).round() : 0;
 
     var streak = 0;
-    for (final pick in window) {
-      if (_readPickResult(pick)?.toUpperCase() == 'WIN') {
-        streak++;
-      } else {
-        break;
+    var streakType = 'losing';
+    if (window.isNotEmpty) {
+      final firstResult = _readPickResult(window.first)?.toUpperCase();
+      if (firstResult == 'WIN' || firstResult == 'LOSE') {
+        streakType = firstResult == 'WIN' ? 'winning' : 'losing';
+        for (final pick in window) {
+          if (_readPickResult(pick)?.toUpperCase() == firstResult) {
+            streak++;
+          } else {
+            break;
+          }
+        }
       }
     }
 
@@ -412,9 +419,10 @@ class SoccerService {
       'wins': wins,
       'losses': losses,
       'streak': streak,
-      'streakType': streak > 0 ? 'winning' : 'losing',
+      'streakType': streakType,
       'total': total,
       'recentResults': recentResults,
+      'windowPicks': window,
       if (teamLogos.isNotEmpty) 'teamLogos': teamLogos,
     };
   }
