@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:trendsoccer/core/assets/ts_assets.dart';
 import 'package:trendsoccer/core/models/premium_pick_stats.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
@@ -11,9 +13,14 @@ import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/home_pick_history_provider.dart';
 import 'package:trendsoccer/core/providers/home_combo_summary_provider.dart';
 import 'package:trendsoccer/core/providers/home_match_preview_provider.dart';
+import 'package:trendsoccer/core/providers/news_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/services/soccer_service.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
+import 'package:trendsoccer/core/utils/relative_time.dart';
+import 'package:trendsoccer/design_system/icons/ts_icon.dart';
+import 'package:trendsoccer/design_system/icons/ts_icon_spec.dart';
+import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
 import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
@@ -27,6 +34,7 @@ import 'package:trendsoccer/design_system/widgets/ts_banner_slot.dart';
 import 'package:trendsoccer/design_system/widgets/ts_combo_today_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_empty_state.dart';
 import 'package:trendsoccer/design_system/widgets/ts_match_card.dart';
+import 'package:trendsoccer/design_system/widgets/ts_network_image.dart';
 import 'package:trendsoccer/design_system/widgets/ts_news_row.dart';
 import 'package:trendsoccer/design_system/widgets/ts_section_header.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
@@ -36,6 +44,7 @@ import 'package:trendsoccer/design_system/widgets/ts_subscription_banner.dart';
 Widget _homeSeeAllHeader(
   BuildContext context, {
   required String title,
+  TsIconSpec? icon,
   String? subtitle,
   required VoidCallback onSeeAll,
 }) {
@@ -46,6 +55,10 @@ Widget _homeSeeAllHeader(
     children: [
       Row(
         children: [
+          if (icon != null) ...[
+            TsIcon(icon, size: TsIconSize.sm, color: c.textPrimary),
+            const SizedBox(width: TsSpacing.sm),
+          ],
           Expanded(
             child: Text(
               title,
@@ -126,6 +139,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
     );
+    final showNewsBlock = ref.watch(
+      homeNewsProvider.select(
+        (asyncValue) => asyncValue.when(
+          data: (articles) => articles.isNotEmpty,
+          loading: () => true,
+          error: (_, _) => true,
+        ),
+      ),
+    );
 
     final blocks = <Widget>[
       _plainBlock(
@@ -162,8 +184,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // TODO(data): promotional banner content
       _plainBlock(const TsBannerSlot(ratio: TsBannerRatio.h214)),
       if (showComboBlock) _plainBlock(const _ComboTodaySection()),
-      // TODO(data): news feed provider
-      _newsBlock(context),
+      if (showNewsBlock) _plainBlock(const _NewsSection()),
       // TODO(data): secondary promotional banner content
       if (!hideMonetisation) _plainBlock(const TsBannerSlot(ratio: TsBannerRatio.h160)),
       // TODO(data): AdMob banner ad unit
@@ -200,14 +221,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.invalidate(homeAnalysisMatchesProvider);
     ref.invalidate(homeTodayMatchesProvider);
     ref.invalidate(homeComboSummaryProvider);
+    ref.invalidate(homeNewsProvider);
     await Future.wait([
       ref.read(homePickHistoryProvider(_accuracySport).future),
       ref.read(homeTodayMatchesProvider.future),
       ref.read(homeAnalysisMatchesProvider(TsSport.soccer).future),
       ref.read(homeAnalysisMatchesProvider(TsSport.baseball).future),
       ref.read(homeComboSummaryProvider.future),
+      ref.read(homeNewsProvider.future),
     ]);
-    // TODO(data): also invalidate news providers once wired.
   }
 
   List<Widget> _withGaps(List<Widget> blocks) {
@@ -225,33 +247,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
       child: child,
-    );
-  }
-
-  Widget _newsBlock(BuildContext context) {
-    return _plainBlock(
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _homeSeeAllHeader(
-            context,
-            title: 'News',
-            onSeeAll: () => context.go('/feed/news'),
-          ),
-          const SizedBox(height: TsSpacing.sm),
-          for (var i = 0; i < _newsSamples.length; i++) ...[
-            if (i > 0) const SizedBox(height: TsSpacing.md),
-            TsNewsRow(
-                title: _newsSamples[i].title,
-                source: _newsSamples[i].source,
-                timeLabel: _newsSamples[i].timeLabel,
-                onTap: () {
-                  // TODO(data): open news article ${_newsSamples[i].title}
-                },
-              ),
-          ],
-        ],
-      ),
     );
   }
 
@@ -761,6 +756,9 @@ class _AnalysisCarouselSection extends ConsumerWidget {
           child: _homeSeeAllHeader(
             context,
             title: title,
+            icon: sport == TsSport.soccer
+                ? TsIcons.analysis
+                : TsIcons.leaderboard,
             subtitle: subtitle,
             onSeeAll: () => context.go(seeAllPath),
           ),
@@ -828,9 +826,85 @@ class _ComboTodaySection extends ConsumerWidget {
         const TsSectionHeader(
           title: 'Multi-Match Analysis',
           subtitle: "Today's baseball combinations",
+          icon: TsIcons.leaderboard,
         ),
         const SizedBox(height: TsSpacing.sm),
         card,
+      ],
+    );
+  }
+}
+
+class _NewsSection extends ConsumerWidget {
+  const _NewsSection();
+
+  void _retry(WidgetRef ref) {
+    ref.invalidate(homeNewsProvider);
+  }
+
+  Future<void> _openArticle(String url) async {
+    try {
+      final uri = Uri.tryParse(url);
+      if (uri == null) return;
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final newsAsync = ref.watch(homeNewsProvider);
+
+    final body = newsAsync.when(
+      loading: () => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var i = 0; i < homeNewsLimit; i++) ...[
+            if (i > 0) const SizedBox(height: TsSpacing.md),
+            const TsSkeletonBlock(TsSkeletonType.block),
+          ],
+        ],
+      ),
+      error: (error, stackTrace) => TsEmptyState(
+        type: TsEmptyType.failure,
+        title: 'Could not load news',
+        description: 'Check your connection and try again.',
+        actionLabel: 'Retry',
+        onAction: () => _retry(ref),
+      ),
+      data: (articles) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var i = 0; i < articles.length; i++) ...[
+            if (i > 0) const SizedBox(height: TsSpacing.md),
+            TsNewsRow(
+              title: articles[i].title,
+              source: articles[i].source,
+              timeLabel: articles[i].publishedAt == null
+                  ? '—'
+                  : formatRelativeTime(articles[i].publishedAt!),
+              thumbnail: TsNetworkImage(
+                imageUrl: articles[i].imageUrl,
+                aspectRatio: 80 / 45,
+                placeholderIcon: TsIcons.imageNotSupported,
+              ),
+              onTap: () => unawaited(_openArticle(articles[i].url)),
+            ),
+          ],
+        ],
+      ),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _homeSeeAllHeader(
+          context,
+          title: 'News',
+          icon: TsIcons.newspaper,
+          onSeeAll: () => context.go('/feed/news'),
+        ),
+        const SizedBox(height: TsSpacing.sm),
+        body,
       ],
     );
   }
@@ -920,6 +994,7 @@ class _TodayMatchesSection extends ConsumerWidget {
           child: _homeSeeAllHeader(
             context,
             title: "Today's Matches",
+            icon: TsIcons.fixture,
             onSeeAll: () => context.go('/matches'),
           ),
         ),
@@ -932,34 +1007,3 @@ class _TodayMatchesSection extends ConsumerWidget {
     );
   }
 }
-
-class _NewsSample {
-  const _NewsSample({
-    required this.title,
-    required this.source,
-    required this.timeLabel,
-  });
-
-  final String title;
-  final String source;
-  final String timeLabel;
-}
-
-// TODO(data): replace with news feed provider
-const _newsSamples = <_NewsSample>[
-  _NewsSample(
-    title: 'Arsenal extend lead at the top after late winner',
-    source: 'TrendSoccer',
-    timeLabel: '2h ago',
-  ),
-  _NewsSample(
-    title: 'Dodgers rotation shift ahead of weekend series',
-    source: 'MLB Wire',
-    timeLabel: '4h ago',
-  ),
-  _NewsSample(
-    title: 'Premium pick accuracy hits 45% over last 30 days',
-    source: 'TrendSoccer',
-    timeLabel: '6h ago',
-  ),
-];
