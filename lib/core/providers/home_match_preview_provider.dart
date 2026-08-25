@@ -4,13 +4,17 @@ import 'package:trendsoccer/core/models/baseball_models.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
+import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
 
 /// Cap for the home "today's matches" carousel (Figma shows five).
 const homeTodayMatchesLimit = 5;
 
-/// Normalized upcoming match for today's home carousel across both sports.
-class HomeTodayMatch {
-  const HomeTodayMatch({
+/// Cap for the home analysis carousels (Figma shows seven).
+const homeAnalysisMatchesLimit = 7;
+
+/// Normalized upcoming match preview shared across home carousels.
+class HomeMatchPreview {
+  const HomeMatchPreview({
     required this.leagueCode,
     required this.homeTeamEn,
     this.homeTeamKo,
@@ -37,31 +41,57 @@ class HomeTodayMatch {
 
 /// Today's upcoming scheduled matches across soccer and baseball analysis feeds.
 final homeTodayMatchesProvider =
-    FutureProvider<List<HomeTodayMatch>>((ref) async {
+    FutureProvider<List<HomeMatchPreview>>((ref) async {
   final soccer = await ref.watch(analysisSoccerMatchesProvider.future);
   final baseball = await ref.watch(baseballAnalysisMatchesProvider.future);
 
   final now = DateTime.now();
   final todayStart = DateTime(now.year, now.month, now.day);
 
-  final merged = <HomeTodayMatch>[
+  final merged = <HomeMatchPreview>[
     ...soccer
-        .map(_homeTodayMatchFromSoccer)
-        .whereType<HomeTodayMatch>()
+        .map(_homeMatchPreviewFromSoccer)
+        .whereType<HomeMatchPreview>()
         .where((match) => _isTodayUpcomingScheduled(match, todayStart, now)),
     ...baseball
-        .map(_homeTodayMatchFromBaseball)
+        .map(_homeMatchPreviewFromBaseball)
         .where((match) => _isTodayUpcomingScheduled(match, todayStart, now)),
-  ]..sort((a, b) => a.kickoffUtc.compareTo(b.kickoffUtc));
+  ];
 
-  if (merged.length > homeTodayMatchesLimit) {
-    return merged.sublist(0, homeTodayMatchesLimit);
-  }
-  return merged;
+  return _capSortedByKickoff(merged, homeTodayMatchesLimit);
 });
 
+/// Upcoming analysis matches for one sport, sorted by kickoff (no today filter).
+final homeAnalysisMatchesProvider =
+    FutureProvider.family<List<HomeMatchPreview>, TsSport>((ref, sport) async {
+  switch (sport) {
+    case TsSport.soccer:
+      final soccer = await ref.watch(analysisSoccerMatchesProvider.future);
+      final previews = soccer
+          .map(_homeMatchPreviewFromSoccer)
+          .whereType<HomeMatchPreview>()
+          .toList();
+      return _capSortedByKickoff(previews, homeAnalysisMatchesLimit);
+    case TsSport.baseball:
+      final baseball = await ref.watch(baseballAnalysisMatchesProvider.future);
+      final previews = baseball.map(_homeMatchPreviewFromBaseball).toList();
+      return _capSortedByKickoff(previews, homeAnalysisMatchesLimit);
+  }
+});
+
+List<HomeMatchPreview> _capSortedByKickoff(
+  List<HomeMatchPreview> matches,
+  int limit,
+) {
+  final sorted = [...matches]..sort((a, b) => a.kickoffUtc.compareTo(b.kickoffUtc));
+  if (sorted.length > limit) {
+    return sorted.sublist(0, limit);
+  }
+  return sorted;
+}
+
 bool _isTodayUpcomingScheduled(
-  HomeTodayMatch match,
+  HomeMatchPreview match,
   DateTime todayStart,
   DateTime now,
 ) {
@@ -75,7 +105,7 @@ bool _isTodayUpcomingScheduled(
   return localKickoff.isAfter(now);
 }
 
-HomeTodayMatch? _homeTodayMatchFromSoccer(SoccerAnalysisCard card) {
+HomeMatchPreview? _homeMatchPreviewFromSoccer(SoccerAnalysisCard card) {
   final match = card.match;
   if (match.status != 'scheduled') return null;
 
@@ -86,7 +116,7 @@ HomeTodayMatch? _homeTodayMatchFromSoccer(SoccerAnalysisCard card) {
   final leagueCode = match.league.code;
   if (leagueCode == null || leagueCode.isEmpty) return null;
 
-  return HomeTodayMatch(
+  return HomeMatchPreview(
     leagueCode: leagueCode,
     homeTeamEn: match.homeTeam.name,
     homeTeamKo: match.homeTeam.nameKo,
@@ -99,12 +129,12 @@ HomeTodayMatch? _homeTodayMatchFromSoccer(SoccerAnalysisCard card) {
   );
 }
 
-HomeTodayMatch _homeTodayMatchFromBaseball(BaseballAnalysisCard card) {
+HomeMatchPreview _homeMatchPreviewFromBaseball(BaseballAnalysisCard card) {
   final kickoffUtc = card.matchTimestamp.isUtc
       ? card.matchTimestamp
       : card.matchTimestamp.toUtc();
 
-  return HomeTodayMatch(
+  return HomeMatchPreview(
     leagueCode: card.league,
     homeTeamEn: card.homeTeam,
     homeTeamKo: card.homeTeamKo,

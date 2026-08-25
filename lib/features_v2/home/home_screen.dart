@@ -9,7 +9,7 @@ import 'package:trendsoccer/core/models/premium_pick_stats.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/home_pick_history_provider.dart';
-import 'package:trendsoccer/core/providers/home_today_matches_provider.dart';
+import 'package:trendsoccer/core/providers/home_match_preview_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/services/soccer_service.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
@@ -89,6 +89,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final auth = ref.watch(authProvider);
     // Trial users already have access: member app bar, no upsell, no ads.
     final hideMonetisation = auth.isPremium || auth.isTrial;
+    final showSoccerAnalysisBlock = ref.watch(
+      homeAnalysisMatchesProvider(TsSport.soccer).select(
+        (asyncValue) => asyncValue.when(
+          data: (matches) => matches.isNotEmpty,
+          loading: () => true,
+          error: (_, _) => true,
+        ),
+      ),
+    );
+    final showBaseballAnalysisBlock = ref.watch(
+      homeAnalysisMatchesProvider(TsSport.baseball).select(
+        (asyncValue) => asyncValue.when(
+          data: (matches) => matches.isNotEmpty,
+          loading: () => true,
+          error: (_, _) => true,
+        ),
+      ),
+    );
     final showTodayMatchesBlock = ref.watch(
       homeTodayMatchesProvider.select(
         (asyncValue) => asyncValue.when(
@@ -117,21 +135,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onAction: () => context.go('/menu/subscribe'),
           ),
         ),
-      // TODO(data): soccer analysis matches provider
-      _analysisCarousel(
-        context,
-        title: 'Soccer Analysis',
-        seeAllPath: '/reports/soccer/premium',
-        items: _soccerAnalysisSamples,
-      ),
-      // TODO(data): baseball analysis matches provider
-      _analysisCarousel(
-        context,
-        title: 'Baseball Analysis',
-        subtitle: 'MLB · KBO · NPB',
-        seeAllPath: '/reports/baseball',
-        items: _baseballAnalysisSamples,
-      ),
+      if (showSoccerAnalysisBlock)
+        const _AnalysisCarouselSection(
+          sport: TsSport.soccer,
+          title: 'Soccer Analysis',
+          seeAllPath: '/reports/soccer/premium',
+        ),
+      if (showBaseballAnalysisBlock)
+        const _AnalysisCarouselSection(
+          sport: TsSport.baseball,
+          title: 'Baseball Analysis',
+          subtitle: 'MLB · KBO · NPB',
+          seeAllPath: '/reports/baseball',
+        ),
       if (showTodayMatchesBlock) const _TodayMatchesSection(),
       // TODO(data): promotional banner content
       _plainBlock(const TsBannerSlot(ratio: TsBannerRatio.h214)),
@@ -211,10 +227,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.invalidate(homePickHistoryProvider(_accuracySport));
     ref.invalidate(analysisSoccerMatchesProvider);
     ref.invalidate(baseballAnalysisMatchesProvider);
+    ref.invalidate(homeAnalysisMatchesProvider);
     ref.invalidate(homeTodayMatchesProvider);
     await Future.wait([
       ref.read(homePickHistoryProvider(_accuracySport).future),
       ref.read(homeTodayMatchesProvider.future),
+      ref.read(homeAnalysisMatchesProvider(TsSport.soccer).future),
+      ref.read(homeAnalysisMatchesProvider(TsSport.baseball).future),
     ]);
     // TODO(data): also invalidate combo picks and news providers once wired.
   }
@@ -234,58 +253,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
       child: child,
-    );
-  }
-
-  Widget _analysisCarousel(
-    BuildContext context, {
-    required String title,
-    String? subtitle,
-    required String seeAllPath,
-    required List<_AnalysisSample> items,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-          child: _homeSeeAllHeader(
-            context,
-            title: title,
-            subtitle: subtitle,
-            onSeeAll: () => context.go(seeAllPath),
-          ),
-        ),
-        const SizedBox(height: TsSpacing.sm),
-        SizedBox(
-          height: 120,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-            itemCount: items.length,
-            separatorBuilder: (context, index) =>
-                const SizedBox(width: TsSpacing.sm),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return SizedBox(
-                width: 340,
-                child: TsAnalysisCard(
-                  leagueId: item.leagueId,
-                  leagueLabel: item.leagueLabel,
-                  homeTeam: item.homeTeam,
-                  awayTeam: item.awayTeam,
-                  status: item.status,
-                  centerLabel: item.centerLabel,
-                  subLabel: item.subLabel,
-                  onTap: () {
-                    // TODO(data): open analysis detail for ${item.homeTeam} vs ${item.awayTeam}
-                  },
-                ),
-              );
-            },
-          ),
-        ),
-      ],
     );
   }
 
@@ -708,24 +675,132 @@ class _AccuracyCardSectionState extends ConsumerState<_AccuracyCardSection> {
   }
 }
 
-class _AnalysisSample {
-  const _AnalysisSample({
-    required this.leagueId,
-    required this.leagueLabel,
-    required this.homeTeam,
-    required this.awayTeam,
-    this.status = TsAnalysisStatus.scheduled,
-    this.centerLabel,
-    this.subLabel,
+String _analysisKickoffTimeLabel(DateTime kickoffUtc) {
+  final local = kickoffUtc.toLocal();
+  return '${local.hour.toString().padLeft(2, '0')}:'
+      '${local.minute.toString().padLeft(2, '0')}';
+}
+
+String _analysisKickoffSubLabel(DateTime kickoffUtc) {
+  final local = kickoffUtc.toLocal();
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final kickoffDay = DateTime(local.year, local.month, local.day);
+  if (kickoffDay == today) return 'Today';
+  if (kickoffDay == today.add(const Duration(days: 1))) return 'Tomorrow';
+  final month = local.month.toString().padLeft(2, '0');
+  final day = local.day.toString().padLeft(2, '0');
+  return '$month.$day';
+}
+
+class _AnalysisCarouselSection extends ConsumerWidget {
+  const _AnalysisCarouselSection({
+    required this.sport,
+    required this.title,
+    this.subtitle,
+    required this.seeAllPath,
   });
 
-  final String leagueId;
-  final String leagueLabel;
-  final String homeTeam;
-  final String awayTeam;
-  final TsAnalysisStatus status;
-  final String? centerLabel;
-  final String? subLabel;
+  final TsSport sport;
+  final String title;
+  final String? subtitle;
+  final String seeAllPath;
+
+  void _retry(WidgetRef ref) {
+    switch (sport) {
+      case TsSport.soccer:
+        ref.invalidate(analysisSoccerMatchesProvider);
+      case TsSport.baseball:
+        ref.invalidate(baseballAnalysisMatchesProvider);
+    }
+    ref.invalidate(homeAnalysisMatchesProvider(sport));
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final matchesAsync = ref.watch(homeAnalysisMatchesProvider(sport));
+
+    final rail = matchesAsync.when(
+      loading: () => ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
+        itemCount: homeAnalysisMatchesLimit,
+        separatorBuilder: (context, index) => const SizedBox(width: TsSpacing.sm),
+        itemBuilder: (context, index) => const SizedBox(
+          width: 340,
+          child: TsSkeletonBlock(TsSkeletonType.block),
+        ),
+      ),
+      error: (error, stackTrace) => Align(
+        alignment: Alignment.center,
+        child: TsEmptyState(
+          type: TsEmptyType.failure,
+          title: 'Could not load matches',
+          description: 'Check your connection and try again.',
+          actionLabel: 'Retry',
+          onAction: () => _retry(ref),
+        ),
+      ),
+      data: (matches) => ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
+        itemCount: matches.length,
+        separatorBuilder: (context, index) => const SizedBox(width: TsSpacing.sm),
+        itemBuilder: (context, index) {
+          final item = matches[index];
+          final leagueCode = item.leagueCode;
+          final leagueId =
+              TsAssets.leagueIconIdFromApiCode(leagueCode) ??
+              leagueCode.toLowerCase();
+          return SizedBox(
+            width: 340,
+            child: TsAnalysisCard(
+              leagueId: leagueId,
+              leagueLabel: TsAssets.leagueDisplayName(leagueCode),
+              homeTeam: localizedTeamName(
+                context,
+                item.homeTeamEn,
+                item.homeTeamKo,
+              ),
+              awayTeam: localizedTeamName(
+                context,
+                item.awayTeamEn,
+                item.awayTeamKo,
+              ),
+              homeEmblemUrl: item.homeEmblemUrl,
+              awayEmblemUrl: item.awayEmblemUrl,
+              status: TsAnalysisStatus.scheduled,
+              centerLabel: _analysisKickoffTimeLabel(item.kickoffUtc),
+              subLabel: _analysisKickoffSubLabel(item.kickoffUtc),
+              onTap: () {
+                // TODO(data): open analysis report detail
+              },
+            ),
+          );
+        },
+      ),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
+          child: _homeSeeAllHeader(
+            context,
+            title: title,
+            subtitle: subtitle,
+            onSeeAll: () => context.go(seeAllPath),
+          ),
+        ),
+        const SizedBox(height: TsSpacing.sm),
+        SizedBox(
+          height: 120,
+          child: rail,
+        ),
+      ],
+    );
+  }
 }
 
 class _TodayMatchesSection extends ConsumerWidget {
@@ -836,64 +911,6 @@ class _NewsSample {
   final String source;
   final String timeLabel;
 }
-
-// TODO(data): replace with soccer analysis matches provider
-const _soccerAnalysisSamples = <_AnalysisSample>[
-  _AnalysisSample(
-    leagueId: 'premier_league',
-    leagueLabel: 'Premier League',
-    homeTeam: 'Arsenal',
-    awayTeam: 'Chelsea',
-    centerLabel: '15:00',
-    subLabel: 'Sat',
-  ),
-  _AnalysisSample(
-    leagueId: 'la_liga',
-    leagueLabel: 'La Liga',
-    homeTeam: 'Barcelona',
-    awayTeam: 'Real Madrid',
-    status: TsAnalysisStatus.live,
-    centerLabel: '1 - 1',
-    subLabel: "72'",
-  ),
-  _AnalysisSample(
-    leagueId: 'bundesliga',
-    leagueLabel: 'Bundesliga',
-    homeTeam: 'Bayern',
-    awayTeam: 'Dortmund',
-    status: TsAnalysisStatus.finished,
-    centerLabel: '3 - 2',
-    subLabel: 'FT',
-  ),
-];
-
-// TODO(data): replace with baseball analysis matches provider
-const _baseballAnalysisSamples = <_AnalysisSample>[
-  _AnalysisSample(
-    leagueId: 'mlb',
-    leagueLabel: 'MLB',
-    homeTeam: 'Yankees',
-    awayTeam: 'Red Sox',
-    centerLabel: '19:05',
-    subLabel: 'Today',
-  ),
-  _AnalysisSample(
-    leagueId: 'kbo',
-    leagueLabel: 'KBO',
-    homeTeam: 'LG Twins',
-    awayTeam: 'Doosan',
-    centerLabel: '18:30',
-    subLabel: 'Today',
-  ),
-  _AnalysisSample(
-    leagueId: 'npb',
-    leagueLabel: 'NPB',
-    homeTeam: 'Giants',
-    awayTeam: 'Tigers',
-    centerLabel: '18:00',
-    subLabel: 'Today',
-  ),
-];
 
 // TODO(data): replace with news feed provider
 const _newsSamples = <_NewsSample>[
