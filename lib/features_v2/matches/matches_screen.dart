@@ -55,6 +55,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
   final Map<String, List<FixtureMatch>> _baseballDateCache = {};
   final Set<String> _baseballDateLoading = {};
   bool _baseballLoadFailed = false;
+  Future<void>? _fixtureRefreshInFlight;
 
   @override
   void initState() {
@@ -192,16 +193,38 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
     }
   }
 
-  void _retryFixtureLoad(String sport) {
+  Future<void> _retryFixtureLoad(String sport) async {
+    final inFlight = _fixtureRefreshInFlight;
+    if (inFlight != null) {
+      return inFlight;
+    }
+
+    final future = _performFixtureRefresh(sport);
+    _fixtureRefreshInFlight = future;
+    try {
+      await future;
+    } finally {
+      if (identical(_fixtureRefreshInFlight, future)) {
+        _fixtureRefreshInFlight = null;
+      }
+    }
+  }
+
+  Future<void> _performFixtureRefresh(String sport) async {
     if (sport == 'baseball') {
-      setState(() => _baseballLoadFailed = false);
+      if (mounted) setState(() => _baseballLoadFailed = false);
       _clearBaseballDateCache();
     }
     invalidateFixtureData(ref);
     if (sport == 'baseball') {
-      unawaited(_loadBaseballDate(ref.read(fixtureSelectedDateProvider)));
+      await _loadBaseballDate(ref.read(fixtureSelectedDateProvider));
+    } else {
+      await ref.read(soccerFixturesProvider.future);
     }
   }
+
+  Future<void> _onMatchesRefresh() =>
+      _retryFixtureLoad(ref.read(fixtureSelectedSportProvider));
 
   TsSport _tsSportFromProvider(String sport) =>
       sport == 'baseball' ? TsSport.baseball : TsSport.soccer;
@@ -515,9 +538,14 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
         onAuthTap: () => context.go('/login'),
         tierLabel: 'PREMIUM',
       ),
-      body: CustomScrollView(
-        controller: _scrollController,
-        slivers: [
+      body: RefreshIndicator(
+        onRefresh: _onMatchesRefresh,
+        displacement:
+            _MatchesStickyHeaderDelegate.stickyHeaderHeight + TsSpacing.lg,
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
           SliverPersistentHeader(
             pinned: true,
             delegate: _MatchesStickyHeaderDelegate(
@@ -631,6 +659,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
           ),
           const SliverToBoxAdapter(child: SizedBox(height: TsSpacing.lg)),
         ],
+        ),
       ),
     );
   }
@@ -843,7 +872,7 @@ class _MatchesStickyHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.onDateSelected,
   });
 
-  static const double _height = 104;
+  static const double stickyHeaderHeight = 104;
 
   final Color canvasColor;
   final TsSport activeSport;
@@ -855,10 +884,10 @@ class _MatchesStickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   final ValueChanged<int> onDateSelected;
 
   @override
-  double get minExtent => _height;
+  double get minExtent => stickyHeaderHeight;
 
   @override
-  double get maxExtent => _height;
+  double get maxExtent => stickyHeaderHeight;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
