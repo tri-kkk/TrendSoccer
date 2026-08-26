@@ -7,8 +7,8 @@ import 'package:trendsoccer/core/utils/baseball_status.dart';
 
 const baseballLeaguePriority = {
   'MLB': 0,
-  'NPB': 1,
-  'KBO': 2,
+  'KBO': 1,
+  'NPB': 2,
   'CPBL': 3,
 };
 
@@ -85,13 +85,6 @@ String fixtureDateString(DateTime date) {
 }
 
 String fixtureTodayDateString() => fixtureDateString(DateTime.now());
-
-/// Date chips: today − 2 through today + 3 (6 days).
-List<DateTime> fixtureDateChipDates([DateTime? anchor]) {
-  final today = anchor ?? DateTime.now();
-  final todayDay = DateTime(today.year, today.month, today.day);
-  return List.generate(6, (index) => todayDay.add(Duration(days: index - 2)));
-}
 
 bool matchIsOnDate(FixtureMatch match, String dateStr) {
   final local = match.matchTimestamp.toLocal();

@@ -36,31 +36,33 @@ class TsDateChip extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 44,
-        height: 56,
-        padding: const EdgeInsets.all(TsSpacing.sm),
-        decoration: BoxDecoration(
-          color: selected ? c.primaryMuted : null,
-          borderRadius: TsRadius.sm,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(weekday, style: weekdayStyle),
-            const SizedBox(height: TsSpacing.xxs),
-            Text(day, style: dayStyle),
-            const SizedBox(height: TsSpacing.xxs),
-            Container(
-              width: TsSpacing.xs,
-              height: TsSpacing.xs,
-              decoration: BoxDecoration(
-                color: isToday ? c.primary : Colors.transparent,
-                shape: BoxShape.circle,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 44, minHeight: 56),
+        child: Container(
+          height: 56,
+          padding: const EdgeInsets.all(TsSpacing.sm),
+          decoration: BoxDecoration(
+            color: selected ? c.primaryMuted : null,
+            borderRadius: TsRadius.sm,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(weekday, style: weekdayStyle),
+              const SizedBox(height: TsSpacing.xxs),
+              Text(day, style: dayStyle),
+              const SizedBox(height: TsSpacing.xxs),
+              Container(
+                width: TsSpacing.xs,
+                height: TsSpacing.xs,
+                decoration: BoxDecoration(
+                  color: isToday ? c.primary : Colors.transparent,
+                  shape: BoxShape.circle,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

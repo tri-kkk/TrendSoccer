@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,7 @@ import 'package:trendsoccer/core/assets/ts_assets.dart';
 import 'package:trendsoccer/core/models/fixture_models_v2.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
+import 'package:trendsoccer/core/services/fixture_service.dart';
 import 'package:trendsoccer/core/utils/league_supports_analysis.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
@@ -25,10 +28,8 @@ import 'package:trendsoccer/design_system/widgets/ts_match_row.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
 
-/// Eight-day window aligned with soccer `daysBack=3` / `daysAhead=4`.
+/// Eight-day window: today − 3 … today + 4 (both sports).
 const _dateChipCount = 8;
-
-/// Index of today within [_dateChipCount] chips (today − 3 … today + 4).
 const _todayChipIndex = 3;
 
 class MatchesScreen extends ConsumerStatefulWidget {
@@ -51,20 +52,20 @@ class _MatchRowPresentation {
 class _MatchesScreenState extends ConsumerState<MatchesScreen> {
   final Set<String> _collapsedLeagueCodes = {};
   final ScrollController _scrollController = ScrollController();
-  late final List<DateTime> _chipDates;
+  final Map<String, List<FixtureMatch>> _baseballDateCache = {};
+  final Set<String> _baseballDateLoading = {};
+  bool _baseballLoadFailed = false;
 
   @override
   void initState() {
     super.initState();
-    final today = DateTime.now();
-    final todayDay = DateTime(today.year, today.month, today.day);
-    _chipDates = List.generate(
-      _dateChipCount,
-      (index) => todayDay.add(Duration(days: index - _todayChipIndex)),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _ensureBaseballDateLoaded();
+    });
     // TODO(data): date strip does not refresh across midnight yet; an
     // AppLifecycle resume hook (as home_screen uses for profile) is where
-    // _chipDates would be regenerated and selection adjusted.
+    // chip dates would be regenerated and selection adjusted.
   }
 
   @override
@@ -85,11 +86,121 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
         date.day == today.day;
   }
 
-  int _selectedDateIndex(String selectedDateStr) {
-    final index = _chipDates.indexWhere(
+  List<DateTime> _chipDates() {
+    final today = DateTime.now();
+    final todayDay = DateTime(today.year, today.month, today.day);
+    return List.generate(
+      _dateChipCount,
+      (index) => todayDay.add(Duration(days: index - _todayChipIndex)),
+    );
+  }
+
+  int _selectedDateIndex(String selectedDateStr, List<DateTime> chipDates) {
+    final index = chipDates.indexWhere(
       (date) => fixtureDateString(date) == selectedDateStr,
     );
     return index < 0 ? _todayChipIndex : index;
+  }
+
+  bool _preferBundledLeagueIcon(String sport) => sport == 'baseball';
+
+  void _clearBaseballDateCache() {
+    _baseballDateCache.clear();
+    _baseballDateLoading.clear();
+    clearBaseballFixtureLazyCache(ref);
+  }
+
+  List<FixtureMatch> _mergedBaseballCache() {
+    final byMatchId = <int, FixtureMatch>{};
+    final withoutId = <FixtureMatch>[];
+
+    for (final matches in _baseballDateCache.values) {
+      for (final match in matches) {
+        if (match.matchId != 0) {
+          byMatchId[match.matchId] = match;
+        } else {
+          withoutId.add(match);
+        }
+      }
+    }
+
+    return [...byMatchId.values, ...withoutId]
+      ..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
+  }
+
+  void _publishBaseballCache() {
+    ref.read(baseballLazyFixturesProvider.notifier).state =
+        _mergedBaseballCache();
+  }
+
+  void _ensureBaseballDateLoaded() {
+    if (ref.read(fixtureSelectedSportProvider) != 'baseball') return;
+    unawaited(_loadBaseballDate(ref.read(fixtureSelectedDateProvider)));
+  }
+
+  void _preloadAdjacentBaseballDates(String centerDate, List<DateTime> chipDates) {
+    final chipDateStrings = chipDates.map(fixtureDateString).toList();
+    final index = chipDateStrings.indexOf(centerDate);
+    if (index < 0) return;
+
+    if (index > 0) {
+      unawaited(_loadBaseballDate(chipDateStrings[index - 1], background: true));
+    }
+    if (index < chipDateStrings.length - 1) {
+      unawaited(_loadBaseballDate(chipDateStrings[index + 1], background: true));
+    }
+  }
+
+  Future<void> _loadBaseballDate(
+    String date, {
+    bool background = false,
+  }) async {
+    if (ref.read(fixtureSelectedSportProvider) != 'baseball') return;
+    if (_baseballDateCache.containsKey(date) ||
+        _baseballDateLoading.contains(date)) {
+      return;
+    }
+
+    _baseballDateLoading.add(date);
+    if (!background) {
+      ref.read(baseballFixturesLoadingProvider.notifier).state =
+          _baseballDateCache.isEmpty;
+    }
+
+    try {
+      final service = ref.read(fixtureServiceProvider);
+      final matches = await service.getBaseballFixtures(date: date);
+      if (!mounted) return;
+      if (ref.read(fixtureSelectedSportProvider) != 'baseball') return;
+
+      _baseballDateCache[date] = matches;
+      _publishBaseballCache();
+      if (mounted) setState(() => _baseballLoadFailed = false);
+
+      if (!background) {
+        _preloadAdjacentBaseballDates(date, _chipDates());
+      }
+    } on Object {
+      if (!background && mounted) {
+        setState(() => _baseballLoadFailed = true);
+      }
+    } finally {
+      _baseballDateLoading.remove(date);
+      if (!background && mounted) {
+        ref.read(baseballFixturesLoadingProvider.notifier).state = false;
+      }
+    }
+  }
+
+  void _retryFixtureLoad(String sport) {
+    if (sport == 'baseball') {
+      setState(() => _baseballLoadFailed = false);
+      _clearBaseballDateCache();
+    }
+    invalidateFixtureData(ref);
+    if (sport == 'baseball') {
+      unawaited(_loadBaseballDate(ref.read(fixtureSelectedDateProvider)));
+    }
   }
 
   TsSport _tsSportFromProvider(String sport) =>
@@ -101,19 +212,29 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
   }
 
   void _onSportChanged(TsSport sport) {
-    ref.read(fixtureSelectedSportProvider.notifier).state =
-        sport == TsSport.baseball ? 'baseball' : 'soccer';
+    final sportStr = sport == TsSport.baseball ? 'baseball' : 'soccer';
+    ref.read(fixtureSelectedSportProvider.notifier).state = sportStr;
     _resetFilterToAll();
-    ref.read(fixtureSelectedDateProvider.notifier).state =
-        fixtureTodayDateString();
-    setState(_collapsedLeagueCodes.clear);
+    setState(() {
+      _collapsedLeagueCodes.clear();
+      _baseballLoadFailed = false;
+    });
+    if (sportStr == 'baseball') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _ensureBaseballDateLoaded();
+      });
+    }
   }
 
-  void _onDateSelected(int index) {
-    if (index < 0 || index >= _chipDates.length) return;
+  void _onDateSelected(int index, List<DateTime> chipDates) {
+    if (index < 0 || index >= chipDates.length) return;
     _resetFilterToAll();
-    ref.read(fixtureSelectedDateProvider.notifier).state =
-        fixtureDateString(_chipDates[index]);
+    final dateStr = fixtureDateString(chipDates[index]);
+    ref.read(fixtureSelectedDateProvider.notifier).state = dateStr;
+    if (ref.read(fixtureSelectedSportProvider) == 'baseball') {
+      unawaited(_loadBaseballDate(dateStr));
+    }
   }
 
   void _onSelectAll() => _resetFilterToAll();
@@ -219,10 +340,13 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
   String? _scoreText(int? score) => score?.toString();
 
   Widget _buildFilterRow({
+    required String sport,
     required List<FixtureLeagueOption> leagues,
     required String? selectedLeague,
     required bool liveFilter,
   }) {
+    final preferBundledIcon = _preferBundledLeagueIcon(sport);
+
     return SizedBox(
       height: 32,
       child: ListView.separated(
@@ -250,7 +374,8 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
           final league = leagues[index - 2];
           return _MatchesLeagueFilterChip(
             leagueId: _leagueIconId(league.code),
-            logoUrl: league.logo,
+            logoUrl: preferBundledIcon ? null : league.logo,
+            preferAsset: preferBundledIcon,
             label: _leagueFilterLabel(league),
             selected: selectedLeague == league.code && !liveFilter,
             onTap: () => _onSelectLeague(league.code),
@@ -267,6 +392,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
   ) {
     final leagueId = _leagueIconId(group.leagueCode);
     final collapsed = _collapsedLeagueCodes.contains(group.leagueCode);
+    final preferBundledIcon = _preferBundledLeagueIcon(sport);
 
     return Container(
       width: 380,
@@ -284,7 +410,8 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
             padding: const EdgeInsets.all(TsSpacing.md),
             child: _MatchesLeagueGroupHeader(
               leagueId: leagueId,
-              logoUrl: group.leagueLogo,
+              logoUrl: preferBundledIcon ? null : group.leagueLogo,
+              preferAsset: preferBundledIcon,
               label: _groupLeagueLabel(group, sport),
               matchCount: group.matches.length.toString(),
               collapsed: collapsed,
@@ -368,6 +495,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
     final liveFilter = ref.watch(fixtureLiveFilterProvider);
     final leagues = ref.watch(fixtureAvailableLeaguesProvider);
     final groupsAsync = ref.watch(fixtureLeagueGroupsProvider);
+    final chipDates = _chipDates();
 
     ref.listen<List<FixtureLeagueOption>>(fixtureAvailableLeaguesProvider,
         (previous, next) {
@@ -377,7 +505,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
       ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
     });
 
-    final selectedDateIndex = _selectedDateIndex(selectedDateStr);
+    final selectedDateIndex = _selectedDateIndex(selectedDateStr, chipDates);
 
     return Scaffold(
       backgroundColor: c.canvas,
@@ -395,17 +523,18 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
             delegate: _MatchesStickyHeaderDelegate(
               canvasColor: c.canvas,
               activeSport: _tsSportFromProvider(sport),
-              chipDates: _chipDates,
+              chipDates: chipDates,
               selectedDateIndex: selectedDateIndex,
               weekdayLabel: _weekdayLabel,
               isToday: _isToday,
               onSportChanged: _onSportChanged,
-              onDateSelected: _onDateSelected,
+              onDateSelected: (index) => _onDateSelected(index, chipDates),
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: TsSpacing.lg)),
           SliverToBoxAdapter(
             child: _buildFilterRow(
+              sport: sport,
               leagues: leagues,
               selectedLeague: selectedLeague,
               liveFilter: liveFilter,
@@ -428,13 +557,30 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
                     title: 'Could not load matches',
                     description: 'Check your connection and try again.',
                     actionLabel: 'Retry',
-                    onAction: () => invalidateFixtureData(ref),
+                    onAction: () => _retryFixtureLoad(sport),
                   ),
                 ),
               ),
             ],
             data: (groups) {
               if (groups.isEmpty) {
+                if (sport == 'baseball' && _baseballLoadFailed) {
+                  return [
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: TsEmptyState(
+                          type: TsEmptyType.failure,
+                          title: 'Could not load matches',
+                          description: 'Check your connection and try again.',
+                          actionLabel: 'Retry',
+                          onAction: () => _retryFixtureLoad(sport),
+                        ),
+                      ),
+                    ),
+                  ];
+                }
+
                 if (liveFilter) {
                   return [
                     SliverFillRemaining(
@@ -452,7 +598,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
                   ];
                 }
 
-                final selectedDate = _chipDates[selectedDateIndex];
+                final selectedDate = chipDates[selectedDateIndex];
                 return [
                   SliverFillRemaining(
                     hasScrollBody: false,
@@ -493,7 +639,8 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
 class _MatchesLeagueFilterChip extends StatelessWidget {
   const _MatchesLeagueFilterChip({
     required this.leagueId,
-    required this.logoUrl,
+    this.logoUrl,
+    this.preferAsset = true,
     required this.label,
     this.selected = false,
     this.onTap,
@@ -501,6 +648,7 @@ class _MatchesLeagueFilterChip extends StatelessWidget {
 
   final String leagueId;
   final String? logoUrl;
+  final bool preferAsset;
   final String label;
   final bool selected;
   final VoidCallback? onTap;
@@ -531,7 +679,7 @@ class _MatchesLeagueFilterChip extends StatelessWidget {
                     leagueId,
                     size: TsIconSize.xs,
                     logoUrl: logoUrl,
-                    preferAsset: false,
+                    preferAsset: preferAsset,
                   ),
                   const SizedBox(width: TsSpacing.xs),
                   Text(
@@ -554,7 +702,8 @@ class _MatchesLeagueFilterChip extends StatelessWidget {
 class _MatchesLeagueGroupHeader extends StatelessWidget {
   const _MatchesLeagueGroupHeader({
     required this.leagueId,
-    required this.logoUrl,
+    this.logoUrl,
+    this.preferAsset = true,
     required this.label,
     required this.matchCount,
     required this.collapsed,
@@ -563,6 +712,7 @@ class _MatchesLeagueGroupHeader extends StatelessWidget {
 
   final String leagueId;
   final String? logoUrl;
+  final bool preferAsset;
   final String label;
   final String matchCount;
   final bool collapsed;
@@ -580,7 +730,7 @@ class _MatchesLeagueGroupHeader extends StatelessWidget {
             leagueId,
             size: TsIconSize.md,
             logoUrl: logoUrl,
-            preferAsset: false,
+            preferAsset: preferAsset,
           ),
           const SizedBox(width: TsSpacing.sm),
           Expanded(
@@ -603,6 +753,79 @@ class _MatchesLeagueGroupHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class MatchesDateStrip extends StatelessWidget {
+  const MatchesDateStrip({
+    required this.chipDates,
+    required this.selectedDateIndex,
+    required this.weekdayLabel,
+    required this.isToday,
+    required this.onDateSelected,
+    super.key,
+  });
+
+  static const minChipWidth = 44.0;
+  static const gap = TsSpacing.xs;
+  static const hPadding = TsSpacing.lg;
+
+  static double fillThreshold(int chipCount) =>
+      chipCount * minChipWidth + (chipCount - 1) * gap + hPadding * 2;
+
+  final List<DateTime> chipDates;
+  final int selectedDateIndex;
+  final String Function(DateTime date) weekdayLabel;
+  final bool Function(DateTime date) isToday;
+  final ValueChanged<int> onDateSelected;
+
+  Widget _dateChip(int index) {
+    final date = chipDates[index];
+    return TsDateChip(
+      weekday: weekdayLabel(date),
+      day: date.day.toString(),
+      selected: index == selectedDateIndex,
+      isToday: isToday(date),
+      onTap: () => onDateSelected(index),
+    );
+  }
+
+  List<Widget> _chipChildren({required bool scrollMode}) {
+    return [
+      for (var index = 0; index < chipDates.length; index++) ...[
+        if (index > 0) const SizedBox(width: gap),
+        if (scrollMode)
+          SizedBox(width: minChipWidth, child: _dateChip(index))
+        else
+          Expanded(child: _dateChip(index)),
+      ],
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 56,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final useFill =
+              constraints.maxWidth >= fillThreshold(chipDates.length);
+
+          if (useFill) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: hPadding),
+              child: Row(children: _chipChildren(scrollMode: false)),
+            );
+          }
+
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: hPadding),
+            child: Row(children: _chipChildren(scrollMode: true)),
+          );
+        },
       ),
     );
   }
@@ -655,27 +878,12 @@ class _MatchesStickyHeaderDelegate extends SliverPersistentHeaderDelegate {
             ),
           ),
           const SizedBox(height: TsSpacing.md),
-          SizedBox(
-            height: 56,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-              itemCount: chipDates.length,
-              separatorBuilder: (_, _) => const SizedBox(width: TsSpacing.sm),
-              itemBuilder: (context, index) {
-                final date = chipDates[index];
-                return SizedBox(
-                  width: 47,
-                  child: TsDateChip(
-                    weekday: weekdayLabel(date),
-                    day: date.day.toString(),
-                    selected: index == selectedDateIndex,
-                    isToday: isToday(date),
-                    onTap: () => onDateSelected(index),
-                  ),
-                );
-              },
-            ),
+          MatchesDateStrip(
+            chipDates: chipDates,
+            selectedDateIndex: selectedDateIndex,
+            weekdayLabel: weekdayLabel,
+            isToday: isToday,
+            onDateSelected: onDateSelected,
           ),
         ],
       ),
