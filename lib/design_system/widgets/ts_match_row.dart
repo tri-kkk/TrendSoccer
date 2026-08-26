@@ -118,6 +118,7 @@ class TsMatchRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
+            spacing: TsSpacing.sm,
             children: [
               Expanded(
                 child: Text(
@@ -125,12 +126,10 @@ class TsMatchRow extends StatelessWidget {
                   style: TsType.labelXsMedium.copyWith(color: c.textTertiary),
                 ),
               ),
-              if (status == TsMatchRowStatus.live) ...[
-                const TsStatusBadge(TsMatchStatus.live),
-                if (hasAnalysis) const SizedBox(width: TsSpacing.sm),
-              ],
               if (hasAnalysis)
                 TsBadge(label: analysisLabel, tone: TsBadgeTone.primary),
+              if (status == TsMatchRowStatus.live)
+                const TsStatusBadge(TsMatchStatus.live),
             ],
           ),
           const SizedBox(height: TsSpacing.xs),
