@@ -45,6 +45,35 @@ class TsMatchRow extends StatelessWidget {
   final VoidCallback? onAlarmTap;
   final VoidCallback? onTap;
 
+  int? _parseScore(String? score) {
+    if (score == null || score.isEmpty) return null;
+    return int.tryParse(score);
+  }
+
+  TextStyle _scoreTextStyle(TsThemeColors c, {required bool isHome}) {
+    final emphasized = TsType.tabular(
+      TsType.bodyMBold.copyWith(color: c.textPrimary),
+    );
+
+    if (status != TsMatchRowStatus.finished) {
+      return emphasized;
+    }
+
+    final home = _parseScore(homeScore);
+    final away = _parseScore(awayScore);
+    if (home == null || away == null || home == away) {
+      return emphasized;
+    }
+
+    final isWinner = isHome ? home > away : away > home;
+    if (isWinner) {
+      return emphasized;
+    }
+    return TsType.tabular(
+      TsType.bodyMMedium.copyWith(color: c.textSecondary),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
@@ -56,6 +85,7 @@ class TsMatchRow extends StatelessWidget {
       required String? emblemUrl,
       required String name,
       required String? score,
+      required bool isHome,
     }) {
       return SizedBox(
         height: 20,
@@ -85,9 +115,7 @@ class TsMatchRow extends StatelessWidget {
                 width: 24,
                 child: Text(
                   score ?? '',
-                  style: TsType.tabular(
-                    TsType.bodyMBold.copyWith(color: c.textPrimary),
-                  ),
+                  style: _scoreTextStyle(c, isHome: isHome),
                   textAlign: TextAlign.right,
                 ),
               ),
@@ -143,6 +171,7 @@ class TsMatchRow extends StatelessWidget {
                       emblemUrl: homeEmblemUrl,
                       name: homeTeam,
                       score: homeScore,
+                      isHome: true,
                     ),
                     const SizedBox(height: TsSpacing.xs),
                     teamRow(
@@ -150,6 +179,7 @@ class TsMatchRow extends StatelessWidget {
                       emblemUrl: awayEmblemUrl,
                       name: awayTeam,
                       score: awayScore,
+                      isHome: false,
                     ),
                   ],
                 ),
