@@ -216,11 +216,28 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
       _clearBaseballDateCache();
     }
     invalidateFixtureData(ref);
-    if (sport == 'baseball') {
-      await _loadBaseballDate(ref.read(fixtureSelectedDateProvider));
-    } else {
-      await ref.read(soccerFixturesProvider.future);
+    try {
+      if (sport == 'baseball') {
+        await _loadBaseballDate(ref.read(fixtureSelectedDateProvider));
+      } else {
+        await ref.read(soccerFixturesProvider.future);
+      }
+    } on Object {
+      // RefreshIndicator must complete normally; failure UI comes from provider
+      // state (soccer AsyncError) or _baseballLoadFailed (baseball).
     }
+  }
+
+  bool _showingFixtureFailure(
+    AsyncValue<List<FixtureLeagueGroup>> groupsAsync,
+    String sport,
+  ) {
+    return groupsAsync.when(
+      loading: () => false,
+      error: (_, _) => true,
+      data: (groups) =>
+          sport == 'baseball' && _baseballLoadFailed && groups.isEmpty,
+    );
   }
 
   Future<void> _onMatchesRefresh() =>
@@ -529,6 +546,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
     });
 
     final selectedDateIndex = _selectedDateIndex(selectedDateStr, chipDates);
+    final showingFixtureFailure = _showingFixtureFailure(groupsAsync, sport);
 
     return Scaffold(
       backgroundColor: c.canvas,
@@ -560,15 +578,17 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: TsSpacing.lg)),
-          SliverToBoxAdapter(
-            child: _buildFilterRow(
-              sport: sport,
-              leagues: leagues,
-              selectedLeague: selectedLeague,
-              liveFilter: liveFilter,
+          if (!showingFixtureFailure) ...[
+            SliverToBoxAdapter(
+              child: _buildFilterRow(
+                sport: sport,
+                leagues: leagues,
+                selectedLeague: selectedLeague,
+                liveFilter: liveFilter,
+              ),
             ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: TsSpacing.md)),
+            const SliverToBoxAdapter(child: SizedBox(height: TsSpacing.md)),
+          ],
           ...groupsAsync.when(
             loading: () => [
               SliverPadding(

@@ -1,223 +1,215 @@
-import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:trendsoccer/core/models/fixture_models_v2.dart';
-import 'package:trendsoccer/core/services/web_api_client.dart';
-
-final fixtureServiceProvider = Provider<FixtureService>((ref) {
-  return FixtureService(ref.watch(webDioProvider));
-});
-
-class FixtureService {
-  FixtureService(this._dio);
-
-  final Dio _dio;
-
-  Future<List<FixtureMatch>> getSoccerFixtures() async {
-    try {
-      const path = '/api/odds-from-db';
-      const queryParameters = <String, String>{
-        'league': 'ALL',
-        'daysBack': '3',
-        'daysAhead': '4',
-      };
-
-      final response = await _dio.get<dynamic>(
-        path,
-        queryParameters: queryParameters,
-      );
-      final matches = _parseFixtures(
-        response.data,
-        sport: 'soccer',
-        label: 'Soccer fixtures (daysBack=3, daysAhead=4)',
-        logSoccerFixtureStatusDebug: true,
-      )..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
-
-      var nonStandardStatusLogs = 0;
-      for (final m in matches) {
-        if (m.status != 'scheduled' && m.status != 'finished') {
-          if (nonStandardStatusLogs >= 5) break;
-                    nonStandardStatusLogs++;
-        }
-      }
-
-      final hasKoTeamNames = matches.any(
-        (match) =>
-            (match.homeTeamKo?.isNotEmpty ?? false) ||
-            (match.awayTeamKo?.isNotEmpty ?? false),
-      );
-      if (matches.isNotEmpty && !hasKoTeamNames) {
-        // Korean team names missing from API response.
-      }
-
-      return matches;
-    } catch (e) {
-            return const [];
-    }
-  }
-
-  Future<List<FixtureMatch>> getBaseballFixturesRange() async {
-    final today = DateTime.now();
-    final todayDay = DateTime(today.year, today.month, today.day);
-    final dates = List.generate(
-      7,
-      (index) => todayDay.add(Duration(days: index - 2)),
-    );
-    
-    final results = await Future.wait(
-      dates.map(
-        (date) => getBaseballFixtures(
-          date: _formatApiDate(date),
-          includeAllStatuses: true,
-        ),
-      ),
-    );
-
-    final merged = results.expand((matches) => matches).toList()
-      ..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
-
-        return merged;
-  }
-
-  String _formatApiDate(DateTime date) {
-    final month = date.month.toString().padLeft(2, '0');
-    final day = date.day.toString().padLeft(2, '0');
-    return '${date.year}-$month-$day';
-  }
-
-  String _baseballStatusForDate(String dateStr) {
-    final date = DateTime.parse(dateStr);
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final targetDay = DateTime(date.year, date.month, date.day);
-    final diffDays = targetDay.difference(today).inDays;
-
-    if (diffDays < -1) return 'finished';
-    if (diffDays > 1) return 'scheduled';
-    return 'all';
-  }
-
-  Map<String, String> _baseballQueryParametersForDate(
-    String dateStr, {
-    bool includeAllStatuses = true,
-  }) {
-    final params = <String, String>{
-      'date': dateStr,
-      'limit': '50',
-    };
-    if (!includeAllStatuses) {
-      final status = _baseballStatusForDate(dateStr);
-      params['status'] = status;
-      if (status == 'finished') {
-        params['skipML'] = 'true';
-      }
-    }
-    return params;
-  }
-
-  Future<List<FixtureMatch>> getBaseballFixtures({
-    required String date,
-    bool includeAllStatuses = true,
-  }) async {
-    try {
-      
-      const path = '/api/baseball/matches';
-      final queryParams = _baseballQueryParametersForDate(
-        date,
-        includeAllStatuses: includeAllStatuses,
-      );
-      
-      final response = await _dio.get<dynamic>(
-        path,
-        queryParameters: queryParams,
-      );
-
-      // Temporary: check for postponed matches
-      final matches = _parseFixtures(
-        response.data,
-        sport: 'baseball',
-        label: 'Baseball fixtures for $date',
-      );
-            return matches;
-    } catch (e) {
-            return const [];
-    }
-  }
-
-  Future<Map<String, LiveMatchData>> getLiveMatches() async {
-    try {
-      final response = await _dio.get<dynamic>('/api/live-matches');
-      final data = response.data;
-      final matches = data is Map ? (data['matches'] as List?) ?? [] : [];
-      final result = <String, LiveMatchData>{};
-      for (final item in matches) {
-        if (item is! Map) continue;
-        final map = Map<String, dynamic>.from(item);
-        final id = map['id']?.toString() ?? map['fixtureId']?.toString();
-        if (id != null && id.isNotEmpty) {
-          result[id] = LiveMatchData.fromJson(map);
-        }
-      }
-            return result;
-    } catch (e) {
-            return {};
-    }
-  }
-
-  List<FixtureMatch> _parseFixtures(
-    dynamic raw, {
-    required String sport,
-    required String label,
-    bool logSoccerFixtureStatusDebug = false,
-  }) {
-    final items = _extractItems(raw);
-    _logFirstItemKeys(items, label);
-
-    return [
-      for (var i = 0; i < items.length; i++)
-        FixtureMatch.fromJson(
-          items[i],
-          sport: sport,
-          statusDebugIndex: logSoccerFixtureStatusDebug ? i : null,
-        ),
-    ]
-        .where((match) => match.matchId != 0 || match.homeTeam.isNotEmpty)
-        .toList();
-  }
-
-  List<Map<String, dynamic>> _extractItems(dynamic raw) {
-    if (raw is List) {
-      return raw
-          .whereType<Map>()
-          .map((item) => Map<String, dynamic>.from(item))
-          .toList();
-    }
-
-    if (raw is Map) {
-      final map = Map<String, dynamic>.from(raw);
-      for (final key in const [
-        'data',
-        'matches',
-        'results',
-        'items',
-        'fixtures',
-      ]) {
-        final value = map[key];
-        if (value is List) {
-          return value
-              .whereType<Map>()
-              .map((item) => Map<String, dynamic>.from(item))
-              .toList();
-        }
-      }
-    }
-
-    return const [];
-  }
-
-  void _logFirstItemKeys(List<Map<String, dynamic>> items, String label) {
-    if (items.isEmpty) {
-            return;
-    }
-      }
-}
+import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:trendsoccer/core/models/fixture_models_v2.dart';
+import 'package:trendsoccer/core/services/web_api_client.dart';
+
+final fixtureServiceProvider = Provider<FixtureService>((ref) {
+  return FixtureService(ref.watch(webDioProvider));
+});
+
+class FixtureService {
+  FixtureService(this._dio);
+
+  final Dio _dio;
+
+  Future<List<FixtureMatch>> getSoccerFixtures() async {
+    const path = '/api/odds-from-db';
+    const queryParameters = <String, String>{
+      'league': 'ALL',
+      'daysBack': '3',
+      'daysAhead': '4',
+    };
+
+    final response = await _dio.get<dynamic>(
+      path,
+      queryParameters: queryParameters,
+    );
+    final matches = _parseFixtures(
+      response.data,
+      sport: 'soccer',
+      label: 'Soccer fixtures (daysBack=3, daysAhead=4)',
+      logSoccerFixtureStatusDebug: true,
+    )..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
+
+    var nonStandardStatusLogs = 0;
+    for (final m in matches) {
+      if (m.status != 'scheduled' && m.status != 'finished') {
+        if (nonStandardStatusLogs >= 5) break;
+        nonStandardStatusLogs++;
+      }
+    }
+
+    final hasKoTeamNames = matches.any(
+      (match) =>
+          (match.homeTeamKo?.isNotEmpty ?? false) ||
+          (match.awayTeamKo?.isNotEmpty ?? false),
+    );
+    if (matches.isNotEmpty && !hasKoTeamNames) {
+      // Korean team names missing from API response.
+    }
+
+    return matches;
+  }
+
+  Future<List<FixtureMatch>> getBaseballFixturesRange() async {
+    final today = DateTime.now();
+    final todayDay = DateTime(today.year, today.month, today.day);
+    final dates = List.generate(
+      7,
+      (index) => todayDay.add(Duration(days: index - 2)),
+    );
+    
+    final results = await Future.wait(
+      dates.map(
+        (date) => getBaseballFixtures(
+          date: _formatApiDate(date),
+          includeAllStatuses: true,
+        ),
+      ),
+    );
+
+    final merged = results.expand((matches) => matches).toList()
+      ..sort((a, b) => a.matchTimestamp.compareTo(b.matchTimestamp));
+
+        return merged;
+  }
+
+  String _formatApiDate(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
+  }
+
+  String _baseballStatusForDate(String dateStr) {
+    final date = DateTime.parse(dateStr);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final targetDay = DateTime(date.year, date.month, date.day);
+    final diffDays = targetDay.difference(today).inDays;
+
+    if (diffDays < -1) return 'finished';
+    if (diffDays > 1) return 'scheduled';
+    return 'all';
+  }
+
+  Map<String, String> _baseballQueryParametersForDate(
+    String dateStr, {
+    bool includeAllStatuses = true,
+  }) {
+    final params = <String, String>{
+      'date': dateStr,
+      'limit': '50',
+    };
+    if (!includeAllStatuses) {
+      final status = _baseballStatusForDate(dateStr);
+      params['status'] = status;
+      if (status == 'finished') {
+        params['skipML'] = 'true';
+      }
+    }
+    return params;
+  }
+
+  Future<List<FixtureMatch>> getBaseballFixtures({
+    required String date,
+    bool includeAllStatuses = true,
+  }) async {
+    const path = '/api/baseball/matches';
+    final queryParams = _baseballQueryParametersForDate(
+      date,
+      includeAllStatuses: includeAllStatuses,
+    );
+
+    final response = await _dio.get<dynamic>(
+      path,
+      queryParameters: queryParams,
+    );
+
+    // Temporary: check for postponed matches
+    final matches = _parseFixtures(
+      response.data,
+      sport: 'baseball',
+      label: 'Baseball fixtures for $date',
+    );
+    return matches;
+  }
+
+  Future<Map<String, LiveMatchData>> getLiveMatches() async {
+    try {
+      final response = await _dio.get<dynamic>('/api/live-matches');
+      final data = response.data;
+      final matches = data is Map ? (data['matches'] as List?) ?? [] : [];
+      final result = <String, LiveMatchData>{};
+      for (final item in matches) {
+        if (item is! Map) continue;
+        final map = Map<String, dynamic>.from(item);
+        final id = map['id']?.toString() ?? map['fixtureId']?.toString();
+        if (id != null && id.isNotEmpty) {
+          result[id] = LiveMatchData.fromJson(map);
+        }
+      }
+            return result;
+    } catch (e) {
+            return {};
+    }
+  }
+
+  List<FixtureMatch> _parseFixtures(
+    dynamic raw, {
+    required String sport,
+    required String label,
+    bool logSoccerFixtureStatusDebug = false,
+  }) {
+    final items = _extractItems(raw);
+    _logFirstItemKeys(items, label);
+
+    return [
+      for (var i = 0; i < items.length; i++)
+        FixtureMatch.fromJson(
+          items[i],
+          sport: sport,
+          statusDebugIndex: logSoccerFixtureStatusDebug ? i : null,
+        ),
+    ]
+        .where((match) => match.matchId != 0 || match.homeTeam.isNotEmpty)
+        .toList();
+  }
+
+  List<Map<String, dynamic>> _extractItems(dynamic raw) {
+    if (raw is List) {
+      return raw
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
+    }
+
+    if (raw is Map) {
+      final map = Map<String, dynamic>.from(raw);
+      for (final key in const [
+        'data',
+        'matches',
+        'results',
+        'items',
+        'fixtures',
+      ]) {
+        final value = map[key];
+        if (value is List) {
+          return value
+              .whereType<Map>()
+              .map((item) => Map<String, dynamic>.from(item))
+              .toList();
+        }
+      }
+    }
+
+    return const [];
+  }
+
+  void _logFirstItemKeys(List<Map<String, dynamic>> items, String label) {
+    if (items.isEmpty) {
+            return;
+    }
+      }
+}
+

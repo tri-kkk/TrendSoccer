@@ -72,6 +72,13 @@ void _schedulePostFrameDeferredInits(IAPService iapService) {
   });
 }
 
+/// Bounded global retry: 2 retries at a fixed 500ms delay (Riverpod 3 default
+/// is exponential backoff up to ~6.4s over 10 retries).
+Duration? _providerRetry(int retryCount, Object error) {
+  if (retryCount >= 2) return null;
+  return const Duration(milliseconds: 500);
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -107,6 +114,7 @@ Future<void> main() async {
 
   runApp(
     ProviderScope(
+      retry: _providerRetry,
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         iapServiceProvider.overrideWithValue(iapService),
