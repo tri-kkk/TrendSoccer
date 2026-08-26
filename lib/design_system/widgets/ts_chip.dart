@@ -40,7 +40,7 @@ class TsChip extends StatelessWidget {
         labelColor = c.primary;
       case (TsChipTone.live, false):
         fill = c.surfaceRaised;
-        stroke = c.error;
+        stroke = null;
         labelColor = c.error;
       case (TsChipTone.live, true):
         fill = c.error;

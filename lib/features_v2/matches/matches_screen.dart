@@ -3,17 +3,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import 'package:trendsoccer/core/assets/ts_assets.dart';
+import 'package:trendsoccer/core/models/fixture_models_v2.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/providers/fixture_provider.dart';
+import 'package:trendsoccer/core/utils/league_supports_analysis.dart';
+import 'package:trendsoccer/core/utils/locale_data_helper.dart';
+import 'package:trendsoccer/design_system/icons/ts_icon.dart';
+import 'package:trendsoccer/design_system/icons/ts_icons.dart';
+import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
+import 'package:trendsoccer/design_system/tokens/ts_type.dart';
 import 'package:trendsoccer/design_system/widgets/ts_app_bar.dart';
 import 'package:trendsoccer/design_system/widgets/ts_chip.dart';
 import 'package:trendsoccer/design_system/widgets/ts_date_chip.dart';
 import 'package:trendsoccer/design_system/widgets/ts_empty_state.dart';
-import 'package:trendsoccer/design_system/widgets/ts_league_filter_chip.dart';
-import 'package:trendsoccer/design_system/widgets/ts_league_group_header.dart';
 import 'package:trendsoccer/design_system/widgets/ts_match_row.dart';
+import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
 
 /// Eight-day window aligned with soccer `daysBack=3` / `daysAhead=4`.
@@ -22,45 +31,6 @@ const _dateChipCount = 8;
 /// Index of today within [_dateChipCount] chips (today − 3 … today + 4).
 const _todayChipIndex = 3;
 
-class _LeagueFilterOption {
-  const _LeagueFilterOption({required this.code, required this.label});
-
-  final String code;
-  final String label;
-}
-
-class _SampleMatch {
-  const _SampleMatch({
-    required this.homeTeam,
-    required this.awayTeam,
-    required this.timeLabel,
-    required this.status,
-    this.homeScore,
-    this.awayScore,
-    this.hasAnalysis = false,
-  });
-
-  final String homeTeam;
-  final String awayTeam;
-  final String timeLabel;
-  final TsMatchRowStatus status;
-  final String? homeScore;
-  final String? awayScore;
-  final bool hasAnalysis;
-}
-
-class _SampleLeagueGroup {
-  const _SampleLeagueGroup({
-    required this.leagueId,
-    required this.label,
-    required this.matches,
-  });
-
-  final String leagueId;
-  final String label;
-  final List<_SampleMatch> matches;
-}
-
 class MatchesScreen extends ConsumerStatefulWidget {
   const MatchesScreen({super.key});
 
@@ -68,27 +38,20 @@ class MatchesScreen extends ConsumerStatefulWidget {
   ConsumerState<MatchesScreen> createState() => _MatchesScreenState();
 }
 
+class _MatchRowPresentation {
+  const _MatchRowPresentation({
+    required this.status,
+    required this.timeLabel,
+  });
+
+  final TsMatchRowStatus status;
+  final String timeLabel;
+}
+
 class _MatchesScreenState extends ConsumerState<MatchesScreen> {
-  TsSport _activeSport = TsSport.soccer;
-  int _selectedDateIndex = _todayChipIndex;
-  String? _selectedLeague;
-  bool _liveFilter = false;
   final Set<String> _collapsedLeagueCodes = {};
+  final ScrollController _scrollController = ScrollController();
   late final List<DateTime> _chipDates;
-
-  static const _soccerLeagueFilters = [
-    _LeagueFilterOption(code: 'PL', label: 'Premier League'),
-    _LeagueFilterOption(code: 'PD', label: 'LaLiga'),
-    _LeagueFilterOption(code: 'SA', label: 'Serie A'),
-    _LeagueFilterOption(code: 'BL1', label: 'Bundesliga'),
-  ];
-
-  static const _baseballLeagueFilters = [
-    _LeagueFilterOption(code: 'MLB', label: 'MLB'),
-    _LeagueFilterOption(code: 'KBO', label: 'KBO'),
-    _LeagueFilterOption(code: 'NPB', label: 'NPB'),
-    _LeagueFilterOption(code: 'CPBL', label: 'CPBL'),
-  ];
 
   @override
   void initState() {
@@ -104,37 +67,10 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
     // _chipDates would be regenerated and selection adjusted.
   }
 
-  List<_LeagueFilterOption> get _leagueFilters =>
-      _activeSport == TsSport.soccer
-          ? _soccerLeagueFilters
-          : _baseballLeagueFilters;
-
-  List<_SampleLeagueGroup> get _activeGroups =>
-      _activeSport == TsSport.soccer ? _soccerGroups : _baseballGroups;
-
-  List<_SampleLeagueGroup> _filteredGroups() {
-    final source = _activeGroups;
-
-    if (_liveFilter) {
-      return source
-          .map(
-            (group) => _SampleLeagueGroup(
-              leagueId: group.leagueId,
-              label: group.label,
-              matches: group.matches
-                  .where((match) => match.status == TsMatchRowStatus.live)
-                  .toList(),
-            ),
-          )
-          .where((group) => group.matches.isNotEmpty)
-          .toList();
-    }
-
-    if (_selectedLeague != null) {
-      return source.where((group) => group.leagueId == _selectedLeague).toList();
-    }
-
-    return source;
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   String _weekdayLabel(DateTime date) {
@@ -149,41 +85,47 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
         date.day == today.day;
   }
 
+  int _selectedDateIndex(String selectedDateStr) {
+    final index = _chipDates.indexWhere(
+      (date) => fixtureDateString(date) == selectedDateStr,
+    );
+    return index < 0 ? _todayChipIndex : index;
+  }
+
+  TsSport _tsSportFromProvider(String sport) =>
+      sport == 'baseball' ? TsSport.baseball : TsSport.soccer;
+
   void _resetFilterToAll() {
-    _selectedLeague = null;
-    _liveFilter = false;
+    ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
+    ref.read(fixtureLiveFilterProvider.notifier).state = false;
   }
 
   void _onSportChanged(TsSport sport) {
-    setState(() {
-      _activeSport = sport;
-      _resetFilterToAll();
-      _collapsedLeagueCodes.clear();
-    });
-    // TODO(data): drive fixture sport selection and data fetch (soccer vs baseball).
+    ref.read(fixtureSelectedSportProvider.notifier).state =
+        sport == TsSport.baseball ? 'baseball' : 'soccer';
+    _resetFilterToAll();
+    ref.read(fixtureSelectedDateProvider.notifier).state =
+        fixtureTodayDateString();
+    setState(_collapsedLeagueCodes.clear);
   }
 
   void _onDateSelected(int index) {
-    setState(() => _selectedDateIndex = index);
-    // TODO(data): drive fixture selected date, fixture fetch, and alarm refresh.
+    if (index < 0 || index >= _chipDates.length) return;
+    _resetFilterToAll();
+    ref.read(fixtureSelectedDateProvider.notifier).state =
+        fixtureDateString(_chipDates[index]);
   }
 
-  void _onSelectAll() {
-    setState(_resetFilterToAll);
-  }
+  void _onSelectAll() => _resetFilterToAll();
 
   void _onSelectLive() {
-    setState(() {
-      _selectedLeague = null;
-      _liveFilter = true;
-    });
+    ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
+    ref.read(fixtureLiveFilterProvider.notifier).state = true;
   }
 
   void _onSelectLeague(String code) {
-    setState(() {
-      _liveFilter = false;
-      _selectedLeague = code;
-    });
+    ref.read(fixtureLiveFilterProvider.notifier).state = false;
+    ref.read(fixtureSelectedLeagueProvider.notifier).state = code;
   }
 
   void _toggleCollapse(String leagueId) {
@@ -196,36 +138,121 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
     });
   }
 
-  Widget _buildFilterRow() {
+  String _leagueFilterLabel(FixtureLeagueOption league) {
+    final locale = Localizations.localeOf(context).languageCode;
+    if (locale == 'en') {
+      return league.nameEn ?? league.name;
+    }
+    return league.name;
+  }
+
+  String _groupLeagueLabel(FixtureLeagueGroup group, String sport) {
+    if (sport == 'baseball') {
+      return group.leagueCode;
+    }
+    return localizedLeagueName(
+      context,
+      group.leagueNameEn,
+      group.leagueName,
+    );
+  }
+
+  String _leagueIconId(String leagueCode) =>
+      TsAssets.leagueIconIdFromApiCode(leagueCode) ??
+      leagueCode.toLowerCase();
+
+  String _scheduledKickoffLabel(FixtureMatch match) {
+    final local = match.matchTimestamp.toLocal();
+    return '${local.hour.toString().padLeft(2, '0')}:'
+        '${local.minute.toString().padLeft(2, '0')}';
+  }
+
+  _MatchRowPresentation _matchRowPresentation(FixtureMatch match) {
+    return switch (match.status) {
+      'postponed' => const _MatchRowPresentation(
+          status: TsMatchRowStatus.scheduled,
+          timeLabel: 'Postponed',
+        ),
+      'cancelled' => const _MatchRowPresentation(
+          status: TsMatchRowStatus.finished,
+          timeLabel: 'Cancelled',
+        ),
+      'interrupted' => const _MatchRowPresentation(
+          status: TsMatchRowStatus.live,
+          timeLabel: 'Suspended',
+        ),
+      'live' => _MatchRowPresentation(
+          status: TsMatchRowStatus.live,
+          // Elapsed time comes from live polling in step 3b.
+          timeLabel: match.matchTime,
+        ),
+      'finished' => _MatchRowPresentation(
+          status: TsMatchRowStatus.finished,
+          timeLabel: match.matchTime,
+        ),
+      'scheduled' => _MatchRowPresentation(
+          status: TsMatchRowStatus.scheduled,
+          timeLabel: _scheduledKickoffLabel(match),
+        ),
+      _ => _MatchRowPresentation(
+          status: TsMatchRowStatus.scheduled,
+          timeLabel: _scheduledKickoffLabel(match),
+        ),
+    };
+  }
+
+  String _emptyDateTitle(DateTime date) {
+    final locale = Localizations.localeOf(context).toString();
+    final formatted = DateFormat('EEE d', locale).format(date);
+    return 'No matches on $formatted';
+  }
+
+  void _scrollToDateStrip() {
+    if (!_scrollController.hasClients) return;
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  }
+
+  String? _scoreText(int? score) => score?.toString();
+
+  Widget _buildFilterRow({
+    required List<FixtureLeagueOption> leagues,
+    required String? selectedLeague,
+    required bool liveFilter,
+  }) {
     return SizedBox(
       height: 32,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-        itemCount: _leagueFilters.length + 2,
+        itemCount: leagues.length + 2,
         separatorBuilder: (_, _) => const SizedBox(width: TsSpacing.sm),
         itemBuilder: (context, index) {
           if (index == 0) {
             return TsChip(
               label: 'All',
-              selected: _selectedLeague == null && !_liveFilter,
+              selected: selectedLeague == null && !liveFilter,
               onTap: _onSelectAll,
             );
           }
           if (index == 1) {
             return TsChip(
               label: 'LIVE',
-              selected: _liveFilter,
+              selected: liveFilter,
               tone: TsChipTone.live,
               onTap: _onSelectLive,
             );
           }
 
-          final league = _leagueFilters[index - 2];
-          return TsLeagueFilterChip(
-            leagueId: league.code,
-            label: league.label,
-            selected: _selectedLeague == league.code && !_liveFilter,
+          final league = leagues[index - 2];
+          return _MatchesLeagueFilterChip(
+            leagueId: _leagueIconId(league.code),
+            logoUrl: league.logo,
+            label: _leagueFilterLabel(league),
+            selected: selectedLeague == league.code && !liveFilter,
             onTap: () => _onSelectLeague(league.code),
           );
         },
@@ -233,8 +260,13 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
     );
   }
 
-  Widget _buildLeagueGroup(_SampleLeagueGroup group, TsThemeColors c) {
-    final collapsed = _collapsedLeagueCodes.contains(group.leagueId);
+  Widget _buildLeagueGroup(
+    FixtureLeagueGroup group,
+    TsThemeColors c,
+    String sport,
+  ) {
+    final leagueId = _leagueIconId(group.leagueCode);
+    final collapsed = _collapsedLeagueCodes.contains(group.leagueCode);
 
     return Container(
       width: 380,
@@ -250,12 +282,13 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
             height: 48,
             color: c.surfaceRaised,
             padding: const EdgeInsets.all(TsSpacing.md),
-            child: TsLeagueGroupHeader(
-              leagueId: group.leagueId,
-              label: group.label,
+            child: _MatchesLeagueGroupHeader(
+              leagueId: leagueId,
+              logoUrl: group.leagueLogo,
+              label: _groupLeagueLabel(group, sport),
               matchCount: group.matches.length.toString(),
               collapsed: collapsed,
-              onToggleCollapse: () => _toggleCollapse(group.leagueId),
+              onToggleCollapse: () => _toggleCollapse(group.leagueCode),
             ),
           ),
           AnimatedSize(
@@ -285,16 +318,41 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
     );
   }
 
-  Widget _buildMatchRow(_SampleMatch match) {
+  Widget _buildMatchRow(FixtureMatch match) {
+    final presentation = _matchRowPresentation(match);
+    final showScores = presentation.status == TsMatchRowStatus.live ||
+        presentation.status == TsMatchRowStatus.finished;
+
     return TsMatchRow(
-      homeTeam: match.homeTeam,
-      awayTeam: match.awayTeam,
-      timeLabel: match.timeLabel,
-      status: match.status,
-      homeScore: match.homeScore,
-      awayScore: match.awayScore,
-      hasAnalysis: match.hasAnalysis,
+      homeTeam: localizedTeamName(
+        context,
+        match.homeTeam,
+        match.homeTeamKo,
+      ),
+      awayTeam: localizedTeamName(
+        context,
+        match.awayTeam,
+        match.awayTeamKo,
+      ),
+      timeLabel: presentation.timeLabel,
+      status: presentation.status,
+      homeScore: showScores ? _scoreText(match.homeScore) : null,
+      awayScore: showScores ? _scoreText(match.awayScore) : null,
+      homeEmblemUrl: match.homeTeamLogo,
+      awayEmblemUrl: match.awayTeamLogo,
+      hasAnalysis: leagueSupportsAnalysis(match.sport, match.leagueKey),
       alarmOn: null,
+    );
+  }
+
+  Widget _buildSkeletonGroups() {
+    return Column(
+      children: [
+        for (var i = 0; i < 3; i++) ...[
+          const TsSkeletonBlock(TsSkeletonType.block),
+          if (i < 2) const SizedBox(height: TsSpacing.md),
+        ],
+      ],
     );
   }
 
@@ -302,9 +360,24 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
     final auth = ref.watch(authProvider);
-    // Trial users already have access: member app bar, no upsell, no ads.
     final hideMonetisation = auth.isPremium || auth.isTrial;
-    final filteredGroups = _filteredGroups();
+
+    final sport = ref.watch(fixtureSelectedSportProvider);
+    final selectedDateStr = ref.watch(fixtureSelectedDateProvider);
+    final selectedLeague = ref.watch(fixtureSelectedLeagueProvider);
+    final liveFilter = ref.watch(fixtureLiveFilterProvider);
+    final leagues = ref.watch(fixtureAvailableLeaguesProvider);
+    final groupsAsync = ref.watch(fixtureLeagueGroupsProvider);
+
+    ref.listen<List<FixtureLeagueOption>>(fixtureAvailableLeaguesProvider,
+        (previous, next) {
+      final selected = ref.read(fixtureSelectedLeagueProvider);
+      if (selected == null) return;
+      if (next.any((league) => league.code == selected)) return;
+      ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
+    });
+
+    final selectedDateIndex = _selectedDateIndex(selectedDateStr);
 
     return Scaffold(
       backgroundColor: c.canvas,
@@ -315,14 +388,15 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
         tierLabel: 'PREMIUM',
       ),
       body: CustomScrollView(
+        controller: _scrollController,
         slivers: [
           SliverPersistentHeader(
             pinned: true,
             delegate: _MatchesStickyHeaderDelegate(
               canvasColor: c.canvas,
-              activeSport: _activeSport,
+              activeSport: _tsSportFromProvider(sport),
               chipDates: _chipDates,
-              selectedDateIndex: _selectedDateIndex,
+              selectedDateIndex: selectedDateIndex,
               weekdayLabel: _weekdayLabel,
               isToday: _isToday,
               onSportChanged: _onSportChanged,
@@ -330,31 +404,205 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: TsSpacing.lg)),
-          SliverToBoxAdapter(child: _buildFilterRow()),
+          SliverToBoxAdapter(
+            child: _buildFilterRow(
+              leagues: leagues,
+              selectedLeague: selectedLeague,
+              liveFilter: liveFilter,
+            ),
+          ),
           const SliverToBoxAdapter(child: SizedBox(height: TsSpacing.md)),
-          if (filteredGroups.isEmpty)
-            const SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(
-                child: TsEmptyState(
-                  type: TsEmptyType.withAction,
-                  title: 'No matches on this date',
-                  description: 'Try another date',
+          ...groupsAsync.when(
+            loading: () => [
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
+                sliver: SliverToBoxAdapter(child: _buildSkeletonGroups()),
+              ),
+            ],
+            error: (_, _) => [
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: TsEmptyState(
+                    type: TsEmptyType.failure,
+                    title: 'Could not load matches',
+                    description: 'Check your connection and try again.',
+                    actionLabel: 'Retry',
+                    onAction: () => invalidateFixtureData(ref),
+                  ),
                 ),
               ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-              sliver: SliverList.separated(
-                itemCount: filteredGroups.length,
-                separatorBuilder: (_, _) =>
-                    const SizedBox(height: TsSpacing.md),
-                itemBuilder: (context, index) =>
-                    _buildLeagueGroup(filteredGroups[index], c),
+            ],
+            data: (groups) {
+              if (groups.isEmpty) {
+                if (liveFilter) {
+                  return [
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: TsEmptyState(
+                          type: TsEmptyType.withAction,
+                          title: 'No live matches',
+                          description:
+                              'No matches are in progress right now. Browse all matches instead.',
+                          actionLabel: 'Browse all matches',
+                          onAction: _onSelectAll,
+                        ),
+                      ),
+                    ),
+                  ];
+                }
+
+                final selectedDate = _chipDates[selectedDateIndex];
+                return [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: TsEmptyState(
+                        type: TsEmptyType.withAction,
+                        title: _emptyDateTitle(selectedDate),
+                        description:
+                            'Try another date from the strip above.',
+                        actionLabel: 'View other dates',
+                        onAction: _scrollToDateStrip,
+                      ),
+                    ),
+                  ),
+                ];
+              }
+              return [
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
+                  sliver: SliverList.separated(
+                    itemCount: groups.length,
+                    separatorBuilder: (_, _) =>
+                        const SizedBox(height: TsSpacing.md),
+                    itemBuilder: (context, index) =>
+                        _buildLeagueGroup(groups[index], c, sport),
+                  ),
+                ),
+              ];
+            },
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: TsSpacing.lg)),
+        ],
+      ),
+    );
+  }
+}
+
+class _MatchesLeagueFilterChip extends StatelessWidget {
+  const _MatchesLeagueFilterChip({
+    required this.leagueId,
+    required this.logoUrl,
+    required this.label,
+    this.selected = false,
+    this.onTap,
+  });
+
+  final String leagueId;
+  final String? logoUrl;
+  final String label;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).extension<TsThemeColors>()!;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: TsRadius.full,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: selected ? c.primaryMuted : c.surfaceRaised,
+            borderRadius: TsRadius.full,
+            border: selected ? Border.all(color: c.primary, width: 1) : null,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: TsSpacing.md),
+            child: SizedBox(
+              height: TsSpacing.xxl,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TsLeagueIcon(
+                    leagueId,
+                    size: TsIconSize.xs,
+                    logoUrl: logoUrl,
+                    preferAsset: false,
+                  ),
+                  const SizedBox(width: TsSpacing.xs),
+                  Text(
+                    label,
+                    style: (selected ? TsType.bodyMBold : TsType.bodyMMedium)
+                        .copyWith(
+                      color: selected ? c.primary : c.textSecondary,
+                    ),
+                  ),
+                ],
               ),
             ),
-          const SliverToBoxAdapter(child: SizedBox(height: TsSpacing.lg)),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MatchesLeagueGroupHeader extends StatelessWidget {
+  const _MatchesLeagueGroupHeader({
+    required this.leagueId,
+    required this.logoUrl,
+    required this.label,
+    required this.matchCount,
+    required this.collapsed,
+    required this.onToggleCollapse,
+  });
+
+  final String leagueId;
+  final String? logoUrl;
+  final String label;
+  final String matchCount;
+  final bool collapsed;
+  final VoidCallback onToggleCollapse;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).extension<TsThemeColors>()!;
+
+    return SizedBox(
+      height: TsSpacing.xl,
+      child: Row(
+        children: [
+          TsLeagueIcon(
+            leagueId,
+            size: TsIconSize.md,
+            logoUrl: logoUrl,
+            preferAsset: false,
+          ),
+          const SizedBox(width: TsSpacing.sm),
+          Expanded(
+            child: Text(
+              label,
+              style: TsType.bodyLBold.copyWith(color: c.textSecondary),
+            ),
+          ),
+          Text(
+            matchCount,
+            style: TsType.labelSMedium.copyWith(color: c.textTertiary),
+          ),
+          const SizedBox(width: TsSpacing.sm),
+          GestureDetector(
+            onTap: onToggleCollapse,
+            child: TsIcon(
+              collapsed ? TsIcons.keyboardArrowDown : TsIcons.keyboardArrowUp,
+              size: TsIconSize.sm,
+              color: c.textPrimary,
+            ),
+          ),
         ],
       ),
     );
@@ -442,150 +690,3 @@ class _MatchesStickyHeaderDelegate extends SliverPersistentHeaderDelegate {
         selectedDateIndex != oldDelegate.selectedDateIndex;
   }
 }
-
-// TODO(data): replace with soccerFixturesProvider / fixtureLeagueGroupsProvider.
-const _soccerGroups = [
-  _SampleLeagueGroup(
-    leagueId: 'PL',
-    label: 'Premier League',
-    matches: [
-      _SampleMatch(
-        homeTeam: 'Arsenal',
-        awayTeam: 'Chelsea',
-        timeLabel: '15:00',
-        status: TsMatchRowStatus.scheduled,
-        hasAnalysis: true,
-      ),
-      _SampleMatch(
-        homeTeam: 'Liverpool',
-        awayTeam: 'Man City',
-        timeLabel: "67'",
-        status: TsMatchRowStatus.live,
-        homeScore: '2',
-        awayScore: '1',
-      ),
-      _SampleMatch(
-        homeTeam: 'Tottenham',
-        awayTeam: 'Newcastle',
-        timeLabel: 'FT',
-        status: TsMatchRowStatus.finished,
-        homeScore: '3',
-        awayScore: '0',
-      ),
-    ],
-  ),
-  _SampleLeagueGroup(
-    leagueId: 'PD',
-    label: 'LaLiga',
-    matches: [
-      _SampleMatch(
-        homeTeam: 'Barcelona',
-        awayTeam: 'Sevilla',
-        timeLabel: '18:30',
-        status: TsMatchRowStatus.scheduled,
-      ),
-      _SampleMatch(
-        homeTeam: 'Real Madrid',
-        awayTeam: 'Valencia',
-        timeLabel: "52'",
-        status: TsMatchRowStatus.live,
-        homeScore: '1',
-        awayScore: '1',
-        hasAnalysis: true,
-      ),
-    ],
-  ),
-  _SampleLeagueGroup(
-    leagueId: 'SA',
-    label: 'Serie A',
-    matches: [
-      _SampleMatch(
-        homeTeam: 'Inter',
-        awayTeam: 'Milan',
-        timeLabel: 'FT',
-        status: TsMatchRowStatus.finished,
-        homeScore: '2',
-        awayScore: '2',
-      ),
-      _SampleMatch(
-        homeTeam: 'Juventus',
-        awayTeam: 'Napoli',
-        timeLabel: '20:45',
-        status: TsMatchRowStatus.scheduled,
-      ),
-    ],
-  ),
-];
-
-// TODO(data): replace with baseballFixturesProvider / fixtureLeagueGroupsProvider.
-const _baseballGroups = [
-  _SampleLeagueGroup(
-    leagueId: 'MLB',
-    label: 'MLB',
-    matches: [
-      _SampleMatch(
-        homeTeam: 'Yankees',
-        awayTeam: 'Red Sox',
-        timeLabel: '19:05',
-        status: TsMatchRowStatus.scheduled,
-      ),
-      _SampleMatch(
-        homeTeam: 'Dodgers',
-        awayTeam: 'Giants',
-        timeLabel: 'Bot 7',
-        status: TsMatchRowStatus.live,
-        homeScore: '4',
-        awayScore: '3',
-        hasAnalysis: true,
-      ),
-      _SampleMatch(
-        homeTeam: 'Cubs',
-        awayTeam: 'Cardinals',
-        timeLabel: 'Final',
-        status: TsMatchRowStatus.finished,
-        homeScore: '5',
-        awayScore: '2',
-      ),
-    ],
-  ),
-  _SampleLeagueGroup(
-    leagueId: 'KBO',
-    label: 'KBO',
-    matches: [
-      _SampleMatch(
-        homeTeam: 'LG Twins',
-        awayTeam: 'Doosan Bears',
-        timeLabel: '18:30',
-        status: TsMatchRowStatus.scheduled,
-      ),
-      _SampleMatch(
-        homeTeam: 'Samsung Lions',
-        awayTeam: 'Kiwoom Heroes',
-        timeLabel: 'Top 5',
-        status: TsMatchRowStatus.live,
-        homeScore: '2',
-        awayScore: '0',
-      ),
-    ],
-  ),
-  _SampleLeagueGroup(
-    leagueId: 'NPB',
-    label: 'NPB',
-    matches: [
-      _SampleMatch(
-        homeTeam: 'Giants',
-        awayTeam: 'Tigers',
-        timeLabel: 'Final',
-        status: TsMatchRowStatus.finished,
-        homeScore: '1',
-        awayScore: '4',
-      ),
-      _SampleMatch(
-        homeTeam: 'Swallows',
-        awayTeam: 'Dragons',
-        timeLabel: '14:00',
-        status: TsMatchRowStatus.scheduled,
-      ),
-    ],
-  ),
-];
