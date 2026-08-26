@@ -105,12 +105,6 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
 
   bool _preferBundledLeagueIcon(String sport) => sport == 'baseball';
 
-  void _clearBaseballDateCache() {
-    _baseballDateCache.clear();
-    _baseballDateLoading.clear();
-    clearBaseballFixtureLazyCache(ref);
-  }
-
   List<FixtureMatch> _mergedBaseballCache() {
     final byMatchId = <int, FixtureMatch>{};
     final withoutId = <FixtureMatch>[];
@@ -132,6 +126,13 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
   void _publishBaseballCache() {
     ref.read(baseballLazyFixturesProvider.notifier).state =
         _mergedBaseballCache();
+    ref.read(baseballLoadedDatesProvider.notifier).state =
+        Set<String>.from(_baseballDateCache.keys);
+  }
+
+  void _publishBaseballLoadingDates() {
+    ref.read(baseballDateLoadingDatesProvider.notifier).state =
+        Set<String>.from(_baseballDateLoading);
   }
 
   void _ensureBaseballDateLoaded() {
@@ -155,18 +156,14 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
   Future<void> _loadBaseballDate(
     String date, {
     bool background = false,
+    bool force = false,
   }) async {
     if (ref.read(fixtureSelectedSportProvider) != 'baseball') return;
-    if (_baseballDateCache.containsKey(date) ||
-        _baseballDateLoading.contains(date)) {
-      return;
-    }
+    if (_baseballDateLoading.contains(date)) return;
+    if (!force && _baseballDateCache.containsKey(date)) return;
 
     _baseballDateLoading.add(date);
-    if (!background) {
-      ref.read(baseballFixturesLoadingProvider.notifier).state =
-          _baseballDateCache.isEmpty;
-    }
+    _publishBaseballLoadingDates();
 
     try {
       final service = ref.read(fixtureServiceProvider);
@@ -187,9 +184,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
       }
     } finally {
       _baseballDateLoading.remove(date);
-      if (!background && mounted) {
-        ref.read(baseballFixturesLoadingProvider.notifier).state = false;
-      }
+      _publishBaseballLoadingDates();
     }
   }
 
@@ -213,18 +208,23 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
   Future<void> _performFixtureRefresh(String sport) async {
     if (sport == 'baseball') {
       if (mounted) setState(() => _baseballLoadFailed = false);
-      _clearBaseballDateCache();
+      try {
+        await _loadBaseballDate(
+          ref.read(fixtureSelectedDateProvider),
+          force: true,
+        );
+      } on Object {
+        // RefreshIndicator must complete normally; failure UI comes from
+        // _baseballLoadFailed (baseball).
+      }
+      return;
     }
     invalidateFixtureData(ref);
     try {
-      if (sport == 'baseball') {
-        await _loadBaseballDate(ref.read(fixtureSelectedDateProvider));
-      } else {
-        await ref.read(soccerFixturesProvider.future);
-      }
+      await ref.read(soccerFixturesProvider.future);
     } on Object {
       // RefreshIndicator must complete normally; failure UI comes from provider
-      // state (soccer AsyncError) or _baseballLoadFailed (baseball).
+      // state (soccer AsyncError).
     }
   }
 

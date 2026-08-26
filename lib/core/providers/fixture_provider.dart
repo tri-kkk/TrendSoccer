@@ -253,12 +253,18 @@ final baseballFixturesProvider =
 final baseballLazyFixturesProvider =
     StateProvider<List<FixtureMatch>>((ref) => []);
 
-final baseballFixturesLoadingProvider = StateProvider<bool>((ref) => false);
+/// Dates currently being fetched by [MatchesScreen._loadBaseballDate].
+final baseballDateLoadingDatesProvider =
+    StateProvider<Set<String>>((ref) => {});
+
+/// Dates whose fetch has completed (including empty results).
+final baseballLoadedDatesProvider = StateProvider<Set<String>>((ref) => {});
 
 void clearBaseballFixtureLazyCache(WidgetRef ref) {
   ref.read(baseballPolledFixturesProvider.notifier).state = null;
   ref.read(baseballLazyFixturesProvider.notifier).state = [];
-  ref.read(baseballFixturesLoadingProvider.notifier).state = false;
+  ref.read(baseballDateLoadingDatesProvider.notifier).state = {};
+  ref.read(baseballLoadedDatesProvider.notifier).state = {};
 }
 
 final rawFixturesProvider = Provider<AsyncValue<List<FixtureMatch>>>((ref) {
@@ -270,8 +276,11 @@ final rawFixturesProvider = Provider<AsyncValue<List<FixtureMatch>>>((ref) {
       return AsyncValue.data(polled);
     }
     final lazy = ref.watch(baseballLazyFixturesProvider);
-    final loading = ref.watch(baseballFixturesLoadingProvider);
-    if (loading && lazy.isEmpty) {
+    final selectedDate = ref.watch(fixtureSelectedDateProvider);
+    final loadingDates = ref.watch(baseballDateLoadingDatesProvider);
+    final loadedDates = ref.watch(baseballLoadedDatesProvider);
+    if (loadingDates.contains(selectedDate) &&
+        !loadedDates.contains(selectedDate)) {
       return const AsyncValue.loading();
     }
     return AsyncValue.data(lazy);
