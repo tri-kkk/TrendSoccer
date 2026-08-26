@@ -443,8 +443,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
                         child: TsEmptyState(
                           type: TsEmptyType.withAction,
                           title: 'No live matches',
-                          description:
-                              'No matches are in progress right now. Browse all matches instead.',
+                          description: 'No matches are in progress right now.',
                           actionLabel: 'Browse all matches',
                           onAction: _onSelectAll,
                         ),
