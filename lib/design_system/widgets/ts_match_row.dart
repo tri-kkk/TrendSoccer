@@ -8,8 +8,6 @@ import 'package:trendsoccer/design_system/widgets/ts_team_emblem.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
-import 'package:trendsoccer/design_system/widgets/ts_badge.dart';
-import 'package:trendsoccer/design_system/widgets/ts_status_badge.dart';
 
 enum TsMatchRowStatus { scheduled, live, finished }
 
@@ -23,8 +21,6 @@ class TsMatchRow extends StatelessWidget {
     this.awayScore,
     this.homeEmblemUrl,
     this.awayEmblemUrl,
-    this.hasAnalysis = false,
-    this.analysisLabel = 'AI',
     this.alarmOn,
     this.onAlarmTap,
     this.onTap,
@@ -39,11 +35,17 @@ class TsMatchRow extends StatelessWidget {
   final String? awayScore;
   final String? homeEmblemUrl;
   final String? awayEmblemUrl;
-  final bool hasAnalysis;
-  final String analysisLabel;
   final bool? alarmOn;
   final VoidCallback? onAlarmTap;
   final VoidCallback? onTap;
+
+  static const _rowMinHeight = 56.0;
+  static const _statusColumnWidth = 56.0;
+  static const _liveDotSize = 8.0;
+  static const _statusColumnGap = 6.0;
+  static const _scoreColumnWidth = 24.0;
+  static const _alarmVisualSize = 20.0;
+  static const _alarmTapTarget = 48.0;
 
   int? _parseScore(String? score) {
     if (score == null || score.isEmpty) return null;
@@ -79,62 +81,102 @@ class TsMatchRow extends StatelessWidget {
     final c = Theme.of(context).extension<TsThemeColors>()!;
     final showScores =
         status == TsMatchRowStatus.live || status == TsMatchRowStatus.finished;
+    final isLive = status == TsMatchRowStatus.live;
 
     Widget teamRow({
-      required String letter,
       required String? emblemUrl,
       required String name,
       required String? score,
       required bool isHome,
     }) {
-      return SizedBox(
-        height: 20,
-        child: Row(
-          children: [
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          TsTeamEmblem(emblemUrl, size: TsIconSize.sm),
+          const SizedBox(width: TsSpacing.sm),
+          Expanded(
+            child: Text(
+              name,
+              style: TsType.bodyMMedium.copyWith(color: c.textPrimary),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (showScores)
             SizedBox(
-              width: 12,
+              width: _scoreColumnWidth,
               child: Text(
-                letter,
-                style: TsType.labelXsBold.copyWith(color: c.textTertiary),
-                textAlign: TextAlign.center,
+                score ?? '',
+                style: _scoreTextStyle(c, isHome: isHome),
+                textAlign: TextAlign.right,
               ),
             ),
-            const SizedBox(width: TsSpacing.sm),
-            TsTeamEmblem(emblemUrl, size: TsIconSize.sm),
-            const SizedBox(width: TsSpacing.sm),
-            Expanded(
+        ],
+      );
+    }
+
+    Widget statusColumn() {
+      final timeStyle = TsType.labelSRegular.copyWith(
+        color: isLive ? c.error : c.textTertiary,
+      );
+
+      return SizedBox(
+        width: _statusColumnWidth,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (isLive) ...[
+              Container(
+                width: _liveDotSize,
+                height: _liveDotSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: c.error,
+                ),
+              ),
+              const SizedBox(width: _statusColumnGap),
+            ],
+            Flexible(
               child: Text(
-                name,
-                style: TsType.bodyMMedium.copyWith(color: c.textPrimary),
+                timeLabel,
+                style: timeStyle,
+                textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            if (showScores)
-              SizedBox(
-                width: 24,
-                child: Text(
-                  score ?? '',
-                  style: _scoreTextStyle(c, isHome: isHome),
-                  textAlign: TextAlign.right,
-                ),
-              ),
           ],
         ),
       );
     }
 
     Widget alarmSlot() {
-      const slot = SizedBox(width: 20, height: 20);
       if (status == TsMatchRowStatus.finished || alarmOn == null) {
-        return slot;
+        return const SizedBox(
+          width: _alarmVisualSize,
+          height: _alarmVisualSize,
+        );
       }
-      return GestureDetector(
-        onTap: onAlarmTap,
-        child: TsIcon(
-          alarmOn! ? TsIcons.notifications : TsIcons.notificationsNone,
-          size: TsIconSize.sm,
-          color: alarmOn! ? c.primary : c.textTertiary,
+
+      return SizedBox(
+        width: _alarmTapTarget,
+        height: _alarmTapTarget,
+        child: Center(
+          child: GestureDetector(
+            onTap: onAlarmTap,
+            behavior: HitTestBehavior.opaque,
+            child: SizedBox(
+              width: _alarmTapTarget,
+              height: _alarmTapTarget,
+              child: Center(
+                child: TsIcon(
+                  alarmOn! ? TsIcons.notifications : TsIcons.notificationsNone,
+                  size: TsIconSize.sm,
+                  color: alarmOn! ? c.primary : c.textTertiary,
+                ),
+              ),
+            ),
+          ),
         ),
       );
     }
@@ -142,53 +184,37 @@ class TsMatchRow extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            spacing: TsSpacing.sm,
-            children: [
-              Expanded(
-                child: Text(
-                  timeLabel,
-                  style: TsType.labelXsMedium.copyWith(color: c.textTertiary),
-                ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: _rowMinHeight),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            statusColumn(),
+            const SizedBox(width: TsSpacing.sm),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  teamRow(
+                    emblemUrl: homeEmblemUrl,
+                    name: homeTeam,
+                    score: homeScore,
+                    isHome: true,
+                  ),
+                  const SizedBox(height: TsSpacing.xs),
+                  teamRow(
+                    emblemUrl: awayEmblemUrl,
+                    name: awayTeam,
+                    score: awayScore,
+                    isHome: false,
+                  ),
+                ],
               ),
-              if (hasAnalysis)
-                TsBadge(label: analysisLabel, tone: TsBadgeTone.primary),
-              if (status == TsMatchRowStatus.live)
-                const TsStatusBadge(TsMatchStatus.live),
-            ],
-          ),
-          const SizedBox(height: TsSpacing.xs),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    teamRow(
-                      letter: 'H',
-                      emblemUrl: homeEmblemUrl,
-                      name: homeTeam,
-                      score: homeScore,
-                      isHome: true,
-                    ),
-                    const SizedBox(height: TsSpacing.xs),
-                    teamRow(
-                      letter: 'A',
-                      emblemUrl: awayEmblemUrl,
-                      name: awayTeam,
-                      score: awayScore,
-                      isHome: false,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: TsSpacing.sm),
-              alarmSlot(),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(width: TsSpacing.sm),
+            alarmSlot(),
+          ],
+        ),
       ),
     );
   }

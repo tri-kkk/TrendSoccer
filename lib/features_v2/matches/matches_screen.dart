@@ -10,6 +10,7 @@ import 'package:trendsoccer/core/models/fixture_models_v2.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/services/fixture_service.dart';
+import 'package:trendsoccer/core/utils/baseball_status.dart';
 import 'package:trendsoccer/core/utils/league_supports_analysis.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
@@ -23,6 +24,7 @@ import 'package:trendsoccer/design_system/tokens/ts_type.dart';
 import 'package:trendsoccer/design_system/widgets/ts_app_bar.dart';
 import 'package:trendsoccer/design_system/widgets/ts_chip.dart';
 import 'package:trendsoccer/design_system/widgets/ts_date_chip.dart';
+import 'package:trendsoccer/design_system/widgets/ts_badge.dart';
 import 'package:trendsoccer/design_system/widgets/ts_empty_state.dart';
 import 'package:trendsoccer/design_system/widgets/ts_match_row.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
@@ -31,6 +33,85 @@ import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
 /// Eight-day window: today − 3 … today + 4 (both sports).
 const _dateChipCount = 8;
 const _todayChipIndex = 3;
+
+/// Soccer polls a lightweight live map overlay.
+const _soccerLivePollInterval = Duration(seconds: 30);
+
+/// Baseball re-fetches the full date list; `/api/baseball/matches` revalidates at 60s.
+const _baseballLivePollInterval = Duration(seconds: 60);
+
+const _soccerFinishedCacheTtl = Duration(minutes: 5);
+
+LiveMatchData? _liveDataForFixtureMatch(
+  FixtureMatch match,
+  Map<String, LiveMatchData> liveMap,
+) {
+  final byMatchId = liveMap[match.matchId.toString()];
+  if (byMatchId != null) return byMatchId;
+  final apiMatchId = match.apiMatchId;
+  if (apiMatchId != null) return liveMap[apiMatchId.toString()];
+  return null;
+}
+
+bool _isSoccerHalftimeStatus(String? status) {
+  if (status == null || status.isEmpty) return false;
+  final normalized = status.trim().toUpperCase();
+  return normalized == 'HT' || normalized.contains('HALFTIME');
+}
+
+String _formatSoccerElapsedTime(
+  int elapsed,
+  String status, {
+  int? elapsedExtra,
+}) {
+  if (elapsedExtra != null && elapsedExtra > 0) {
+    return '$elapsed+$elapsedExtra';
+  }
+
+  final normalized = status.trim().toUpperCase();
+  if (normalized == '1H' && elapsed > 45) {
+    return '45+${elapsed - 45}';
+  }
+  if (normalized == '2H' && elapsed > 90) {
+    return '90+${elapsed - 90}';
+  }
+  return '$elapsed';
+}
+
+String _soccerLiveElapsedText(
+  int elapsed,
+  String status, {
+  int? elapsedExtra,
+}) {
+  return "${_formatSoccerElapsedTime(elapsed, status, elapsedExtra: elapsedExtra)}'";
+}
+
+String _soccerLiveStatusLabel(FixtureMatch match, LiveMatchData? live) {
+  if (live != null && _isSoccerHalftimeStatus(live.status)) return 'HT';
+  if (_isSoccerHalftimeStatus(match.rawStatus)) return 'HT';
+
+  if (live != null && live.isLive && live.elapsed > 0) {
+    return _soccerLiveElapsedText(
+      live.elapsed,
+      live.status,
+      elapsedExtra: live.elapsedExtra,
+    );
+  }
+
+  return 'LIVE';
+}
+
+/// Uppercase inning label for the status column (`TOP 5` / `BOT 7`).
+/// ARB keys render `Top 3` / `Bot 3` (issue #78) — not used here.
+String _baseballLiveStatusLabel(String rawStatus) {
+  final code = BaseballStatus.displayStatus(rawStatus);
+  final topMatch = RegExp(r'^(\d+)T$').firstMatch(code);
+  if (topMatch != null) return 'TOP ${topMatch.group(1)}';
+  final bottomMatch = RegExp(r'^(\d+)B$').firstMatch(code);
+  if (bottomMatch != null) return 'BOT ${bottomMatch.group(1)}';
+  if (code.isNotEmpty && code != 'LIVE') return code;
+  return 'LIVE';
+}
 
 class MatchesScreen extends ConsumerStatefulWidget {
   const MatchesScreen({super.key});
@@ -49,20 +130,27 @@ class _MatchRowPresentation {
   final String timeLabel;
 }
 
-class _MatchesScreenState extends ConsumerState<MatchesScreen> {
+class _MatchesScreenState extends ConsumerState<MatchesScreen>
+    with WidgetsBindingObserver {
   final Set<String> _collapsedLeagueCodes = {};
   final ScrollController _scrollController = ScrollController();
   final Map<String, List<FixtureMatch>> _baseballDateCache = {};
   final Set<String> _baseballDateLoading = {};
+  final Map<String, DateTime> _scoreChangedMatches = {};
+  final Map<String, Map<String, dynamic>> _lastKnownSoccerLiveStates = {};
+  final Map<String, DateTime> _soccerFinishedCacheAt = {};
   bool _baseballLoadFailed = false;
   Future<void>? _fixtureRefreshInFlight;
+  Timer? _livePollingTimer;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _ensureBaseballDateLoaded();
+      _syncLivePolling();
     });
     // TODO(data): date strip does not refresh across midnight yet; an
     // AppLifecycle resume hook (as home_screen uses for profile) is where
@@ -71,8 +159,23 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _stopLivePolling();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _syncLivePolling();
+      return;
+    }
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      _stopLivePolling();
+    }
   }
 
   String _weekdayLabel(DateTime date) {
@@ -133,6 +236,296 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
   void _publishBaseballLoadingDates() {
     ref.read(baseballDateLoadingDatesProvider.notifier).state =
         Set<String>.from(_baseballDateLoading);
+  }
+
+  void _stopLivePolling() {
+    _livePollingTimer?.cancel();
+    _livePollingTimer = null;
+  }
+
+  bool _shouldPollLive() {
+    if (!mounted) return false;
+
+    final selectedDate = ref.read(fixtureSelectedDateProvider);
+    if (!fixtureIsTodayDate(selectedDate)) return false;
+
+    final matches = ref.read(allFixturesWithLiveProvider).value;
+    if (matches == null || matches.isEmpty) return false;
+
+    return matches
+        .where((match) => matchIsOnDate(match, selectedDate))
+        .any(
+          (match) => match.status == 'live' || match.status == 'scheduled',
+        );
+  }
+
+  void _reevaluateLivePollingGate() {
+    if (!mounted) return;
+    if (!_shouldPollLive()) {
+      _stopLivePolling();
+    }
+  }
+
+  void _syncLivePolling() {
+    if (!mounted) return;
+    if (!_shouldPollLive()) {
+      _stopLivePolling();
+      return;
+    }
+    _startLivePolling();
+  }
+
+  void _startLivePolling() {
+    if (!mounted) return;
+    _stopLivePolling();
+    if (!_shouldPollLive()) return;
+
+    final sport = ref.read(fixtureSelectedSportProvider);
+    if (sport == 'soccer') {
+      unawaited(_fetchLiveNow());
+      _livePollingTimer = Timer.periodic(_soccerLivePollInterval, (_) {
+        unawaited(_fetchLiveNow());
+      });
+    } else if (sport == 'baseball') {
+      unawaited(_fetchBaseballNow());
+      _livePollingTimer = Timer.periodic(_baseballLivePollInterval, (_) {
+        unawaited(_fetchBaseballNow());
+      });
+    }
+  }
+
+  bool _isSoccerFinishedLiveStatus(String status) {
+    final raw = status.trim().toUpperCase();
+    return raw == 'FT' ||
+        raw == 'AET' ||
+        raw == 'PEN' ||
+        normalizeMatchStatus(raw) == 'finished';
+  }
+
+  void _cleanExpiredScoreChanges() {
+    final now = DateTime.now();
+    _scoreChangedMatches.removeWhere(
+      (_, time) => now.difference(time).inSeconds > 3,
+    );
+  }
+
+  void _markScoreChanged(String matchId) {
+    _scoreChangedMatches[matchId] = DateTime.now();
+  }
+
+  bool _detectFixtureScoreChanges(
+    List<FixtureMatch> previousMatches,
+    List<FixtureMatch> newMatches,
+  ) {
+    var changed = false;
+    final previousById = <String, FixtureMatch>{
+      for (final match in previousMatches) match.matchId.toString(): match,
+    };
+
+    for (final newMatch in newMatches) {
+      final matchId = newMatch.matchId.toString();
+      final prevMatch = previousById[matchId];
+      if (prevMatch == null) continue;
+
+      final prevHome = prevMatch.homeScore ?? 0;
+      final prevAway = prevMatch.awayScore ?? 0;
+      final newHome = newMatch.homeScore ?? 0;
+      final newAway = newMatch.awayScore ?? 0;
+
+      if (prevHome != newHome || prevAway != newAway) {
+        _markScoreChanged(matchId);
+        final apiMatchId = newMatch.apiMatchId;
+        if (apiMatchId != null) {
+          _markScoreChanged(apiMatchId.toString());
+        }
+        changed = true;
+      }
+    }
+
+    _cleanExpiredScoreChanges();
+    return changed;
+  }
+
+  bool _detectSoccerScoreChanges(Map<String, LiveMatchData> newLiveData) {
+    var changed = false;
+
+    for (final entry in newLiveData.entries) {
+      final id = entry.key;
+      final newLive = entry.value;
+      final prev = _lastKnownSoccerLiveStates[id];
+      if (prev == null) continue;
+
+      final prevHome = (prev['homeScore'] as num?)?.toInt() ?? 0;
+      final prevAway = (prev['awayScore'] as num?)?.toInt() ?? 0;
+
+      if (prevHome != newLive.homeScore || prevAway != newLive.awayScore) {
+        _markScoreChanged(id);
+        changed = true;
+      }
+    }
+
+    _cleanExpiredScoreChanges();
+    return changed;
+  }
+
+  // Carried from v1 for score-highlight wiring once TsMatchRow supports it.
+  // ignore: unused_element
+  DateTime? _scoreChangeTimeForMatch(FixtureMatch match) {
+    final matchId = match.matchId.toString();
+    final direct = _scoreChangedMatches[matchId];
+    if (direct != null) return direct;
+
+    final apiMatchId = match.apiMatchId;
+    if (apiMatchId != null) {
+      return _scoreChangedMatches[apiMatchId.toString()];
+    }
+    return null;
+  }
+
+  void _notifyScoreChangesIfNeeded(bool changed) {
+    if (!changed || !mounted) return;
+    setState(() {});
+    Future<void>.delayed(const Duration(seconds: 3), () {
+      if (!mounted) return;
+      final before = _scoreChangedMatches.length;
+      _cleanExpiredScoreChanges();
+      if (before != _scoreChangedMatches.length) {
+        setState(() {});
+      }
+    });
+  }
+
+  void _cacheSoccerLiveStates(Map<String, LiveMatchData> liveData) {
+    final now = DateTime.now();
+    for (final entry in liveData.entries) {
+      final id = entry.key;
+      final live = entry.value;
+      final cached = <String, dynamic>{
+        'status': live.status,
+        'homeScore': live.homeScore,
+        'awayScore': live.awayScore,
+        'elapsed': live.elapsed,
+        'elapsedExtra': live.elapsedExtra,
+        'statusLong': live.statusLong,
+      };
+      if (_isSoccerFinishedLiveStatus(live.status)) {
+        cached['finished'] = true;
+        _soccerFinishedCacheAt[id] = now;
+      }
+      _lastKnownSoccerLiveStates[id] = cached;
+    }
+
+    _soccerFinishedCacheAt.removeWhere((id, finishedAt) {
+      if (now.difference(finishedAt) > _soccerFinishedCacheTtl) {
+        _lastKnownSoccerLiveStates.remove(id);
+        return true;
+      }
+      return false;
+    });
+  }
+
+  LiveMatchData _soccerLiveDataFromCache(
+    String id,
+    Map<String, dynamic> cached,
+  ) {
+    return LiveMatchData(
+      matchId: id,
+      status: cached['status']?.toString() ?? '',
+      statusLong: cached['statusLong']?.toString() ?? '',
+      elapsed: (cached['elapsed'] as num?)?.toInt() ?? 0,
+      homeScore: (cached['homeScore'] as num?)?.toInt() ?? 0,
+      awayScore: (cached['awayScore'] as num?)?.toInt() ?? 0,
+      elapsedExtra: (cached['elapsedExtra'] as num?)?.toInt(),
+    );
+  }
+
+  Map<String, LiveMatchData> _effectiveSoccerLiveMap(
+    Map<String, LiveMatchData> pollData,
+  ) {
+    _cacheSoccerLiveStates(pollData);
+
+    final effective = Map<String, LiveMatchData>.from(pollData);
+    final now = DateTime.now();
+
+    for (final entry in _lastKnownSoccerLiveStates.entries) {
+      if (effective.containsKey(entry.key)) continue;
+
+      final cached = entry.value;
+      if (cached['finished'] == true) {
+        final finishedAt = _soccerFinishedCacheAt[entry.key];
+        if (finishedAt != null &&
+            now.difference(finishedAt) > _soccerFinishedCacheTtl) {
+          continue;
+        }
+      }
+
+      effective[entry.key] = _soccerLiveDataFromCache(entry.key, cached);
+    }
+
+    return effective;
+  }
+
+  Future<void> _fetchLiveNow() async {
+    if (!mounted) return;
+    if (ref.read(fixtureSelectedSportProvider) != 'soccer') return;
+
+    final service = ref.read(fixtureServiceProvider);
+    final liveData = await service.getLiveMatches();
+    if (!mounted) return;
+    if (ref.read(fixtureSelectedSportProvider) != 'soccer') return;
+
+    if (liveData.isEmpty) {
+      _reevaluateLivePollingGate();
+      return;
+    }
+
+    final scoreChanged = _detectSoccerScoreChanges(liveData);
+    final effective = _effectiveSoccerLiveMap(liveData);
+    ref.read(liveMatchesProvider.notifier).state = effective;
+    _notifyScoreChangesIfNeeded(scoreChanged);
+
+    if (effective.values.any((live) => live.isFinished)) {
+      final base = ref.read(soccerPolledFixturesProvider) ??
+          ref.read(soccerFixturesProvider).asData?.value;
+      if (base != null) {
+        ref.read(soccerPolledFixturesProvider.notifier).state =
+            mergeSoccerFinishedFromLive(base, effective);
+      }
+    }
+
+    _reevaluateLivePollingGate();
+  }
+
+  Future<void> _fetchBaseballNow() async {
+    if (!mounted) return;
+    if (ref.read(fixtureSelectedSportProvider) != 'baseball') return;
+
+    final selectedDate = ref.read(fixtureSelectedDateProvider);
+    try {
+      final service = ref.read(fixtureServiceProvider);
+      final dateMatches = await service
+          .getBaseballFixtures(date: selectedDate)
+          .timeout(const Duration(seconds: 10));
+      if (!mounted) return;
+      if (ref.read(fixtureSelectedSportProvider) != 'baseball') return;
+
+      final polled = ref.read(baseballPolledFixturesProvider);
+      final List<FixtureMatch> base =
+          polled ?? ref.read(baseballLazyFixturesProvider);
+      if (base.isEmpty) return;
+
+      final merged =
+          mergeBaseballTodayFixtures(base, dateMatches, selectedDate);
+      final scoreChanged = _detectFixtureScoreChanges(base, merged);
+      _baseballDateCache[selectedDate] = dateMatches;
+      _publishBaseballCache();
+      ref.read(baseballPolledFixturesProvider.notifier).state = merged;
+      _notifyScoreChangesIfNeeded(scoreChanged);
+    } on Object {
+      // Non-fatal: poll failure keeps cached fixtures visible.
+    }
+
+    _reevaluateLivePollingGate();
   }
 
   void _ensureBaseballDateLoaded() {
@@ -213,19 +606,25 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
           ref.read(fixtureSelectedDateProvider),
           force: true,
         );
+        await _fetchBaseballNow();
       } on Object {
         // RefreshIndicator must complete normally; failure UI comes from
         // _baseballLoadFailed (baseball).
       }
+      _syncLivePolling();
       return;
     }
     invalidateFixtureData(ref);
     try {
-      await ref.read(soccerFixturesProvider.future);
+      await Future.wait([
+        ref.read(soccerFixturesProvider.future),
+        _fetchLiveNow(),
+      ]);
     } on Object {
       // RefreshIndicator must complete normally; failure UI comes from provider
       // state (soccer AsyncError).
     }
+    _syncLivePolling();
   }
 
   bool _showingFixtureFailure(
@@ -265,6 +664,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
         _ensureBaseballDateLoaded();
       });
     }
+    _syncLivePolling();
   }
 
   void _onDateSelected(int index, List<DateTime> chipDates) {
@@ -275,6 +675,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
     if (ref.read(fixtureSelectedSportProvider) == 'baseball') {
       unawaited(_loadBaseballDate(dateStr));
     }
+    _syncLivePolling();
   }
 
   void _onSelectAll() => _resetFilterToAll();
@@ -329,27 +730,30 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
   }
 
   _MatchRowPresentation _matchRowPresentation(FixtureMatch match) {
+    final live = _liveDataForFixtureMatch(match, ref.read(liveMatchesProvider));
+
     return switch (match.status) {
       'postponed' => const _MatchRowPresentation(
           status: TsMatchRowStatus.scheduled,
-          timeLabel: 'Postponed',
+          timeLabel: 'PPD',
         ),
       'cancelled' => const _MatchRowPresentation(
           status: TsMatchRowStatus.finished,
-          timeLabel: 'Cancelled',
+          timeLabel: 'CANC',
         ),
       'interrupted' => const _MatchRowPresentation(
           status: TsMatchRowStatus.live,
-          timeLabel: 'Suspended',
+          timeLabel: 'SUSP',
         ),
       'live' => _MatchRowPresentation(
           status: TsMatchRowStatus.live,
-          // Elapsed time comes from live polling in step 3b.
-          timeLabel: match.matchTime,
+          timeLabel: match.sport == 'baseball'
+              ? _baseballLiveStatusLabel(match.rawStatus)
+              : _soccerLiveStatusLabel(match, live),
         ),
-      'finished' => _MatchRowPresentation(
+      'finished' => const _MatchRowPresentation(
           status: TsMatchRowStatus.finished,
-          timeLabel: match.matchTime,
+          timeLabel: 'FT',
         ),
       'scheduled' => _MatchRowPresentation(
           status: TsMatchRowStatus.scheduled,
@@ -435,7 +839,6 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
     final preferBundledIcon = _preferBundledLeagueIcon(sport);
 
     return Container(
-      width: 380,
       decoration: BoxDecoration(
         color: c.surface,
         borderRadius: TsRadius.md,
@@ -453,6 +856,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
               logoUrl: preferBundledIcon ? null : group.leagueLogo,
               preferAsset: preferBundledIcon,
               label: _groupLeagueLabel(group, sport),
+              hasAnalysis: leagueSupportsAnalysis(sport, group.leagueCode),
               matchCount: group.matches.length.toString(),
               collapsed: collapsed,
               onToggleCollapse: () => _toggleCollapse(group.leagueCode),
@@ -467,14 +871,19 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
                 : Padding(
                     padding: const EdgeInsets.all(TsSpacing.md),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         for (var i = 0; i < group.matches.length; i++) ...[
-                          SizedBox(
-                            width: 356,
-                            child: _buildMatchRow(group.matches[i]),
-                          ),
-                          if (i < group.matches.length - 1)
-                            const SizedBox(height: TsSpacing.md),
+                          _buildMatchRow(group.matches[i]),
+                          if (i < group.matches.length - 1) ...[
+                            const SizedBox(height: 6),
+                            Divider(
+                              height: 1,
+                              thickness: 1,
+                              color: c.borderSubtle,
+                            ),
+                            const SizedBox(height: 6),
+                          ],
                         ],
                       ],
                     ),
@@ -507,7 +916,6 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
       awayScore: showScores ? _scoreText(match.awayScore) : null,
       homeEmblemUrl: match.homeTeamLogo,
       awayEmblemUrl: match.awayTeamLogo,
-      hasAnalysis: leagueSupportsAnalysis(match.sport, match.leagueKey),
       alarmOn: null,
     );
   }
@@ -544,6 +952,20 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
       if (next.any((league) => league.code == selected)) return;
       ref.read(fixtureSelectedLeagueProvider.notifier).state = null;
     });
+
+    ref.listen<AsyncValue<List<FixtureLeagueGroup>>>(
+      fixtureLeagueGroupsProvider,
+      (previous, next) {
+        if (!next.hasValue) return;
+        if (_shouldPollLive()) {
+          if (_livePollingTimer == null) {
+            _startLivePolling();
+          }
+        } else {
+          _stopLivePolling();
+        }
+      },
+    );
 
     final selectedDateIndex = _selectedDateIndex(selectedDateStr, chipDates);
     final showingFixtureFailure = _showingFixtureFailure(groupsAsync, sport);
@@ -754,6 +1176,7 @@ class _MatchesLeagueGroupHeader extends StatelessWidget {
     this.logoUrl,
     this.preferAsset = true,
     required this.label,
+    required this.hasAnalysis,
     required this.matchCount,
     required this.collapsed,
     required this.onToggleCollapse,
@@ -763,6 +1186,7 @@ class _MatchesLeagueGroupHeader extends StatelessWidget {
   final String? logoUrl;
   final bool preferAsset;
   final String label;
+  final bool hasAnalysis;
   final String matchCount;
   final bool collapsed;
   final VoidCallback onToggleCollapse;
@@ -786,11 +1210,27 @@ class _MatchesLeagueGroupHeader extends StatelessWidget {
             child: Text(
               label,
               style: TsType.bodyLBold.copyWith(color: c.textSecondary),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          Text(
-            matchCount,
-            style: TsType.labelSMedium.copyWith(color: c.textTertiary),
+          if (hasAnalysis) ...[
+            const TsBadge(label: 'AI', tone: TsBadgeTone.primary),
+            const SizedBox(width: TsSpacing.sm),
+          ],
+          Container(
+            width: 20,
+            height: 20,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: c.surface,
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              matchCount,
+              style: TsType.labelSRegular.copyWith(color: c.textSecondary),
+              textAlign: TextAlign.center,
+            ),
           ),
           const SizedBox(width: TsSpacing.sm),
           GestureDetector(
