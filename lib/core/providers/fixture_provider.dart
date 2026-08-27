@@ -309,11 +309,7 @@ List<FixtureMatch> _scopeMatchesForFilters(
 
   if (sport == 'baseball') {
     return filtered
-        .where(
-          (match) =>
-              BaseballStatus.isLive(match.rawStatus) ||
-              BaseballStatus.isInterrupted(match.rawStatus),
-        )
+        .where((match) => BaseballStatus.isLive(match.rawStatus))
         .toList();
   }
   return filtered

@@ -734,15 +734,15 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
 
     return switch (match.status) {
       'postponed' => const _MatchRowPresentation(
-          status: TsMatchRowStatus.scheduled,
+          status: TsMatchRowStatus.disrupted,
           timeLabel: 'PPD',
         ),
       'cancelled' => const _MatchRowPresentation(
-          status: TsMatchRowStatus.finished,
+          status: TsMatchRowStatus.disrupted,
           timeLabel: 'CANC',
         ),
       'interrupted' => const _MatchRowPresentation(
-          status: TsMatchRowStatus.live,
+          status: TsMatchRowStatus.disrupted,
           timeLabel: 'SUSP',
         ),
       'live' => _MatchRowPresentation(
@@ -897,7 +897,8 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
   Widget _buildMatchRow(FixtureMatch match) {
     final presentation = _matchRowPresentation(match);
     final showScores = presentation.status == TsMatchRowStatus.live ||
-        presentation.status == TsMatchRowStatus.finished;
+        presentation.status == TsMatchRowStatus.finished ||
+        presentation.status == TsMatchRowStatus.disrupted;
 
     return TsMatchRow(
       homeTeam: localizedTeamName(

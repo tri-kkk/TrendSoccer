@@ -9,7 +9,7 @@ import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
 
-enum TsMatchRowStatus { scheduled, live, finished }
+enum TsMatchRowStatus { scheduled, live, finished, disrupted }
 
 class TsMatchRow extends StatelessWidget {
   const TsMatchRow({
@@ -79,9 +79,11 @@ class TsMatchRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
-    final showScores =
-        status == TsMatchRowStatus.live || status == TsMatchRowStatus.finished;
+    final showScores = status == TsMatchRowStatus.live ||
+        status == TsMatchRowStatus.finished ||
+        status == TsMatchRowStatus.disrupted;
     final isLive = status == TsMatchRowStatus.live;
+    final isDisrupted = status == TsMatchRowStatus.disrupted;
 
     Widget teamRow({
       required String? emblemUrl,
@@ -117,7 +119,11 @@ class TsMatchRow extends StatelessWidget {
 
     Widget statusColumn() {
       final timeStyle = TsType.labelSRegular.copyWith(
-        color: isLive ? c.error : c.textTertiary,
+        color: isLive
+            ? c.error
+            : isDisrupted
+                ? c.warning
+                : c.textTertiary,
       );
 
       return SizedBox(
@@ -151,7 +157,9 @@ class TsMatchRow extends StatelessWidget {
     }
 
     Widget alarmSlot() {
-      if (status == TsMatchRowStatus.finished || alarmOn == null) {
+      if (status == TsMatchRowStatus.finished ||
+          status == TsMatchRowStatus.disrupted ||
+          alarmOn == null) {
         return const SizedBox(
           width: _alarmVisualSize,
           height: _alarmVisualSize,
