@@ -62,3 +62,20 @@ class TsToast extends StatelessWidget {
     );
   }
 }
+
+void showTsToast(
+  BuildContext context,
+  String message,
+  TsToastType type,
+) {
+  final messenger = ScaffoldMessenger.of(context);
+  messenger.clearSnackBars();
+  messenger.showSnackBar(
+    SnackBar(
+      elevation: 0,
+      backgroundColor: Colors.transparent,
+      behavior: SnackBarBehavior.floating,
+      content: TsToast(message: message, type: type),
+    ),
+  );
+}

@@ -7,14 +7,18 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import 'package:trendsoccer/core/assets/ts_assets.dart';
+import 'package:trendsoccer/core/constants/alarm_preference_keys.dart';
 import 'package:trendsoccer/core/models/fixture_models_v2.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
+import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
 import 'package:trendsoccer/core/services/fixture_service.dart';
 import 'package:trendsoccer/core/services/notification_service.dart';
 import 'package:trendsoccer/core/utils/baseball_status.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/utils/league_supports_analysis.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
+import 'package:trendsoccer/core/utils/notification_permission_gate.dart';
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/icons/ts_league_icon.dart';
@@ -31,6 +35,7 @@ import 'package:trendsoccer/design_system/widgets/ts_empty_state.dart';
 import 'package:trendsoccer/design_system/widgets/ts_match_row.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
+import 'package:trendsoccer/design_system/widgets/ts_toast.dart';
 
 /// Eight-day window: today − 3 … today + 4 (both sports).
 const _dateChipCount = 8;
@@ -148,6 +153,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
   double _dateSwipeDragEndX = 0;
   final Set<String> _alarmEnabledMatchIds = {};
   int _alarmRefreshGeneration = 0;
+  final Set<String> _alarmToggleInFlight = {};
 
   static const _alarmBatchChunkSize = 50;
 
@@ -733,6 +739,95 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
     unawaited(_refreshAlarmStatesForDate(matches, date));
   }
 
+  void _showAlarmToggleToast(FixtureMatch match, {required bool enabled}) {
+    final l10n = context.l10n;
+    final homeTeam = localizedTeamName(
+      context,
+      match.homeTeam,
+      match.homeTeamKo,
+    );
+    final awayTeam = localizedTeamName(
+      context,
+      match.awayTeam,
+      match.awayTeamKo,
+    );
+    final message = enabled
+        ? l10n.alarmEnabledToast(homeTeam, awayTeam)
+        : l10n.alarmDisabledToast(homeTeam, awayTeam);
+    showTsToast(context, message, TsToastType.success);
+  }
+
+  Future<void> _onAlarmTap(FixtureMatch match) async {
+    if (!_rowShowsAlarmBell(_matchRowPresentation(match).status)) return;
+
+    final matchId = match.matchId;
+    final id = matchId.toString();
+    if (_alarmToggleInFlight.contains(id)) return;
+
+    if (!await ensureNotificationPermissionGate(
+      context,
+      forMatchAlarm: true,
+    )) {
+      return;
+    }
+    if (!mounted) return;
+
+    final sport = match.sport;
+    final isCurrentlyOn = _alarmEnabledMatchIds.contains(id);
+    final service = ref.read(notificationServiceProvider);
+    final prefs = ref.read(sharedPreferencesProvider);
+
+    _alarmToggleInFlight.add(id);
+    try {
+      if (isCurrentlyOn) {
+        setState(() => _alarmEnabledMatchIds.remove(id));
+        try {
+          final ok = await service.saveMatchAlarmSettings(
+            matchId,
+            sport,
+            false,
+            AlarmPreferenceKeys.disabledEvents(prefs, sport),
+          );
+          if (!mounted) return;
+          if (!ok) {
+            setState(() => _alarmEnabledMatchIds.add(id));
+            showTsToast(context, context.l10n.errorUnauthorized, TsToastType.error);
+            return;
+          }
+          _showAlarmToggleToast(match, enabled: false);
+        } on Object {
+          if (!mounted) return;
+          setState(() => _alarmEnabledMatchIds.add(id));
+          showTsToast(context, context.l10n.errorUnauthorized, TsToastType.error);
+        }
+        return;
+      }
+
+      setState(() => _alarmEnabledMatchIds.add(id));
+      try {
+        final ok = await service.saveMatchAlarmSettings(
+          matchId,
+          sport,
+          true,
+          AlarmPreferenceKeys.globalEvents(prefs, sport),
+        );
+        if (!mounted) return;
+        if (!ok) {
+          setState(() => _alarmEnabledMatchIds.remove(id));
+          showTsToast(context, context.l10n.errorUnauthorized, TsToastType.error);
+          return;
+        }
+        _showAlarmToggleToast(match, enabled: true);
+      } on Object {
+        if (!mounted) return;
+        setState(() => _alarmEnabledMatchIds.remove(id));
+        showTsToast(context, context.l10n.errorUnauthorized, TsToastType.error);
+      }
+    } finally {
+      _alarmToggleInFlight.remove(id);
+    }
+  }
+
   bool _showingFixtureFailure(
     AsyncValue<List<FixtureLeagueGroup>> groupsAsync,
     String sport,
@@ -1091,6 +1186,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
       alarmOn: showAlarmBell
           ? _alarmEnabledMatchIds.contains(match.matchId.toString())
           : null,
+      onAlarmTap: showAlarmBell ? () => unawaited(_onAlarmTap(match)) : null,
     );
   }
 

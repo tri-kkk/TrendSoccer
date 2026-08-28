@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/language_provider.dart';
 import 'package:trendsoccer/core/providers/theme_provider.dart';
+import 'package:trendsoccer/core/utils/notification_permission_gate.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
@@ -57,52 +57,13 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
   }
 
   void _showToast(String message, TsToastType type) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.clearSnackBars();
-    messenger.showSnackBar(
-      SnackBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        behavior: SnackBarBehavior.floating,
-        content: TsToast(message: message, type: type),
-      ),
-    );
+    showTsToast(context, message, type);
   }
 
   Future<void> _openNotificationSettings() async {
-    final status = await Permission.notification.status;
+    if (!await ensureNotificationPermissionGate(context)) return;
     if (!mounted) return;
-    if (status.isGranted) {
-      context.go('/menu/notification-settings');
-      return;
-    }
-    await _showPermissionDialog();
-  }
-
-  Future<void> _showPermissionDialog() async {
-    final openSettings = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: SizedBox(
-          width: 320,
-          child: TsConfirmDialog(
-            type: TsDialogType.normal,
-            title: 'Notifications are off',
-            message:
-                'Turn on notifications in system settings to receive match alerts and announcements.',
-            confirmLabel: 'Settings',
-            cancelLabel: 'Cancel',
-            onConfirm: () => Navigator.of(dialogContext).pop(true),
-            onCancel: () => Navigator.of(dialogContext).pop(false),
-          ),
-        ),
-      ),
-    );
-
-    if (openSettings == true) {
-      await openAppSettings();
-    }
+    context.go('/menu/notification-settings');
   }
 
   Future<void> _showSignOutDialog() async {
