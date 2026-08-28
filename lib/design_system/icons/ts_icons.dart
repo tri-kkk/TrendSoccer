@@ -9,7 +9,8 @@ abstract final class TsIcons {
   static const TsIconSpec analysis = TsGlyph(Symbols.query_stats);
   static const TsIconSpec menu = TsGlyph(Symbols.menu);
   static const TsIconSpec arrowBack = TsGlyph(Symbols.arrow_back);
-  static const TsIconSpec notificationsNone = TsGlyph(Symbols.notifications_none);
+  static const TsIconSpec notificationsNone =
+      TsGlyph(Symbols.notifications_none, fill: 0);
   static const TsIconSpec notifications = TsGlyph(Symbols.notifications);
   static const TsIconSpec accountCircle = TsGlyph(Symbols.account_circle);
   static const TsIconSpec language = TsGlyph(Symbols.language);

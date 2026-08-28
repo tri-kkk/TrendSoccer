@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +11,7 @@ import 'package:trendsoccer/core/models/fixture_models_v2.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/services/fixture_service.dart';
+import 'package:trendsoccer/core/services/notification_service.dart';
 import 'package:trendsoccer/core/utils/baseball_status.dart';
 import 'package:trendsoccer/core/utils/league_supports_analysis.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
@@ -144,6 +146,10 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
   Timer? _livePollingTimer;
   double _dateSwipeDragStartX = 0;
   double _dateSwipeDragEndX = 0;
+  final Set<String> _alarmEnabledMatchIds = {};
+  int _alarmRefreshGeneration = 0;
+
+  static const _alarmBatchChunkSize = 50;
 
   @override
   void initState() {
@@ -233,6 +239,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
         _mergedBaseballCache();
     ref.read(baseballLoadedDatesProvider.notifier).state =
         Set<String>.from(_baseballDateCache.keys);
+    ref.read(baseballPolledFixturesProvider.notifier).state = null;
   }
 
   void _publishBaseballLoadingDates() {
@@ -511,9 +518,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
       if (!mounted) return;
       if (ref.read(fixtureSelectedSportProvider) != 'baseball') return;
 
-      final polled = ref.read(baseballPolledFixturesProvider);
-      final List<FixtureMatch> base =
-          polled ?? ref.read(baseballLazyFixturesProvider);
+      final base = ref.read(baseballLazyFixturesProvider);
       if (base.isEmpty) return;
 
       final merged =
@@ -614,6 +619,14 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
         // _baseballLoadFailed (baseball).
       }
       _syncLivePolling();
+      if (!mounted) return;
+      final baseballMatches = ref.read(allFixturesWithLiveProvider).value;
+      if (baseballMatches != null) {
+        await _refreshAlarmStatesForDate(
+          baseballMatches,
+          ref.read(fixtureSelectedDateProvider),
+        );
+      }
       return;
     }
     invalidateFixtureData(ref);
@@ -627,6 +640,97 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
       // state (soccer AsyncError).
     }
     _syncLivePolling();
+    if (!mounted) return;
+    final matches = ref.read(allFixturesWithLiveProvider).value;
+    if (matches != null) {
+      await _refreshAlarmStatesForDate(
+        matches,
+        ref.read(fixtureSelectedDateProvider),
+      );
+    }
+  }
+
+  bool _rowShowsAlarmBell(TsMatchRowStatus status) {
+    return status == TsMatchRowStatus.scheduled ||
+        status == TsMatchRowStatus.live;
+  }
+
+  List<FixtureMatch> _matchesForSelectedDate(
+    List<FixtureMatch> matches,
+    String selectedDate,
+  ) {
+    return matches.where((m) => matchIsOnDate(m, selectedDate)).toList();
+  }
+
+  Future<void> _refreshAlarmStatesForDate(
+    List<FixtureMatch> allMatches,
+    String selectedDate,
+  ) async {
+    final generation = ++_alarmRefreshGeneration;
+    final service = ref.read(notificationServiceProvider);
+    final selectedSport = ref.read(fixtureSelectedSportProvider);
+
+    final eligible = _matchesForSelectedDate(allMatches, selectedDate)
+        .where(
+          (match) =>
+              match.matchId != 0 &&
+              match.sport == selectedSport &&
+              _rowShowsAlarmBell(_matchRowPresentation(match).status),
+        )
+        .toList();
+
+    final matchIds = eligible.map((m) => m.matchId.toString()).toList();
+    if (matchIds.isEmpty) {
+      if (!mounted || generation != _alarmRefreshGeneration) return;
+      setState(() => _alarmEnabledMatchIds.clear());
+      return;
+    }
+
+    final results = <String, dynamic>{};
+    for (var i = 0; i < matchIds.length; i += _alarmBatchChunkSize) {
+      final chunk = matchIds.sublist(
+        i,
+        math.min(i + _alarmBatchChunkSize, matchIds.length),
+      );
+      final chunkResult = await service.getMatchAlarmsBatch(
+        matchIds: chunk,
+        sport: selectedSport,
+      );
+      results.addAll(chunkResult);
+      if (!mounted || generation != _alarmRefreshGeneration) return;
+    }
+
+    final enabledIds = <String>{};
+    for (final match in eligible) {
+      final id = match.matchId.toString();
+      final alarm = results[id];
+      if (alarm is Map && alarm['enabled'] == true) {
+        enabledIds.add(id);
+      }
+    }
+
+    if (!mounted || generation != _alarmRefreshGeneration) return;
+    setState(() {
+      _alarmEnabledMatchIds
+        ..clear()
+        ..addAll(enabledIds);
+    });
+  }
+
+  void _scheduleAlarmStateRefresh(
+    List<FixtureMatch> matches, {
+    Duration delay = Duration.zero,
+    String? selectedDate,
+  }) {
+    final String date = selectedDate ?? ref.read(fixtureSelectedDateProvider);
+    if (delay > Duration.zero) {
+      Future<void>.delayed(delay, () {
+        if (!mounted) return;
+        unawaited(_refreshAlarmStatesForDate(matches, date));
+      });
+      return;
+    }
+    unawaited(_refreshAlarmStatesForDate(matches, date));
   }
 
   bool _showingFixtureFailure(
@@ -667,6 +771,10 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
       });
     }
     _syncLivePolling();
+    final matches = ref.read(allFixturesWithLiveProvider).value;
+    if (matches != null) {
+      _scheduleAlarmStateRefresh(matches);
+    }
   }
 
   void _onDateSelected(int index, List<DateTime> chipDates) {
@@ -680,6 +788,10 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
     }
     _syncLivePolling();
     _scrollToTop();
+    final matches = ref.read(allFixturesWithLiveProvider).value;
+    if (matches != null) {
+      _scheduleAlarmStateRefresh(matches, selectedDate: dateStr);
+    }
   }
 
   void _scrollToTop() {
@@ -957,6 +1069,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
     final showScores = presentation.status == TsMatchRowStatus.live ||
         presentation.status == TsMatchRowStatus.finished ||
         presentation.status == TsMatchRowStatus.disrupted;
+    final showAlarmBell = _rowShowsAlarmBell(presentation.status);
 
     return TsMatchRow(
       homeTeam: localizedTeamName(
@@ -975,7 +1088,9 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
       awayScore: showScores ? _scoreText(match.awayScore) : null,
       homeEmblemUrl: match.homeTeamLogo,
       awayEmblemUrl: match.awayTeamLogo,
-      alarmOn: null,
+      alarmOn: showAlarmBell
+          ? _alarmEnabledMatchIds.contains(match.matchId.toString())
+          : null,
     );
   }
 
@@ -1025,6 +1140,34 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
         }
       },
     );
+
+    ref.listen<AsyncValue<List<FixtureMatch>>>(allFixturesWithLiveProvider,
+        (previous, next) {
+      next.whenData((matches) {
+        _scheduleAlarmStateRefresh(matches);
+      });
+    });
+
+    ref.listen(authProvider, (previous, next) {
+      final wasLoggedIn = previous?.isLoggedIn ?? false;
+      final isLoggedIn = next.isLoggedIn;
+
+      // Logout: keep bell states in memory (device-level settings).
+      if (wasLoggedIn && !isLoggedIn) return;
+
+      final matches = ref.read(allFixturesWithLiveProvider).value;
+      if (matches == null) return;
+
+      if (!wasLoggedIn && isLoggedIn) {
+        _scheduleAlarmStateRefresh(
+          matches,
+          delay: const Duration(milliseconds: 500),
+        );
+        return;
+      }
+
+      _scheduleAlarmStateRefresh(matches);
+    });
 
     final selectedDateIndex = _selectedDateIndex(selectedDateStr, chipDates);
     final showingFixtureFailure = _showingFixtureFailure(groupsAsync, sport);
