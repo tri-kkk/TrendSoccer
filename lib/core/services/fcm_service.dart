@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -10,6 +11,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:trendsoccer/core/navigation/app_navigation.dart';
 import 'package:trendsoccer/core/constants/alarm_preference_keys.dart';
 import 'package:trendsoccer/core/services/token_service.dart';
+import 'package:trendsoccer/core/utils/notification_permission_gate.dart';
 
 class FCMService {
   static const String prefAppGeneral = 'notification_app_general';
@@ -48,28 +50,22 @@ class FCMService {
     final alreadyAsked = prefs.getBool(_prefPermissionAsked) ?? false;
 
     if (!alreadyAsked) {
-      final settings = await _messaging.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
+      final outcome = await _requestFirstLaunchNotificationPermission();
+      if (outcome != null) {
+        await prefs.setBool(_prefPermissionAsked, true);
+
+        if (!prefs.containsKey(prefAppGeneral)) {
+          await _handleFirstPermissionResult(
+            prefs,
+            outcome == NotificationPermissionStatus.granted,
+          );
+        }
+      }
+    } else if (!prefs.containsKey(prefAppGeneral)) {
+      await _handleFirstPermissionResult(
+        prefs,
+        await _isOsNotificationAuthorized(),
       );
-      await prefs.setBool(_prefPermissionAsked, true);
-      
-      if (!prefs.containsKey(prefAppGeneral)) {
-        await _handleFirstPermissionResult(
-          prefs,
-          _isFcmAuthorized(settings.authorizationStatus),
-        );
-      }
-    } else {
-      final currentSettings = await _messaging.getNotificationSettings();
-      
-      if (!prefs.containsKey(prefAppGeneral)) {
-        await _handleFirstPermissionResult(
-          prefs,
-          _isFcmAuthorized(currentSettings.authorizationStatus),
-        );
-      }
     }
 
     if (prefs.containsKey(prefAppGeneral)) {
@@ -218,6 +214,59 @@ class FCMService {
   static bool _isFcmAuthorized(AuthorizationStatus status) {
     return status == AuthorizationStatus.authorized ||
         status == AuthorizationStatus.provisional;
+  }
+
+  /// Android uses [resolveNotificationPermission] (POST_NOTIFICATIONS).
+  /// iOS keeps [FirebaseMessaging.requestPermission] for APNs authorization.
+  Future<NotificationPermissionStatus?> _requestFirstLaunchNotificationPermission() async {
+    if (Platform.isAndroid) {
+      return resolveNotificationPermission(requestIfNeeded: true);
+    }
+    if (Platform.isIOS) {
+      return _requestIosNotificationPermission();
+    }
+    return null;
+  }
+
+  Future<NotificationPermissionStatus?> _requestIosNotificationPermission() async {
+    try {
+      final settings = await _messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      return _notificationStatusFromAuthorization(settings.authorizationStatus);
+    } on Object {
+      return null;
+    }
+  }
+
+  NotificationPermissionStatus? _notificationStatusFromAuthorization(
+    AuthorizationStatus status,
+  ) {
+    if (_isFcmAuthorized(status)) {
+      return NotificationPermissionStatus.granted;
+    }
+    if (status == AuthorizationStatus.denied) {
+      return NotificationPermissionStatus.denied;
+    }
+    if (status == AuthorizationStatus.notDetermined) {
+      return null;
+    }
+    return NotificationPermissionStatus.denied;
+  }
+
+  Future<bool> _isOsNotificationAuthorized() async {
+    if (Platform.isAndroid) {
+      final outcome =
+          await resolveNotificationPermission(requestIfNeeded: false);
+      return outcome == NotificationPermissionStatus.granted;
+    }
+    if (Platform.isIOS) {
+      final settings = await _messaging.getNotificationSettings();
+      return _isFcmAuthorized(settings.authorizationStatus);
+    }
+    return false;
   }
 
   Future<void> _subscribeAllTopics(SharedPreferences prefs) async {
