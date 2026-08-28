@@ -588,7 +588,12 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
       }
     } on Object {
       if (!background && mounted) {
-        setState(() => _baseballLoadFailed = true);
+        final selectedDate = ref.read(fixtureSelectedDateProvider);
+        if (date == selectedDate) {
+          _baseballDateCache.remove(date);
+          _publishBaseballCache();
+          setState(() => _baseballLoadFailed = true);
+        }
       }
     } finally {
       _baseballDateLoading.remove(date);
