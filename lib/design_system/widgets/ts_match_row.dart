@@ -132,14 +132,7 @@ class TsMatchRow extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (isLive) ...[
-              Container(
-                width: _liveDotSize,
-                height: _liveDotSize,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: c.error,
-                ),
-              ),
+              _TsLiveDot(color: c.error),
               const SizedBox(width: _statusColumnGap),
             ],
             Flexible(
@@ -225,5 +218,78 @@ class TsMatchRow extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Pulsing 8px live indicator — opacity only, local ticker, live rows only.
+class _TsLiveDot extends StatefulWidget {
+  const _TsLiveDot({required this.color});
+
+  final Color color;
+
+  @override
+  State<_TsLiveDot> createState() => _TsLiveDotState();
+}
+
+class _TsLiveDotState extends State<_TsLiveDot>
+    with SingleTickerProviderStateMixin {
+  static const _period = Duration(milliseconds: 1500);
+
+  AnimationController? _controller;
+  Animation<double>? _opacity;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncAnimation();
+  }
+
+  void _syncAnimation() {
+    if (MediaQuery.disableAnimationsOf(context)) {
+      final hadController = _controller != null;
+      _stopAnimation();
+      if (hadController && mounted) setState(() {});
+      return;
+    }
+
+    if (_controller != null) return;
+
+    final controller = AnimationController(vsync: this, duration: _period);
+    _controller = controller;
+    _opacity = Tween<double>(begin: 1, end: 0.4).animate(
+      CurvedAnimation(parent: controller, curve: Curves.easeInOut),
+    );
+    controller.repeat(reverse: true);
+  }
+
+  void _stopAnimation() {
+    final controller = _controller;
+    if (controller == null) return;
+    controller.dispose();
+    _controller = null;
+    _opacity = null;
+  }
+
+  @override
+  void dispose() {
+    _stopAnimation();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dot = Container(
+      width: TsMatchRow._liveDotSize,
+      height: TsMatchRow._liveDotSize,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: widget.color,
+      ),
+    );
+
+    final opacity = _opacity;
+    if (opacity == null) return dot;
+
+    return FadeTransition(opacity: opacity, child: dot);
   }
 }
