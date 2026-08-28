@@ -148,6 +148,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
   final Map<String, Map<String, dynamic>> _lastKnownSoccerLiveStates = {};
   final Map<String, DateTime> _soccerFinishedCacheAt = {};
   bool _baseballLoadFailed = false;
+  bool _fixtureRetryInProgress = false;
   Future<void>? _fixtureRefreshInFlight;
   Timer? _livePollingTimer;
   double _dateSwipeDragStartX = 0;
@@ -688,12 +689,11 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
 
     final matchIds = eligible.map((m) => m.matchId.toString()).toList();
     if (matchIds.isEmpty) {
-      if (!mounted || generation != _alarmRefreshGeneration) return;
-      setState(() => _alarmEnabledMatchIds.clear());
       return;
     }
 
     final results = <String, dynamic>{};
+    final queriedIds = <String>{};
     for (var i = 0; i < matchIds.length; i += _alarmBatchChunkSize) {
       final chunk = matchIds.sublist(
         i,
@@ -703,24 +703,33 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
         matchIds: chunk,
         sport: selectedSport,
       );
-      results.addAll(chunkResult);
       if (!mounted || generation != _alarmRefreshGeneration) return;
-    }
 
-    final enabledIds = <String>{};
-    for (final match in eligible) {
-      final id = match.matchId.toString();
-      final alarm = results[id];
-      if (alarm is Map && alarm['enabled'] == true) {
-        enabledIds.add(id);
+      // getMatchAlarmsBatch returns {} on transport/auth/parse failure as well as
+      // on an empty input. A non-empty chunk with an empty result is treated as
+      // unusable so we do not reconcile those ids.
+      if (chunkResult.isEmpty) {
+        continue;
       }
+
+      results.addAll(chunkResult);
+      queriedIds.addAll(chunk);
     }
 
+    if (queriedIds.isEmpty) return;
     if (!mounted || generation != _alarmRefreshGeneration) return;
+
     setState(() {
-      _alarmEnabledMatchIds
-        ..clear()
-        ..addAll(enabledIds);
+      for (final id in queriedIds) {
+        final alarm = results[id];
+        if (alarm is! Map) continue;
+
+        if (alarm['enabled'] == true) {
+          _alarmEnabledMatchIds.add(id);
+        } else {
+          _alarmEnabledMatchIds.remove(id);
+        }
+      }
     });
   }
 
@@ -841,6 +850,30 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
 
   Future<void> _onMatchesRefresh() =>
       _retryFixtureLoad(ref.read(fixtureSelectedSportProvider));
+
+  Future<void> _onFixtureRetryPressed(String sport) async {
+    if (_fixtureRetryInProgress) return;
+    setState(() => _fixtureRetryInProgress = true);
+    try {
+      await _retryFixtureLoad(sport);
+    } finally {
+      if (mounted) {
+        setState(() => _fixtureRetryInProgress = false);
+      }
+    }
+  }
+
+  Widget _buildFixtureFailureEmptyState(String sport) {
+    return TsEmptyState(
+      type: TsEmptyType.failure,
+      title: 'Could not load matches',
+      description: 'Check your connection and try again.',
+      actionLabel: _fixtureRetryInProgress ? 'Retrying…' : 'Retry',
+      onAction: _fixtureRetryInProgress
+          ? null
+          : () => unawaited(_onFixtureRetryPressed(sport)),
+    );
+  }
 
   TsSport _tsSportFromProvider(String sport) =>
       sport == 'baseball' ? TsSport.baseball : TsSport.soccer;
@@ -1328,13 +1361,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
                   selectedDateIndex: selectedDateIndex,
                   chipDates: chipDates,
                   child: Center(
-                    child: TsEmptyState(
-                      type: TsEmptyType.failure,
-                      title: 'Could not load matches',
-                      description: 'Check your connection and try again.',
-                      actionLabel: 'Retry',
-                      onAction: () => _retryFixtureLoad(sport),
-                    ),
+                    child: _buildFixtureFailureEmptyState(sport),
                   ),
                 ),
               ),
@@ -1349,13 +1376,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
                         selectedDateIndex: selectedDateIndex,
                         chipDates: chipDates,
                         child: Center(
-                          child: TsEmptyState(
-                            type: TsEmptyType.failure,
-                            title: 'Could not load matches',
-                            description: 'Check your connection and try again.',
-                            actionLabel: 'Retry',
-                            onAction: () => _retryFixtureLoad(sport),
-                          ),
+                          child: _buildFixtureFailureEmptyState(sport),
                         ),
                       ),
                     ),
