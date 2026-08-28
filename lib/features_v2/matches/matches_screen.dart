@@ -15,6 +15,7 @@ import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
 import 'package:trendsoccer/core/services/fixture_service.dart';
 import 'package:trendsoccer/core/services/notification_service.dart';
 import 'package:trendsoccer/core/utils/baseball_status.dart';
+import 'package:trendsoccer/core/utils/error_resolver.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/utils/league_supports_analysis.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
@@ -782,46 +783,44 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
       if (isCurrentlyOn) {
         setState(() => _alarmEnabledMatchIds.remove(id));
         try {
-          final ok = await service.saveMatchAlarmSettings(
+          await service.saveMatchAlarmSettings(
             matchId,
             sport,
             false,
             AlarmPreferenceKeys.disabledEvents(prefs, sport),
           );
           if (!mounted) return;
-          if (!ok) {
-            setState(() => _alarmEnabledMatchIds.add(id));
-            showTsToast(context, context.l10n.errorUnauthorized, TsToastType.error);
-            return;
-          }
           _showAlarmToggleToast(match, enabled: false);
-        } on Object {
+        } on Object catch (error) {
           if (!mounted) return;
           setState(() => _alarmEnabledMatchIds.add(id));
-          showTsToast(context, context.l10n.errorUnauthorized, TsToastType.error);
+          showTsToast(
+            context,
+            resolveApiError(context, error),
+            TsToastType.error,
+          );
         }
         return;
       }
 
       setState(() => _alarmEnabledMatchIds.add(id));
       try {
-        final ok = await service.saveMatchAlarmSettings(
+        await service.saveMatchAlarmSettings(
           matchId,
           sport,
           true,
           AlarmPreferenceKeys.globalEvents(prefs, sport),
         );
         if (!mounted) return;
-        if (!ok) {
-          setState(() => _alarmEnabledMatchIds.remove(id));
-          showTsToast(context, context.l10n.errorUnauthorized, TsToastType.error);
-          return;
-        }
         _showAlarmToggleToast(match, enabled: true);
-      } on Object {
+      } on Object catch (error) {
         if (!mounted) return;
         setState(() => _alarmEnabledMatchIds.remove(id));
-        showTsToast(context, context.l10n.errorUnauthorized, TsToastType.error);
+        showTsToast(
+          context,
+          resolveApiError(context, error),
+          TsToastType.error,
+        );
       }
     } finally {
       _alarmToggleInFlight.remove(id);

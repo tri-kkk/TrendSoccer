@@ -3,14 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:trendsoccer/core/models/api_response.dart';
 import 'package:trendsoccer/core/services/fcm_service.dart';
 import 'package:trendsoccer/core/services/token_service.dart';
+import 'package:trendsoccer/core/services/web_api_client.dart';
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {
-  return NotificationService();
+  return NotificationService(ref.watch(webDioProvider));
 });
 
 class NotificationService {
+  NotificationService(this._dio);
+
+  final Dio _dio;
   /// Get alarm settings for a match
   Future<Map<String, dynamic>> getMatchAlarmSettings(
     int matchId,
@@ -87,8 +92,11 @@ class NotificationService {
     }
   }
 
-  /// Save alarm settings for a match
-  Future<bool> saveMatchAlarmSettings(
+  /// Save alarm settings for a match.
+  ///
+  /// Throws [ApiException] when credentials are missing or the API reports
+  /// failure. Propagates [DioException] for transport errors.
+  Future<void> saveMatchAlarmSettings(
     int matchId,
     String sport,
     bool enabled,
@@ -96,25 +104,43 @@ class NotificationService {
   ) async {
     final headers = await _buildHeaders();
     if (!_hasAuthHeaders(headers)) {
-            return false;
+      throw const ApiException(
+        code: 'UNAUTHORIZED',
+        message: 'Login required',
+      );
     }
 
-    try {
-      final dio = Dio();
-      final response = await dio.put<dynamic>(
-        'https://www.trendsoccer.com/api/v1/mobile/notifications/match/$matchId',
-        data: <String, dynamic>{
-          'sport': sport,
-          'enabled': enabled,
-          'events': events,
-        },
-        options: Options(headers: headers),
-      );
-                  final data = response.data;
-      return data is Map && data['success'] == true;
-    } catch (e) {
-            return false;
+    final response = await _dio.put<dynamic>(
+      '/api/v1/mobile/notifications/match/$matchId',
+      data: <String, dynamic>{
+        'sport': sport,
+        'enabled': enabled,
+        'events': events,
+      },
+      options: Options(headers: headers),
+    );
+    final data = response.data;
+    if (data is Map && data['success'] == true) {
+      return;
     }
+
+    if (data is Map<String, dynamic>) {
+      final apiResponse = ApiResponse<dynamic>.fromJson(data, null);
+      if (apiResponse.error != null) {
+        throw ApiException.fromApiError(apiResponse.error!);
+      }
+    } else if (data is Map) {
+      final apiResponse =
+          ApiResponse<dynamic>.fromJson(Map<String, dynamic>.from(data), null);
+      if (apiResponse.error != null) {
+        throw ApiException.fromApiError(apiResponse.error!);
+      }
+    }
+
+    throw const ApiException(
+      code: 'UNKNOWN_ERROR',
+      message: 'Request failed',
+    );
   }
 
   /// Default settings per sport
