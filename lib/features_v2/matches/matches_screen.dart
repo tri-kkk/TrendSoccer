@@ -142,6 +142,8 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
   bool _baseballLoadFailed = false;
   Future<void>? _fixtureRefreshInFlight;
   Timer? _livePollingTimer;
+  double _dateSwipeDragStartX = 0;
+  double _dateSwipeDragEndX = 0;
 
   @override
   void initState() {
@@ -669,13 +671,69 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
 
   void _onDateSelected(int index, List<DateTime> chipDates) {
     if (index < 0 || index >= chipDates.length) return;
-    _resetFilterToAll();
     final dateStr = fixtureDateString(chipDates[index]);
+    if (dateStr == ref.read(fixtureSelectedDateProvider)) return;
+    _resetFilterToAll();
     ref.read(fixtureSelectedDateProvider.notifier).state = dateStr;
     if (ref.read(fixtureSelectedSportProvider) == 'baseball') {
       unawaited(_loadBaseballDate(dateStr));
     }
     _syncLivePolling();
+    _scrollToTop();
+  }
+
+  void _scrollToTop() {
+    if (!_scrollController.hasClients) return;
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  }
+
+  void _goToNextDate(int selectedIndex, List<DateTime> chipDates) {
+    if (selectedIndex >= chipDates.length - 1) return;
+    _onDateSelected(selectedIndex + 1, chipDates);
+  }
+
+  void _goToPreviousDate(int selectedIndex, List<DateTime> chipDates) {
+    if (selectedIndex <= 0) return;
+    _onDateSelected(selectedIndex - 1, chipDates);
+  }
+
+  void _onListDateSwipeEnd(
+    DragEndDetails details,
+    int selectedIndex,
+    List<DateTime> chipDates,
+  ) {
+    final dx = _dateSwipeDragEndX - _dateSwipeDragStartX;
+    final velocity = details.primaryVelocity;
+    if (velocity == null && dx.abs() < 50) return;
+
+    if ((velocity ?? 0) < -300 || dx < -50) {
+      _goToNextDate(selectedIndex, chipDates);
+    } else if ((velocity ?? 0) > 300 || dx > 50) {
+      _goToPreviousDate(selectedIndex, chipDates);
+    }
+  }
+
+  Widget _wrapListDateSwipe({
+    required int selectedDateIndex,
+    required List<DateTime> chipDates,
+    required Widget child,
+  }) {
+    return _MatchesListDateSwipe(
+      onDragStart: (details) {
+        _dateSwipeDragStartX = details.globalPosition.dx;
+        _dateSwipeDragEndX = details.globalPosition.dx;
+      },
+      onDragUpdate: (details) {
+        _dateSwipeDragEndX = details.globalPosition.dx;
+      },
+      onDragEnd: (details) =>
+          _onListDateSwipeEnd(details, selectedDateIndex, chipDates),
+      child: child,
+    );
   }
 
   void _onSelectAll() => _resetFilterToAll();
@@ -1016,19 +1074,29 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
             loading: () => [
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-                sliver: SliverToBoxAdapter(child: _buildSkeletonGroups()),
+                sliver: SliverToBoxAdapter(
+                  child: _wrapListDateSwipe(
+                    selectedDateIndex: selectedDateIndex,
+                    chipDates: chipDates,
+                    child: _buildSkeletonGroups(),
+                  ),
+                ),
               ),
             ],
             error: (_, _) => [
               SliverFillRemaining(
                 hasScrollBody: false,
-                child: Center(
-                  child: TsEmptyState(
-                    type: TsEmptyType.failure,
-                    title: 'Could not load matches',
-                    description: 'Check your connection and try again.',
-                    actionLabel: 'Retry',
-                    onAction: () => _retryFixtureLoad(sport),
+                child: _wrapListDateSwipe(
+                  selectedDateIndex: selectedDateIndex,
+                  chipDates: chipDates,
+                  child: Center(
+                    child: TsEmptyState(
+                      type: TsEmptyType.failure,
+                      title: 'Could not load matches',
+                      description: 'Check your connection and try again.',
+                      actionLabel: 'Retry',
+                      onAction: () => _retryFixtureLoad(sport),
+                    ),
                   ),
                 ),
               ),
@@ -1039,13 +1107,17 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
                   return [
                     SliverFillRemaining(
                       hasScrollBody: false,
-                      child: Center(
-                        child: TsEmptyState(
-                          type: TsEmptyType.failure,
-                          title: 'Could not load matches',
-                          description: 'Check your connection and try again.',
-                          actionLabel: 'Retry',
-                          onAction: () => _retryFixtureLoad(sport),
+                      child: _wrapListDateSwipe(
+                        selectedDateIndex: selectedDateIndex,
+                        chipDates: chipDates,
+                        child: Center(
+                          child: TsEmptyState(
+                            type: TsEmptyType.failure,
+                            title: 'Could not load matches',
+                            description: 'Check your connection and try again.',
+                            actionLabel: 'Retry',
+                            onAction: () => _retryFixtureLoad(sport),
+                          ),
                         ),
                       ),
                     ),
@@ -1056,13 +1128,17 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
                   return [
                     SliverFillRemaining(
                       hasScrollBody: false,
-                      child: Center(
-                        child: TsEmptyState(
-                          type: TsEmptyType.withAction,
-                          title: 'No live matches',
-                          description: 'No matches are in progress right now.',
-                          actionLabel: 'Browse all matches',
-                          onAction: _onSelectAll,
+                      child: _wrapListDateSwipe(
+                        selectedDateIndex: selectedDateIndex,
+                        chipDates: chipDates,
+                        child: Center(
+                          child: TsEmptyState(
+                            type: TsEmptyType.withAction,
+                            title: 'No live matches',
+                            description: 'No matches are in progress right now.',
+                            actionLabel: 'Browse all matches',
+                            onAction: _onSelectAll,
+                          ),
                         ),
                       ),
                     ),
@@ -1073,14 +1149,18 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
                 return [
                   SliverFillRemaining(
                     hasScrollBody: false,
-                    child: Center(
-                      child: TsEmptyState(
-                        type: TsEmptyType.withAction,
-                        title: _emptyDateTitle(selectedDate),
-                        description:
-                            'Try another date from the strip above.',
-                        actionLabel: 'View other dates',
-                        onAction: _scrollToDateStrip,
+                    child: _wrapListDateSwipe(
+                      selectedDateIndex: selectedDateIndex,
+                      chipDates: chipDates,
+                      child: Center(
+                        child: TsEmptyState(
+                          type: TsEmptyType.withAction,
+                          title: _emptyDateTitle(selectedDate),
+                          description:
+                              'Try another date from the strip above.',
+                          actionLabel: 'View other dates',
+                          onAction: _scrollToDateStrip,
+                        ),
                       ),
                     ),
                   ),
@@ -1089,12 +1169,21 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
               return [
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-                  sliver: SliverList.separated(
-                    itemCount: groups.length,
-                    separatorBuilder: (_, _) =>
-                        const SizedBox(height: TsSpacing.md),
-                    itemBuilder: (context, index) =>
-                        _buildLeagueGroup(groups[index], c, sport),
+                  sliver: SliverToBoxAdapter(
+                    child: _wrapListDateSwipe(
+                      selectedDateIndex: selectedDateIndex,
+                      chipDates: chipDates,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          for (var i = 0; i < groups.length; i++) ...[
+                            _buildLeagueGroup(groups[i], c, sport),
+                            if (i < groups.length - 1)
+                              const SizedBox(height: TsSpacing.md),
+                          ],
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ];
@@ -1104,6 +1193,33 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
         ],
         ),
       ),
+    );
+  }
+}
+
+/// Horizontal date swipe on the match-list region only — not the date strip or
+/// filter row.
+class _MatchesListDateSwipe extends StatelessWidget {
+  const _MatchesListDateSwipe({
+    required this.onDragStart,
+    required this.onDragUpdate,
+    required this.onDragEnd,
+    required this.child,
+  });
+
+  final GestureDragStartCallback onDragStart;
+  final GestureDragUpdateCallback onDragUpdate;
+  final GestureDragEndCallback onDragEnd;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onHorizontalDragStart: onDragStart,
+      onHorizontalDragUpdate: onDragUpdate,
+      onHorizontalDragEnd: onDragEnd,
+      behavior: HitTestBehavior.opaque,
+      child: child,
     );
   }
 }
