@@ -722,8 +722,8 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
       return;
     }
 
-    final results = <String, dynamic>{};
-    final queriedIds = <String>{};
+    final enabledIds = <String>{};
+    final reconciledIds = <String>{};
     for (var i = 0; i < matchIds.length; i += _alarmBatchChunkSize) {
       final chunk = matchIds.sublist(
         i,
@@ -735,26 +735,25 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
       );
       if (!mounted || generation != _alarmRefreshGeneration) return;
 
-      // getMatchAlarmsBatch returns {} on transport/auth/parse failure as well as
-      // on an empty input. A non-empty chunk with an empty result is treated as
-      // unusable so we do not reconcile those ids.
-      if (chunkResult.isEmpty) {
+      if (chunkResult == null) {
         continue;
       }
 
-      results.addAll(chunkResult);
-      queriedIds.addAll(chunk);
+      reconciledIds.addAll(chunk);
+      for (final id in chunk) {
+        final alarm = chunkResult[id];
+        if (alarm is Map && alarm['enabled'] == true) {
+          enabledIds.add(id);
+        }
+      }
     }
 
-    if (queriedIds.isEmpty) return;
+    if (reconciledIds.isEmpty) return;
     if (!mounted || generation != _alarmRefreshGeneration) return;
 
     setState(() {
-      for (final id in queriedIds) {
-        final alarm = results[id];
-        if (alarm is! Map) continue;
-
-        if (alarm['enabled'] == true) {
+      for (final id in reconciledIds) {
+        if (enabledIds.contains(id)) {
           _alarmEnabledMatchIds.add(id);
         } else {
           _alarmEnabledMatchIds.remove(id);

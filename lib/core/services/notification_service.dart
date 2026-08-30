@@ -27,9 +27,8 @@ class NotificationService {
     }
 
     try {
-      final dio = Dio();
-      final response = await dio.get<dynamic>(
-        'https://www.trendsoccer.com/api/v1/mobile/notifications/match/$matchId',
+      final response = await _dio.get<dynamic>(
+        '/api/v1/mobile/notifications/match/$matchId',
         queryParameters: <String, String>{'sport': sport},
         options: Options(headers: headers),
       );
@@ -45,7 +44,9 @@ class NotificationService {
     }
   }
 
-  Future<Map<String, dynamic>> getMatchAlarmsBatch({
+  /// Returns `null` on transport/auth/parse failure.
+  /// Returns a (possibly empty) map on success — absence of an id means not enabled.
+  Future<Map<String, dynamic>?> getMatchAlarmsBatch({
     required List<String> matchIds,
     required String sport,
   }) async {
@@ -53,29 +54,28 @@ class NotificationService {
 
     final headers = await _buildHeaders();
     if (!_hasAuthHeaders(headers)) {
-      return {};
+      return null;
     }
 
     try {
-      final dio = Dio();
       final idsParam = matchIds.join(',');
-      final response = await dio.get<dynamic>(
-        'https://www.trendsoccer.com/api/v1/mobile/notifications/matches',
+      final response = await _dio.get<dynamic>(
+        '/api/v1/mobile/notifications/matches',
         queryParameters: <String, String>{
           'sport': sport,
           'ids': idsParam,
         },
         options: Options(headers: headers),
       );
-      
+
       final data = response.data;
-      if (data is! Map) return {};
+      if (data is! Map) return null;
 
       final inner = data['data'];
-      if (inner is! Map) return {};
+      if (inner is! Map) return null;
 
       final results = inner['results'];
-      if (results is! Map) return {};
+      if (results is! Map) return null;
 
       return results.map(
         (id, value) => MapEntry(
@@ -88,7 +88,7 @@ class NotificationService {
         ),
       );
     } catch (e) {
-            return {};
+      return null;
     }
   }
 
