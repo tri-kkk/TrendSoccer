@@ -272,13 +272,16 @@ final rawFixturesProvider = Provider<AsyncValue<List<FixtureMatch>>>((ref) {
 
   if (sport == 'baseball') {
     final polled = ref.watch(baseballPolledFixturesProvider);
-    if (polled != null) {
-      return AsyncValue.data(polled);
-    }
     final lazy = ref.watch(baseballLazyFixturesProvider);
     final selectedDate = ref.watch(fixtureSelectedDateProvider);
     final loadingDates = ref.watch(baseballDateLoadingDatesProvider);
     final loadedDates = ref.watch(baseballLoadedDatesProvider);
+    // Polled is a live merge over the lazy cache. Serve it only for dates
+    // already in that cache — otherwise an unvisited date would inherit today's
+    // polled snapshot, filter to zero rows, and flash the empty state.
+    if (polled != null && loadedDates.contains(selectedDate)) {
+      return AsyncValue.data(polled);
+    }
     if (loadingDates.contains(selectedDate) &&
         !loadedDates.contains(selectedDate)) {
       return const AsyncValue.loading();

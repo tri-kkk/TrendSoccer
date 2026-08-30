@@ -45,7 +45,8 @@ class TsMatchRow extends StatelessWidget {
   static const _statusColumnGap = 6.0;
   static const _scoreColumnWidth = 24.0;
   static const _alarmVisualSize = 20.0;
-  static const _alarmTapTarget = 48.0;
+  static const _alarmTapTargetWidth = 44.0;
+  static const _alarmTapTargetHeight = 48.0;
 
   int? _parseScore(String? score) {
     if (score == null || score.isEmpty) return null;
@@ -160,15 +161,20 @@ class TsMatchRow extends StatelessWidget {
       }
 
       return SizedBox(
-        width: _alarmTapTarget,
-        height: _alarmTapTarget,
-        child: Center(
+        width: _alarmVisualSize,
+        height: _alarmVisualSize,
+        child: OverflowBox(
+          minWidth: _alarmTapTargetWidth,
+          maxWidth: _alarmTapTargetWidth,
+          minHeight: _alarmTapTargetHeight,
+          maxHeight: _alarmTapTargetHeight,
+          alignment: Alignment.center,
           child: GestureDetector(
             onTap: onAlarmTap,
             behavior: HitTestBehavior.opaque,
             child: SizedBox(
-              width: _alarmTapTarget,
-              height: _alarmTapTarget,
+              width: _alarmTapTargetWidth,
+              height: _alarmTapTargetHeight,
               child: Center(
                 child: TsIcon(
                   alarmOn! ? TsIcons.notifications : TsIcons.notificationsNone,

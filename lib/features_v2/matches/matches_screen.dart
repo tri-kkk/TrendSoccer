@@ -255,6 +255,25 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
         Set<String>.from(_baseballDateLoading);
   }
 
+  /// Publishes a loading chip for [date] before the selected date changes, so
+  /// the first rebuild after selection never falls through to an empty list.
+  void _primeBaseballDateLoadingUi(String date) {
+    if (_baseballDateCache.containsKey(date)) return;
+    if (_baseballDateLoading.contains(date)) return;
+
+    final loading = Set<String>.from(ref.read(baseballDateLoadingDatesProvider));
+    if (loading.add(date)) {
+      ref.read(baseballDateLoadingDatesProvider.notifier).state = loading;
+    }
+  }
+
+  void _clearBaseballDateLoadingUi(String date) {
+    final loading = Set<String>.from(ref.read(baseballDateLoadingDatesProvider));
+    if (loading.remove(date)) {
+      ref.read(baseballDateLoadingDatesProvider.notifier).state = loading;
+    }
+  }
+
   void _stopLivePolling() {
     _livePollingTimer?.cancel();
     _livePollingTimer = null;
@@ -566,9 +585,15 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
     bool background = false,
     bool force = false,
   }) async {
-    if (ref.read(fixtureSelectedSportProvider) != 'baseball') return;
+    if (ref.read(fixtureSelectedSportProvider) != 'baseball') {
+      _clearBaseballDateLoadingUi(date);
+      return;
+    }
+    if (!force && _baseballDateCache.containsKey(date)) {
+      _clearBaseballDateLoadingUi(date);
+      return;
+    }
     if (_baseballDateLoading.contains(date)) return;
-    if (!force && _baseballDateCache.containsKey(date)) return;
 
     _baseballDateLoading.add(date);
     _publishBaseballLoadingDates();
@@ -914,6 +939,9 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
     final dateStr = fixtureDateString(chipDates[index]);
     if (dateStr == ref.read(fixtureSelectedDateProvider)) return;
     _resetFilterToAll();
+    if (ref.read(fixtureSelectedSportProvider) == 'baseball') {
+      _primeBaseballDateLoadingUi(dateStr);
+    }
     ref.read(fixtureSelectedDateProvider.notifier).state = dateStr;
     if (ref.read(fixtureSelectedSportProvider) == 'baseball') {
       unawaited(_loadBaseballDate(dateStr));
