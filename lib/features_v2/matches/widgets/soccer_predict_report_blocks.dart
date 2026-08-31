@@ -16,6 +16,7 @@ import 'package:trendsoccer/design_system/widgets/ts_prediction_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_section_header.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_stat_compare_row.dart';
+import 'package:trendsoccer/features_v2/matches/widgets/soccer_extended_report_blocks.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 
 final soccerPredictV2ParsedProvider =
@@ -37,10 +38,17 @@ class SoccerPredictReportBlocks extends ConsumerWidget {
     final params = SoccerAnalysisParams.fromHeader(header);
     final parsedAsync = ref.watch(soccerPredictV2ParsedProvider(params));
 
-    return _SoccerPredictBlocksBody(
-      header: header,
-      parsedAsync: parsedAsync,
-      onRetry: () => ref.invalidate(soccerPredictionProvider(params)),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _SoccerPredictBlocksBody(
+          header: header,
+          parsedAsync: parsedAsync,
+          onRetry: () => ref.invalidate(soccerPredictionProvider(params)),
+        ),
+        const SizedBox(height: TsSpacing.lg),
+        SoccerExtendedReportBlocks(header: header, params: params),
+      ],
     );
   }
 }

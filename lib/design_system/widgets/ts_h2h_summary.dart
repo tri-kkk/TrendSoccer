@@ -37,6 +37,8 @@ class TsH2HSummary extends StatefulWidget {
     this.drawValueLabel,
     this.drawLabel,
     this.drawFraction = 0,
+    this.homeEmblemUrl,
+    this.awayEmblemUrl,
     this.meetings = const [],
     super.key,
   });
@@ -52,6 +54,8 @@ class TsH2HSummary extends StatefulWidget {
   final String? drawLabel;
   final double drawFraction;
   final String detailTitleLabel;
+  final String? homeEmblemUrl;
+  final String? awayEmblemUrl;
   final List<TsH2HMeeting> meetings;
 
   @override
@@ -134,6 +138,8 @@ class _TsH2HSummaryState extends State<TsH2HSummary> {
                       homeTeam: widget.meetings[i].homeTeamLabel,
                       awayTeam: widget.meetings[i].awayTeamLabel,
                       scoreLabel: widget.meetings[i].scoreLabel,
+                      homeEmblemUrl: widget.homeEmblemUrl,
+                      awayEmblemUrl: widget.awayEmblemUrl,
                     ),
                   ],
                 ],

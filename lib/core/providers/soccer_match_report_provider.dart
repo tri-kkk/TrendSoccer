@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/services/soccer_service.dart';
+import 'package:trendsoccer/core/models/soccer_h2h_analysis_parsed.dart';
+import 'package:trendsoccer/core/models/soccer_team_stats_parsed.dart';
 
 class SoccerAnalysisParams {
   const SoccerAnalysisParams({
@@ -156,3 +158,30 @@ final awayTeamStatsProvider =
         teamId: teamId,
       );
 });
+
+final homeTeamStatsParsedProvider =
+    Provider.family<AsyncValue<SoccerTeamStatsParsed>, SoccerAnalysisParams>(
+  (ref, params) {
+    return ref
+        .watch(homeTeamStatsProvider(params))
+        .whenData(parseSoccerTeamStats);
+  },
+);
+
+final awayTeamStatsParsedProvider =
+    Provider.family<AsyncValue<SoccerTeamStatsParsed>, SoccerAnalysisParams>(
+  (ref, params) {
+    return ref
+        .watch(awayTeamStatsProvider(params))
+        .whenData(parseSoccerTeamStats);
+  },
+);
+
+final soccerH2HAnalysisParsedProvider =
+    Provider.family<AsyncValue<SoccerH2HAnalysisParsed>, SoccerAnalysisParams>(
+  (ref, params) {
+    return ref
+        .watch(soccerH2HAnalysisProvider(params))
+        .whenData(parseSoccerH2HAnalysis);
+  },
+);
