@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/features_v2/auth/login_screen.dart';
 import 'package:trendsoccer/features_v2/auth/signup_complete_screen.dart';
 import 'package:trendsoccer/features_v2/auth/signup_terms_screen.dart';
@@ -61,6 +62,7 @@ final GoRouter appRouter = GoRouter(
       builder: (_, s) => MatchReportScreen(
         sport: s.pathParameters['sport']!,
         matchId: s.pathParameters['matchId']!,
+        initialHeader: MatchHeaderData.fromRouteExtra(s.extra),
       ),
     ),
     GoRoute(

@@ -1,8 +1,10 @@
+import 'package:trendsoccer/core/assets/ts_assets.dart';
 import 'package:trendsoccer/core/models/baseball_models.dart';
+import 'package:trendsoccer/core/models/fixture_models_v2.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
-import 'package:trendsoccer/core/utils/match_date_formatter.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
+import 'package:trendsoccer/core/utils/match_date_formatter.dart';
 
 class MatchHeaderData {
   const MatchHeaderData({
@@ -27,6 +29,10 @@ class MatchHeaderData {
     this.drawOdds,
     this.awayOdds,
     this.commenceTime,
+    this.matchStatus,
+    this.rawStatus,
+    this.homeScore,
+    this.awayScore,
   });
 
   final int matchId;
@@ -50,6 +56,14 @@ class MatchHeaderData {
   final double? drawOdds;
   final double? awayOdds;
   final String? commenceTime;
+
+  /// Normalized status from fixture/detail: scheduled, live, finished, etc.
+  final String? matchStatus;
+
+  /// Original API status code (e.g. IN5, FT, NS).
+  final String? rawStatus;
+  final int? homeScore;
+  final int? awayScore;
 
   factory MatchHeaderData.fromSoccerCard(SoccerAnalysisCard card) {
     final match = card.match;
@@ -76,6 +90,117 @@ class MatchHeaderData {
       drawOdds: odds?.draw,
       awayOdds: odds?.away,
       commenceTime: match.matchTimestamp?.toUtc().toIso8601String(),
+    );
+  }
+
+  factory MatchHeaderData.fromFixtureMatch(FixtureMatch match) {
+    final routeMatchId = match.sport == 'baseball'
+        ? (match.apiMatchId ?? match.matchId)
+        : match.matchId;
+    final leagueIconId = match.sport == 'baseball'
+        ? baseballLeagueIconId(match.leagueCode)
+        : (TsAssets.leagueIconIdFromApiCode(match.leagueCode) ??
+            match.leagueCode.toLowerCase());
+
+    return MatchHeaderData(
+      matchId: routeMatchId,
+      homeTeam: match.homeTeam,
+      awayTeam: match.awayTeam,
+      homeTeamKo: match.homeTeamKo,
+      awayTeamKo: match.awayTeamKo,
+      homeTeamLogo: match.homeTeamLogo,
+      awayTeamLogo: match.awayTeamLogo,
+      leagueName: match.leagueName,
+      leagueNameEn: match.leagueNameEn,
+      leagueLogo: match.leagueLogo,
+      leagueCode: match.leagueCode,
+      leagueIconId: leagueIconId,
+      matchDate: match.matchDate,
+      matchTime: match.matchTime,
+      matchTimestamp: match.matchTimestamp,
+      commenceTime: match.matchTimestamp.toUtc().toIso8601String(),
+      matchStatus: match.status,
+      rawStatus: match.rawStatus,
+      homeScore: match.homeScore,
+      awayScore: match.awayScore,
+    );
+  }
+
+  factory MatchHeaderData.fromBaseballMatchDetail(
+    Map<String, dynamic> detail, {
+    required int matchId,
+  }) {
+    final match = _unwrapBaseballMatchMap(detail);
+    final homeSide = match['home'] is Map
+        ? Map<String, dynamic>.from(match['home'] as Map)
+        : <String, dynamic>{};
+    final awaySide = match['away'] is Map
+        ? Map<String, dynamic>.from(match['away'] as Map)
+        : <String, dynamic>{};
+
+    final homeTeam = _baseballTeamEnglish(match, homeSide, isHome: true);
+    final awayTeam = _baseballTeamEnglish(match, awaySide, isHome: false);
+    final homeTeamKo = _baseballTeamKorean(match, homeSide, isHome: true);
+    final awayTeamKo = _baseballTeamKorean(match, awaySide, isHome: false);
+    final league = _readString(match, const [
+          'league',
+          'leagueName',
+          'league_name',
+        ]) ??
+        '';
+    final leagueCode = league.trim().toUpperCase();
+    final timestamp = _parseDateTime(
+      match['timestamp'] ??
+          match['matchTimestamp'] ??
+          match['match_timestamp'],
+    );
+    final statusStr = _readString(match, const [
+      'matchStatus',
+      'match_status',
+      'status',
+      'state',
+    ]);
+    final rawStatus = (statusStr ?? 'NS').trim().toUpperCase();
+
+    return MatchHeaderData(
+      matchId: (match['id'] as num?)?.toInt() ?? matchId,
+      homeTeam: homeTeam,
+      awayTeam: awayTeam,
+      homeTeamKo: homeTeamKo.isEmpty ? null : homeTeamKo,
+      awayTeamKo: awayTeamKo.isEmpty ? null : awayTeamKo,
+      homeTeamLogo: _nonEmpty(
+        match['homeLogo'] ??
+            match['home_logo'] ??
+            homeSide['logo'],
+      ),
+      awayTeamLogo: _nonEmpty(
+        match['awayLogo'] ??
+            match['away_logo'] ??
+            awaySide['logo'],
+      ),
+      leagueName: league.isEmpty ? null : league,
+      leagueCode: leagueCode.isEmpty ? null : leagueCode,
+      leagueIconId: baseballLeagueIconId(league),
+      matchDate: _readString(match, const ['date', 'matchDate', 'match_date']) ??
+          (timestamp != null ? _formatYmd(timestamp.toLocal()) : ''),
+      matchTime: _readString(match, const ['time', 'matchTime', 'match_time']) ??
+          (timestamp != null ? _formatHm(timestamp.toLocal()) : ''),
+      matchTimestamp: timestamp,
+      commenceTime: timestamp?.toUtc().toIso8601String(),
+      matchStatus: normalizeMatchStatus(rawStatus),
+      rawStatus: rawStatus,
+      homeScore: _parseInt(
+        match['finalScoreHome'] ??
+            match['final_score_home'] ??
+            match['homeScore'] ??
+            match['home_score'],
+      ),
+      awayScore: _parseInt(
+        match['finalScoreAway'] ??
+            match['final_score_away'] ??
+            match['awayScore'] ??
+            match['away_score'],
+      ),
     );
   }
 
@@ -208,6 +333,12 @@ class MatchHeaderData {
       drawOdds: other.drawOdds ?? drawOdds,
       awayOdds: other.awayOdds ?? awayOdds,
       commenceTime: other.commenceTime ?? commenceTime,
+      homeTeamKo: other.homeTeamKo ?? homeTeamKo,
+      awayTeamKo: other.awayTeamKo ?? awayTeamKo,
+      matchStatus: other.matchStatus ?? matchStatus,
+      rawStatus: other.rawStatus ?? rawStatus,
+      homeScore: other.homeScore ?? homeScore,
+      awayScore: other.awayScore ?? awayScore,
     );
   }
 
@@ -231,4 +362,91 @@ class MatchHeaderData {
     return trimmed;
   }
 
+  static Map<String, dynamic> _unwrapBaseballMatchMap(Map<String, dynamic> detail) {
+    final match = detail['match'];
+    if (match is Map<String, dynamic>) return match;
+    if (match is Map) return Map<String, dynamic>.from(match);
+
+    final matches = detail['matches'];
+    if (matches is List && matches.isNotEmpty) {
+      final first = matches.first;
+      if (first is Map<String, dynamic>) return first;
+      if (first is Map) return Map<String, dynamic>.from(first);
+    }
+
+    return detail;
+  }
+
+  static String _baseballTeamEnglish(
+    Map<String, dynamic> match,
+    Map<String, dynamic> side, {
+    required bool isHome,
+  }) {
+    final fromSide = _readString(side, const ['team', 'teamKo']) ?? '';
+    if (fromSide.isNotEmpty) return fromSide;
+    final flatKey = isHome ? 'homeTeam' : 'awayTeam';
+    return match[flatKey]?.toString() ?? '';
+  }
+
+  static String _baseballTeamKorean(
+    Map<String, dynamic> match,
+    Map<String, dynamic> side, {
+    required bool isHome,
+  }) {
+    final fromSide = _readString(side, const ['teamKo', 'team']) ?? '';
+    if (fromSide.isNotEmpty) return fromSide;
+    final flatKoKey = isHome ? 'homeTeamKo' : 'awayTeamKo';
+    final flatKey = isHome ? 'homeTeam' : 'awayTeam';
+    return _readString(match, [flatKoKey, flatKey]) ?? '';
+  }
+
+  static String? _readString(
+    Map<String, dynamic> json,
+    List<String> keys,
+  ) {
+    for (final key in keys) {
+      final value = json[key];
+      if (value == null) continue;
+      final text = value.toString().trim();
+      if (text.isNotEmpty) return text;
+    }
+    return null;
+  }
+
+  static String? _nonEmpty(Object? value) {
+    if (value == null) return null;
+    final text = value.toString().trim();
+    return text.isEmpty ? null : text;
+  }
+
+  static int? _parseInt(Object? value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value.trim());
+    return null;
+  }
+
+  static DateTime? _parseDateTime(Object? value) {
+    if (value is DateTime) return value;
+    if (value is int) {
+      final millis = value < 10000000000 ? value * 1000 : value;
+      return DateTime.fromMillisecondsSinceEpoch(millis, isUtc: true);
+    }
+    if (value is String && value.isNotEmpty) {
+      return DateTime.tryParse(value);
+    }
+    return null;
+  }
+
+  static String _formatYmd(DateTime local) {
+    final month = local.month.toString().padLeft(2, '0');
+    final day = local.day.toString().padLeft(2, '0');
+    return '${local.year}-$month-$day';
+  }
+
+  static String _formatHm(DateTime local) {
+    final hour = local.hour.toString().padLeft(2, '0');
+    final minute = local.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
 }

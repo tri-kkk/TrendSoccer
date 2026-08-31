@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:trendsoccer/core/assets/ts_assets.dart';
 import 'package:trendsoccer/core/constants/alarm_preference_keys.dart';
 import 'package:trendsoccer/core/models/fixture_models_v2.dart';
+import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/providers/shared_preferences_provider.dart';
@@ -1223,6 +1224,26 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
     );
   }
 
+  void _onMatchRowTap(FixtureMatch match) {
+    if (match.status != 'scheduled') {
+      final hasAnalysis =
+          leagueSupportsAnalysis(match.sport, match.leagueCode);
+      final message = hasAnalysis
+          ? 'Match reports are available before kickoff.'
+          : 'This league has no match analysis.';
+      showTsToast(context, message, TsToastType.info);
+      return;
+    }
+
+    final routeMatchId = match.sport == 'baseball'
+        ? (match.apiMatchId ?? match.matchId)
+        : match.matchId;
+    context.push(
+      '/matches/${match.sport}/$routeMatchId',
+      extra: MatchHeaderData.fromFixtureMatch(match),
+    );
+  }
+
   Widget _buildMatchRow(FixtureMatch match) {
     final presentation = _matchRowPresentation(match);
     final showScores = presentation.status == TsMatchRowStatus.live ||
@@ -1251,6 +1272,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
           ? _alarmEnabledMatchIds.contains(match.matchId.toString())
           : null,
       onAlarmTap: showAlarmBell ? () => unawaited(_onAlarmTap(match)) : null,
+      onTap: () => _onMatchRowTap(match),
     );
   }
 
