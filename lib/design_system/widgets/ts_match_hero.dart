@@ -52,7 +52,7 @@ class TsMatchHero extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         vertical: TsSpacing.xl,
-        horizontal: TsSpacing.lg,
+        horizontal: TsSpacing.md,
       ),
       decoration: BoxDecoration(
         color: c.surface,

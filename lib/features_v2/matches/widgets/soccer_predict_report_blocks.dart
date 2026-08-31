@@ -97,8 +97,7 @@ class _SoccerReportBlockCard extends StatelessWidget {
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(TsSpacing.lg),
+      padding: const EdgeInsets.all(TsSpacing.md),
       decoration: BoxDecoration(
         color: c.surface,
         borderRadius: TsRadius.md,
@@ -265,8 +264,7 @@ class _SoccerReportBlockSkeleton extends StatelessWidget {
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(TsSpacing.lg),
+      padding: const EdgeInsets.all(TsSpacing.md),
       decoration: BoxDecoration(
         color: c.surface,
         borderRadius: TsRadius.md,

@@ -25,48 +25,45 @@ class TsStatCompareRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  homeLabel,
-                  style: TsType.tabular(
-                    TsType.bodyLBold.copyWith(color: c.textPrimary),
-                  ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                homeLabel,
+                style: TsType.tabular(
+                  TsType.bodyLBold.copyWith(color: c.textPrimary),
                 ),
               ),
-              Expanded(
-                child: Text(
-                  statLabel,
-                  style: TsType.labelSMedium.copyWith(color: c.textTertiary),
-                  textAlign: TextAlign.center,
-                ),
+            ),
+            Expanded(
+              child: Text(
+                statLabel,
+                style: TsType.labelSMedium.copyWith(color: c.textTertiary),
+                textAlign: TextAlign.center,
               ),
-              Expanded(
-                child: Text(
-                  awayLabel,
-                  style: TsType.tabular(
-                    TsType.bodyLBold.copyWith(color: c.textPrimary),
-                  ),
-                  textAlign: TextAlign.right,
+            ),
+            Expanded(
+              child: Text(
+                awayLabel,
+                style: TsType.tabular(
+                  TsType.bodyLBold.copyWith(color: c.textPrimary),
                 ),
+                textAlign: TextAlign.right,
               ),
-            ],
-          ),
-          const SizedBox(height: TsSpacing.xs),
-          TsGaugeBar(
-            home: homeFraction,
-            away: awayFraction,
-            line: TsGaugeLine.twoWay,
-            showValues: false,
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
+        const SizedBox(height: TsSpacing.xs),
+        TsGaugeBar(
+          home: homeFraction,
+          away: awayFraction,
+          line: TsGaugeLine.twoWay,
+          showValues: false,
+        ),
+      ],
     );
   }
 }

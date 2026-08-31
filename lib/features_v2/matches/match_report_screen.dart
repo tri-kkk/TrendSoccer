@@ -16,8 +16,6 @@ import 'package:trendsoccer/design_system/widgets/ts_match_hero.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/features_v2/matches/widgets/soccer_predict_report_blocks.dart';
 
-const _contentWidth = 380.0;
-
 class MatchReportScreen extends ConsumerWidget {
   const MatchReportScreen({
     required this.sport,
@@ -49,20 +47,15 @@ class MatchReportScreen extends ConsumerWidget {
           TsSpacing.lg,
           TsSpacing.xl,
         ),
-        child: Center(
-          child: SizedBox(
-            width: _contentWidth,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildHero(ref, numericMatchId),
-                if (sport == 'soccer' && initialHeader != null) ...[
-                  const SizedBox(height: TsSpacing.lg),
-                  SoccerPredictReportBlocks(header: initialHeader!),
-                ],
-              ],
-            ),
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildHero(ref, numericMatchId),
+            if (sport == 'soccer' && initialHeader != null) ...[
+              const SizedBox(height: TsSpacing.lg),
+              SoccerPredictReportBlocks(header: initialHeader!),
+            ],
+          ],
         ),
       ),
     );
@@ -152,13 +145,14 @@ class _MatchHeroSkeleton extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(
         vertical: TsSpacing.xl,
-        horizontal: TsSpacing.lg,
+        horizontal: TsSpacing.md,
       ),
       decoration: BoxDecoration(
         color: c.surface,
         borderRadius: TsRadius.md,
       ),
       child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TsSkeletonBlock(TsSkeletonType.circle, width: 32),
           SizedBox(height: TsSpacing.lg),
