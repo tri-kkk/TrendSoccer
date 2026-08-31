@@ -1,4 +1,4 @@
-// Pure-data parse of `/api/predict-v2` for match-report blocks 02–04.
+// Pure-data parse of `/api/predict-v2` for match-report blocks 02–05.
 // No BuildContext or localization — widgets format labels.
 
 enum SoccerPickDirection { home, draw, away, unknown }
@@ -34,6 +34,20 @@ class SoccerMethodProbabilities {
   double get total => winValue + drawValue + loseValue;
 }
 
+enum SoccerTeamStatFormat { integerPercent, form, goalRatio }
+
+class SoccerTeamStatRow {
+  const SoccerTeamStatRow({
+    required this.homeValue,
+    required this.awayValue,
+    required this.format,
+  });
+
+  final double? homeValue;
+  final double? awayValue;
+  final SoccerTeamStatFormat format;
+}
+
 class SoccerPredictV2Parsed {
   const SoccerPredictV2Parsed({
     required this.pickDirection,
@@ -42,6 +56,7 @@ class SoccerPredictV2Parsed {
     required this.finalProb,
     required this.reasons,
     required this.methods,
+    required this.teamStats,
   });
 
   final SoccerPickDirection pickDirection;
@@ -50,6 +65,7 @@ class SoccerPredictV2Parsed {
   final SoccerFinalProbabilities finalProb;
   final List<String> reasons;
   final List<SoccerMethodProbabilities> methods;
+  final List<SoccerTeamStatRow> teamStats;
 }
 
 SoccerPredictV2Parsed parseSoccerPredictV2(Map<String, dynamic> raw) {
@@ -65,6 +81,9 @@ SoccerPredictV2Parsed parseSoccerPredictV2(Map<String, dynamic> raw) {
   final method1 = _readMap(predictionRoot, const ['method1', 'method_1']);
   final method2 = _readMap(predictionRoot, const ['method2', 'method_2']);
   final method3 = _readMap(predictionRoot, const ['method3', 'method_3']);
+  final debug = _readMap(predictionRoot, const ['debug']);
+  final homePA = _readMap(predictionRoot, const ['homePA', 'home_pa']);
+  final awayPA = _readMap(predictionRoot, const ['awayPA', 'away_pa']);
 
   final pickRaw = _readString(recommendation, const ['pick', 'direction']);
 
@@ -83,7 +102,49 @@ SoccerPredictV2Parsed parseSoccerPredictV2(Map<String, dynamic> raw) {
       _parseMethodBreakdown(method2),
       _parseMethodBreakdown(method3),
     ],
+    teamStats: _parseTeamStatsFromDebug(
+      debug: debug,
+      homePA: homePA,
+      awayPA: awayPA,
+    ),
   );
+}
+
+List<SoccerTeamStatRow> _parseTeamStatsFromDebug({
+  required Map<String, dynamic>? debug,
+  required Map<String, dynamic>? homePA,
+  required Map<String, dynamic>? awayPA,
+}) {
+  final homeStats = _readMap(debug, const ['homeStats', 'home_stats']);
+  final awayStats = _readMap(debug, const ['awayStats', 'away_stats']);
+
+  return [
+    SoccerTeamStatRow(
+      homeValue: _parseDouble(homeStats?['homeFirstGoalWinRate']),
+      awayValue: _parseDouble(awayStats?['awayFirstGoalWinRate']),
+      format: SoccerTeamStatFormat.integerPercent,
+    ),
+    SoccerTeamStatRow(
+      homeValue: _parseDouble(homeStats?['homeComebackRate']),
+      awayValue: _parseDouble(awayStats?['awayComebackRate']),
+      format: SoccerTeamStatFormat.integerPercent,
+    ),
+    SoccerTeamStatRow(
+      homeValue: _parseDouble(homeStats?['form']),
+      awayValue: _parseDouble(awayStats?['form']),
+      format: SoccerTeamStatFormat.form,
+    ),
+    SoccerTeamStatRow(
+      homeValue: _parsePaAllValue(homePA),
+      awayValue: _parsePaAllValue(awayPA),
+      format: SoccerTeamStatFormat.goalRatio,
+    ),
+  ];
+}
+
+double? _parsePaAllValue(Map<String, dynamic>? paMap) {
+  if (paMap == null) return null;
+  return _parseDouble(paMap['all']);
 }
 
 List<String> _parseReasons(Object? reasonsRaw) {

@@ -12,6 +12,8 @@ class TsStatCompareRow extends StatelessWidget {
     required this.awayLabel,
     required this.homeFraction,
     required this.awayFraction,
+    this.homeEmphasized = false,
+    this.awayEmphasized = false,
     super.key,
   });
 
@@ -20,6 +22,8 @@ class TsStatCompareRow extends StatelessWidget {
   final String awayLabel;
   final double homeFraction;
   final double awayFraction;
+  final bool homeEmphasized;
+  final bool awayEmphasized;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +38,9 @@ class TsStatCompareRow extends StatelessWidget {
               child: Text(
                 homeLabel,
                 style: TsType.tabular(
-                  TsType.bodyLBold.copyWith(color: c.textPrimary),
+                  TsType.bodyLBold.copyWith(
+                    color: homeEmphasized ? c.dataPositive : c.textPrimary,
+                  ),
                 ),
               ),
             ),
@@ -49,7 +55,9 @@ class TsStatCompareRow extends StatelessWidget {
               child: Text(
                 awayLabel,
                 style: TsType.tabular(
-                  TsType.bodyLBold.copyWith(color: c.textPrimary),
+                  TsType.bodyLBold.copyWith(
+                    color: awayEmphasized ? c.dataNegative : c.textPrimary,
+                  ),
                 ),
                 textAlign: TextAlign.right,
               ),

@@ -15,6 +15,7 @@ import 'package:trendsoccer/design_system/widgets/ts_method_row.dart';
 import 'package:trendsoccer/design_system/widgets/ts_prediction_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_section_header.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
+import 'package:trendsoccer/design_system/widgets/ts_stat_compare_row.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 
 final soccerPredictV2ParsedProvider =
@@ -57,6 +58,8 @@ class _SoccerPredictBlocksBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return parsedAsync.when(
       data: (parsed) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -74,6 +77,14 @@ class _SoccerPredictBlocksBody extends StatelessWidget {
           _SoccerReportBlockCard(
             title: 'Three-method',
             child: _ThreeMethodBlockContent(parsed: parsed),
+          ),
+          const SizedBox(height: TsSpacing.lg),
+          _SoccerReportBlockCard(
+            title: l10n.soccerStatTeamStats,
+            child: _TeamStatsBlockContent(
+              rows: parsed.teamStats,
+              l10n: l10n,
+            ),
           ),
         ],
       ),
@@ -205,6 +216,80 @@ class _ThreeMethodBlockContent extends StatelessWidget {
   }
 }
 
+class _TeamStatsBlockContent extends StatelessWidget {
+  const _TeamStatsBlockContent({
+    required this.rows,
+    required this.l10n,
+  });
+
+  final List<SoccerTeamStatRow> rows;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final labels = [
+      l10n.soccerStatFirstGoalRate,
+      l10n.soccerStatComebackRate,
+      l10n.soccerRecentForm,
+      l10n.soccerStatGoalDifference,
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (var i = 0; i < rows.length; i++) ...[
+          if (i > 0) const SizedBox(height: TsSpacing.md),
+          _TeamStatCompareRow(
+            statLabel: labels[i],
+            row: rows[i],
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _TeamStatCompareRow extends StatelessWidget {
+  const _TeamStatCompareRow({
+    required this.statLabel,
+    required this.row,
+  });
+
+  final String statLabel;
+  final SoccerTeamStatRow row;
+
+  @override
+  Widget build(BuildContext context) {
+    final homeDisplay = _formatTeamStatValue(row.homeValue, row.format);
+    final awayDisplay = _formatTeamStatValue(row.awayValue, row.format);
+    final homeFraction = _teamStatFraction(row.homeValue, row.awayValue, true);
+    final awayFraction = _teamStatFraction(row.homeValue, row.awayValue, false);
+
+    var homeEmphasized = false;
+    var awayEmphasized = false;
+    if (row.homeValue != null &&
+        row.awayValue != null &&
+        homeDisplay != '-' &&
+        awayDisplay != '-') {
+      if (row.homeValue! > row.awayValue!) {
+        homeEmphasized = true;
+      } else if (row.awayValue! > row.homeValue!) {
+        awayEmphasized = true;
+      }
+    }
+
+    return TsStatCompareRow(
+      statLabel: statLabel,
+      homeLabel: homeDisplay,
+      awayLabel: awayDisplay,
+      homeFraction: homeFraction,
+      awayFraction: awayFraction,
+      homeEmphasized: homeEmphasized,
+      awayEmphasized: awayEmphasized,
+    );
+  }
+}
+
 class _MethodRowContent extends StatelessWidget {
   const _MethodRowContent({
     required this.methodLabel,
@@ -249,7 +334,7 @@ class _SoccerPredictBlocksLoading extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (var i = 0; i < 3; i++) ...[
+        for (var i = 0; i < 4; i++) ...[
           if (i > 0) const SizedBox(height: TsSpacing.lg),
           _SoccerReportBlockSkeleton(),
         ],
@@ -291,13 +376,14 @@ class _SoccerPredictBlocksError extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (var i = 0; i < 3; i++) ...[
+        for (var i = 0; i < 4; i++) ...[
           if (i > 0) const SizedBox(height: TsSpacing.lg),
           _SoccerReportBlockCard(
             title: switch (i) {
               0 => 'Prediction',
               1 => 'Reasoning',
-              _ => 'Three-method',
+              2 => 'Three-method',
+              _ => 'Team statistics',
             },
             child: TsEmptyState(
               type: TsEmptyType.failure,
@@ -367,4 +453,26 @@ TsBadgeTone _gradeBadgeTone(SoccerPredictGrade grade) {
     SoccerPredictGrade.good => TsBadgeTone.primary,
     SoccerPredictGrade.pass => TsBadgeTone.neutral,
   };
+}
+
+String _formatTeamStatValue(double? value, SoccerTeamStatFormat format) {
+  if (value == null) return '-';
+  return switch (format) {
+    SoccerTeamStatFormat.integerPercent => _formatIntegerPercent(value),
+    SoccerTeamStatFormat.form => value.toStringAsFixed(1),
+    SoccerTeamStatFormat.goalRatio => value.toStringAsFixed(2),
+  };
+}
+
+String _formatIntegerPercent(double value) {
+  final percent = value < 1.0 ? value * 100 : value;
+  return '${percent.round()}%';
+}
+
+double _teamStatFraction(double? home, double? away, bool forHome) {
+  if (home == null || away == null) return 0.5;
+  final total = home + away;
+  if (total <= 0) return 0.5;
+  final ratio = (forHome ? home : away) / total;
+  return ratio.clamp(0.0, 1.0);
 }
