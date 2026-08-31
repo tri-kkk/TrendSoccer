@@ -47,7 +47,7 @@ class SoccerService {
     final key = _cacheKey(path, Map<String, dynamic>.from(queryParameters));
     final cached = _responseCache[key];
     if (cached != null && !cached.isExpired) {
-            return cached.data;
+      return cached.data;
     }
 
     final response = await _dio.get<dynamic>(
@@ -60,7 +60,7 @@ class SoccerService {
 
   String _apiLanguage() {
     final lang = getApiLanguage(_prefs);
-        return lang;
+    return lang;
   }
 
   static const _analysisTimeout = Duration(seconds: 20);
@@ -104,33 +104,31 @@ class SoccerService {
     'EL', // Europa League (alternate)
   ];
 
-  static final Set<String> _analysisLeagueCodeSet =
-      analysisLeagueCodes.map((code) => code.toUpperCase()).toSet();
+  static final Set<String> _analysisLeagueCodeSet = analysisLeagueCodes
+      .map((code) => code.toUpperCase())
+      .toSet();
 
   // TODO: Replace with /api/v1/mobile/soccer/matches when available
   Future<List<SoccerAnalysisCard>> getMatches({
     String? date,
     String? league,
   }) async {
-        try {
+    try {
       final queryParameters = <String, String>{};
       if (date != null && date.isNotEmpty) {
         queryParameters['date'] = date;
       }
       final raw = await _fetchOddsFromDb(queryParameters);
-            if (raw is Map) {
-              } else {
-              }
+      if (raw is Map) {
+      } else {}
       if (raw is Map && raw.containsKey('data')) {
-                        if (raw['data'] is List && (raw['data'] as List).isNotEmpty) {
+        if (raw['data'] is List && (raw['data'] as List).isNotEmpty) {
           final first = (raw['data'] as List).first;
-          if (first is Map) {
-                                  }
+          if (first is Map) {}
         }
       }
       if (raw is List) {
-                if (raw.isNotEmpty && raw.first is Map) {
-                  }
+        if (raw.isNotEmpty && raw.first is Map) {}
       }
       final cards = _filterAnalysisLeagueCards(_adaptToAnalysisCards(raw));
       if (league == null || league.isEmpty) return cards;
@@ -152,8 +150,8 @@ class SoccerService {
     int? matchId,
     String? commenceTime,
   }) async {
-        final normalizedCode = leagueCode.trim().toUpperCase();
-        try {
+    final normalizedCode = leagueCode.trim().toUpperCase();
+    try {
       final body = <String, dynamic>{
         'homeTeam': homeTeam,
         'awayTeam': awayTeam,
@@ -179,12 +177,11 @@ class SoccerService {
         ),
       );
       final adapted = _adaptToMap(response.data);
-            if (adapted['prediction'] != null) {
+      if (adapted['prediction'] != null) {
         final pred = adapted['prediction'];
         if (pred is Map) {
-                                                                      final patternStats = pred['patternStats'];
-          if (patternStats is Map) {
-                      }
+          final patternStats = pred['patternStats'];
+          if (patternStats is Map) {}
           for (final key in pred.keys) {
             if (![
               'recommendation',
@@ -193,8 +190,7 @@ class SoccerService {
               'awayPower',
               'patternStats',
             ].contains(key)) {
-                            if (pred[key] is Map) {
-                              }
+              if (pred[key] is Map) {}
             }
           }
         }
@@ -210,7 +206,7 @@ class SoccerService {
     required int awayTeamId,
     int last = 10,
   }) async {
-        try {
+    try {
       final response = await _dio.get<dynamic>(
         '/api/h2h-enhanced',
         queryParameters: <String, dynamic>{
@@ -230,7 +226,7 @@ class SoccerService {
     required String awayTeam,
   }) async {
     final lang = _apiLanguage();
-        try {
+    try {
       final response = await _dio.get<dynamic>(
         '/api/h2h-analysis',
         queryParameters: <String, String>{
@@ -240,13 +236,11 @@ class SoccerService {
         },
       );
       final data = response.data;
-                  if (data is Map) {
+      if (data is Map) {
         for (final key in data.keys) {
           final val = data[key];
-                    if (val is Map) {
-                      }
-          if (val is List) {
-                      }
+          if (val is Map) {}
+          if (val is List) {}
         }
       }
       return _adaptToMap(data);
@@ -272,11 +266,11 @@ class SoccerService {
         },
       );
       final data = response.data;
-            if (data is Map<String, dynamic>) return data;
+      if (data is Map<String, dynamic>) return data;
       if (data is Map) return Map<String, dynamic>.from(data);
       return {};
     } catch (e) {
-            return {};
+      rethrow;
     }
   }
 
@@ -284,11 +278,8 @@ class SoccerService {
     Map<String, dynamic> body,
   ) async {
     final language = _apiLanguage();
-        try {
-      final requestBody = <String, dynamic>{
-        ...body,
-        'language': language,
-      };
+    try {
+      final requestBody = <String, dynamic>{...body, 'language': language};
       final response = await _dio.post<dynamic>(
         '/api/analysis',
         data: requestBody,
@@ -313,11 +304,7 @@ class SoccerService {
         queryParameters: <String, String>{'date': date},
       );
       return _adaptToAnalysisCards(response.data)
-          .map(
-            (card) => card.copyWith(
-              grade: card.grade ?? 'PREMIUM_PICK',
-            ),
-          )
+          .map((card) => card.copyWith(grade: card.grade ?? 'PREMIUM_PICK'))
           .toList();
     } catch (e) {
       return [];
@@ -326,13 +313,13 @@ class SoccerService {
 
   // TODO: Replace with /api/v1/mobile/soccer/premium-picks/stats when available
   Future<Map<String, dynamic>> getPremiumPickStats({int days = 30}) async {
-        try {
+    try {
       final response = await _dio.get<dynamic>(
         '/api/premium-picks/stats',
         queryParameters: <String, int>{'days': days},
       );
       final raw = response.data;
-                  if (raw is Map<String, dynamic>) return raw;
+      if (raw is Map<String, dynamic>) return raw;
       if (raw is Map) return Map<String, dynamic>.from(raw);
       return <String, dynamic>{};
     } catch (e) {
@@ -347,8 +334,8 @@ class SoccerService {
       final history = raw is Map<String, dynamic>
           ? raw
           : raw is Map
-              ? Map<String, dynamic>.from(raw)
-              : <String, dynamic>{};
+          ? Map<String, dynamic>.from(raw)
+          : <String, dynamic>{};
       return history;
     } catch (e) {
       return {};
@@ -371,16 +358,16 @@ class SoccerService {
     }).toList();
 
     // Picks without a parseable date cannot belong to a day window.
-    final window = settled.where((pick) {
-      final time = _readCommenceTime(pick);
-      if (time == null) return false;
-      return !time.isBefore(cutoff);
-    }).toList()
-      ..sort((a, b) {
-        final aTime = _readCommenceTime(a)!;
-        final bTime = _readCommenceTime(b)!;
-        return bTime.compareTo(aTime);
-      });
+    final window =
+        settled.where((pick) {
+          final time = _readCommenceTime(pick);
+          if (time == null) return false;
+          return !time.isBefore(cutoff);
+        }).toList()..sort((a, b) {
+          final aTime = _readCommenceTime(a)!;
+          final bTime = _readCommenceTime(b)!;
+          return bTime.compareTo(aTime);
+        });
 
     if (window.isEmpty) return {};
 
@@ -413,10 +400,11 @@ class SoccerService {
       }
     }
 
-    final recentResults =
-        window.take(7).map(_toRecentResultEntry).toList(growable: false);
+    final recentResults = window
+        .take(7)
+        .map(_toRecentResultEntry)
+        .toList(growable: false);
 
-    
     return {
       'winRate': winRate,
       'wins': wins,
@@ -482,9 +470,7 @@ class SoccerService {
       final parts = matchRaw.split(RegExp(r'\s+vs\s+', caseSensitive: false));
       if (parts.length >= 2) {
         names.add(
-          isHome
-              ? parts.first.trim()
-              : parts.sublist(1).join(' vs ').trim(),
+          isHome ? parts.first.trim() : parts.sublist(1).join(' vs ').trim(),
         );
       }
     }
@@ -492,10 +478,7 @@ class SoccerService {
     return names;
   }
 
-  int? _readHistoryPickTeamId(
-    Map<String, dynamic> pick,
-    List<String> keys,
-  ) {
+  int? _readHistoryPickTeamId(Map<String, dynamic> pick, List<String> keys) {
     for (final key in keys) {
       final value = pick[key];
       if (value == null) continue;
@@ -585,10 +568,7 @@ class SoccerService {
     return input.split('').map((c) => diacriticMap[c] ?? c).join();
   }
 
-  String? _readHistoryPickString(
-    Map<String, dynamic> pick,
-    List<String> keys,
-  ) {
+  String? _readHistoryPickString(Map<String, dynamic> pick, List<String> keys) {
     for (final key in keys) {
       final value = pick[key];
       if (value is String && value.trim().isNotEmpty) {
@@ -601,13 +581,7 @@ class SoccerService {
   List<Map<String, dynamic>> _extractHistoryPicks(
     Map<String, dynamic> response,
   ) {
-    for (final key in const [
-      'picks',
-      'data',
-      'history',
-      'results',
-      'items',
-    ]) {
+    for (final key in const ['picks', 'data', 'history', 'results', 'items']) {
       final value = response[key];
       if (value is List) {
         return value
@@ -653,26 +627,29 @@ class SoccerService {
   }
 
   Map<String, dynamic> _toRecentResultEntry(Map<String, dynamic> pick) {
-    final homeLogo = _footballTeamLogoUrl(
-          pick['home_team_id'] ?? pick['homeTeamId'],
-        ) ??
-        _readHistoryPickString(
-          pick,
-          const ['home_team_logo', 'homeTeamLogo', 'homeLogo', 'home_logo'],
-        );
-    final awayLogo = _footballTeamLogoUrl(
-          pick['away_team_id'] ?? pick['awayTeamId'],
-        ) ??
-        _readHistoryPickString(
-          pick,
-          const ['away_team_logo', 'awayTeamLogo', 'awayLogo', 'away_logo'],
-        );
+    final homeLogo =
+        _footballTeamLogoUrl(pick['home_team_id'] ?? pick['homeTeamId']) ??
+        _readHistoryPickString(pick, const [
+          'home_team_logo',
+          'homeTeamLogo',
+          'homeLogo',
+          'home_logo',
+        ]);
+    final awayLogo =
+        _footballTeamLogoUrl(pick['away_team_id'] ?? pick['awayTeamId']) ??
+        _readHistoryPickString(pick, const [
+          'away_team_logo',
+          'awayTeamLogo',
+          'awayLogo',
+          'away_logo',
+        ]);
 
     final match = pick['match'];
     if (match is String && match.isNotEmpty) {
       return {
         'match': match,
-        'predicted': pick['predicted'] ??
+        'predicted':
+            pick['predicted'] ??
             pick['prediction'] ??
             pick['pick'] ??
             pick['direction'],
@@ -694,7 +671,8 @@ class SoccerService {
       if (away is String && away.isNotEmpty) 'awayTeam': away,
       'homeTeamLogo': ?homeLogo,
       'awayTeamLogo': ?awayLogo,
-      'predicted': pick['predicted'] ??
+      'predicted':
+          pick['predicted'] ??
           pick['prediction'] ??
           pick['pick'] ??
           pick['direction'],
@@ -719,14 +697,13 @@ class SoccerService {
       return true;
     }).toList();
 
-    if (excludedCodes.isNotEmpty) {
-          }
-        return filtered;
+    if (excludedCodes.isNotEmpty) {}
+    return filtered;
   }
 
   List<SoccerAnalysisCard> _adaptToAnalysisCards(dynamic data) {
     final items = _extractList(data);
-        final cards = items
+    final cards = items
         .whereType<Map<String, dynamic>>()
         .map(SoccerAnalysisCard.fromJson)
         .toList();

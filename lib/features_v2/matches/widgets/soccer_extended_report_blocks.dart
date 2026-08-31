@@ -6,6 +6,7 @@ import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/models/soccer_h2h_analysis_parsed.dart';
 import 'package:trendsoccer/core/models/soccer_team_stats_parsed.dart';
 import 'package:trendsoccer/core/providers/soccer_match_report_provider.dart';
+import 'package:trendsoccer/core/utils/error_resolver.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
@@ -23,11 +24,15 @@ class SoccerExtendedReportBlocks extends ConsumerWidget {
   const SoccerExtendedReportBlocks({
     required this.header,
     required this.params,
+    required this.teamStatsRetry,
+    required this.h2hRetry,
     super.key,
   });
 
   final MatchHeaderData header;
   final SoccerAnalysisParams params;
+  final MatchReportRetryButton teamStatsRetry;
+  final MatchReportRetryButton h2hRetry;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,34 +46,29 @@ class SoccerExtendedReportBlocks extends ConsumerWidget {
         _ScoringTrendsBlock(
           homeAsync: homeAsync,
           awayAsync: awayAsync,
-          onRetry: () => _retryTeamStats(ref),
+          retry: teamStatsRetry,
         ),
         const SizedBox(height: TsSpacing.lg),
         _StrengthsWeaknessesBlock(
           header: header,
           homeAsync: homeAsync,
           awayAsync: awayAsync,
-          onRetry: () => _retryTeamStats(ref),
+          retry: teamStatsRetry,
         ),
         const SizedBox(height: TsSpacing.lg),
         _HeadToHeadBlock(
           header: header,
           h2hAsync: h2hAsync,
-          onRetry: () => ref.invalidate(soccerH2HAnalysisProvider(params)),
+          retry: h2hRetry,
         ),
         const SizedBox(height: TsSpacing.lg),
         _RecentFormBlock(
           homeAsync: homeAsync,
           awayAsync: awayAsync,
-          onRetry: () => _retryTeamStats(ref),
+          retry: teamStatsRetry,
         ),
       ],
     );
-  }
-
-  void _retryTeamStats(WidgetRef ref) {
-    ref.invalidate(homeTeamStatsProvider(params));
-    ref.invalidate(awayTeamStatsProvider(params));
   }
 }
 
@@ -76,12 +76,12 @@ class _ScoringTrendsBlock extends StatelessWidget {
   const _ScoringTrendsBlock({
     required this.homeAsync,
     required this.awayAsync,
-    required this.onRetry,
+    required this.retry,
   });
 
   final AsyncValue<SoccerTeamStatsParsed> homeAsync;
   final AsyncValue<SoccerTeamStatsParsed> awayAsync;
-  final VoidCallback onRetry;
+  final MatchReportRetryButton retry;
 
   @override
   Widget build(BuildContext context) {
@@ -90,10 +90,16 @@ class _ScoringTrendsBlock extends StatelessWidget {
     return _ExtendedReportBlockCard(
       title: l10n.soccerMarketIndicators,
       child: _combineTeamStats(
+        context: context,
         homeAsync: homeAsync,
         awayAsync: awayAsync,
-        onRetry: onRetry,
+        retry: retry,
         hasData: (home, away) => home.hasMarketData || away.hasMarketData,
+        emptyBuilder: () => TsEmptyState(
+          title: l10n.soccerMarketIndicators,
+          description:
+              'No market indicators reported for either team in this match.',
+        ),
         builder: (home, away) {
           final rows = [
             (
@@ -142,13 +148,13 @@ class _StrengthsWeaknessesBlock extends StatelessWidget {
     required this.header,
     required this.homeAsync,
     required this.awayAsync,
-    required this.onRetry,
+    required this.retry,
   });
 
   final MatchHeaderData header;
   final AsyncValue<SoccerTeamStatsParsed> homeAsync;
   final AsyncValue<SoccerTeamStatsParsed> awayAsync;
-  final VoidCallback onRetry;
+  final MatchReportRetryButton retry;
 
   @override
   Widget build(BuildContext context) {
@@ -167,9 +173,10 @@ class _StrengthsWeaknessesBlock extends StatelessWidget {
     return _ExtendedReportBlockCard(
       title: l10n.soccerStatTeamInsights,
       child: _combineTeamStats(
+        context: context,
         homeAsync: homeAsync,
         awayAsync: awayAsync,
-        onRetry: onRetry,
+        retry: retry,
         hasData: (home, away) => home.hasInsightData || away.hasInsightData,
         emptyBuilder: () => TsEmptyState(
           title: l10n.soccerStatTeamInsights,
@@ -203,12 +210,12 @@ class _HeadToHeadBlock extends StatelessWidget {
   const _HeadToHeadBlock({
     required this.header,
     required this.h2hAsync,
-    required this.onRetry,
+    required this.retry,
   });
 
   final MatchHeaderData header;
   final AsyncValue<SoccerH2HAnalysisParsed> h2hAsync;
-  final VoidCallback onRetry;
+  final MatchReportRetryButton retry;
 
   static const _recentMeetingCount = 5;
 
@@ -220,10 +227,10 @@ class _HeadToHeadBlock extends StatelessWidget {
       title: l10n.soccerH2h,
       child: h2hAsync.when(
         loading: () => const _ExtendedReportBlockSkeleton(),
-        error: (_, _) => _ExtendedReportBlockFailure(onRetry: onRetry),
+        error: (_, _) => _ExtendedReportBlockFailure(retry: retry),
         data: (parsed) {
           if (!parsed.hasData) {
-            return _ExtendedReportBlockFailure(onRetry: onRetry);
+            return _ExtendedReportBlockFailure(retry: retry);
           }
 
           final overall = parsed.overall;
@@ -265,12 +272,12 @@ class _RecentFormBlock extends StatelessWidget {
   const _RecentFormBlock({
     required this.homeAsync,
     required this.awayAsync,
-    required this.onRetry,
+    required this.retry,
   });
 
   final AsyncValue<SoccerTeamStatsParsed> homeAsync;
   final AsyncValue<SoccerTeamStatsParsed> awayAsync;
-  final VoidCallback onRetry;
+  final MatchReportRetryButton retry;
 
   @override
   Widget build(BuildContext context) {
@@ -279,10 +286,16 @@ class _RecentFormBlock extends StatelessWidget {
     return _ExtendedReportBlockCard(
       title: l10n.soccerRecentForm,
       child: _combineTeamStats(
+        context: context,
         homeAsync: homeAsync,
         awayAsync: awayAsync,
-        onRetry: onRetry,
+        retry: retry,
         hasData: (home, away) => home.hasFormData || away.hasFormData,
+        emptyBuilder: () => TsEmptyState(
+          title: l10n.soccerRecentForm,
+          description:
+              'No recent form data reported for either team in this match.',
+        ),
         builder: (home, away) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -366,9 +379,10 @@ class _RateCompareRow extends StatelessWidget {
 }
 
 Widget _combineTeamStats({
+  required BuildContext context,
   required AsyncValue<SoccerTeamStatsParsed> homeAsync,
   required AsyncValue<SoccerTeamStatsParsed> awayAsync,
-  required VoidCallback onRetry,
+  required MatchReportRetryButton retry,
   required bool Function(SoccerTeamStatsParsed home, SoccerTeamStatsParsed away)
       hasData,
   required Widget Function(
@@ -382,17 +396,30 @@ Widget _combineTeamStats({
   }
 
   if (homeAsync.hasError && awayAsync.hasError) {
-    return _ExtendedReportBlockFailure(onRetry: onRetry);
+    return _ExtendedReportBlockFailure(
+      retry: retry,
+      description: resolveApiError(
+        context,
+        homeAsync.error ?? awayAsync.error,
+      ),
+    );
   }
 
-  final home = homeAsync.value ?? SoccerTeamStatsParsed.empty;
-  final away = awayAsync.value ?? SoccerTeamStatsParsed.empty;
+  final home = homeAsync.hasError
+      ? SoccerTeamStatsParsed.empty
+      : (homeAsync.value ?? SoccerTeamStatsParsed.empty);
+  final away = awayAsync.hasError
+      ? SoccerTeamStatsParsed.empty
+      : (awayAsync.value ?? SoccerTeamStatsParsed.empty);
 
   if (!hasData(home, away)) {
     if (emptyBuilder != null) {
       return emptyBuilder();
     }
-    return _ExtendedReportBlockFailure(onRetry: onRetry);
+    return _ExtendedReportBlockEmpty(
+      title: 'No data',
+      description: 'No team statistics reported for this match.',
+    );
   }
 
   return builder(home, away);
@@ -444,18 +471,40 @@ class _ExtendedReportBlockSkeleton extends StatelessWidget {
 }
 
 class _ExtendedReportBlockFailure extends StatelessWidget {
-  const _ExtendedReportBlockFailure({required this.onRetry});
+  const _ExtendedReportBlockFailure({
+    required this.retry,
+    this.description = 'This section is unavailable right now.',
+  });
 
-  final VoidCallback onRetry;
+  final MatchReportRetryButton retry;
+  final String description;
 
   @override
   Widget build(BuildContext context) {
     return TsEmptyState(
       type: TsEmptyType.failure,
       title: 'Could not load',
-      description: 'This section is unavailable right now.',
-      actionLabel: 'Retry',
-      onAction: onRetry,
+      description: description,
+      actionLabel: retry.label,
+      onAction: retry.action,
+    );
+  }
+}
+
+class _ExtendedReportBlockEmpty extends StatelessWidget {
+  const _ExtendedReportBlockEmpty({
+    required this.title,
+    required this.description,
+  });
+
+  final String title;
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
+    return TsEmptyState(
+      title: title,
+      description: description,
     );
   }
 }

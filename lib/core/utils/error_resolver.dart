@@ -55,6 +55,23 @@ String resolveApiError(BuildContext context, dynamic error) {
   return l10n.errorUnknown;
 }
 
+/// Whether [error] is a transport-layer failure (timeouts, no connection).
+///
+/// Matches the Dio branches in [_messageForDio] that map to [errorNetworkTimeout].
+bool isTransportFailure(dynamic error) {
+  if (error is! DioException) return false;
+
+  switch (error.type) {
+    case DioExceptionType.connectionTimeout:
+    case DioExceptionType.receiveTimeout:
+    case DioExceptionType.sendTimeout:
+    case DioExceptionType.connectionError:
+      return true;
+    default:
+      return false;
+  }
+}
+
 class _ParsedApiError {
   const _ParsedApiError({this.code, this.extra});
 
