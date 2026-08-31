@@ -11,6 +11,11 @@ class FixtureMatch {
     this.awayTeamKo,
     this.homeTeamLogo,
     this.awayTeamLogo,
+    this.homeTeamId,
+    this.awayTeamId,
+    this.homeOdds,
+    this.drawOdds,
+    this.awayOdds,
     required this.leagueCode,
     required this.leagueName,
     this.leagueNameEn,
@@ -33,6 +38,11 @@ class FixtureMatch {
   final String? awayTeamKo;
   final String? homeTeamLogo;
   final String? awayTeamLogo;
+  final int? homeTeamId;
+  final int? awayTeamId;
+  final double? homeOdds;
+  final double? drawOdds;
+  final double? awayOdds;
   final String leagueCode;
   final String leagueName;
   final String? leagueNameEn;
@@ -70,6 +80,11 @@ class FixtureMatch {
       awayTeamKo: awayTeamKo,
       homeTeamLogo: homeTeamLogo ?? this.homeTeamLogo,
       awayTeamLogo: awayTeamLogo ?? this.awayTeamLogo,
+      homeTeamId: homeTeamId,
+      awayTeamId: awayTeamId,
+      homeOdds: homeOdds,
+      drawOdds: drawOdds,
+      awayOdds: awayOdds,
       leagueCode: leagueCode,
       leagueName: leagueName,
       leagueNameEn: leagueNameEn,
@@ -96,6 +111,11 @@ class FixtureMatch {
       awayTeamKo: awayTeamKo,
       homeTeamLogo: homeTeamLogo,
       awayTeamLogo: awayTeamLogo,
+      homeTeamId: homeTeamId,
+      awayTeamId: awayTeamId,
+      homeOdds: homeOdds,
+      drawOdds: drawOdds,
+      awayOdds: awayOdds,
       leagueCode: live.leagueCode?.isNotEmpty == true ? live.leagueCode! : leagueCode,
       leagueName: leagueName,
       leagueNameEn: leagueNameEn,
@@ -158,6 +178,11 @@ class FixtureMatch {
       awayTeamKo: awayTeamKo,
       homeTeamLogo: _readFixtureTeamLogo(json, isHome: true),
       awayTeamLogo: _readFixtureTeamLogo(json, isHome: false),
+      homeTeamId: _parseInt(json['home_team_id'] ?? json['homeTeamId']),
+      awayTeamId: _parseInt(json['away_team_id'] ?? json['awayTeamId']),
+      homeOdds: _parseFixtureDouble(json['home_odds'] ?? json['homeOdds']),
+      drawOdds: _parseFixtureDouble(json['draw_odds'] ?? json['drawOdds']),
+      awayOdds: _parseFixtureDouble(json['away_odds'] ?? json['awayOdds']),
       leagueCode: league.code,
       leagueName: league.name,
       leagueNameEn: league.nameEn,
@@ -790,6 +815,13 @@ int? _parseInt(Object? value) {
   if (value is int) return value;
   if (value is num) return value.toInt();
   if (value is String) return int.tryParse(value);
+  return null;
+}
+
+double? _parseFixtureDouble(Object? value) {
+  if (value is double) return value;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value.trim());
   return null;
 }
 

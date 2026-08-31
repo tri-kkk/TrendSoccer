@@ -14,6 +14,7 @@ import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/widgets/ts_app_bar.dart';
 import 'package:trendsoccer/design_system/widgets/ts_match_hero.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
+import 'package:trendsoccer/features_v2/matches/widgets/soccer_predict_report_blocks.dart';
 
 const _contentWidth = 380.0;
 
@@ -55,9 +56,10 @@ class MatchReportScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildHero(ref, numericMatchId),
-                const SizedBox(height: TsSpacing.lg),
-                // Report content blocks (conclusion → evidence → squad → context)
-                // are wired in later steps.
+                if (sport == 'soccer' && initialHeader != null) ...[
+                  const SizedBox(height: TsSpacing.lg),
+                  SoccerPredictReportBlocks(header: initialHeader!),
+                ],
               ],
             ),
           ),

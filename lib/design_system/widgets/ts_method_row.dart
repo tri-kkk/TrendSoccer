@@ -31,36 +31,33 @@ class TsMethodRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  methodLabel,
-                  style: TsType.labelSMedium.copyWith(color: c.textTertiary),
-                ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                methodLabel,
+                style: TsType.labelSMedium.copyWith(color: c.textTertiary),
               ),
-              Text(
-                pickLabel,
-                style: TsType.bodyMBold.copyWith(color: c.textPrimary),
-              ),
-            ],
-          ),
-          const SizedBox(height: TsSpacing.xs),
-          TsGaugeBar(
-            home: homeFraction,
-            draw: drawFraction,
-            away: awayFraction,
-            homeLabel: homeLabel,
-            drawLabel: drawLabel,
-            awayLabel: awayLabel,
-          ),
-        ],
-      ),
+            ),
+            Text(
+              pickLabel,
+              style: TsType.bodyMBold.copyWith(color: c.textPrimary),
+            ),
+          ],
+        ),
+        const SizedBox(height: TsSpacing.xs),
+        TsGaugeBar(
+          home: homeFraction,
+          draw: drawFraction,
+          away: awayFraction,
+          homeLabel: homeLabel,
+          drawLabel: drawLabel,
+          awayLabel: awayLabel,
+        ),
+      ],
     );
   }
 }
