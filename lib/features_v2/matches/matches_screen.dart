@@ -1225,13 +1225,24 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
   }
 
   void _onMatchRowTap(FixtureMatch match) {
+    final hasAnalysis =
+        leagueSupportsAnalysis(match.sport, match.leagueKey);
+
+    if (!hasAnalysis) {
+      showTsToast(
+        context,
+        'This league has no match analysis.',
+        TsToastType.info,
+      );
+      return;
+    }
+
     if (match.status != 'scheduled') {
-      final hasAnalysis =
-          leagueSupportsAnalysis(match.sport, match.leagueCode);
-      final message = hasAnalysis
-          ? 'Match reports are available before kickoff.'
-          : 'This league has no match analysis.';
-      showTsToast(context, message, TsToastType.info);
+      showTsToast(
+        context,
+        'Match reports are available before kickoff.',
+        TsToastType.info,
+      );
       return;
     }
 
