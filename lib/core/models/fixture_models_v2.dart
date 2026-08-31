@@ -625,6 +625,11 @@ const _leagueNameToCode = <String, String>{
   'A League': 'AUS',
   'Copa Libertadores': 'COPA',
   'Copa Sudamericana': 'COSU',
+  // Baseball — API sends these as plain "league" strings, not nested objects.
+  'MLB': 'MLB',
+  'KBO': 'KBO',
+  'NPB': 'NPB',
+  'CPBL': 'CPBL',
 };
 
 /// English display name for an API league code.
