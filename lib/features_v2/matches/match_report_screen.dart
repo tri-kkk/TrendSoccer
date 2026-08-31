@@ -41,11 +41,11 @@ class MatchReportScreen extends ConsumerWidget {
         onBack: () => context.pop(),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
+        padding: EdgeInsets.fromLTRB(
           TsSpacing.lg,
           TsSpacing.lg,
           TsSpacing.lg,
-          TsSpacing.xl,
+          TsSpacing.xl + MediaQuery.viewPaddingOf(context).bottom,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -63,7 +63,9 @@ class MatchReportScreen extends ConsumerWidget {
 
   Widget _buildHero(WidgetRef ref, int? numericMatchId) {
     if (sport == 'baseball' && numericMatchId != null) {
-      final detailAsync = ref.watch(baseballMatchDetailProvider(numericMatchId));
+      final detailAsync = ref.watch(
+        baseballMatchDetailProvider(numericMatchId),
+      );
       return detailAsync.when(
         data: (detail) {
           MatchHeaderData? header = initialHeader;
@@ -102,10 +104,7 @@ class MatchReportScreen extends ConsumerWidget {
 }
 
 class _MatchReportHero extends StatelessWidget {
-  const _MatchReportHero({
-    required this.header,
-    required this.sport,
-  });
+  const _MatchReportHero({required this.header, required this.sport});
 
   final MatchHeaderData header;
   final String sport;
@@ -117,16 +116,8 @@ class _MatchReportHero extends StatelessWidget {
 
     return TsMatchHero(
       leagueId: header.resolvedLeagueIconId,
-      homeTeam: localizedTeamName(
-        context,
-        header.homeTeam,
-        header.homeTeamKo,
-      ),
-      awayTeam: localizedTeamName(
-        context,
-        header.awayTeam,
-        header.awayTeamKo,
-      ),
+      homeTeam: localizedTeamName(context, header.homeTeam, header.homeTeamKo),
+      awayTeam: localizedTeamName(context, header.awayTeam, header.awayTeamKo),
       homeEmblemUrl: header.homeTeamLogo,
       awayEmblemUrl: header.awayTeamLogo,
       centerLabel: labels.$1,
@@ -147,10 +138,7 @@ class _MatchHeroSkeleton extends StatelessWidget {
         vertical: TsSpacing.xl,
         horizontal: TsSpacing.md,
       ),
-      decoration: BoxDecoration(
-        color: c.surface,
-        borderRadius: TsRadius.md,
-      ),
+      decoration: BoxDecoration(color: c.surface, borderRadius: TsRadius.md),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -175,11 +163,12 @@ class _MatchHeroSkeleton extends StatelessWidget {
     final center = home != null && away != null ? '$home - $away' : null;
     final sub = switch (status) {
       'finished' => 'FT',
-      'live' => sport == 'baseball'
-          ? _baseballLiveStatusLabel(header.rawStatus)
-          : (header.rawStatus?.trim().isNotEmpty == true
-              ? header.rawStatus!.trim().toUpperCase()
-              : 'LIVE'),
+      'live' =>
+        sport == 'baseball'
+            ? _baseballLiveStatusLabel(header.rawStatus)
+            : (header.rawStatus?.trim().isNotEmpty == true
+                  ? header.rawStatus!.trim().toUpperCase()
+                  : 'LIVE'),
       _ => null,
     };
     return (center, sub);
