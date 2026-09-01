@@ -5,6 +5,8 @@ import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/models/soccer_predict_v2_parsed.dart';
 import 'package:trendsoccer/core/providers/soccer_match_report_provider.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
+import 'package:trendsoccer/design_system/icons/ts_icon_spec.dart';
+import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
@@ -19,8 +21,8 @@ import 'package:trendsoccer/design_system/widgets/ts_stat_compare_row.dart';
 import 'package:trendsoccer/features_v2/matches/widgets/soccer_extended_report_blocks.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 
-final soccerPredictV2ParsedProvider =
-    Provider.family<AsyncValue<SoccerPredictV2Parsed>, SoccerAnalysisParams>(
+final soccerPredictV2ParsedProvider = Provider.autoDispose
+    .family<AsyncValue<SoccerPredictV2Parsed>, SoccerAnalysisParams>(
   (ref, params) {
     return ref
         .watch(soccerPredictionProvider(params))
@@ -29,9 +31,18 @@ final soccerPredictV2ParsedProvider =
 );
 
 class SoccerPredictReportBlocks extends ConsumerWidget {
-  const SoccerPredictReportBlocks({required this.header, super.key});
+  const SoccerPredictReportBlocks({
+    required this.header,
+    required this.predictionRetry,
+    required this.teamStatsRetry,
+    required this.h2hRetry,
+    super.key,
+  });
 
   final MatchHeaderData header;
+  final MatchReportRetryButton predictionRetry;
+  final MatchReportRetryButton teamStatsRetry;
+  final MatchReportRetryButton h2hRetry;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -44,10 +55,15 @@ class SoccerPredictReportBlocks extends ConsumerWidget {
         _SoccerPredictBlocksBody(
           header: header,
           parsedAsync: parsedAsync,
-          onRetry: () => ref.invalidate(soccerPredictionProvider(params)),
+          retry: predictionRetry,
         ),
         const SizedBox(height: TsSpacing.lg),
-        SoccerExtendedReportBlocks(header: header, params: params),
+        SoccerExtendedReportBlocks(
+          header: header,
+          params: params,
+          teamStatsRetry: teamStatsRetry,
+          h2hRetry: h2hRetry,
+        ),
       ],
     );
   }
@@ -57,12 +73,12 @@ class _SoccerPredictBlocksBody extends StatelessWidget {
   const _SoccerPredictBlocksBody({
     required this.header,
     required this.parsedAsync,
-    required this.onRetry,
+    required this.retry,
   });
 
   final MatchHeaderData header;
   final AsyncValue<SoccerPredictV2Parsed> parsedAsync;
-  final VoidCallback onRetry;
+  final MatchReportRetryButton retry;
 
   @override
   Widget build(BuildContext context) {
@@ -74,21 +90,25 @@ class _SoccerPredictBlocksBody extends StatelessWidget {
         children: [
           _SoccerReportBlockCard(
             title: 'Prediction',
+            icon: TsIcons.verified,
             child: _PredictionBlockContent(header: header, parsed: parsed),
           ),
           const SizedBox(height: TsSpacing.lg),
           _SoccerReportBlockCard(
             title: 'Reasoning',
+            icon: TsIcons.article,
             child: _ReasoningBlockContent(reasons: parsed.reasons),
           ),
           const SizedBox(height: TsSpacing.lg),
           _SoccerReportBlockCard(
             title: 'Three-method',
+            icon: TsIcons.analysis,
             child: _ThreeMethodBlockContent(parsed: parsed),
           ),
           const SizedBox(height: TsSpacing.lg),
           _SoccerReportBlockCard(
             title: l10n.soccerStatTeamStats,
+            icon: TsIcons.analytics,
             child: _TeamStatsBlockContent(
               rows: parsed.teamStats,
               l10n: l10n,
@@ -97,7 +117,7 @@ class _SoccerPredictBlocksBody extends StatelessWidget {
         ],
       ),
       loading: () => const _SoccerPredictBlocksLoading(),
-      error: (_, _) => _SoccerPredictBlocksError(onRetry: onRetry),
+      error: (_, _) => _SoccerPredictBlocksError(retry: retry),
     );
   }
 }
@@ -105,10 +125,12 @@ class _SoccerPredictBlocksBody extends StatelessWidget {
 class _SoccerReportBlockCard extends StatelessWidget {
   const _SoccerReportBlockCard({
     required this.title,
+    this.icon,
     required this.child,
   });
 
   final String title;
+  final TsIconSpec? icon;
   final Widget child;
 
   @override
@@ -124,7 +146,7 @@ class _SoccerReportBlockCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TsSectionHeader(title: title),
+          TsSectionHeader(title: title, icon: icon),
           const SizedBox(height: TsSpacing.md),
           child,
         ],
@@ -375,30 +397,41 @@ class _SoccerReportBlockSkeleton extends StatelessWidget {
 }
 
 class _SoccerPredictBlocksError extends StatelessWidget {
-  const _SoccerPredictBlocksError({required this.onRetry});
+  const _SoccerPredictBlocksError({required this.retry});
 
-  final VoidCallback onRetry;
+  final MatchReportRetryButton retry;
+
+  static const _icons = <TsIconSpec>[
+    TsIcons.verified,
+    TsIcons.article,
+    TsIcons.analysis,
+    TsIcons.analytics,
+  ];
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final titles = <String>[
+      'Prediction',
+      'Reasoning',
+      'Three-method',
+      l10n.soccerStatTeamStats,
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (var i = 0; i < 4; i++) ...[
           if (i > 0) const SizedBox(height: TsSpacing.lg),
           _SoccerReportBlockCard(
-            title: switch (i) {
-              0 => 'Prediction',
-              1 => 'Reasoning',
-              2 => 'Three-method',
-              _ => 'Team statistics',
-            },
+            title: titles[i],
+            icon: _icons[i],
             child: TsEmptyState(
               type: TsEmptyType.failure,
               title: 'Could not load',
               description: 'Match analysis is unavailable right now.',
-              actionLabel: 'Retry',
-              onAction: onRetry,
+              actionLabel: retry.label,
+              onAction: retry.action,
             ),
           ),
         ],

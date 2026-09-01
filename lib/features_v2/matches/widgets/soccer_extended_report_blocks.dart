@@ -8,6 +8,8 @@ import 'package:trendsoccer/core/models/soccer_team_stats_parsed.dart';
 import 'package:trendsoccer/core/providers/soccer_match_report_provider.dart';
 import 'package:trendsoccer/core/utils/error_resolver.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
+import 'package:trendsoccer/design_system/icons/ts_icon_spec.dart';
+import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
@@ -89,6 +91,7 @@ class _ScoringTrendsBlock extends StatelessWidget {
 
     return _ExtendedReportBlockCard(
       title: l10n.soccerMarketIndicators,
+      icon: TsIcons.leaderboard,
       child: _combineTeamStats(
         context: context,
         homeAsync: homeAsync,
@@ -172,6 +175,7 @@ class _StrengthsWeaknessesBlock extends StatelessWidget {
 
     return _ExtendedReportBlockCard(
       title: l10n.soccerStatTeamInsights,
+      icon: TsIcons.checkCircleOutline,
       child: _combineTeamStats(
         context: context,
         homeAsync: homeAsync,
@@ -225,9 +229,13 @@ class _HeadToHeadBlock extends StatelessWidget {
 
     return _ExtendedReportBlockCard(
       title: l10n.soccerH2h,
+      icon: TsIcons.groups,
       child: h2hAsync.when(
         loading: () => const _ExtendedReportBlockSkeleton(),
-        error: (_, _) => _ExtendedReportBlockFailure(retry: retry),
+        error: (error, _) => _ExtendedReportBlockFailure(
+          retry: retry,
+          description: resolveApiError(context, error),
+        ),
         data: (parsed) {
           if (!parsed.hasData) {
             return _ExtendedReportBlockFailure(retry: retry);
@@ -285,6 +293,7 @@ class _RecentFormBlock extends StatelessWidget {
 
     return _ExtendedReportBlockCard(
       title: l10n.soccerRecentForm,
+      icon: TsIcons.trendingUp,
       child: _combineTeamStats(
         context: context,
         homeAsync: homeAsync,
@@ -428,10 +437,12 @@ Widget _combineTeamStats({
 class _ExtendedReportBlockCard extends StatelessWidget {
   const _ExtendedReportBlockCard({
     required this.title,
+    this.icon,
     required this.child,
   });
 
   final String title;
+  final TsIconSpec? icon;
   final Widget child;
 
   @override
@@ -447,7 +458,7 @@ class _ExtendedReportBlockCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TsSectionHeader(title: title),
+          TsSectionHeader(title: title, icon: icon),
           const SizedBox(height: TsSpacing.md),
           child,
         ],

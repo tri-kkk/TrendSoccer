@@ -40,8 +40,7 @@ class MatchReportScreen extends ConsumerStatefulWidget {
 class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
   bool _retryInProgress = false;
   Future<void>? _refreshInFlight;
-  bool _holdScreenLevelFailure = false;
-  Object? _lastTransportFailureError;
+  Object? _cachedTransportFailureError;
 
   SoccerAnalysisParams? get _soccerParams {
     final header = widget.initialHeader;
@@ -88,6 +87,118 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
     );
   }
 
+  List<AsyncValue<dynamic>> _reportSections(
+    WidgetRef ref,
+    SoccerAnalysisParams params,
+  ) {
+    return [
+      ref.watch(soccerPredictionProvider(params)),
+      ref.watch(homeTeamStatsProvider(params)),
+      ref.watch(awayTeamStatsProvider(params)),
+      ref.watch(soccerH2HAnalysisProvider(params)),
+    ];
+  }
+
+  bool _reportHasAnySectionData(List<AsyncValue<dynamic>> sections) {
+    return sections.any((section) => section.hasValue);
+  }
+
+  bool _reportHasPartialNonTransportFailure(List<AsyncValue<dynamic>> sections) {
+    final hasData = _reportHasAnySectionData(sections);
+    final hasNonTransportError = sections.any(
+      (section) => section.hasError && !isTransportFailure(section.error),
+    );
+    if (hasNonTransportError) return true;
+    return hasData && sections.any((section) => section.hasError);
+  }
+
+  /// True while sections are still resolving, but every settled section is a
+  /// transport failure and at least one has failed — not a blank first load.
+  bool _isEmergingTotalTransportFailure(List<AsyncValue<dynamic>> sections) {
+    final hasTransportError = sections.any(
+      (section) => section.hasError && isTransportFailure(section.error),
+    );
+    if (!hasTransportError) return false;
+
+    return sections.every(
+      (section) =>
+          section.isLoading ||
+          (section.hasError && isTransportFailure(section.error)),
+    );
+  }
+
+  bool _allSectionsSettled(List<AsyncValue<dynamic>> sections) {
+    return sections.every((section) => !section.isLoading);
+  }
+
+  /// True while a full-report retry is still resolving after a total outage.
+  ///
+  /// Holds when more sections are loading than have data, so per-block retries
+  /// (one loading, several with data) do not trigger the screen-level layout.
+  bool _isRecoveringFromTotalOutage(List<AsyncValue<dynamic>> sections) {
+    if (!_retryInProgress) return false;
+    if (_allSectionsSettled(sections)) return false;
+    if (_reportHasPartialNonTransportFailure(sections)) return false;
+
+    final loadingCount = sections.where((section) => section.isLoading).length;
+    final dataCount = sections.where((section) => section.hasValue).length;
+    return loadingCount >= dataCount;
+  }
+
+  /// Shared entry + recovery rule for the screen-level transport failure layout.
+  bool _showScreenLevelFailure(
+    WidgetRef ref,
+    SoccerAnalysisParams params,
+    List<AsyncValue<dynamic>> sections,
+  ) {
+    if (ref.watch(soccerReportScreenFailureProvider(params))) {
+      return true;
+    }
+    if (_reportHasPartialNonTransportFailure(sections)) return false;
+    if (_isEmergingTotalTransportFailure(sections)) return true;
+    if (_isRecoveringFromTotalOutage(sections)) return true;
+    return false;
+  }
+
+  Object? _transportFailureError(
+    WidgetRef ref,
+    SoccerAnalysisParams params,
+    List<AsyncValue<dynamic>> sections,
+  ) {
+    final aggregated =
+        ref.watch(soccerReportTransportFailureErrorProvider(params));
+    if (aggregated != null) {
+      return aggregated;
+    }
+
+    for (final section in sections) {
+      if (section.hasError && isTransportFailure(section.error)) {
+        return section.error;
+      }
+    }
+
+    return _cachedTransportFailureError;
+  }
+
+  void _listenForTransportFailureError(SoccerAnalysisParams params) {
+    ref.listen<Object?>(
+      soccerReportTransportFailureErrorProvider(params),
+      (_, next) {
+        if (next != null && next != _cachedTransportFailureError) {
+          setState(() => _cachedTransportFailureError = next);
+        }
+      },
+    );
+    ref.listen<bool>(
+      soccerReportScreenFailureProvider(params),
+      (_, showsFailure) {
+        if (!showsFailure && !_retryInProgress && _cachedTransportFailureError != null) {
+          setState(() => _cachedTransportFailureError = null);
+        }
+      },
+    );
+  }
+
   Widget _buildSoccerReportBlocks(WidgetRef ref, SoccerAnalysisParams params) {
     return SoccerPredictReportBlocks(
       header: widget.initialHeader!,
@@ -103,30 +214,12 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
     );
   }
 
-  /// Updates [_holdScreenLevelFailure] / [_lastTransportFailureError] and
-  /// returns whether the screen-level failure layout should show.
-  bool _syncScreenLevelFailureState(WidgetRef ref, SoccerAnalysisParams params) {
-    final showsTransportFailure =
-        ref.watch(soccerReportScreenFailureProvider(params));
-
-    if (showsTransportFailure) {
-      _holdScreenLevelFailure = true;
-      final error = ref.watch(soccerReportTransportFailureErrorProvider(params));
-      if (error != null) {
-        _lastTransportFailureError = error;
-      }
-    } else if (!_retryInProgress) {
-      _holdScreenLevelFailure = false;
-      _lastTransportFailureError = null;
-    }
-
-    return showsTransportFailure ||
-        (_retryInProgress && _holdScreenLevelFailure);
-  }
-
-  Widget _buildSoccerReportTransportFailure(SoccerAnalysisParams params) {
+  Widget _buildSoccerReportTransportFailure(
+    SoccerAnalysisParams params,
+    Object? error,
+  ) {
     return _SoccerReportTransportFailure(
-      error: _lastTransportFailureError,
+      error: error,
       retry: _retryButton(() => refreshSoccerMatchReport(ref, params)),
     );
   }
@@ -151,13 +244,26 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
     final hasSoccerBlocks = widget.sport == 'soccer' &&
         widget.initialHeader != null &&
         soccerParams != null;
+    if (hasSoccerBlocks) {
+      _listenForTransportFailureError(soccerParams);
+    }
+    final reportSections =
+        hasSoccerBlocks ? _reportSections(ref, soccerParams) : <AsyncValue<dynamic>>[];
     final showScreenLevelFailure = hasSoccerBlocks &&
-        _syncScreenLevelFailureState(ref, soccerParams);
+        _showScreenLevelFailure(ref, soccerParams, reportSections);
+    final transportFailureError = hasSoccerBlocks
+        ? _transportFailureError(ref, soccerParams, reportSections)
+        : null;
+    final scrollContentMinHeight =
+        _minScrollContentHeight(context, bottomPadding);
 
     final content = ConstrainedBox(
-      constraints: BoxConstraints(
-        minHeight: _minScrollContentHeight(context, bottomPadding),
-      ),
+      constraints: showScreenLevelFailure
+          ? BoxConstraints(
+              minHeight: scrollContentMinHeight,
+              maxHeight: scrollContentMinHeight,
+            )
+          : BoxConstraints(minHeight: scrollContentMinHeight),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -167,7 +273,10 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
             if (showScreenLevelFailure)
               Expanded(
                 child: Center(
-                  child: _buildSoccerReportTransportFailure(soccerParams),
+                  child: _buildSoccerReportTransportFailure(
+                    soccerParams,
+                    transportFailureError,
+                  ),
                 ),
               )
             else
