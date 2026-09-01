@@ -14,6 +14,9 @@ import 'package:trendsoccer/design_system/widgets/ts_button.dart';
 
 enum TsLockSize { normal, compact, inline }
 
+const double _inlineLockOverlayMinHeight = 32;
+const double _inlineLockOverlayMinWidth = 200;
+
 class TsLockOverlay extends StatelessWidget {
   const TsLockOverlay({
     this.size = TsLockSize.normal,
@@ -39,6 +42,12 @@ class TsLockOverlay extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
         child: Container(
+          constraints: size == TsLockSize.inline
+              ? const BoxConstraints(
+                  minHeight: _inlineLockOverlayMinHeight,
+                  minWidth: _inlineLockOverlayMinWidth,
+                )
+              : null,
           decoration: BoxDecoration(
             color: c.scrim,
             borderRadius: TsRadius.md,
@@ -105,13 +114,22 @@ class TsLockOverlay extends StatelessWidget {
             ],
           ),
         TsLockSize.inline => Row(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TsIcon(TsIcons.lock, size: TsIconSize.xs, color: c.onScrim),
               const SizedBox(width: TsSpacing.sm),
-              Text(
-                headline,
-                style: TsType.bodyMBold.copyWith(color: c.onScrim),
+              Flexible(
+                child: Text(
+                  headline,
+                  style: TsType.bodyMBold.copyWith(
+                    color: c.onScrim,
+                    letterSpacing: TsType.h3.letterSpacing,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),

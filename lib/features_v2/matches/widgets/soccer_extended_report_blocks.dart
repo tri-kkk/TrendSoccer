@@ -450,6 +450,7 @@ class _ExtendedReportBlockCard extends StatelessWidget {
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
     return Container(
+      clipBehavior: Clip.antiAlias,
       padding: const EdgeInsets.all(TsSpacing.md),
       decoration: BoxDecoration(
         color: c.surface,
