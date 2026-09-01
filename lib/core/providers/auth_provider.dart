@@ -768,7 +768,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
       final googleSignIn = GoogleSignIn(
         serverClientId: AppConfig.googleWebClientId,
       );
-      final account = await googleSignIn.signIn().timeout(_authOperationTimeout);
+      final account = await googleSignIn.signIn();
       if (account == null) {
         throw const AuthLoginException('cancelled');
       }
@@ -806,8 +806,7 @@ class SupabaseAuthProvider extends ChangeNotifier {
 
   Future<void> loginWithNaver() async {
     try {
-      final result =
-          await FlutterNaverLogin.logIn().timeout(_authOperationTimeout);
+      final result = await FlutterNaverLogin.logIn();
 
       if (result.status == NaverLoginStatus.loggedOut) {
         throw const AuthLoginException('cancelled');

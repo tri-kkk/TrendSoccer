@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -39,7 +37,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (_busy) return;
     setState(() => _busy = true);
     try {
-      await login().timeout(const Duration(seconds: 30));
+      await login();
       if (!mounted) return;
 
       final auth = ref.read(authProvider);
@@ -61,9 +59,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         return;
       }
       _showErrorToast(_messageForAuthFailure(e.reason));
-    } on TimeoutException {
-      if (!mounted) return;
-      _showErrorToast('Sign-in timed out. Please try again.');
     } on Object catch (e) {
       debugPrint('[login] unexpected: $e');
       if (!mounted) return;
