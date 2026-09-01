@@ -56,25 +56,6 @@ class _AuthInterceptor extends Interceptor {
       handler.next(options);
     }
   }
-
-  @override
-  Future<void> onError(
-    DioException err,
-    ErrorInterceptorHandler handler,
-  ) async {
-    if (err.response?.statusCode == 401) {
-      await _tokenService.deleteToken();
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.remove('auth_jwt');
-        await prefs.remove('auth_provider');
-        await prefs.remove('auth_expires_at');
-      } catch (_) {
-        // Non-fatal: prefs cleanup failed.
-      }
-    }
-    handler.next(err);
-  }
 }
 
 class _ErrorLoggingInterceptor extends Interceptor {

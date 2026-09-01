@@ -42,17 +42,6 @@ class _WebAuthInterceptor extends Interceptor {
       handler.next(options);
     }
   }
-
-  @override
-  Future<void> onError(
-    DioException err,
-    ErrorInterceptorHandler handler,
-  ) async {
-    if (err.response?.statusCode == 401) {
-      await _tokenService.deleteToken();
-    }
-    handler.next(err);
-  }
 }
 
 class _WebErrorLoggingInterceptor extends Interceptor {
