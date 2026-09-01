@@ -13,12 +13,15 @@ import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/widgets/ts_badge.dart';
 import 'package:trendsoccer/design_system/widgets/ts_empty_state.dart';
 import 'package:trendsoccer/design_system/widgets/ts_insight_text.dart';
+import 'package:trendsoccer/design_system/widgets/ts_locked_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_method_row.dart';
 import 'package:trendsoccer/design_system/widgets/ts_prediction_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_section_header.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_stat_compare_row.dart';
 import 'package:trendsoccer/features_v2/matches/widgets/soccer_extended_report_blocks.dart';
+import 'package:trendsoccer/features_v2/matches/widgets/soccer_report_block_placeholders.dart';
+import 'package:trendsoccer/features_v2/matches/widgets/soccer_report_lock_policy.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 
 final soccerPredictV2ParsedProvider = Provider.autoDispose
@@ -33,6 +36,7 @@ final soccerPredictV2ParsedProvider = Provider.autoDispose
 class SoccerPredictReportBlocks extends ConsumerWidget {
   const SoccerPredictReportBlocks({
     required this.header,
+    required this.lockPolicy,
     required this.predictionRetry,
     required this.teamStatsRetry,
     required this.h2hRetry,
@@ -40,6 +44,7 @@ class SoccerPredictReportBlocks extends ConsumerWidget {
   });
 
   final MatchHeaderData header;
+  final SoccerReportLockPolicy lockPolicy;
   final MatchReportRetryButton predictionRetry;
   final MatchReportRetryButton teamStatsRetry;
   final MatchReportRetryButton h2hRetry;
@@ -47,13 +52,16 @@ class SoccerPredictReportBlocks extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final params = SoccerAnalysisParams.fromHeader(header);
-    final parsedAsync = ref.watch(soccerPredictV2ParsedProvider(params));
+    final parsedAsync = lockPolicy.shouldFetchPrediction
+        ? ref.watch(soccerPredictV2ParsedProvider(params))
+        : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _SoccerPredictBlocksBody(
           header: header,
+          lockPolicy: lockPolicy,
           parsedAsync: parsedAsync,
           retry: predictionRetry,
         ),
@@ -61,6 +69,7 @@ class SoccerPredictReportBlocks extends ConsumerWidget {
         SoccerExtendedReportBlocks(
           header: header,
           params: params,
+          lockPolicy: lockPolicy,
           teamStatsRetry: teamStatsRetry,
           h2hRetry: h2hRetry,
         ),
@@ -72,19 +81,25 @@ class SoccerPredictReportBlocks extends ConsumerWidget {
 class _SoccerPredictBlocksBody extends StatelessWidget {
   const _SoccerPredictBlocksBody({
     required this.header,
+    required this.lockPolicy,
     required this.parsedAsync,
     required this.retry,
   });
 
   final MatchHeaderData header;
-  final AsyncValue<SoccerPredictV2Parsed> parsedAsync;
+  final SoccerReportLockPolicy lockPolicy;
+  final AsyncValue<SoccerPredictV2Parsed>? parsedAsync;
   final MatchReportRetryButton retry;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return parsedAsync.when(
+    if (!lockPolicy.shouldFetchPrediction) {
+      return _SoccerPredictBlocksLocked(lockPolicy: lockPolicy, l10n: l10n);
+    }
+
+    return parsedAsync!.when(
       data: (parsed) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -118,6 +133,79 @@ class _SoccerPredictBlocksBody extends StatelessWidget {
       ),
       loading: () => const _SoccerPredictBlocksLoading(),
       error: (_, _) => _SoccerPredictBlocksError(retry: retry),
+    );
+  }
+}
+
+class _SoccerPredictBlocksLocked extends StatelessWidget {
+  const _SoccerPredictBlocksLocked({
+    required this.lockPolicy,
+    required this.l10n,
+  });
+
+  final SoccerReportLockPolicy lockPolicy;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _LockedPredictBlockCard(
+          title: 'Prediction',
+          icon: TsIcons.verified,
+          lockPolicy: lockPolicy,
+          placeholder: SoccerReportBlockPlaceholders.prediction(),
+        ),
+        const SizedBox(height: TsSpacing.lg),
+        _LockedPredictBlockCard(
+          title: 'Reasoning',
+          icon: TsIcons.article,
+          lockPolicy: lockPolicy,
+          placeholder: SoccerReportBlockPlaceholders.reasoning(),
+        ),
+        const SizedBox(height: TsSpacing.lg),
+        _LockedPredictBlockCard(
+          title: 'Three-method',
+          icon: TsIcons.analysis,
+          lockPolicy: lockPolicy,
+          placeholder: SoccerReportBlockPlaceholders.threeMethod(l10n),
+        ),
+        const SizedBox(height: TsSpacing.lg),
+        _LockedPredictBlockCard(
+          title: l10n.soccerStatTeamStats,
+          icon: TsIcons.analytics,
+          lockPolicy: lockPolicy,
+          placeholder: SoccerReportBlockPlaceholders.teamStats(l10n),
+        ),
+      ],
+    );
+  }
+}
+
+class _LockedPredictBlockCard extends StatelessWidget {
+  const _LockedPredictBlockCard({
+    required this.title,
+    this.icon,
+    required this.lockPolicy,
+    required this.placeholder,
+  });
+
+  final String title;
+  final TsIconSpec? icon;
+  final SoccerReportLockPolicy lockPolicy;
+  final Widget placeholder;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SoccerReportBlockCard(
+      title: title,
+      icon: icon,
+      child: TsLockedBlock(
+        label: lockPolicy.lockLabel,
+        onTap: lockPolicy.onTap,
+        child: placeholder,
+      ),
     );
   }
 }

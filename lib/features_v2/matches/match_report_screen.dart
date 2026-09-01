@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import 'package:trendsoccer/core/models/match_header_data.dart';
+import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_match_report_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_match_report_provider.dart';
 import 'package:trendsoccer/core/utils/baseball_status.dart';
@@ -20,6 +21,10 @@ import 'package:trendsoccer/design_system/widgets/ts_empty_state.dart';
 import 'package:trendsoccer/design_system/widgets/ts_match_hero.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/features_v2/matches/widgets/soccer_predict_report_blocks.dart';
+import 'package:trendsoccer/features_v2/matches/widgets/soccer_report_lock_policy.dart';
+
+// #106 — flip to true once the backend gate is lifted
+const _guestFactBlocksUnlocked = false;
 
 class MatchReportScreen extends ConsumerStatefulWidget {
   const MatchReportScreen({
@@ -64,12 +69,29 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
     final params = _soccerParams;
     if (params == null) return;
 
+    final auth = ref.read(authProvider);
+    final lockPolicy = SoccerReportLockPolicy.resolve(
+      isGuest: auth.isGuest,
+      hasFullAccess: auth.hasFullAccess,
+      guestFactBlocksUnlocked: _guestFactBlocksUnlocked,
+      onGuestTap: () => context.go('/login'),
+      onSubscribeTap: () => context.go('/menu/subscribe'),
+    );
+
     final inFlight = _refreshInFlight;
     if (inFlight != null) {
       return inFlight;
     }
 
-    final future = _guardedRetry(() => refreshSoccerMatchReport(ref, params));
+    final future = _guardedRetry(
+      () => refreshSoccerMatchReport(
+        ref,
+        params,
+        fetchPrediction: lockPolicy.shouldFetchPrediction,
+        fetchTeamStats: lockPolicy.shouldFetchTeamStats,
+        fetchH2h: lockPolicy.shouldFetchH2h,
+      ),
+    );
     _refreshInFlight = future;
     try {
       await future;
@@ -90,12 +112,17 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
   List<AsyncValue<dynamic>> _reportSections(
     WidgetRef ref,
     SoccerAnalysisParams params,
+    SoccerReportLockPolicy lockPolicy,
   ) {
     return [
-      ref.watch(soccerPredictionProvider(params)),
-      ref.watch(homeTeamStatsProvider(params)),
-      ref.watch(awayTeamStatsProvider(params)),
-      ref.watch(soccerH2HAnalysisProvider(params)),
+      if (lockPolicy.shouldFetchPrediction)
+        ref.watch(soccerPredictionProvider(params)),
+      if (lockPolicy.shouldFetchTeamStats) ...[
+        ref.watch(homeTeamStatsProvider(params)),
+        ref.watch(awayTeamStatsProvider(params)),
+      ],
+      if (lockPolicy.shouldFetchH2h)
+        ref.watch(soccerH2HAnalysisProvider(params)),
     ];
   }
 
@@ -151,9 +178,8 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
     SoccerAnalysisParams params,
     List<AsyncValue<dynamic>> sections,
   ) {
-    if (ref.watch(soccerReportScreenFailureProvider(params))) {
-      return true;
-    }
+    if (sections.isEmpty) return false;
+    if (soccerReportHasTotalTransportFailure(sections)) return true;
     if (_reportHasPartialNonTransportFailure(sections)) return false;
     if (_isEmergingTotalTransportFailure(sections)) return true;
     if (_isRecoveringFromTotalOutage(sections)) return true;
@@ -165,8 +191,7 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
     SoccerAnalysisParams params,
     List<AsyncValue<dynamic>> sections,
   ) {
-    final aggregated =
-        ref.watch(soccerReportTransportFailureErrorProvider(params));
+    final aggregated = soccerReportTransportFailureError(sections);
     if (aggregated != null) {
       return aggregated;
     }
@@ -180,28 +205,29 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
     return _cachedTransportFailureError;
   }
 
-  void _listenForTransportFailureError(SoccerAnalysisParams params) {
-    ref.listen<Object?>(
-      soccerReportTransportFailureErrorProvider(params),
-      (_, next) {
-        if (next != null && next != _cachedTransportFailureError) {
+  void _listenForTransportFailureError(
+    SoccerAnalysisParams params,
+    List<AsyncValue<dynamic>> sections,
+  ) {
+    final next = soccerReportTransportFailureError(sections);
+    if (next != null && next != _cachedTransportFailureError) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (next != _cachedTransportFailureError) {
           setState(() => _cachedTransportFailureError = next);
         }
-      },
-    );
-    ref.listen<bool>(
-      soccerReportScreenFailureProvider(params),
-      (_, showsFailure) {
-        if (!showsFailure && !_retryInProgress && _cachedTransportFailureError != null) {
-          setState(() => _cachedTransportFailureError = null);
-        }
-      },
-    );
+      });
+    }
   }
 
-  Widget _buildSoccerReportBlocks(WidgetRef ref, SoccerAnalysisParams params) {
+  Widget _buildSoccerReportBlocks(
+    WidgetRef ref,
+    SoccerAnalysisParams params,
+    SoccerReportLockPolicy lockPolicy,
+  ) {
     return SoccerPredictReportBlocks(
       header: widget.initialHeader!,
+      lockPolicy: lockPolicy,
       predictionRetry: _retryButton(
         () => refreshPrediction(ref, params),
       ),
@@ -216,11 +242,20 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
 
   Widget _buildSoccerReportTransportFailure(
     SoccerAnalysisParams params,
+    SoccerReportLockPolicy lockPolicy,
     Object? error,
   ) {
     return _SoccerReportTransportFailure(
       error: error,
-      retry: _retryButton(() => refreshSoccerMatchReport(ref, params)),
+      retry: _retryButton(
+        () => refreshSoccerMatchReport(
+          ref,
+          params,
+          fetchPrediction: lockPolicy.shouldFetchPrediction,
+          fetchTeamStats: lockPolicy.shouldFetchTeamStats,
+          fetchH2h: lockPolicy.shouldFetchH2h,
+        ),
+      ),
     );
   }
 
@@ -244,11 +279,25 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
     final hasSoccerBlocks = widget.sport == 'soccer' &&
         widget.initialHeader != null &&
         soccerParams != null;
+    final auth = ref.watch(authProvider);
+    final lockPolicy = hasSoccerBlocks
+        ? SoccerReportLockPolicy.resolve(
+            isGuest: auth.isGuest,
+            hasFullAccess: auth.hasFullAccess,
+            guestFactBlocksUnlocked: _guestFactBlocksUnlocked,
+            onGuestTap: () => context.go('/login'),
+            onSubscribeTap: () => context.go('/menu/subscribe'),
+          )
+        : null;
     if (hasSoccerBlocks) {
-      _listenForTransportFailureError(soccerParams);
+      _listenForTransportFailureError(
+        soccerParams,
+        _reportSections(ref, soccerParams, lockPolicy!),
+      );
     }
-    final reportSections =
-        hasSoccerBlocks ? _reportSections(ref, soccerParams) : <AsyncValue<dynamic>>[];
+    final reportSections = hasSoccerBlocks
+        ? _reportSections(ref, soccerParams, lockPolicy!)
+        : <AsyncValue<dynamic>>[];
     final showScreenLevelFailure = hasSoccerBlocks &&
         _showScreenLevelFailure(ref, soccerParams, reportSections);
     final transportFailureError = hasSoccerBlocks
@@ -275,12 +324,13 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
                 child: Center(
                   child: _buildSoccerReportTransportFailure(
                     soccerParams,
+                    lockPolicy!,
                     transportFailureError,
                   ),
                 ),
               )
             else
-              _buildSoccerReportBlocks(ref, soccerParams),
+              _buildSoccerReportBlocks(ref, soccerParams, lockPolicy!),
           ],
         ],
       ),

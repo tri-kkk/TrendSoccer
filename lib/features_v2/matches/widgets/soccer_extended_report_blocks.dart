@@ -16,16 +16,20 @@ import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/widgets/ts_empty_state.dart';
 import 'package:trendsoccer/design_system/widgets/ts_h2h_summary.dart';
 import 'package:trendsoccer/design_system/widgets/ts_insight_text.dart';
+import 'package:trendsoccer/design_system/widgets/ts_locked_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_section_header.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_stack_bar.dart';
 import 'package:trendsoccer/design_system/widgets/ts_stat_compare_row.dart';
+import 'package:trendsoccer/features_v2/matches/widgets/soccer_report_block_placeholders.dart';
+import 'package:trendsoccer/features_v2/matches/widgets/soccer_report_lock_policy.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 
 class SoccerExtendedReportBlocks extends ConsumerWidget {
   const SoccerExtendedReportBlocks({
     required this.header,
     required this.params,
+    required this.lockPolicy,
     required this.teamStatsRetry,
     required this.h2hRetry,
     super.key,
@@ -33,14 +37,21 @@ class SoccerExtendedReportBlocks extends ConsumerWidget {
 
   final MatchHeaderData header;
   final SoccerAnalysisParams params;
+  final SoccerReportLockPolicy lockPolicy;
   final MatchReportRetryButton teamStatsRetry;
   final MatchReportRetryButton h2hRetry;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final homeAsync = ref.watch(homeTeamStatsParsedProvider(params));
-    final awayAsync = ref.watch(awayTeamStatsParsedProvider(params));
-    final h2hAsync = ref.watch(soccerH2HAnalysisParsedProvider(params));
+    final homeAsync = lockPolicy.shouldFetchTeamStats
+        ? ref.watch(homeTeamStatsParsedProvider(params))
+        : null;
+    final awayAsync = lockPolicy.shouldFetchTeamStats
+        ? ref.watch(awayTeamStatsParsedProvider(params))
+        : null;
+    final h2hAsync = lockPolicy.shouldFetchH2h
+        ? ref.watch(soccerH2HAnalysisParsedProvider(params))
+        : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -48,6 +59,7 @@ class SoccerExtendedReportBlocks extends ConsumerWidget {
         _ScoringTrendsBlock(
           homeAsync: homeAsync,
           awayAsync: awayAsync,
+          lockPolicy: lockPolicy,
           retry: teamStatsRetry,
         ),
         const SizedBox(height: TsSpacing.lg),
@@ -55,18 +67,21 @@ class SoccerExtendedReportBlocks extends ConsumerWidget {
           header: header,
           homeAsync: homeAsync,
           awayAsync: awayAsync,
+          lockPolicy: lockPolicy,
           retry: teamStatsRetry,
         ),
         const SizedBox(height: TsSpacing.lg),
         _HeadToHeadBlock(
           header: header,
           h2hAsync: h2hAsync,
+          lockPolicy: lockPolicy,
           retry: h2hRetry,
         ),
         const SizedBox(height: TsSpacing.lg),
         _RecentFormBlock(
           homeAsync: homeAsync,
           awayAsync: awayAsync,
+          lockPolicy: lockPolicy,
           retry: teamStatsRetry,
         ),
       ],
@@ -78,24 +93,35 @@ class _ScoringTrendsBlock extends StatelessWidget {
   const _ScoringTrendsBlock({
     required this.homeAsync,
     required this.awayAsync,
+    required this.lockPolicy,
     required this.retry,
   });
 
-  final AsyncValue<SoccerTeamStatsParsed> homeAsync;
-  final AsyncValue<SoccerTeamStatsParsed> awayAsync;
+  final AsyncValue<SoccerTeamStatsParsed>? homeAsync;
+  final AsyncValue<SoccerTeamStatsParsed>? awayAsync;
+  final SoccerReportLockPolicy lockPolicy;
   final MatchReportRetryButton retry;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
+    if (lockPolicy.isLocked(6)) {
+      return _LockedExtendedBlockCard(
+        title: l10n.soccerMarketIndicators,
+        icon: TsIcons.leaderboard,
+        lockPolicy: lockPolicy,
+        placeholder: SoccerReportBlockPlaceholders.scoringTrends(l10n),
+      );
+    }
+
     return _ExtendedReportBlockCard(
       title: l10n.soccerMarketIndicators,
       icon: TsIcons.leaderboard,
       child: _combineTeamStats(
         context: context,
-        homeAsync: homeAsync,
-        awayAsync: awayAsync,
+        homeAsync: homeAsync!,
+        awayAsync: awayAsync!,
         retry: retry,
         hasData: (home, away) => home.hasMarketData || away.hasMarketData,
         emptyBuilder: () => TsEmptyState(
@@ -151,12 +177,14 @@ class _StrengthsWeaknessesBlock extends StatelessWidget {
     required this.header,
     required this.homeAsync,
     required this.awayAsync,
+    required this.lockPolicy,
     required this.retry,
   });
 
   final MatchHeaderData header;
-  final AsyncValue<SoccerTeamStatsParsed> homeAsync;
-  final AsyncValue<SoccerTeamStatsParsed> awayAsync;
+  final AsyncValue<SoccerTeamStatsParsed>? homeAsync;
+  final AsyncValue<SoccerTeamStatsParsed>? awayAsync;
+  final SoccerReportLockPolicy lockPolicy;
   final MatchReportRetryButton retry;
 
   @override
@@ -173,13 +201,22 @@ class _StrengthsWeaknessesBlock extends StatelessWidget {
       header.awayTeamKo,
     );
 
+    if (lockPolicy.isLocked(7)) {
+      return _LockedExtendedBlockCard(
+        title: l10n.soccerStatTeamInsights,
+        icon: TsIcons.checkCircleOutline,
+        lockPolicy: lockPolicy,
+        placeholder: SoccerReportBlockPlaceholders.teamInsights(),
+      );
+    }
+
     return _ExtendedReportBlockCard(
       title: l10n.soccerStatTeamInsights,
       icon: TsIcons.checkCircleOutline,
       child: _combineTeamStats(
         context: context,
-        homeAsync: homeAsync,
-        awayAsync: awayAsync,
+        homeAsync: homeAsync!,
+        awayAsync: awayAsync!,
         retry: retry,
         hasData: (home, away) => home.hasInsightData || away.hasInsightData,
         emptyBuilder: () => TsEmptyState(
@@ -214,11 +251,13 @@ class _HeadToHeadBlock extends StatelessWidget {
   const _HeadToHeadBlock({
     required this.header,
     required this.h2hAsync,
+    required this.lockPolicy,
     required this.retry,
   });
 
   final MatchHeaderData header;
-  final AsyncValue<SoccerH2HAnalysisParsed> h2hAsync;
+  final AsyncValue<SoccerH2HAnalysisParsed>? h2hAsync;
+  final SoccerReportLockPolicy lockPolicy;
   final MatchReportRetryButton retry;
 
   static const _recentMeetingCount = 5;
@@ -227,10 +266,19 @@ class _HeadToHeadBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
+    if (lockPolicy.isLocked(8)) {
+      return _LockedExtendedBlockCard(
+        title: l10n.soccerH2h,
+        icon: TsIcons.groups,
+        lockPolicy: lockPolicy,
+        placeholder: SoccerReportBlockPlaceholders.headToHead(context),
+      );
+    }
+
     return _ExtendedReportBlockCard(
       title: l10n.soccerH2h,
       icon: TsIcons.groups,
-      child: h2hAsync.when(
+      child: h2hAsync!.when(
         loading: () => const _ExtendedReportBlockSkeleton(),
         error: (error, _) => _ExtendedReportBlockFailure(
           retry: retry,
@@ -280,24 +328,35 @@ class _RecentFormBlock extends StatelessWidget {
   const _RecentFormBlock({
     required this.homeAsync,
     required this.awayAsync,
+    required this.lockPolicy,
     required this.retry,
   });
 
-  final AsyncValue<SoccerTeamStatsParsed> homeAsync;
-  final AsyncValue<SoccerTeamStatsParsed> awayAsync;
+  final AsyncValue<SoccerTeamStatsParsed>? homeAsync;
+  final AsyncValue<SoccerTeamStatsParsed>? awayAsync;
+  final SoccerReportLockPolicy lockPolicy;
   final MatchReportRetryButton retry;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
+    if (lockPolicy.isLocked(9)) {
+      return _LockedExtendedBlockCard(
+        title: l10n.soccerRecentForm,
+        icon: TsIcons.trendingUp,
+        lockPolicy: lockPolicy,
+        placeholder: SoccerReportBlockPlaceholders.recentForm(l10n),
+      );
+    }
+
     return _ExtendedReportBlockCard(
       title: l10n.soccerRecentForm,
       icon: TsIcons.trendingUp,
       child: _combineTeamStats(
         context: context,
-        homeAsync: homeAsync,
-        awayAsync: awayAsync,
+        homeAsync: homeAsync!,
+        awayAsync: awayAsync!,
         retry: retry,
         hasData: (home, away) => home.hasFormData || away.hasFormData,
         emptyBuilder: () => TsEmptyState(
@@ -335,6 +394,33 @@ class _RecentFormBlock extends StatelessWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _LockedExtendedBlockCard extends StatelessWidget {
+  const _LockedExtendedBlockCard({
+    required this.title,
+    required this.icon,
+    required this.lockPolicy,
+    required this.placeholder,
+  });
+
+  final String title;
+  final TsIconSpec icon;
+  final SoccerReportLockPolicy lockPolicy;
+  final Widget placeholder;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ExtendedReportBlockCard(
+      title: title,
+      icon: icon,
+      child: TsLockedBlock(
+        label: lockPolicy.lockLabel,
+        onTap: lockPolicy.onTap,
+        child: placeholder,
       ),
     );
   }

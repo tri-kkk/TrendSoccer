@@ -185,7 +185,6 @@ final soccerH2HProvider = FutureProvider.autoDispose
 
 final soccerH2HAnalysisProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, SoccerAnalysisParams>((ref, params) async {
-  ref.watch(soccerPredictionProvider(params));
   return ref.read(soccerServiceProvider).getMatchH2HAnalysis(
         homeTeam: params.homeTeam,
         awayTeam: params.awayTeam,
@@ -194,7 +193,6 @@ final soccerH2HAnalysisProvider = FutureProvider.autoDispose
 
 final homeTeamStatsProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, SoccerAnalysisParams>((ref, params) async {
-  ref.watch(soccerPredictionProvider(params));
   final teamId = params.homeTeamId;
   if (teamId == null || params.leagueCode.isEmpty) {
     return {};
@@ -208,7 +206,6 @@ final homeTeamStatsProvider = FutureProvider.autoDispose
 
 final awayTeamStatsProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, SoccerAnalysisParams>((ref, params) async {
-  ref.watch(soccerPredictionProvider(params));
   final teamId = params.awayTeamId;
   if (teamId == null || params.leagueCode.isEmpty) {
     return {};
@@ -229,19 +226,46 @@ void invalidateSoccerMatchReport(WidgetRef ref, SoccerAnalysisParams params) {
   ref.invalidate(soccerH2HAnalysisProvider(params));
 }
 
-Future<void> waitForSoccerMatchReport(WidgetRef ref, SoccerAnalysisParams params) {
+Future<void> waitForSoccerMatchReport(
+  WidgetRef ref,
+  SoccerAnalysisParams params, {
+  bool fetchPrediction = true,
+  bool fetchTeamStats = true,
+  bool fetchH2h = true,
+}) {
   return Future.wait<void>([
-    ref.read(soccerPredictionProvider(params).future),
-    ref.read(homeTeamStatsProvider(params).future),
-    ref.read(awayTeamStatsProvider(params).future),
-    ref.read(soccerH2HAnalysisProvider(params).future),
+    if (fetchPrediction) ref.read(soccerPredictionProvider(params).future),
+    if (fetchTeamStats) ref.read(homeTeamStatsProvider(params).future),
+    if (fetchTeamStats) ref.read(awayTeamStatsProvider(params).future),
+    if (fetchH2h) ref.read(soccerH2HAnalysisProvider(params).future),
   ]);
 }
 
-Future<void> refreshSoccerMatchReport(WidgetRef ref, SoccerAnalysisParams params) async {
-  invalidateSoccerMatchReport(ref, params);
+Future<void> refreshSoccerMatchReport(
+  WidgetRef ref,
+  SoccerAnalysisParams params, {
+  bool fetchPrediction = true,
+  bool fetchTeamStats = true,
+  bool fetchH2h = true,
+}) async {
+  if (fetchPrediction) {
+    ref.invalidate(soccerPredictionProvider(params));
+  }
+  if (fetchTeamStats) {
+    ref.invalidate(homeTeamStatsProvider(params));
+    ref.invalidate(awayTeamStatsProvider(params));
+  }
+  if (fetchH2h) {
+    ref.invalidate(soccerH2HAnalysisProvider(params));
+  }
   try {
-    await waitForSoccerMatchReport(ref, params);
+    await waitForSoccerMatchReport(
+      ref,
+      params,
+      fetchPrediction: fetchPrediction,
+      fetchTeamStats: fetchTeamStats,
+      fetchH2h: fetchH2h,
+    );
   } on Object {
     // RefreshIndicator must complete normally; failure UI comes from provider state.
   }
