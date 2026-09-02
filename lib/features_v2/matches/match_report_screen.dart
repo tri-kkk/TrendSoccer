@@ -74,7 +74,7 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
       isGuest: auth.isGuest,
       hasFullAccess: auth.hasFullAccess,
       guestFactBlocksUnlocked: _guestFactBlocksUnlocked,
-      onGuestTap: () => context.go('/login'),
+      onGuestTap: () => context.push('/login'),
       onSubscribeTap: () => context.go('/menu/subscribe'),
     );
 
@@ -285,7 +285,7 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
             isGuest: auth.isGuest,
             hasFullAccess: auth.hasFullAccess,
             guestFactBlocksUnlocked: _guestFactBlocksUnlocked,
-            onGuestTap: () => context.go('/login'),
+            onGuestTap: () => context.push('/login'),
             onSubscribeTap: () => context.go('/menu/subscribe'),
           )
         : null;

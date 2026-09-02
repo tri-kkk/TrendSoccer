@@ -191,7 +191,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
       appBar: TsAppBar(
         type: isGuest ? TsAppBarType.homeGuest : TsAppBarType.homeMember,
         authLabel: 'Log in',
-        onAuthTap: isGuest ? () => context.go('/login') : null,
+        onAuthTap: isGuest ? () => context.push('/login') : null,
         tierLabel: PlanTierLabel.forPlanType(auth.planType),
         onAvatarTap: null,
       ),
@@ -210,7 +210,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                 title: 'Start your 48-hour free trial',
                 subtitle: 'Sign up to unlock full analysis reports.',
                 actionLabel: 'Sign up',
-                onAction: () => context.go('/login'),
+                onAction: () => context.push('/login'),
               ),
               const SizedBox(height: TsSpacing.lg),
               _menuGroup(

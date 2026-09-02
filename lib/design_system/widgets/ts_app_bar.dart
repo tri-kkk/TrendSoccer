@@ -14,6 +14,8 @@ import 'package:trendsoccer/design_system/widgets/ts_button.dart';
 enum TsAppBarType { title, back, homeGuest, homeMember }
 
 class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
+  static const double toolbarHeight = 56;
+
   const TsAppBar({
     this.type = TsAppBarType.title,
     this.title,
@@ -34,7 +36,7 @@ class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onAvatarTap;
 
   @override
-  Size get preferredSize => const Size.fromHeight(56);
+  Size get preferredSize => const Size.fromHeight(toolbarHeight);
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +47,7 @@ class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
       child: SafeArea(
         bottom: false,
         child: SizedBox(
-          height: 56,
+          height: toolbarHeight,
           child: switch (type) {
           TsAppBarType.title => Padding(
               padding: const EdgeInsets.all(TsSpacing.lg),

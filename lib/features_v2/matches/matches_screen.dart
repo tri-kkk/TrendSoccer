@@ -1372,7 +1372,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
       appBar: TsAppBar(
         type: isGuest ? TsAppBarType.homeGuest : TsAppBarType.homeMember,
         authLabel: 'Log in',
-        onAuthTap: () => context.go('/login'),
+        onAuthTap: () => context.push('/login'),
         tierLabel: PlanTierLabel.forPlanType(auth.planType),
       ),
       body: RefreshIndicator(

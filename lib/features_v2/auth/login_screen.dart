@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/design_system/icons/ts_logo.dart';
 import 'package:trendsoccer/design_system/icons/ts_social_symbol.dart';
 import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
+import 'package:trendsoccer/design_system/widgets/ts_app_bar.dart';
 import 'package:trendsoccer/design_system/widgets/ts_button.dart';
 import 'package:trendsoccer/design_system/widgets/ts_toast.dart';
 
@@ -21,6 +23,10 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _busy = false;
+
+  static const _heroBlockTopBeforeAppBar = 180;
+  static const _heroBlockTop =
+      _heroBlockTopBeforeAppBar - TsAppBar.toolbarHeight;
 
   @override
   void initState() {
@@ -112,19 +118,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           context.go('/home');
         };
 
+  void _handleBack() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/home');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
+    final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      backgroundColor: c.canvas,
-      body: SafeArea(
-        child: Stack(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _handleBack();
+      },
+      child: Scaffold(
+        backgroundColor: c.canvas,
+        appBar: TsAppBar(
+          type: TsAppBarType.back,
+          title: l10n.loginAppBarTitle,
+          onBack: _handleBack,
+        ),
+        body: SafeArea(
+          top: false,
+          child: Stack(
           children: [
             Positioned(
               left: TsSpacing.lg,
               right: TsSpacing.lg,
-              top: 180,
+              top: _heroBlockTop,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -182,6 +209,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
