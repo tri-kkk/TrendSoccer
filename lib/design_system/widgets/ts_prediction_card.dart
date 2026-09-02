@@ -23,6 +23,7 @@ class TsPredictionCard extends StatelessWidget {
     this.homeLabel,
     this.drawLabel,
     this.awayLabel,
+    this.line = TsGaugeLine.threeWay,
     super.key,
   });
 
@@ -37,6 +38,7 @@ class TsPredictionCard extends StatelessWidget {
   final String? homeLabel;
   final String? drawLabel;
   final String? awayLabel;
+  final TsGaugeLine line;
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +90,7 @@ class TsPredictionCard extends StatelessWidget {
             home: homeFraction!,
             draw: drawFraction ?? 0,
             away: awayFraction ?? 0,
+            line: line,
             homeLabel: homeLabel,
             drawLabel: drawLabel,
             awayLabel: awayLabel,
