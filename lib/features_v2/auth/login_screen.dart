@@ -51,7 +51,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         context.go('/signup/terms');
         return;
       }
-      context.go('/home');
+      _handleBack();
     } on AuthLoginException catch (e) {
       debugPrint('[login] AuthLoginException reason=${e.reason} cause=${e.cause}');
       if (e.reason == 'cancelled') return;
