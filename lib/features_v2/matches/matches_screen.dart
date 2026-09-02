@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 
 import 'package:trendsoccer/core/assets/ts_assets.dart';
 import 'package:trendsoccer/core/constants/alarm_preference_keys.dart';
+import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/models/fixture_models_v2.dart';
 import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
@@ -20,6 +21,7 @@ import 'package:trendsoccer/core/utils/error_resolver.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/core/utils/league_supports_analysis.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
+import 'package:trendsoccer/core/utils/plan_tier_label.dart';
 import 'package:trendsoccer/core/utils/notification_permission_gate.dart';
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
@@ -1302,7 +1304,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
     final auth = ref.watch(authProvider);
-    final hideMonetisation = auth.isPremium || auth.isTrial;
+    final isGuest = auth.planType == PlanType.none;
 
     final sport = ref.watch(fixtureSelectedSportProvider);
     final selectedDateStr = ref.watch(fixtureSelectedDateProvider);
@@ -1368,10 +1370,10 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
     return Scaffold(
       backgroundColor: c.canvas,
       appBar: TsAppBar(
-        type: hideMonetisation ? TsAppBarType.homeMember : TsAppBarType.homeGuest,
+        type: isGuest ? TsAppBarType.homeGuest : TsAppBarType.homeMember,
         authLabel: 'Log in',
         onAuthTap: () => context.go('/login'),
-        tierLabel: 'PREMIUM',
+        tierLabel: PlanTierLabel.forPlanType(auth.planType),
       ),
       body: RefreshIndicator(
         onRefresh: _onMatchesRefresh,

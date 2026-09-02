@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:trendsoccer/core/assets/ts_assets.dart';
+import 'package:trendsoccer/core/models/auth_state.dart';
 import 'package:trendsoccer/core/models/premium_pick_stats.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
@@ -17,6 +18,7 @@ import 'package:trendsoccer/core/providers/news_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/services/soccer_service.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
+import 'package:trendsoccer/core/utils/plan_tier_label.dart';
 import 'package:trendsoccer/core/utils/relative_time.dart';
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icon_spec.dart';
@@ -101,6 +103,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
     final auth = ref.watch(authProvider);
+    final isGuest = auth.planType == PlanType.none;
     // Trial users already have access: member app bar, no upsell, no ads.
     final hideMonetisation = auth.isPremium || auth.isTrial;
     final showSoccerAnalysisBlock = ref.watch(
@@ -195,10 +198,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       backgroundColor: c.canvas,
       appBar: TsAppBar(
-        type: hideMonetisation ? TsAppBarType.homeMember : TsAppBarType.homeGuest,
+        type: isGuest ? TsAppBarType.homeGuest : TsAppBarType.homeMember,
         authLabel: 'Log in',
         onAuthTap: () => context.go('/login'),
-        tierLabel: 'PREMIUM',
+        tierLabel: PlanTierLabel.forPlanType(auth.planType),
       ),
       body: RefreshIndicator(
         onRefresh: _onHomeRefresh,

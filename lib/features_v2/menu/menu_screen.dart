@@ -9,6 +9,7 @@ import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/language_provider.dart';
 import 'package:trendsoccer/core/providers/theme_provider.dart';
 import 'package:trendsoccer/core/utils/notification_permission_gate.dart';
+import 'package:trendsoccer/core/utils/plan_tier_label.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
@@ -191,7 +192,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
         type: isGuest ? TsAppBarType.homeGuest : TsAppBarType.homeMember,
         authLabel: 'Log in',
         onAuthTap: isGuest ? () => context.go('/login') : null,
-        tierLabel: _tierLabel(auth.planType),
+        tierLabel: PlanTierLabel.forPlanType(auth.planType),
         onAvatarTap: null,
       ),
       body: SingleChildScrollView(
@@ -364,13 +365,6 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
       child: Column(children: items),
     );
   }
-
-  String _tierLabel(PlanType planType) => switch (planType) {
-        PlanType.free => 'FREE',
-        PlanType.trial => 'TRIAL',
-        PlanType.premium => 'PREMIUM',
-        PlanType.none => 'FREE',
-      };
 
   TsPlan _tsPlan(PlanType planType) => switch (planType) {
         PlanType.free => TsPlan.free,
