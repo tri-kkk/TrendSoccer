@@ -11,6 +11,8 @@ import 'package:trendsoccer/core/providers/baseball_match_report_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_match_report_provider.dart';
 import 'package:trendsoccer/core/utils/baseball_status.dart';
 import 'package:trendsoccer/core/utils/error_resolver.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/core/utils/league_supports_analysis.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/core/utils/match_date_formatter.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
@@ -370,45 +372,81 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
     );
   }
 
+  bool _baseballLeagueSupportsReport(String? leagueCode) =>
+      leagueSupportsAnalysis('baseball', leagueCode);
+
+  Widget _buildUnsupportedBaseballReport(BuildContext context) {
+    final l10n = context.l10n;
+    return TsEmptyState(
+      type: TsEmptyType.noData,
+      title: l10n.matchReportTitle,
+      description: l10n.analysisEmpty,
+    );
+  }
+
+  MatchHeaderData? _resolveBaseballHeader(
+    Map<String, dynamic> detail,
+    int matchId,
+  ) {
+    MatchHeaderData? header = widget.initialHeader;
+    if (detail.isNotEmpty) {
+      final apiHeader = MatchHeaderData.fromBaseballMatchDetail(
+        detail,
+        matchId: matchId,
+      );
+      header = (header ?? apiHeader).mergeWith(apiHeader);
+    }
+    return header;
+  }
+
+  Widget _buildBaseballReportContent(WidgetRef ref, int matchId) {
+    final detailAsync = ref.watch(baseballMatchDetailProvider(matchId));
+
+    return detailAsync.when(
+      data: (detail) {
+        final header = _resolveBaseballHeader(detail, matchId);
+        if (header == null) {
+          return const _MatchHeroSkeleton();
+        }
+        if (!_baseballLeagueSupportsReport(header.leagueCode)) {
+          return _buildUnsupportedBaseballReport(context);
+        }
+        return _MatchReportHero(header: header, sport: widget.sport);
+      },
+      loading: () {
+        final initialHeader = widget.initialHeader;
+        if (initialHeader != null &&
+            !_baseballLeagueSupportsReport(initialHeader.leagueCode)) {
+          return _buildUnsupportedBaseballReport(context);
+        }
+        if (initialHeader != null) {
+          return _MatchReportHero(
+            header: initialHeader,
+            sport: widget.sport,
+          );
+        }
+        return const _MatchHeroSkeleton();
+      },
+      error: (_, _) {
+        final initialHeader = widget.initialHeader;
+        if (initialHeader != null &&
+            !_baseballLeagueSupportsReport(initialHeader.leagueCode)) {
+          return _buildUnsupportedBaseballReport(context);
+        }
+        if (initialHeader != null) {
+          return _MatchReportHero(
+            header: initialHeader,
+            sport: widget.sport,
+          );
+        }
+        return const _MatchHeroSkeleton();
+      },
+    );
+  }
+
   Widget _buildHero(WidgetRef ref, int? numericMatchId) {
     if (widget.sport == 'baseball' && numericMatchId != null) {
-      final detailAsync = ref.watch(
-        baseballMatchDetailProvider(numericMatchId),
-      );
-      return detailAsync.when(
-        data: (detail) {
-          MatchHeaderData? header = widget.initialHeader;
-          if (detail.isNotEmpty) {
-            final apiHeader = MatchHeaderData.fromBaseballMatchDetail(
-              detail,
-              matchId: numericMatchId,
-            );
-            header = (header ?? apiHeader).mergeWith(apiHeader);
-          }
-          if (header == null) {
-            return const _MatchHeroSkeleton();
-          }
-          return _MatchReportHero(header: header, sport: widget.sport);
-        },
-        loading: () {
-          if (widget.initialHeader != null) {
-            return _MatchReportHero(
-              header: widget.initialHeader!,
-              sport: widget.sport,
-            );
-          }
-          return const _MatchHeroSkeleton();
-        },
-        error: (_, _) {
-          if (widget.initialHeader != null) {
-            return _MatchReportHero(
-              header: widget.initialHeader!,
-              sport: widget.sport,
-            );
-          }
-          return const _MatchHeroSkeleton();
-        },
-      );
+      return _buildBaseballReportContent(ref, numericMatchId);
     }
 
     if (widget.initialHeader != null) {

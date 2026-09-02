@@ -4,6 +4,7 @@ import 'package:trendsoccer/core/models/baseball_models.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
+import 'package:trendsoccer/core/utils/league_supports_analysis.dart';
 import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
 
 /// Cap for the home "today's matches" carousel (Figma shows five).
@@ -143,7 +144,8 @@ HomeMatchPreview _homeMatchPreviewFromBaseball(BaseballAnalysisCard card) {
     homeEmblemUrl: card.homeTeamLogo,
     awayEmblemUrl: card.awayTeamLogo,
     kickoffUtc: kickoffUtc,
-    hasAnalysis: card.aiPick?.trim().isNotEmpty == true,
+    hasAnalysis: card.aiPick?.trim().isNotEmpty == true &&
+        leagueSupportsAnalysis('baseball', card.league),
   );
 }
 

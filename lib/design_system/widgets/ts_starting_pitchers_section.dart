@@ -49,9 +49,12 @@ class TsStartingPitchersSection extends StatefulWidget {
     required this.away,
     required this.versusLabel,
     required this.stats,
+    this.secondaryStats = const [],
     this.prevSeasonStats = const [],
     this.prevSeasonTitleLabel,
     this.prevSeasonSummaryLabel,
+    this.showSecondaryStats = false,
+    this.showComments = true,
     super.key,
   });
 
@@ -59,9 +62,12 @@ class TsStartingPitchersSection extends StatefulWidget {
   final TsPitcherProfile away;
   final String versusLabel;
   final List<TsStatComparison> stats;
+  final List<TsStatComparison> secondaryStats;
   final List<TsStatComparison> prevSeasonStats;
   final String? prevSeasonTitleLabel;
   final String? prevSeasonSummaryLabel;
+  final bool showSecondaryStats;
+  final bool showComments;
 
   @override
   State<TsStartingPitchersSection> createState() =>
@@ -74,7 +80,11 @@ class _TsStartingPitchersSectionState extends State<TsStartingPitchersSection> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
-    final showComments = _hasComments(widget.home) && _hasComments(widget.away);
+    final showCommentSection = widget.showComments &&
+        _hasComments(widget.home) &&
+        _hasComments(widget.away);
+    final showSecondaryStatRows =
+        widget.showSecondaryStats && widget.secondaryStats.isNotEmpty;
 
     return ConstrainedBox(
       constraints: const BoxConstraints(minWidth: 280, minHeight: 280),
@@ -102,7 +112,18 @@ class _TsStartingPitchersSectionState extends State<TsStartingPitchersSection> {
               ],
             ],
           ),
-          if (showComments) ...[
+          if (showSecondaryStatRows) ...[
+            const SizedBox(height: TsSpacing.sm),
+            Column(
+              children: [
+                for (var i = 0; i < widget.secondaryStats.length; i++) ...[
+                  if (i > 0) const SizedBox(height: TsSpacing.xs),
+                  _statRow(widget.secondaryStats[i]),
+                ],
+              ],
+            ),
+          ],
+          if (showCommentSection) ...[
             const SizedBox(height: TsSpacing.lg),
             Row(
               children: [
