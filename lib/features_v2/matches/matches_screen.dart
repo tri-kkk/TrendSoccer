@@ -1083,10 +1083,15 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
               ? _baseballLiveStatusLabel(match.rawStatus)
               : _soccerLiveStatusLabel(match, live),
         ),
-      'finished' => const _MatchRowPresentation(
-          status: TsMatchRowStatus.finished,
-          timeLabel: 'FT',
-        ),
+      'finished' => match.homeScore == null && match.awayScore == null
+          ? _MatchRowPresentation(
+              status: TsMatchRowStatus.scheduled,
+              timeLabel: _scheduledKickoffLabel(match),
+            )
+          : const _MatchRowPresentation(
+              status: TsMatchRowStatus.finished,
+              timeLabel: 'FT',
+            ),
       'scheduled' => _MatchRowPresentation(
           status: TsMatchRowStatus.scheduled,
           timeLabel: _scheduledKickoffLabel(match),

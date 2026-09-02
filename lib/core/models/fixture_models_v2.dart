@@ -161,6 +161,21 @@ class FixtureMatch {
     final awayTeam = awayTeams.$1;
     final awayTeamKo = awayTeams.$2;
 
+    final homeScore = _parseInt(
+      json['finalScoreHome'] ??
+          json['final_score_home'] ??
+          json['homeScore'] ??
+          json['home_score'] ??
+          json['homeGoals'],
+    );
+    final awayScore = _parseInt(
+      json['finalScoreAway'] ??
+          json['final_score_away'] ??
+          json['awayScore'] ??
+          json['away_score'] ??
+          json['awayGoals'],
+    );
+
     return FixtureMatch(
       matchId: _parseInt(
             json['match_id'] ?? json['matchId'] ?? json['id'] ?? json['fixtureId'],
@@ -194,20 +209,8 @@ class FixtureMatch {
       matchTimestamp: resolvedTimestamp,
       status: normalizedStatus,
       rawStatus: rawStatus,
-      homeScore: _parseInt(
-        json['finalScoreHome'] ??
-            json['final_score_home'] ??
-            json['homeScore'] ??
-            json['home_score'] ??
-            json['homeGoals'],
-      ),
-      awayScore: _parseInt(
-        json['finalScoreAway'] ??
-            json['final_score_away'] ??
-            json['awayScore'] ??
-            json['away_score'] ??
-            json['awayGoals'],
-      ),
+      homeScore: homeScore,
+      awayScore: awayScore,
       sport: _readString(json, const ['sport']) ?? sport,
     );
   }
