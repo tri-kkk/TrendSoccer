@@ -666,6 +666,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fixtureNoMatchesOnDate => 'No matches scheduled on this date.';
 
   @override
+  String get fixtureLeagueNoReportToast =>
+      'This league does not provide match reports.';
+
+  @override
+  String get fixtureMatchReportScheduledOnlyToast =>
+      'Match reports are only available for scheduled matches.';
+
+  @override
   String get fixturePostponed => 'Postponed';
 
   @override

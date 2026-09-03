@@ -221,6 +221,8 @@
   "fixtureLoadFailed": "경기 일정을 불러오지 못했습니다.",
   "fixtureNoMatches": "경기가 없습니다",
   "fixtureNoMatchesOnDate": "선택한 날짜에 예정된 경기가 없습니다.",
+  "fixtureLeagueNoReportToast": "이 리그는 매치 리포트를 제공하지 않습니다.",
+  "fixtureMatchReportScheduledOnlyToast": "매치 리포트는 예정된 경기에서만 확인할 수 있습니다.",
   "fixturePostponed": "연기",
   "matchCancelled": "취소",
   "matchPostponed": "연기",

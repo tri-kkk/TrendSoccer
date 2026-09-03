@@ -652,6 +652,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fixtureNoMatchesOnDate => '선택한 날짜에 예정된 경기가 없습니다.';
 
   @override
+  String get fixtureLeagueNoReportToast => '이 리그는 매치 리포트를 제공하지 않습니다.';
+
+  @override
+  String get fixtureMatchReportScheduledOnlyToast =>
+      '매치 리포트는 예정된 경기에서만 확인할 수 있습니다.';
+
+  @override
   String get fixturePostponed => '연기';
 
   @override

@@ -221,6 +221,8 @@
   "fixtureLoadFailed": "Could not load fixtures.",
   "fixtureNoMatches": "No matches",
   "fixtureNoMatchesOnDate": "No matches scheduled on this date.",
+  "fixtureLeagueNoReportToast": "This league does not provide match reports.",
+  "fixtureMatchReportScheduledOnlyToast": "Match reports are only available for scheduled matches.",
   "fixturePostponed": "Postponed",
   "matchCancelled": "Cancelled",
   "matchPostponed": "Postponed",

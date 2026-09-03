@@ -1232,13 +1232,14 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
   }
 
   void _onMatchRowTap(FixtureMatch match) {
+    final l10n = context.l10n;
     final hasAnalysis =
         leagueSupportsAnalysis(match.sport, match.leagueKey);
 
     if (!hasAnalysis) {
       showTsToast(
         context,
-        'This league has no match analysis.',
+        l10n.fixtureLeagueNoReportToast,
         TsToastType.info,
       );
       return;
@@ -1247,7 +1248,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
     if (match.status != 'scheduled') {
       showTsToast(
         context,
-        'Match reports are available before kickoff.',
+        l10n.fixtureMatchReportScheduledOnlyToast,
         TsToastType.info,
       );
       return;

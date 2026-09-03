@@ -1304,6 +1304,18 @@ abstract class AppLocalizations {
   /// **'선택한 날짜에 예정된 경기가 없습니다.'**
   String get fixtureNoMatchesOnDate;
 
+  /// No description provided for @fixtureLeagueNoReportToast.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 리그는 매치 리포트를 제공하지 않습니다.'**
+  String get fixtureLeagueNoReportToast;
+
+  /// No description provided for @fixtureMatchReportScheduledOnlyToast.
+  ///
+  /// In ko, this message translates to:
+  /// **'매치 리포트는 예정된 경기에서만 확인할 수 있습니다.'**
+  String get fixtureMatchReportScheduledOnlyToast;
+
   /// No description provided for @fixturePostponed.
   ///
   /// In ko, this message translates to:
