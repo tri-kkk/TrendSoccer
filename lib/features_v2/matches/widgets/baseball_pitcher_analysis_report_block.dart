@@ -114,14 +114,51 @@ List<String> _parseAnalysisSentences(Map<String, dynamic> response) {
     final trimmedLine = line.trim();
     if (trimmedLine.isEmpty) continue;
 
-    for (final part in trimmedLine.split(_analysisSentenceSplitPattern)) {
-      final sentence = part.trim();
-      if (sentence.isNotEmpty) {
-        sentences.add(sentence);
-      }
+    for (final part in _mergeAbbreviationSplits(
+      trimmedLine
+          .split(_analysisSentenceSplitPattern)
+          .map((segment) => segment.trim())
+          .where((segment) => segment.isNotEmpty)
+          .toList(),
+    )) {
+      sentences.add(part);
     }
   }
   return sentences;
+}
+
+List<String> _mergeAbbreviationSplits(List<String> fragments) {
+  if (fragments.length <= 1) return fragments;
+
+  final merged = <String>[];
+  var index = 0;
+  while (index < fragments.length) {
+    var current = fragments[index];
+    while (
+      index < fragments.length - 1 &&
+      _fragmentEndsWithAbbreviation(current)
+    ) {
+      index++;
+      current = '$current ${fragments[index]}';
+    }
+    merged.add(current);
+    index++;
+  }
+  return merged;
+}
+
+bool _fragmentEndsWithAbbreviation(String fragment) {
+  final trimmed = fragment.trim();
+  if (!trimmed.endsWith('.')) return false;
+
+  final match = RegExp(r'(\S+)\.$').firstMatch(trimmed);
+  if (match == null) return false;
+
+  final word = match.group(1)!;
+  if (word.isEmpty || word.length > 2) return false;
+
+  final first = word.codeUnitAt(0);
+  return first >= 0x41 && first <= 0x5A;
 }
 
 String _normalizeLeagueCode(String? league) {
