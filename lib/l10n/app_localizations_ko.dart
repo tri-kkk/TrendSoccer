@@ -174,6 +174,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get baseballAiMatchAnalysis => 'AI 경기 분석';
 
   @override
+  String get baseballAnalysisHeldUntilStarters => '선발 투수가 발표되면 분석이 제공됩니다.';
+
+  @override
   String get baseballAiPremiumHint => 'AI 기반 심층 분석은 프리미엄 구독 후 이용할 수 있습니다.';
 
   @override

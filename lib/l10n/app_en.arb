@@ -71,6 +71,7 @@
   "baseballAiLoading": "Loading premium analysis...",
   "baseballAiLoadingHint": "First analysis may take 10–30 seconds.",
   "baseballAiMatchAnalysis": "AI match analysis",
+  "baseballAnalysisHeldUntilStarters": "Analysis will be available once starting pitchers are announced.",
   "baseballAiPremiumHint": "In-depth AI analysis is available with a Premium subscription.",
   "baseballAiSummary": "AI analysis summary",
   "baseballAiSummaryDefault": "AI analysis data",

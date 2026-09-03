@@ -179,6 +179,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get baseballAiMatchAnalysis => 'AI match analysis';
 
   @override
+  String get baseballAnalysisHeldUntilStarters =>
+      'Analysis will be available once starting pitchers are announced.';
+
+  @override
   String get baseballAiPremiumHint =>
       'In-depth AI analysis is available with a Premium subscription.';
 

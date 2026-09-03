@@ -86,6 +86,19 @@ BaseballStartingPitchersParsed parseBaseballStartingPitchersFromMatchDetail(
   );
 }
 
+/// True when match detail shows at least one starting pitcher as TBD / undecided.
+bool baseballMatchHasUndecidedStarter({
+  required Map<String, dynamic>? matchDetail,
+  required String leagueCode,
+}) {
+  if (matchDetail == null || matchDetail.isEmpty) return false;
+  final parsed = parseBaseballStartingPitchersFromMatchDetail(
+    matchDetail,
+    leagueCode: leagueCode,
+  );
+  return parsed.home.isNameTbd || parsed.away.isNameTbd;
+}
+
 /// Match-detail base merged with stats-API overlay (stats win when present).
 BaseballStartingPitchersParsed buildBaseballStartingPitchersParsed({
   required String leagueCode,

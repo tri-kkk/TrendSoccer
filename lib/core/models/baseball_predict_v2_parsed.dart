@@ -81,6 +81,8 @@ class BaseballPredictV2Parsed {
     this.homeTeamKo,
     this.awayTeamKo,
     this.league,
+    this.summary,
+    this.summaryEn,
   });
 
   final BaseballPickDirection pickDirection;
@@ -103,6 +105,8 @@ class BaseballPredictV2Parsed {
   final String? homeTeamKo;
   final String? awayTeamKo;
   final String? league;
+  final String? summary;
+  final String? summaryEn;
 }
 
 /// Parses baseball predict payload for v2 match-report blocks.
@@ -110,7 +114,7 @@ class BaseballPredictV2Parsed {
 /// [predict] is the POST `/api/baseball/predict` response.
 /// [matchDetail] is the GET `/api/baseball/matches?id=` response (or equivalent
 /// wrapped map). It supplies team names, [aiPrediction] win probabilities,
-/// [odds.overUnderLine], and [aiPick] when absent from [predict].
+/// [odds.overUnderLine], and match-detail win probabilities when absent from [predict].
 BaseballPredictV2Parsed parseBaseballPredictV2(
   Map<String, dynamic> predict, {
   Map<String, dynamic>? matchDetail,
@@ -150,12 +154,15 @@ BaseballPredictV2Parsed parseBaseballPredictV2(
     aiPred?['awayWinProb'] ?? oddsMap['awayWinProb'],
   );
 
-  final pickRaw = _readRawString(
-    match?['aiPick'] ?? aiPred?['pick'] ?? prediction['pick'],
-  );
-  final gradeRaw = _readRawString(
-    match?['aiPick'] ?? aiPred?['grade'] ?? prediction['grade'],
-  );
+  final pickRaw = _readString(aiPred, const ['pick', 'direction', 'pick_direction']) ??
+      _readString(prediction, const ['pick', 'direction', 'pick_direction']) ??
+      _readString(match, const ['pick', 'direction', 'pickDirection', 'pick_direction']);
+  final gradeRaw = _readString(aiPred, const ['grade', 'pick_grade']) ??
+      _readString(prediction, const ['grade', 'pick_grade']) ??
+      _readString(match, const ['grade', 'pickGrade', 'pick_grade']);
+  final summary = _readString(insights, const ['summary']);
+  final summaryEn =
+      _readString(insights, const ['summaryEn', 'summary_en', 'summaryEN']);
 
   final teamForm =
       _readMap(insights, const ['teamForm', 'team_form']) ?? const {};
@@ -255,6 +262,8 @@ BaseballPredictV2Parsed parseBaseballPredictV2(
     homeTeamKo: homeTeamKo,
     awayTeamKo: awayTeamKo,
     league: league,
+    summary: summary,
+    summaryEn: summaryEn,
   );
 }
 

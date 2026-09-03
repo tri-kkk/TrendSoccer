@@ -404,6 +404,12 @@ abstract class AppLocalizations {
   /// **'AI 경기 분석'**
   String get baseballAiMatchAnalysis;
 
+  /// No description provided for @baseballAnalysisHeldUntilStarters.
+  ///
+  /// In ko, this message translates to:
+  /// **'선발 투수가 발표되면 분석이 제공됩니다.'**
+  String get baseballAnalysisHeldUntilStarters;
+
   /// No description provided for @baseballAiPremiumHint.
   ///
   /// In ko, this message translates to:

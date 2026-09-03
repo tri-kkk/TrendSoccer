@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:trendsoccer/core/models/baseball_pitcher_stats_parsed.dart';
 import 'package:trendsoccer/core/models/match_header_data.dart';
 import 'package:trendsoccer/core/providers/baseball_match_report_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_match_report_provider.dart';
@@ -82,9 +83,16 @@ class _BaseballPitcherAnalysisReportBlockState
         data: (response) {
           final sentences = _parseAnalysisSentences(response);
           if (sentences.isEmpty) {
+            final detail =
+                ref.read(baseballMatchDetailProvider(widget.header.matchId)).value;
             return _PitcherAnalysisReportBlockEmpty(
               title: title,
-              description: l10n.baseballPitcherAnalysisNoData,
+              description: baseballMatchHasUndecidedStarter(
+                matchDetail: detail,
+                leagueCode: league,
+              )
+                  ? l10n.baseballAnalysisHeldUntilStarters
+                  : l10n.baseballPitcherAnalysisNoData,
             );
           }
 
