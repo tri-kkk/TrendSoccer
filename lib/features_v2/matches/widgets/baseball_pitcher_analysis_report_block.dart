@@ -80,30 +80,40 @@ class _BaseballPitcherAnalysisReportBlockState
           description: resolveApiError(context, error),
         ),
         data: (response) {
-          final lines = _parseAnalysisLines(response);
-          if (lines.isEmpty) {
+          final sentences = _parseAnalysisSentences(response);
+          if (sentences.isEmpty) {
             return _PitcherAnalysisReportBlockEmpty(
               title: title,
               description: l10n.baseballPitcherAnalysisNoData,
             );
           }
 
-          return _PitcherAnalysisInsightContent(lines: lines);
+          return _PitcherAnalysisInsightContent(sentences: sentences);
         },
       ),
     );
   }
 }
 
-List<String> _parseAnalysisLines(Map<String, dynamic> response) {
+final _analysisSentenceSplitPattern = RegExp(r'(?<=\.)\s+');
+
+List<String> _parseAnalysisSentences(Map<String, dynamic> response) {
   final analysis = response['analysis'];
   if (analysis is! String) return const [];
 
-  return analysis
-      .split('\n')
-      .map((line) => line.trim())
-      .where((line) => line.isNotEmpty)
-      .toList();
+  final sentences = <String>[];
+  for (final line in analysis.split('\n')) {
+    final trimmedLine = line.trim();
+    if (trimmedLine.isEmpty) continue;
+
+    for (final part in trimmedLine.split(_analysisSentenceSplitPattern)) {
+      final sentence = part.trim();
+      if (sentence.isNotEmpty) {
+        sentences.add(sentence);
+      }
+    }
+  }
+  return sentences;
 }
 
 String _normalizeLeagueCode(String? league) {
@@ -115,19 +125,19 @@ String _normalizeLeagueCode(String? league) {
 }
 
 class _PitcherAnalysisInsightContent extends StatelessWidget {
-  const _PitcherAnalysisInsightContent({required this.lines});
+  const _PitcherAnalysisInsightContent({required this.sentences});
 
-  final List<String> lines;
+  final List<String> sentences;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (var i = 0; i < lines.length; i++) ...[
+        for (var i = 0; i < sentences.length; i++) ...[
           if (i > 0) const SizedBox(height: TsSpacing.md),
           TsInsightText(
-            text: lines[i],
+            text: sentences[i],
             tone: TsInsightTone.confirmed,
           ),
         ],
