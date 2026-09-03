@@ -52,7 +52,6 @@ class TsStartingPitchersSection extends StatefulWidget {
     this.secondaryStats = const [],
     this.prevSeasonStats = const [],
     this.prevSeasonTitleLabel,
-    this.prevSeasonSummaryLabel,
     this.showSecondaryStats = false,
     this.showComments = true,
     super.key,
@@ -65,7 +64,6 @@ class TsStartingPitchersSection extends StatefulWidget {
   final List<TsStatComparison> secondaryStats;
   final List<TsStatComparison> prevSeasonStats;
   final String? prevSeasonTitleLabel;
-  final String? prevSeasonSummaryLabel;
   final bool showSecondaryStats;
   final bool showComments;
 
@@ -81,8 +79,7 @@ class _TsStartingPitchersSectionState extends State<TsStartingPitchersSection> {
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
     final showCommentSection = widget.showComments &&
-        _hasComments(widget.home) &&
-        _hasComments(widget.away);
+        (_hasComments(widget.home) || _hasComments(widget.away));
     final showSecondaryStatRows =
         widget.showSecondaryStats && widget.secondaryStats.isNotEmpty;
 
@@ -126,6 +123,7 @@ class _TsStartingPitchersSectionState extends State<TsStartingPitchersSection> {
           if (showCommentSection) ...[
             const SizedBox(height: TsSpacing.lg),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(child: _chipColumn(c, widget.home)),
                 const SizedBox(width: TsSpacing.md),
@@ -143,7 +141,7 @@ class _TsStartingPitchersSectionState extends State<TsStartingPitchersSection> {
   }
 
   bool _hasComments(TsPitcherProfile profile) =>
-      profile.strengths.isNotEmpty && profile.weaknesses.isNotEmpty;
+      profile.strengths.isNotEmpty || profile.weaknesses.isNotEmpty;
 
   Widget _profileColumn(TsThemeColors c, TsPitcherProfile profile) {
     return Column(
@@ -253,15 +251,6 @@ class _TsStartingPitchersSectionState extends State<TsStartingPitchersSection> {
                       style: TsType.labelSBold.copyWith(color: c.textSecondary),
                     ),
                   ),
-                  if (!_prevSeasonExpanded &&
-                      widget.prevSeasonSummaryLabel != null)
-                    Text(
-                      widget.prevSeasonSummaryLabel!,
-                      style: TsType.labelXsMedium.copyWith(
-                        color: c.textTertiary,
-                      ),
-                    ),
-                  const SizedBox(width: TsSpacing.sm),
                   TsIcon(
                     _prevSeasonExpanded
                         ? TsIcons.keyboardArrowUp

@@ -21,7 +21,6 @@ class BaseballPitcherSideParsed {
     this.weaknesses = const [],
     this.summary,
     this.seasonYear,
-    this.prevSeasonYear,
     this.prevEra,
     this.prevWhip,
     this.prevStrikeouts,
@@ -47,7 +46,6 @@ class BaseballPitcherSideParsed {
   final String? summary;
 
   final int? seasonYear;
-  final int? prevSeasonYear;
   final double? prevEra;
   final double? prevWhip;
   final int? prevStrikeouts;
@@ -63,6 +61,58 @@ class BaseballStartingPitchersParsed {
   final BaseballPitcherSideParsed home;
   final BaseballPitcherSideParsed away;
   final int? seasonYear;
+}
+
+/// Base pitcher sides from match detail — names, handedness, photo; no stats.
+BaseballStartingPitchersParsed parseBaseballStartingPitchersFromMatchDetail(
+  Map<String, dynamic> detail, {
+  required String leagueCode,
+}) {
+  final league = _normalizeLeagueCode(leagueCode);
+  final match = _unwrapBaseballMatchDetail(detail);
+
+  return BaseballStartingPitchersParsed(
+    seasonYear: _parseSeasonYear(match['season']),
+    home: _parsePitcherSideFromMatch(
+      match,
+      league: league,
+      isHome: true,
+    ),
+    away: _parsePitcherSideFromMatch(
+      match,
+      league: league,
+      isHome: false,
+    ),
+  );
+}
+
+/// Match-detail base merged with stats-API overlay (stats win when present).
+BaseballStartingPitchersParsed buildBaseballStartingPitchersParsed({
+  required String leagueCode,
+  required Map<String, dynamic> matchDetail,
+  Map<String, dynamic> statsResponse = const {},
+  Map<String, dynamic>? prevStatsResponse,
+}) {
+  final base = parseBaseballStartingPitchersFromMatchDetail(
+    matchDetail,
+    leagueCode: leagueCode,
+  );
+  if (statsResponse.isEmpty &&
+      (prevStatsResponse == null || prevStatsResponse.isEmpty)) {
+    return base;
+  }
+
+  final stats = parseBaseballStartingPitchers(
+    leagueCode: leagueCode,
+    statsResponse: statsResponse,
+    prevStatsResponse: prevStatsResponse,
+  );
+
+  return BaseballStartingPitchersParsed(
+    seasonYear: stats.seasonYear ?? base.seasonYear,
+    home: _mergePitcherSide(base.home, stats.home),
+    away: _mergePitcherSide(base.away, stats.away),
+  );
 }
 
 /// Parses league pitcher-stats payloads into a unified starting-pitchers model.
@@ -87,13 +137,11 @@ BaseballStartingPitchersParsed parseBaseballStartingPitchers({
 
   Map<String, dynamic>? homePrev;
   Map<String, dynamic>? awayPrev;
-  int? rootPrevSeason;
 
   if (league == 'MLB') {
     final prev = prevStatsResponse ?? const <String, dynamic>{};
     homePrev = _readMap(prev, const ['homePitcher']);
     awayPrev = _readMap(prev, const ['awayPitcher']);
-    rootPrevSeason = _parseSeasonYear(prev['season']);
   } else {
     homePrev = _readMap(statsResponse, const ['homePitcherPrev']);
     awayPrev = _readMap(statsResponse, const ['awayPitcherPrev']);
@@ -106,14 +154,12 @@ BaseballStartingPitchersParsed parseBaseballStartingPitchers({
       current: homeCurrent,
       previous: homePrev,
       rootSeasonYear: rootSeason,
-      rootPrevSeasonYear: rootPrevSeason,
     ),
     away: _parsePitcherSide(
       league: league,
       current: awayCurrent,
       previous: awayPrev,
       rootSeasonYear: rootSeason,
-      rootPrevSeasonYear: rootPrevSeason,
     ),
   );
 }
@@ -123,7 +169,6 @@ BaseballPitcherSideParsed _parsePitcherSide({
   required Map<String, dynamic>? current,
   required Map<String, dynamic>? previous,
   required int? rootSeasonYear,
-  required int? rootPrevSeasonYear,
 }) {
   final normalized = _normalizePitcherStatsMap(current);
   final name = _readString(normalized, const [
@@ -179,8 +224,6 @@ BaseballPitcherSideParsed _parsePitcherSide({
 
   final sideSeason = _parseSeasonYear(normalized['season']) ?? rootSeasonYear;
   final prevNormalized = _normalizePitcherStatsMap(previous);
-  final prevSeasonYear = _parseSeasonYear(prevNormalized['season']) ??
-      rootPrevSeasonYear;
 
   return BaseballPitcherSideParsed(
     name: name,
@@ -200,13 +243,149 @@ BaseballPitcherSideParsed _parsePitcherSide({
     weaknesses: weaknesses,
     summary: summary,
     seasonYear: sideSeason,
-    prevSeasonYear: prevSeasonYear,
     prevEra: _parseDouble(_readPitcherStatValue(prevNormalized, 'era')),
     prevWhip: _parseDouble(_readPitcherStatValue(prevNormalized, 'whip')),
     prevStrikeouts: _parseInt(
       _readPitcherStatValue(prevNormalized, 'strikeouts'),
     ),
   );
+}
+
+BaseballPitcherSideParsed _parsePitcherSideFromMatch(
+  Map<String, dynamic> match, {
+  required String league,
+  required bool isHome,
+}) {
+  final prefix = isHome ? 'home' : 'away';
+  final sideMap = _readMap(match, [prefix]) ?? const {};
+  final pitcherMap = _readMap(sideMap, const [
+    'pitcher',
+    'starter',
+    'startingPitcher',
+    'starting_pitcher',
+  ]);
+
+  final name = _readString(match, [
+    '${prefix}Pitcher',
+    '${prefix}_pitcher',
+    '${prefix}PitcherName',
+    '${prefix}_pitcher_name',
+  ]) ??
+      _readString(pitcherMap, const [
+        'name',
+        'fullName',
+        'full_name',
+        'pitcherName',
+        'pitcher_name',
+      ]);
+  final nameKo = _readString(match, [
+    '${prefix}PitcherKo',
+    '${prefix}_pitcher_ko',
+  ]) ??
+      _readString(pitcherMap, const ['nameKo', 'name_ko']);
+  final throwingHand = _readString(pitcherMap, const [
+        'throwingHand',
+        'throwing_hand',
+        'hand',
+        'pitcherType',
+        'pitcher_type',
+      ]) ??
+      _readString(match, [
+        '${prefix}PitcherHand',
+        '${prefix}_pitcher_hand',
+      ]);
+  final pitcherId = _parseInt(
+    match['${prefix}PitcherId'] ??
+        match['${prefix}_pitcher_id'] ??
+        pitcherMap?['id'] ??
+        pitcherMap?['playerId'] ??
+        pitcherMap?['player_id'],
+  );
+  final photoUrl = _resolvePhotoUrl(
+    league: league,
+    photo: _readString(pitcherMap, const [
+          'photo',
+          'photoUrl',
+          'photo_url',
+          'image',
+        ]) ??
+        _readString(match, [
+          '${prefix}PitcherPhoto',
+          '${prefix}_pitcher_photo',
+          '${prefix}PitcherImage',
+          '${prefix}_pitcher_image',
+        ]),
+    pitcherId: pitcherId,
+  );
+
+  return BaseballPitcherSideParsed(
+    name: name,
+    nameKo: nameKo,
+    isNameTbd: _isPitcherTbd(name, nameKo),
+    throwingHand: throwingHand,
+    photoUrl: photoUrl,
+    pitcherId: pitcherId,
+  );
+}
+
+BaseballPitcherSideParsed _mergePitcherSide(
+  BaseballPitcherSideParsed base,
+  BaseballPitcherSideParsed stats,
+) {
+  final name = _preferString(stats.name, base.name);
+  final nameKo = _preferString(stats.nameKo, base.nameKo);
+
+  return BaseballPitcherSideParsed(
+    name: name,
+    nameKo: nameKo,
+    isNameTbd: _isPitcherTbd(name, nameKo),
+    throwingHand: stats.throwingHand ?? base.throwingHand,
+    photoUrl: stats.photoUrl ?? base.photoUrl,
+    pitcherId: stats.pitcherId ?? base.pitcherId,
+    era: stats.era ?? base.era,
+    whip: stats.whip ?? base.whip,
+    strikeoutsPer9: stats.strikeoutsPer9 ?? base.strikeoutsPer9,
+    strikeouts: stats.strikeouts ?? base.strikeouts,
+    wins: stats.wins ?? base.wins,
+    losses: stats.losses ?? base.losses,
+    inningsPitched: stats.inningsPitched ?? base.inningsPitched,
+    strengths: stats.strengths.isNotEmpty ? stats.strengths : base.strengths,
+    weaknesses:
+        stats.weaknesses.isNotEmpty ? stats.weaknesses : base.weaknesses,
+    summary: stats.summary ?? base.summary,
+    seasonYear: stats.seasonYear ?? base.seasonYear,
+    prevEra: stats.prevEra ?? base.prevEra,
+    prevWhip: stats.prevWhip ?? base.prevWhip,
+    prevStrikeouts: stats.prevStrikeouts ?? base.prevStrikeouts,
+  );
+}
+
+String? _preferString(String? primary, String? fallback) {
+  final trimmed = primary?.trim();
+  if (trimmed != null && trimmed.isNotEmpty && trimmed != '-') {
+    return trimmed;
+  }
+  final fallbackTrimmed = fallback?.trim();
+  if (fallbackTrimmed != null &&
+      fallbackTrimmed.isNotEmpty &&
+      fallbackTrimmed != '-') {
+    return fallbackTrimmed;
+  }
+  return primary ?? fallback;
+}
+
+Map<String, dynamic> _unwrapBaseballMatchDetail(Map<String, dynamic> detail) {
+  final match = detail['match'];
+  if (match is Map<String, dynamic>) return match;
+  if (match is Map) return Map<String, dynamic>.from(match);
+
+  if (detail['matches'] is List && (detail['matches'] as List).isNotEmpty) {
+    final first = (detail['matches'] as List).first;
+    if (first is Map<String, dynamic>) return first;
+    if (first is Map) return Map<String, dynamic>.from(first);
+  }
+
+  return detail;
 }
 
 String _normalizeLeagueCode(String league) {
