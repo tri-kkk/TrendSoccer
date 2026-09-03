@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,29 +19,82 @@ import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_starting_pitchers_section.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 
-class BaseballStartingPitchersReportBlock extends ConsumerWidget {
+class BaseballStartingPitchersReportBlock extends ConsumerStatefulWidget {
   const BaseballStartingPitchersReportBlock({
     required this.header,
-    required this.retry,
     super.key,
   });
 
   final MatchHeaderData header;
-  final MatchReportRetryButton retry;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BaseballStartingPitchersReportBlock> createState() =>
+      _BaseballStartingPitchersReportBlockState();
+}
+
+class _BaseballStartingPitchersReportBlockState
+    extends ConsumerState<BaseballStartingPitchersReportBlock> {
+  bool _retryInProgress = false;
+
+  Future<void> _guardedRetry(Future<void> Function() work) async {
+    if (_retryInProgress) return;
+    setState(() => _retryInProgress = true);
+    try {
+      await work();
+    } finally {
+      if (mounted) {
+        setState(() => _retryInProgress = false);
+      }
+    }
+  }
+
+  MatchReportRetryButton _retryButton() {
+    return MatchReportRetryButton(
+      inProgress: _retryInProgress,
+      onPressed: () => unawaited(_guardedRetry(_retryPitchers)),
+    );
+  }
+
+  Future<void> _retryPitchers() async {
+    final matchId = widget.header.matchId;
+    final league = _normalizeLeagueCode(widget.header.leagueCode ?? '');
+
+    BaseballPitcherStatsParams? asianParams;
+    if (league == 'KBO' || league == 'NPB') {
+      final cachedDetail = ref.read(baseballMatchDetailProvider(matchId)).value;
+      if (cachedDetail != null && cachedDetail.isNotEmpty) {
+        asianParams = _asianPitcherStatsParams(cachedDetail, league);
+      }
+    }
+
+    ref.invalidate(baseballMatchDetailProvider(matchId));
+    if (league == 'MLB') {
+      ref.invalidate(mlbPitcherStatsProvider(matchId));
+      ref.invalidate(mlbPitcherStatsPrevProvider(matchId));
+      return;
+    }
+    if (asianParams != null &&
+        (asianParams.homePitcher.isNotEmpty ||
+            asianParams.awayPitcher.isNotEmpty)) {
+      ref.invalidate(baseballPitcherStatsProvider(asianParams));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final league = _normalizeLeagueCode(header.leagueCode ?? '');
+    final league = _normalizeLeagueCode(widget.header.leagueCode ?? '');
     final title = isKoreanLocale(context)
         ? l10n.baseballSectionPitchersKo
         : l10n.baseballSectionPitchers;
+    final retry = _retryButton();
 
     if (league != 'MLB' && league != 'KBO' && league != 'NPB') {
       return const SizedBox.shrink();
     }
 
-    final detailAsync = ref.watch(baseballMatchDetailProvider(header.matchId));
+    final detailAsync =
+        ref.watch(baseballMatchDetailProvider(widget.header.matchId));
 
     return _PitchersReportBlockCard(
       title: title,
@@ -59,9 +114,9 @@ class BaseballStartingPitchersReportBlock extends ConsumerWidget {
 
           if (league == 'MLB') {
             final statsAsync =
-                ref.watch(mlbPitcherStatsProvider(header.matchId));
+                ref.watch(mlbPitcherStatsProvider(widget.header.matchId));
             final prevAsync =
-                ref.watch(mlbPitcherStatsPrevProvider(header.matchId));
+                ref.watch(mlbPitcherStatsPrevProvider(widget.header.matchId));
             return _buildMergedBody(
               context,
               l10n: l10n,
@@ -577,7 +632,7 @@ class _PitchersReportBlockCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TsSectionHeader(title: title, icon: TsIcons.baseball),
+          TsSectionHeader(title: title, icon: TsIcons.groups),
           const SizedBox(height: TsSpacing.md),
           child,
         ],
