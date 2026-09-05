@@ -24,6 +24,7 @@ import 'package:trendsoccer/design_system/widgets/ts_match_hero.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/features_v2/matches/widgets/baseball_ai_match_analysis_report_block.dart';
 import 'package:trendsoccer/features_v2/matches/widgets/baseball_pitcher_analysis_report_block.dart';
+import 'package:trendsoccer/features_v2/matches/widgets/baseball_extended_report_blocks.dart';
 import 'package:trendsoccer/features_v2/matches/widgets/baseball_starting_pitchers_report_block.dart';
 import 'package:trendsoccer/features_v2/matches/widgets/soccer_predict_report_blocks.dart';
 import 'package:trendsoccer/features_v2/matches/widgets/soccer_report_lock_policy.dart';
@@ -351,6 +352,10 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
             ),
             const SizedBox(height: TsSpacing.lg),
             BaseballPitcherAnalysisReportBlock(
+              header: widget.initialHeader!,
+            ),
+            const SizedBox(height: TsSpacing.lg),
+            BaseballExtendedReportBlocks(
               header: widget.initialHeader!,
             ),
           ],
