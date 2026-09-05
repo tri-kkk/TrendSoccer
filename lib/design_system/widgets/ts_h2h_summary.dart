@@ -117,34 +117,47 @@ class _TsH2HSummaryState extends State<TsH2HSummary> {
                       style: TsType.labelSBold.copyWith(color: c.textSecondary),
                     ),
                   ),
-                  TsIcon(
-                    _detailExpanded
-                        ? TsIcons.keyboardArrowUp
-                        : TsIcons.keyboardArrowDown,
-                    size: TsIconSize.xs,
-                    color: c.textPrimary,
+                  AnimatedRotation(
+                    turns: _detailExpanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    child: TsIcon(
+                      TsIcons.keyboardArrowDown,
+                      size: TsIconSize.xs,
+                      color: c.textPrimary,
+                    ),
                   ),
                 ],
               ),
             ),
-            if (_detailExpanded) ...[
-              const SizedBox(height: TsSpacing.sm),
-              Column(
-                children: [
-                  for (var i = 0; i < widget.meetings.length; i++) ...[
-                    if (i > 0) const SizedBox(height: TsSpacing.sm),
-                    TsH2HMatchRow(
-                      dateLabel: widget.meetings[i].dateLabel,
-                      homeTeam: widget.meetings[i].homeTeamLabel,
-                      awayTeam: widget.meetings[i].awayTeamLabel,
-                      scoreLabel: widget.meetings[i].scoreLabel,
-                      homeEmblemUrl: widget.homeEmblemUrl,
-                      awayEmblemUrl: widget.awayEmblemUrl,
-                    ),
-                  ],
-                ],
-              ),
-            ],
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child: _detailExpanded
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: TsSpacing.sm),
+                        Column(
+                          children: [
+                            for (var i = 0; i < widget.meetings.length; i++) ...[
+                              if (i > 0) const SizedBox(height: TsSpacing.sm),
+                              TsH2HMatchRow(
+                                dateLabel: widget.meetings[i].dateLabel,
+                                homeTeam: widget.meetings[i].homeTeamLabel,
+                                awayTeam: widget.meetings[i].awayTeamLabel,
+                                scoreLabel: widget.meetings[i].scoreLabel,
+                                homeEmblemUrl: widget.homeEmblemUrl,
+                                awayEmblemUrl: widget.awayEmblemUrl,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
+            ),
           ],
         ),
       ),

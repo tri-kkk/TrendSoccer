@@ -251,27 +251,42 @@ class _TsStartingPitchersSectionState extends State<TsStartingPitchersSection> {
                       style: TsType.labelSBold.copyWith(color: c.textSecondary),
                     ),
                   ),
-                  TsIcon(
-                    _prevSeasonExpanded
-                        ? TsIcons.keyboardArrowUp
-                        : TsIcons.keyboardArrowDown,
-                    size: TsIconSize.xs,
-                    color: c.textPrimary,
+                  AnimatedRotation(
+                    turns: _prevSeasonExpanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    child: TsIcon(
+                      TsIcons.keyboardArrowDown,
+                      size: TsIconSize.xs,
+                      color: c.textPrimary,
+                    ),
                   ),
                 ],
               ),
             ),
-            if (_prevSeasonExpanded) ...[
-              const SizedBox(height: TsSpacing.sm),
-              Column(
-                children: [
-                  for (var i = 0; i < widget.prevSeasonStats.length; i++) ...[
-                    if (i > 0) const SizedBox(height: TsSpacing.xs),
-                    _statRow(widget.prevSeasonStats[i]),
-                  ],
-                ],
-              ),
-            ],
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child: _prevSeasonExpanded
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: TsSpacing.sm),
+                        Column(
+                          children: [
+                            for (var i = 0;
+                                i < widget.prevSeasonStats.length;
+                                i++) ...[
+                              if (i > 0) const SizedBox(height: TsSpacing.xs),
+                              _statRow(widget.prevSeasonStats[i]),
+                            ],
+                          ],
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
+            ),
           ],
         ),
       ),
