@@ -194,15 +194,20 @@ class _TsStartingPitchersSectionState extends State<TsStartingPitchersSection> {
   }
 
   Widget _chipColumn(TsThemeColors c, TsPitcherProfile profile) {
+    final chips = <({String label, TsBadgeTone tone})>[
+      for (final label in profile.strengths)
+        (label: label, tone: TsBadgeTone.positive),
+      for (final label in profile.weaknesses)
+        (label: label, tone: TsBadgeTone.negative),
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final label in profile.strengths) ...[
-          _fullWidthBadge(label, TsBadgeTone.positive),
-          const SizedBox(height: TsSpacing.xs),
+        for (var i = 0; i < chips.length; i++) ...[
+          if (i > 0) const SizedBox(height: TsSpacing.xs),
+          _fullWidthBadge(chips[i].label, chips[i].tone),
         ],
-        for (final label in profile.weaknesses)
-          _fullWidthBadge(label, TsBadgeTone.negative),
       ],
     );
   }
