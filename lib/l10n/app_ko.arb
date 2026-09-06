@@ -90,6 +90,7 @@
   "baseballEventHomerun": "홈런",
   "baseballEventInningChange": "이닝 종료",
   "baseballEventScore": "득점",
+  "baseballH2hLastFive": "최근 5경기",
   "baseballH2hLoading": "상대 전적 데이터를 불러오는 중...",
   "baseballH2hNoData": "상대 전적 데이터가 없습니다.",
   "baseballHomeAwayRecord": "홈&원정 성적",

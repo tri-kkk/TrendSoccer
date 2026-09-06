@@ -90,6 +90,7 @@
   "baseballEventHomerun": "Home Run",
   "baseballEventInningChange": "Inning Change",
   "baseballEventScore": "Score",
+  "baseballH2hLastFive": "Last 5 meetings",
   "baseballH2hLoading": "Loading head-to-head data...",
   "baseballH2hNoData": "No head-to-head data available.",
   "baseballHomeAwayRecord": "Home & away record",

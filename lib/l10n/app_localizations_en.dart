@@ -242,6 +242,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get baseballEventScore => 'Score';
 
   @override
+  String get baseballH2hLastFive => 'Last 5 meetings';
+
+  @override
   String get baseballH2hLoading => 'Loading head-to-head data...';
 
   @override

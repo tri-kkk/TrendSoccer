@@ -518,6 +518,12 @@ abstract class AppLocalizations {
   /// **'득점'**
   String get baseballEventScore;
 
+  /// No description provided for @baseballH2hLastFive.
+  ///
+  /// In ko, this message translates to:
+  /// **'최근 5경기'**
+  String get baseballH2hLastFive;
+
   /// No description provided for @baseballH2hLoading.
   ///
   /// In ko, this message translates to:

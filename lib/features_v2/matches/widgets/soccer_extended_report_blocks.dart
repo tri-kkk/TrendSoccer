@@ -7,6 +7,7 @@ import 'package:trendsoccer/core/models/soccer_h2h_analysis_parsed.dart';
 import 'package:trendsoccer/core/models/soccer_team_stats_parsed.dart';
 import 'package:trendsoccer/core/providers/soccer_match_report_provider.dart';
 import 'package:trendsoccer/core/utils/error_resolver.dart';
+import 'package:trendsoccer/core/utils/h2h_meeting_normalizer.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/design_system/icons/ts_icon_spec.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
@@ -290,29 +291,43 @@ class _HeadToHeadBlock extends StatelessWidget {
           }
 
           final overall = parsed.overall;
+          final fixtureNames = h2hFixtureNameSets(header);
           final meetings = parsed.recentMatches
               .take(_recentMeetingCount)
               .map(
-                (match) => TsH2HMeeting(
-                  dateLabel: _formatH2HDate(match.date),
-                  homeTeamLabel: match.homeTeam,
-                  awayTeamLabel: match.awayTeam,
-                  scoreLabel: match.scoreLabel,
-                ),
+                (match) {
+                  final normalized = normalizeH2HMeetingToFixture(
+                    fixtureHomeNames: fixtureNames.home,
+                    fixtureAwayNames: fixtureNames.away,
+                    meetingHomeEn: match.homeTeam,
+                    meetingAwayEn: match.awayTeam,
+                    homeScore: match.homeScore,
+                    awayScore: match.awayScore,
+                  );
+                  return TsH2HMeeting(
+                    dateLabel: _formatH2HDate(match.date),
+                    homeTeamLabel: normalized.homeTeamEn,
+                    awayTeamLabel: normalized.awayTeamEn,
+                    scoreLabel: normalized.scoreLabel,
+                  );
+                },
               )
               .toList();
 
+          final drawCount = overall.draws ?? 0;
+          final showDraw = drawCount > 0;
+
           return TsH2HSummary(
-            line: TsStackLine.threeWay,
+            line: showDraw ? TsStackLine.threeWay : TsStackLine.twoWay,
             homeValueLabel: '${overall.homeWins ?? 0}',
-            drawValueLabel: '${overall.draws ?? 0}',
+            drawValueLabel: showDraw ? '$drawCount' : null,
             awayValueLabel: '${overall.awayWins ?? 0}',
             homeFraction: overall.homeFraction,
-            drawFraction: overall.drawFraction,
+            drawFraction: showDraw ? overall.drawFraction : 0,
             awayFraction: overall.awayFraction,
-            homeLabel: l10n.labelHomeShort,
-            drawLabel: l10n.soccerDraw,
-            awayLabel: l10n.labelAwayShort,
+            homeLabel: l10n.labelWin,
+            drawLabel: showDraw ? l10n.labelDraw : null,
+            awayLabel: l10n.labelWin,
             detailTitleLabel: l10n.soccerH2hRecent,
             homeEmblemUrl: header.homeTeamLogo,
             awayEmblemUrl: header.awayTeamLogo,

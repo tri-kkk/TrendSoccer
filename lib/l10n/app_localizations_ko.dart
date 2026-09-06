@@ -233,6 +233,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get baseballEventScore => '득점';
 
   @override
+  String get baseballH2hLastFive => '최근 5경기';
+
+  @override
   String get baseballH2hLoading => '상대 전적 데이터를 불러오는 중...';
 
   @override
