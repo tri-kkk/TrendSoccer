@@ -86,6 +86,41 @@ String fixtureDateString(DateTime date) {
 
 String fixtureTodayDateString() => fixtureDateString(DateTime.now());
 
+/// Chip window length: today − 3 … today + 4.
+const fixtureDateChipCount = 8;
+
+/// Index of today within [fixtureChipDates].
+const fixtureTodayChipIndex = 3;
+
+List<DateTime> fixtureChipDates([DateTime? anchor]) {
+  final today = anchor ?? DateTime.now();
+  final todayDay = DateTime(today.year, today.month, today.day);
+  return List.generate(
+    fixtureDateChipCount,
+    (index) => todayDay.add(Duration(days: index - fixtureTodayChipIndex)),
+  );
+}
+
+bool fixtureChipWindowContainsDate(String dateStr, [DateTime? todayAnchor]) {
+  for (final date in fixtureChipDates(todayAnchor)) {
+    if (fixtureDateString(date) == dateStr) return true;
+  }
+  return false;
+}
+
+/// Adjusts [selectedDate] after the calendar day changes while the app was
+/// backgrounded. [stripAnchorToday] is the "today" the strip was built from.
+String resolveFixtureDateOnDayChange({
+  required String stripAnchorToday,
+  required String selectedDate,
+  required String newToday,
+}) {
+  if (stripAnchorToday == newToday) return selectedDate;
+  if (selectedDate == stripAnchorToday) return newToday;
+  if (fixtureChipWindowContainsDate(selectedDate)) return selectedDate;
+  return newToday;
+}
+
 bool matchIsOnDate(FixtureMatch match, String dateStr) {
   final local = match.matchTimestamp.toLocal();
   return fixtureDateString(local) == dateStr;

@@ -41,9 +41,8 @@ import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
 import 'package:trendsoccer/design_system/widgets/ts_toast.dart';
 
-/// Eight-day window: today − 3 … today + 4 (both sports).
-const _dateChipCount = 8;
-const _todayChipIndex = 3;
+/// Today index within the chip window — see [fixtureTodayChipIndex].
+const _todayChipIndex = fixtureTodayChipIndex;
 
 /// Soccer polls a lightweight live map overlay.
 const _soccerLivePollInterval = Duration(seconds: 30);
@@ -159,21 +158,20 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
   final Set<String> _alarmEnabledMatchIds = {};
   int _alarmRefreshGeneration = 0;
   final Set<String> _alarmToggleInFlight = {};
+  late String _stripAnchorToday;
 
   static const _alarmBatchChunkSize = 50;
 
   @override
   void initState() {
     super.initState();
+    _stripAnchorToday = fixtureTodayDateString();
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _ensureBaseballDateLoaded();
       _syncLivePolling();
     });
-    // TODO(data): date strip does not refresh across midnight yet; an
-    // AppLifecycle resume hook (as home_screen uses for profile) is where
-    // chip dates would be regenerated and selection adjusted.
   }
 
   @override
@@ -187,6 +185,9 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      if (_refreshDateStripIfDayChanged()) {
+        setState(() {});
+      }
       _syncLivePolling();
       return;
     }
@@ -209,13 +210,28 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
         date.day == today.day;
   }
 
-  List<DateTime> _chipDates() {
-    final today = DateTime.now();
-    final todayDay = DateTime(today.year, today.month, today.day);
-    return List.generate(
-      _dateChipCount,
-      (index) => todayDay.add(Duration(days: index - _todayChipIndex)),
+  List<DateTime> _chipDates() => fixtureChipDates();
+
+  /// Returns true when the calendar day changed and the strip/selection updated.
+  bool _refreshDateStripIfDayChanged() {
+    final newToday = fixtureTodayDateString();
+    if (newToday == _stripAnchorToday) return false;
+
+    final previousSelected = ref.read(fixtureSelectedDateProvider);
+    final resolved = resolveFixtureDateOnDayChange(
+      stripAnchorToday: _stripAnchorToday,
+      selectedDate: previousSelected,
+      newToday: newToday,
     );
+    _stripAnchorToday = newToday;
+
+    if (resolved != previousSelected) {
+      ref.read(fixtureSelectedDateProvider.notifier).state = resolved;
+      if (ref.read(fixtureSelectedSportProvider) == 'baseball') {
+        unawaited(_loadBaseballDate(resolved));
+      }
+    }
+    return true;
   }
 
   int _selectedDateIndex(String selectedDateStr, List<DateTime> chipDates) {
@@ -919,6 +935,9 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
     final sportStr = sport == TsSport.baseball ? 'baseball' : 'soccer';
     ref.read(fixtureSelectedSportProvider.notifier).state = sportStr;
     _resetFilterToAll();
+    final today = fixtureTodayDateString();
+    ref.read(fixtureSelectedDateProvider.notifier).state = today;
+    _stripAnchorToday = today;
     setState(() {
       _collapsedLeagueCodes.clear();
       _baseballLoadFailed = false;
