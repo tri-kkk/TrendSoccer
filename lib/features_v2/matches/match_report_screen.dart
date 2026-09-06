@@ -27,6 +27,7 @@ import 'package:trendsoccer/features_v2/matches/widgets/baseball_pitcher_analysi
 import 'package:trendsoccer/features_v2/matches/widgets/baseball_extended_report_blocks.dart';
 import 'package:trendsoccer/features_v2/matches/widgets/baseball_h2h_report_block.dart';
 import 'package:trendsoccer/features_v2/matches/widgets/baseball_starting_pitchers_report_block.dart';
+import 'package:trendsoccer/features_v2/matches/widgets/baseball_report_lock_policy.dart';
 import 'package:trendsoccer/features_v2/matches/widgets/soccer_predict_report_blocks.dart';
 import 'package:trendsoccer/features_v2/matches/widgets/soccer_report_lock_policy.dart';
 
@@ -344,36 +345,10 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
           ],
           if (hasBaseballPitchersBlock) ...[
             const SizedBox(height: TsSpacing.lg),
-            BaseballAiMatchAnalysisReportBlock(
+            ..._buildBaseballReportBlocks(
+              context,
               header: widget.initialHeader!,
-            ),
-            const SizedBox(height: TsSpacing.lg),
-            BaseballStartingPitchersReportBlock(
-              header: widget.initialHeader!,
-            ),
-            const SizedBox(height: TsSpacing.lg),
-            BaseballPitcherAnalysisReportBlock(
-              header: widget.initialHeader!,
-            ),
-            const SizedBox(height: TsSpacing.lg),
-            BaseballTeamProductionReportBlock(
-              header: widget.initialHeader!,
-            ),
-            const SizedBox(height: TsSpacing.lg),
-            BaseballSeasonTeamStatsReportBlock(
-              header: widget.initialHeader!,
-            ),
-            const SizedBox(height: TsSpacing.lg),
-            BaseballRecentFormReportBlock(
-              header: widget.initialHeader!,
-            ),
-            const SizedBox(height: TsSpacing.lg),
-            BaseballHeadToHeadReportBlock(
-              header: widget.initialHeader!,
-            ),
-            const SizedBox(height: TsSpacing.lg),
-            BaseballScoringAnalysisReportBlock(
-              header: widget.initialHeader!,
+              auth: auth,
             ),
           ],
         ],
@@ -416,6 +391,49 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
 
   bool _baseballLeagueSupportsReport(String? leagueCode) =>
       leagueSupportsAnalysis('baseball', leagueCode);
+
+  List<Widget> _buildBaseballReportBlocks(
+    BuildContext context, {
+    required MatchHeaderData header,
+    required SupabaseAuthProvider auth,
+  }) {
+    final lockPolicy = BaseballReportLockPolicy.resolve(
+      isGuest: auth.isGuest,
+      hasFullAccess: auth.hasFullAccess,
+      onGuestTap: () => context.push('/login'),
+      onSubscribeTap: () => context.go('/menu/subscribe'),
+    );
+
+    return [
+      BaseballAiMatchAnalysisReportBlock(
+        header: header,
+        lockPolicy: lockPolicy,
+      ),
+      const SizedBox(height: TsSpacing.lg),
+      BaseballStartingPitchersReportBlock(header: header),
+      const SizedBox(height: TsSpacing.lg),
+      BaseballPitcherAnalysisReportBlock(header: header),
+      const SizedBox(height: TsSpacing.lg),
+      BaseballTeamProductionReportBlock(
+        header: header,
+        lockPolicy: lockPolicy,
+      ),
+      const SizedBox(height: TsSpacing.lg),
+      BaseballSeasonTeamStatsReportBlock(
+        header: header,
+        lockPolicy: lockPolicy,
+      ),
+      const SizedBox(height: TsSpacing.lg),
+      BaseballRecentFormReportBlock(
+        header: header,
+        lockPolicy: lockPolicy,
+      ),
+      const SizedBox(height: TsSpacing.lg),
+      BaseballHeadToHeadReportBlock(header: header),
+      const SizedBox(height: TsSpacing.lg),
+      BaseballScoringAnalysisReportBlock(header: header),
+    ];
+  }
 
   Widget _buildUnsupportedBaseballReport(BuildContext context) {
     final l10n = context.l10n;

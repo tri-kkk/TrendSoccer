@@ -17,18 +17,23 @@ import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/widgets/ts_badge.dart';
 import 'package:trendsoccer/design_system/widgets/ts_empty_state.dart';
 import 'package:trendsoccer/design_system/widgets/ts_gauge_bar.dart';
+import 'package:trendsoccer/design_system/widgets/ts_locked_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_prediction_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_section_header.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
+import 'package:trendsoccer/features_v2/matches/widgets/baseball_report_block_placeholders.dart';
+import 'package:trendsoccer/features_v2/matches/widgets/baseball_report_lock_policy.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 
 class BaseballAiMatchAnalysisReportBlock extends ConsumerStatefulWidget {
   const BaseballAiMatchAnalysisReportBlock({
     required this.header,
+    required this.lockPolicy,
     super.key,
   });
 
   final MatchHeaderData header;
+  final BaseballReportLockPolicy lockPolicy;
 
   @override
   ConsumerState<BaseballAiMatchAnalysisReportBlock> createState() =>
@@ -71,6 +76,17 @@ class _BaseballAiMatchAnalysisReportBlockState
 
     if (league != 'MLB' && league != 'KBO' && league != 'NPB') {
       return const SizedBox.shrink();
+    }
+
+    if (widget.lockPolicy.isLocked(2)) {
+      return _AiMatchAnalysisReportBlockCard(
+        title: title,
+        child: TsLockedBlock(
+          label: widget.lockPolicy.lockLabel,
+          onTap: widget.lockPolicy.onTap,
+          child: BaseballReportBlockPlaceholders.prediction(),
+        ),
+      );
     }
 
     final predictAsync =

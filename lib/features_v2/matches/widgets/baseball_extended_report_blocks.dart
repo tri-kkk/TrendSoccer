@@ -15,30 +15,44 @@ import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/widgets/ts_empty_state.dart';
+import 'package:trendsoccer/design_system/widgets/ts_locked_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_section_header.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_stat_compare_row.dart';
+import 'package:trendsoccer/features_v2/matches/widgets/baseball_report_block_placeholders.dart';
 import 'package:trendsoccer/features_v2/matches/widgets/baseball_report_gauge_helpers.dart';
+import 'package:trendsoccer/features_v2/matches/widgets/baseball_report_lock_policy.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 
 class BaseballExtendedReportBlocks extends StatelessWidget {
   const BaseballExtendedReportBlocks({
     required this.header,
+    required this.lockPolicy,
     super.key,
   });
 
   final MatchHeaderData header;
+  final BaseballReportLockPolicy lockPolicy;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        BaseballTeamProductionReportBlock(header: header),
+        BaseballTeamProductionReportBlock(
+          header: header,
+          lockPolicy: lockPolicy,
+        ),
         const SizedBox(height: TsSpacing.lg),
-        BaseballSeasonTeamStatsReportBlock(header: header),
+        BaseballSeasonTeamStatsReportBlock(
+          header: header,
+          lockPolicy: lockPolicy,
+        ),
         const SizedBox(height: TsSpacing.lg),
-        BaseballRecentFormReportBlock(header: header),
+        BaseballRecentFormReportBlock(
+          header: header,
+          lockPolicy: lockPolicy,
+        ),
         const SizedBox(height: TsSpacing.lg),
         BaseballScoringAnalysisReportBlock(header: header),
       ],
@@ -49,10 +63,12 @@ class BaseballExtendedReportBlocks extends StatelessWidget {
 class BaseballTeamProductionReportBlock extends ConsumerStatefulWidget {
   const BaseballTeamProductionReportBlock({
     required this.header,
+    required this.lockPolicy,
     super.key,
   });
 
   final MatchHeaderData header;
+  final BaseballReportLockPolicy lockPolicy;
 
   @override
   ConsumerState<BaseballTeamProductionReportBlock> createState() =>
@@ -92,6 +108,16 @@ class _BaseballTeamProductionReportBlockState
     final league = _normalizeLeagueCode(widget.header.leagueCode ?? '');
     if (league != 'MLB' && league != 'KBO' && league != 'NPB') {
       return const SizedBox.shrink();
+    }
+
+    if (widget.lockPolicy.isLocked(5)) {
+      return _LockedBaseballReportBlockCard(
+        title: l10n.baseballTeamProductivity,
+        icon: TsIcons.analytics,
+        subtitle: l10n.baseballRecent10,
+        lockPolicy: widget.lockPolicy,
+        placeholder: BaseballReportBlockPlaceholders.teamProduction(l10n),
+      );
     }
 
     final predictAsync =
@@ -180,10 +206,12 @@ class _TeamProductionContent extends StatelessWidget {
 class BaseballSeasonTeamStatsReportBlock extends ConsumerStatefulWidget {
   const BaseballSeasonTeamStatsReportBlock({
     required this.header,
+    required this.lockPolicy,
     super.key,
   });
 
   final MatchHeaderData header;
+  final BaseballReportLockPolicy lockPolicy;
 
   @override
   ConsumerState<BaseballSeasonTeamStatsReportBlock> createState() =>
@@ -226,6 +254,15 @@ class _BaseballSeasonTeamStatsReportBlockState
     }
     if (league == 'NPB') {
       return const SizedBox.shrink();
+    }
+
+    if (widget.lockPolicy.isLocked(6)) {
+      return _LockedBaseballReportBlockCard(
+        title: l10n.baseballSeasonStats,
+        icon: TsIcons.leaderboard,
+        lockPolicy: widget.lockPolicy,
+        placeholder: BaseballReportBlockPlaceholders.seasonTeamStats(),
+      );
     }
 
     final predictAsync =
@@ -316,10 +353,12 @@ class _SeasonTeamStatsContent extends StatelessWidget {
 class BaseballRecentFormReportBlock extends ConsumerStatefulWidget {
   const BaseballRecentFormReportBlock({
     required this.header,
+    required this.lockPolicy,
     super.key,
   });
 
   final MatchHeaderData header;
+  final BaseballReportLockPolicy lockPolicy;
 
   @override
   ConsumerState<BaseballRecentFormReportBlock> createState() =>
@@ -359,6 +398,16 @@ class _BaseballRecentFormReportBlockState
     final league = _normalizeLeagueCode(widget.header.leagueCode ?? '');
     if (league != 'MLB' && league != 'KBO' && league != 'NPB') {
       return const SizedBox.shrink();
+    }
+
+    if (widget.lockPolicy.isLocked(7)) {
+      return _LockedBaseballReportBlockCard(
+        title: 'Recent form',
+        icon: TsIcons.trendingUp,
+        subtitle: _recentFormSubtitle(l10n, null),
+        lockPolicy: widget.lockPolicy,
+        placeholder: BaseballReportBlockPlaceholders.recentForm(l10n),
+      );
     }
 
     final predictAsync =
@@ -806,6 +855,36 @@ String _normalizeLeagueCode(String? league) {
   if (upper.contains('NPB')) return 'NPB';
   if (upper.contains('KBO') || upper.contains('KOREA')) return 'KBO';
   return upper;
+}
+
+class _LockedBaseballReportBlockCard extends StatelessWidget {
+  const _LockedBaseballReportBlockCard({
+    required this.title,
+    required this.icon,
+    required this.lockPolicy,
+    required this.placeholder,
+    this.subtitle,
+  });
+
+  final String title;
+  final TsIconSpec icon;
+  final BaseballReportLockPolicy lockPolicy;
+  final Widget placeholder;
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return _BaseballReportBlockCard(
+      title: title,
+      icon: icon,
+      subtitle: subtitle,
+      child: TsLockedBlock(
+        label: lockPolicy.lockLabel,
+        onTap: lockPolicy.onTap,
+        child: placeholder,
+      ),
+    );
+  }
 }
 
 class _BaseballReportBlockCard extends StatelessWidget {
