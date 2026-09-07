@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
+import 'package:trendsoccer/features_v2/reports/reports_combo_body.dart';
 import 'package:trendsoccer/features_v2/reports/reports_date_strip.dart';
 import 'package:trendsoccer/features_v2/reports/reports_header_shell.dart';
 import 'package:trendsoccer/features_v2/reports/reports_route_map.dart';
@@ -14,7 +15,7 @@ class ReportsComboScreen extends StatelessWidget {
       sport: TsSport.baseball,
       segment: ReportsSegment.multiMatch,
       dateStripDates: reportsHistoryDateStripDates(),
-      child: const SizedBox.shrink(),
+      child: const ReportsComboBody(),
     );
   }
 }

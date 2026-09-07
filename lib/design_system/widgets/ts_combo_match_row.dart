@@ -71,7 +71,10 @@ class TsComboMatchRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: TsSpacing.sm),
-            TsTeamEmblem(emblemUrl, size: TsIconSize.sm),
+            if (emblemUrl != null && emblemUrl.isNotEmpty)
+              TsTeamEmblem(emblemUrl, size: TsIconSize.sm)
+            else
+              SizedBox(width: TsIconSize.sm, height: TsIconSize.sm),
             const SizedBox(width: TsSpacing.sm),
             Expanded(
               child: Text(

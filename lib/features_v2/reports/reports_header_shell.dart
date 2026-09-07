@@ -74,6 +74,14 @@ class _ReportsHeaderShellState extends ConsumerState<ReportsHeaderShell> {
   bool get _showsDateStrip =>
       reportsShowsDateStrip(widget.segment) && widget.dateStripDates != null;
 
+  DateTime get _selectedHeaderDate {
+    if (_showsDateStrip) {
+      return widget.dateStripDates![_selectedDateIndex];
+    }
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
   void _navigateTo(
     BuildContext context,
     TsSport targetSport,
@@ -115,6 +123,12 @@ class _ReportsHeaderShellState extends ConsumerState<ReportsHeaderShell> {
   void _clearLeagueSelection() {
     _scrollLeagueFilterToStart();
     setState(() => _selectedLeagueId = null);
+  }
+
+  void _onDateSelected(int index) {
+    if (index == _selectedDateIndex) return;
+    setState(() => _selectedDateIndex = index);
+    _clearLeagueSelection();
   }
 
   @override
@@ -160,7 +174,7 @@ class _ReportsHeaderShellState extends ConsumerState<ReportsHeaderShell> {
                 weekdayLabel:
                     widget.weekdayLabel ?? (date) => _weekdayLabel(context, date),
                 isToday: widget.isToday ?? _defaultIsToday,
-                onSelected: (index) => setState(() => _selectedDateIndex = index),
+                onSelected: _onDateSelected,
               ),
               const SizedBox(height: ReportsDateStrip.chipGap),
             ],
@@ -176,6 +190,7 @@ class _ReportsHeaderShellState extends ConsumerState<ReportsHeaderShell> {
             Expanded(
               child: ReportsHeaderScope(
                 selectedLeagueId: _selectedLeagueId,
+                selectedDate: _selectedHeaderDate,
                 onClearLeagueSelection: _clearLeagueSelection,
                 child: widget.child,
               ),

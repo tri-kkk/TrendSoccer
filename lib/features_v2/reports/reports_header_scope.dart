@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 class ReportsHeaderScope extends InheritedWidget {
   const ReportsHeaderScope({
     required this.selectedLeagueId,
+    required this.selectedDate,
     required this.onClearLeagueSelection,
     required super.child,
     super.key,
   });
 
   final String? selectedLeagueId;
+  final DateTime selectedDate;
   final VoidCallback onClearLeagueSelection;
 
   static ReportsHeaderScope of(BuildContext context) {
@@ -23,5 +25,6 @@ class ReportsHeaderScope extends InheritedWidget {
 
   @override
   bool updateShouldNotify(ReportsHeaderScope oldWidget) =>
-      selectedLeagueId != oldWidget.selectedLeagueId;
+      selectedLeagueId != oldWidget.selectedLeagueId ||
+      selectedDate != oldWidget.selectedDate;
 }

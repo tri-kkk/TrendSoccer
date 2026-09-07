@@ -176,6 +176,27 @@ class AppLocalizationsKo extends AppLocalizations {
   String get reportsPremiumViewAll => '전체 픽 보기';
 
   @override
+  String get reportsComboTypeStable => '안정형';
+
+  @override
+  String get reportsComboTypeHighIndex => '고지수';
+
+  @override
+  String get reportsComboEmptyTitle => '해당 날짜의 다경기 분석이 없습니다';
+
+  @override
+  String get reportsComboEmptyBody => '위에서 다른 날짜를 선택해 보세요.';
+
+  @override
+  String get reportsComboNoLeagueTitle => '이 리그의 분석이 없습니다';
+
+  @override
+  String get reportsComboNoLeagueBody => '다른 리그를 선택하거나 전체를 확인해 보세요.';
+
+  @override
+  String get reportsComboViewAll => '전체 보기';
+
+  @override
   String get analyzeButton => 'Analyze';
 
   @override

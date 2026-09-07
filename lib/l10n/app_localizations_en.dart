@@ -182,6 +182,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportsPremiumViewAll => 'View all picks';
 
   @override
+  String get reportsComboTypeStable => 'Stable';
+
+  @override
+  String get reportsComboTypeHighIndex => 'High index';
+
+  @override
+  String get reportsComboEmptyTitle => 'No multi-match picks for this day';
+
+  @override
+  String get reportsComboEmptyBody => 'Try another date from the strip above.';
+
+  @override
+  String get reportsComboNoLeagueTitle => 'No picks for this league';
+
+  @override
+  String get reportsComboNoLeagueBody =>
+      'Try another league or view all picks.';
+
+  @override
+  String get reportsComboViewAll => 'View all picks';
+
+  @override
   String get analyzeButton => 'Analyze';
 
   @override

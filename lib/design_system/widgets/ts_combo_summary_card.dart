@@ -19,6 +19,8 @@ class TsComboMatchup {
     required this.awayScoreLabel,
     required this.timeLabel,
     required this.result,
+    this.homeEmblemUrl,
+    this.awayEmblemUrl,
   });
 
   final String homeTeamLabel;
@@ -27,6 +29,8 @@ class TsComboMatchup {
   final String awayScoreLabel;
   final String timeLabel;
   final TsComboResult result;
+  final String? homeEmblemUrl;
+  final String? awayEmblemUrl;
 }
 
 class TsComboSummaryCard extends StatelessWidget {
@@ -75,6 +79,8 @@ class TsComboSummaryCard extends StatelessWidget {
             children: [
               _header(c),
               const SizedBox(height: TsSpacing.md),
+              Container(height: 1, color: c.borderSubtle),
+              const SizedBox(height: TsSpacing.md),
               _matchupsSection(),
               const SizedBox(height: TsSpacing.md),
               TsComboFooter(
@@ -122,6 +128,8 @@ class TsComboSummaryCard extends StatelessWidget {
               result: matchups[i].result,
               homeScore: matchups[i].homeScoreLabel,
               awayScore: matchups[i].awayScoreLabel,
+              homeEmblemUrl: matchups[i].homeEmblemUrl,
+              awayEmblemUrl: matchups[i].awayEmblemUrl,
             ),
           ),
         ],

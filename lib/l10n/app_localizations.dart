@@ -404,6 +404,48 @@ abstract class AppLocalizations {
   /// **'전체 픽 보기'**
   String get reportsPremiumViewAll;
 
+  /// No description provided for @reportsComboTypeStable.
+  ///
+  /// In ko, this message translates to:
+  /// **'안정형'**
+  String get reportsComboTypeStable;
+
+  /// No description provided for @reportsComboTypeHighIndex.
+  ///
+  /// In ko, this message translates to:
+  /// **'고지수'**
+  String get reportsComboTypeHighIndex;
+
+  /// No description provided for @reportsComboEmptyTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'해당 날짜의 다경기 분석이 없습니다'**
+  String get reportsComboEmptyTitle;
+
+  /// No description provided for @reportsComboEmptyBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'위에서 다른 날짜를 선택해 보세요.'**
+  String get reportsComboEmptyBody;
+
+  /// No description provided for @reportsComboNoLeagueTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 리그의 분석이 없습니다'**
+  String get reportsComboNoLeagueTitle;
+
+  /// No description provided for @reportsComboNoLeagueBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'다른 리그를 선택하거나 전체를 확인해 보세요.'**
+  String get reportsComboNoLeagueBody;
+
+  /// No description provided for @reportsComboViewAll.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 보기'**
+  String get reportsComboViewAll;
+
   /// No description provided for @analyzeButton.
   ///
   /// In ko, this message translates to:
