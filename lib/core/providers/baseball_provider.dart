@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+import 'package:trendsoccer/core/assets/ts_assets.dart';
 import 'package:trendsoccer/core/models/baseball_models.dart';
 import 'package:trendsoccer/core/services/baseball_service.dart';
 
-/// Hardcoded baseball analysis league chips (fixed order).
+/// Reports/analysis league filter chip — not used for live-score icon lookup.
 class BaseballAnalysisLeagueChip {
   const BaseballAnalysisLeagueChip({
     required this.id,
@@ -25,6 +26,8 @@ class BaseballAnalysisLeagueChip {
   String get displayLabel => label;
 }
 
+/// Analysis-report leagues only (MLB, NPB, KBO). CPBL excluded.
+/// Icon lookup for all baseball leagues including CPBL: [baseballLeagueIconId].
 const baseballAnalysisLeagueChips = [
   BaseballAnalysisLeagueChip(
     id: 'all',
@@ -51,13 +54,6 @@ const baseballAnalysisLeagueChips = [
     labelEn: 'KBO',
     code: 'KBO',
     iconId: 'kbo',
-  ),
-  BaseballAnalysisLeagueChip(
-    id: 'cpbl',
-    label: 'CPBL',
-    labelEn: 'CPBL',
-    code: 'CPBL',
-    iconId: 'cpbl',
   ),
 ];
 
@@ -166,12 +162,7 @@ List<BaseballAnalysisCard> filterBaseballAnalysisMatches({
 
 String baseballLeagueIconId(String league) {
   final upper = league.trim().toUpperCase();
-  for (final chip in baseballAnalysisLeagueChips) {
-    if (chip.code?.toUpperCase() == upper && chip.iconId != null) {
-      return chip.iconId!;
-    }
-  }
-  return upper.toLowerCase();
+  return TsAssets.leagueIconIdFromApiCode(upper) ?? upper.toLowerCase();
 }
 
 String formatBaseballCardDate(BaseballAnalysisCard card) {

@@ -42,6 +42,16 @@ GoRoute _r(String path, String name, Widget child) => GoRoute(
       builder: (_, _) => child,
     );
 
+/// Reports shell tab routes — no slide transition between sibling segments.
+GoRoute _reportsR(String path, String name, Widget child) => GoRoute(
+      path: path,
+      name: name,
+      pageBuilder: (context, state) => NoTransitionPage<void>(
+        key: state.pageKey,
+        child: child,
+      ),
+    );
+
 final GoRouter appRouter = GoRouter(
   navigatorKey: _rootKey,
   initialLocation: '/splash',
@@ -100,10 +110,10 @@ final GoRouter appRouter = GoRouter(
           navigatorKey: _reportsKey,
           initialLocation: '/reports/soccer',
           routes: [
-            _r('/reports/soccer', 'reportsSoccer', const ReportsSoccerScreen()),
-            _r('/reports/soccer/premium', 'reportsSoccerPremium', const ReportsSoccerPremiumScreen()),
-            _r('/reports/baseball', 'reportsBaseball', const ReportsBaseballScreen()),
-            _r('/reports/combo', 'reportsCombo', const ReportsComboScreen()),
+            _reportsR('/reports/soccer', 'reportsSoccer', const ReportsSoccerScreen()),
+            _reportsR('/reports/soccer/premium', 'reportsSoccerPremium', const ReportsSoccerPremiumScreen()),
+            _reportsR('/reports/baseball', 'reportsBaseball', const ReportsBaseballScreen()),
+            _reportsR('/reports/combo', 'reportsCombo', const ReportsComboScreen()),
           ],
         ),
         StatefulShellBranch(
