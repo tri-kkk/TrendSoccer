@@ -84,11 +84,7 @@ class ReportsSoccerPremiumBody extends ConsumerWidget {
             final pickLabel = _premiumPickLabel(context, card);
             return TsMatchCard(
               leagueId: leagueId,
-              leagueLabel: localizedLeagueName(
-                context,
-                match.league.nameEn,
-                match.league.name,
-              ),
+              leagueLabel: reportsPremiumLeagueLabel(context, match.league),
               kickoffLabel: reportsAnalysisKickoffLabel(locale, kickoffLocal),
               homeTeam: localizedTeamName(
                 context,
