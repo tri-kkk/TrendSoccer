@@ -165,6 +165,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportsAnalysisViewAll => 'View all analysis';
 
   @override
+  String get reportsPremiumEmptyBody =>
+      'Curation is strict — some days have none.\nCheck Analysis for all supported leagues.';
+
+  @override
+  String get reportsPremiumEmptyTitle => 'No premium picks today';
+
+  @override
+  String get reportsPremiumNoLeagueBody =>
+      'Curation is strict.\nCheck other leagues or view all picks.';
+
+  @override
+  String get reportsPremiumNoLeagueTitle => 'No premium pick for this league';
+
+  @override
+  String get reportsPremiumViewAll => 'View all picks';
+
+  @override
   String get analyzeButton => 'Analyze';
 
   @override

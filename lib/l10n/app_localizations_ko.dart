@@ -159,6 +159,23 @@ class AppLocalizationsKo extends AppLocalizations {
   String get reportsAnalysisViewAll => '전체 분석 보기';
 
   @override
+  String get reportsPremiumEmptyBody =>
+      '엄선해서 제공하기 때문에 없는 날도 있습니다.\n전체 경기는 Analysis에서 확인하세요.';
+
+  @override
+  String get reportsPremiumEmptyTitle => '오늘은 프리미엄 픽이 없습니다';
+
+  @override
+  String get reportsPremiumNoLeagueBody =>
+      '엄선해서 제공하기 때문에 없는 리그도 있습니다.\n다른 리그를 확인해 보세요.';
+
+  @override
+  String get reportsPremiumNoLeagueTitle => '이 리그의 프리미엄 픽이 없습니다';
+
+  @override
+  String get reportsPremiumViewAll => '전체 픽 보기';
+
+  @override
   String get analyzeButton => 'Analyze';
 
   @override

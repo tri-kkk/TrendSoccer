@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import 'package:trendsoccer/core/models/auth_state.dart';
+import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/core/utils/plan_tier_label.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
+import 'package:trendsoccer/design_system/widgets/ts_app_bar.dart';
+import 'package:trendsoccer/design_system/widgets/ts_bottom_navigation.dart';
 import 'package:trendsoccer/design_system/widgets/ts_segment_tabs.dart';
 import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
 import 'package:trendsoccer/features_v2/reports/reports_date_strip.dart';
@@ -12,8 +18,8 @@ import 'package:trendsoccer/features_v2/reports/reports_league_filter_row.dart';
 import 'package:trendsoccer/features_v2/reports/reports_header_scope.dart';
 import 'package:trendsoccer/features_v2/reports/reports_route_map.dart';
 
-/// Shared reports header: sport toggle, segment tabs, optional date strip and filter.
-class ReportsHeaderShell extends StatefulWidget {
+/// Shared reports header: app bar, sport toggle, segment tabs, optional date strip and filter.
+class ReportsHeaderShell extends ConsumerStatefulWidget {
   const ReportsHeaderShell({
     required this.sport,
     required this.segment,
@@ -37,10 +43,10 @@ class ReportsHeaderShell extends StatefulWidget {
   final bool Function(DateTime date)? isToday;
 
   @override
-  State<ReportsHeaderShell> createState() => _ReportsHeaderShellState();
+  ConsumerState<ReportsHeaderShell> createState() => _ReportsHeaderShellState();
 }
 
-class _ReportsHeaderShellState extends State<ReportsHeaderShell> {
+class _ReportsHeaderShellState extends ConsumerState<ReportsHeaderShell> {
   String? _selectedLeagueId;
   late int _selectedDateIndex;
   final ScrollController _leagueFilterScrollController = ScrollController();
@@ -113,51 +119,69 @@ class _ReportsHeaderShellState extends State<ReportsHeaderShell> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = ref.watch(authProvider);
+    final isGuest = auth.planType == PlanType.none;
     final c = Theme.of(context).extension<TsThemeColors>()!;
     final segmentLabels = reportsSegmentLabels(widget.sport);
     final activeSegmentIndex = reportsSegmentIndex(widget.sport, widget.segment);
     final languageCode = Localizations.localeOf(context).languageCode;
     final leagues = reportsLeagueFiltersForSport(widget.sport, languageCode);
 
-    return ColoredBox(
-      color: c.canvas,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _ReportsHeaderControls(
-            sport: widget.sport,
-            segmentLabels: segmentLabels,
-            activeSegmentIndex: activeSegmentIndex,
-            onSportChanged: (value) => _onSportChanged(context, value),
-            onSegmentTap: (index) => _onSegmentTap(context, index),
-          ),
-          const SizedBox(height: _ReportsHeaderControls.gapBelow),
-          if (_showsDateStrip) ...[
-            ReportsDateStrip(
-              dates: widget.dateStripDates!,
-              selectedIndex: _selectedDateIndex,
-              weekdayLabel:
-                  widget.weekdayLabel ?? (date) => _weekdayLabel(context, date),
-              isToday: widget.isToday ?? _defaultIsToday,
-              onSelected: (index) => setState(() => _selectedDateIndex = index),
+    return Scaffold(
+      backgroundColor: c.canvas,
+      appBar: TsAppBar(
+        type: isGuest ? TsAppBarType.homeGuest : TsAppBarType.homeMember,
+        authLabel: 'Log in',
+        onAuthTap: () => context.push('/login'),
+        tierLabel: PlanTierLabel.forPlanType(auth.planType),
+        onAvatarTap: () {
+          StatefulNavigationShell.of(context).goBranch(
+            TsNavTab.values.indexOf(TsNavTab.menu),
+          );
+        },
+      ),
+      body: ColoredBox(
+        color: c.canvas,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _ReportsHeaderControls(
+              sport: widget.sport,
+              segmentLabels: segmentLabels,
+              activeSegmentIndex: activeSegmentIndex,
+              onSportChanged: (value) => _onSportChanged(context, value),
+              onSegmentTap: (index) => _onSegmentTap(context, index),
             ),
-            const SizedBox(height: ReportsDateStrip.chipGap),
-          ],
-          ReportsLeagueFilterRow(
-            leagues: leagues,
-            selectedLeagueId: _selectedLeagueId,
-            scrollController: _leagueFilterScrollController,
-            onSelected: _onLeagueSelected,
-          ),
-          SizedBox(height: _showsDateStrip ? TsSpacing.xl : _ReportsHeaderControls.gapBelow),
-          Expanded(
-            child: ReportsHeaderScope(
+            const SizedBox(height: _ReportsHeaderControls.gapBelow),
+            if (_showsDateStrip) ...[
+              ReportsDateStrip(
+                dates: widget.dateStripDates!,
+                selectedIndex: _selectedDateIndex,
+                weekdayLabel:
+                    widget.weekdayLabel ?? (date) => _weekdayLabel(context, date),
+                isToday: widget.isToday ?? _defaultIsToday,
+                onSelected: (index) => setState(() => _selectedDateIndex = index),
+              ),
+              const SizedBox(height: ReportsDateStrip.chipGap),
+            ],
+            ReportsLeagueFilterRow(
+              leagues: leagues,
               selectedLeagueId: _selectedLeagueId,
-              onClearLeagueSelection: _clearLeagueSelection,
-              child: widget.child,
+              scrollController: _leagueFilterScrollController,
+              onSelected: _onLeagueSelected,
             ),
-          ),
-        ],
+            SizedBox(
+              height: _showsDateStrip ? TsSpacing.xl : _ReportsHeaderControls.gapBelow,
+            ),
+            Expanded(
+              child: ReportsHeaderScope(
+                selectedLeagueId: _selectedLeagueId,
+                onClearLeagueSelection: _clearLeagueSelection,
+                child: widget.child,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

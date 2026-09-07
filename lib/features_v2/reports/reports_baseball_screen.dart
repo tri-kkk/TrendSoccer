@@ -11,12 +11,10 @@ class ReportsBaseballScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      body: ReportsHeaderShell(
-        sport: TsSport.baseball,
-        segment: ReportsSegment.analysis,
-        child: const ReportsBaseballAnalysisBody(),
-      ),
+    return ReportsHeaderShell(
+      sport: TsSport.baseball,
+      segment: ReportsSegment.analysis,
+      child: const ReportsBaseballAnalysisBody(),
     );
   }
 }

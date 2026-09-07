@@ -10,13 +10,11 @@ class ReportsComboScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: ReportsHeaderShell(
-        sport: TsSport.baseball,
-        segment: ReportsSegment.multiMatch,
-        dateStripDates: reportsHistoryDateStripDates(),
-        child: const SizedBox.shrink(),
-      ),
+    return ReportsHeaderShell(
+      sport: TsSport.baseball,
+      segment: ReportsSegment.multiMatch,
+      dateStripDates: reportsHistoryDateStripDates(),
+      child: const SizedBox.shrink(),
     );
   }
 }

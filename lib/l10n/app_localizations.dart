@@ -374,6 +374,36 @@ abstract class AppLocalizations {
   /// **'전체 분석 보기'**
   String get reportsAnalysisViewAll;
 
+  /// No description provided for @reportsPremiumEmptyBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'엄선해서 제공하기 때문에 없는 날도 있습니다.\n전체 경기는 Analysis에서 확인하세요.'**
+  String get reportsPremiumEmptyBody;
+
+  /// No description provided for @reportsPremiumEmptyTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘은 프리미엄 픽이 없습니다'**
+  String get reportsPremiumEmptyTitle;
+
+  /// No description provided for @reportsPremiumNoLeagueBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'엄선해서 제공하기 때문에 없는 리그도 있습니다.\n다른 리그를 확인해 보세요.'**
+  String get reportsPremiumNoLeagueBody;
+
+  /// No description provided for @reportsPremiumNoLeagueTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 리그의 프리미엄 픽이 없습니다'**
+  String get reportsPremiumNoLeagueTitle;
+
+  /// No description provided for @reportsPremiumViewAll.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 픽 보기'**
+  String get reportsPremiumViewAll;
+
   /// No description provided for @analyzeButton.
   ///
   /// In ko, this message translates to:
