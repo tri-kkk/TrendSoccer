@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
@@ -86,7 +87,8 @@ class _ReportsHeaderShellState extends State<ReportsHeaderShell> {
     final c = Theme.of(context).extension<TsThemeColors>()!;
     final segmentLabels = reportsSegmentLabels(widget.sport);
     final activeSegmentIndex = reportsSegmentIndex(widget.sport, widget.segment);
-    final leagues = reportsLeagueFiltersForSport(widget.sport);
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final leagues = reportsLeagueFiltersForSport(widget.sport, languageCode);
 
     return ColoredBox(
       color: c.canvas,
@@ -105,7 +107,8 @@ class _ReportsHeaderShellState extends State<ReportsHeaderShell> {
             ReportsDateStrip(
               dates: widget.dateStripDates!,
               selectedIndex: _selectedDateIndex,
-              weekdayLabel: widget.weekdayLabel ?? _defaultWeekdayLabel,
+              weekdayLabel:
+                  widget.weekdayLabel ?? (date) => _weekdayLabel(context, date),
               isToday: widget.isToday ?? _defaultIsToday,
               onSelected: (index) => setState(() => _selectedDateIndex = index),
             ),
@@ -123,9 +126,9 @@ class _ReportsHeaderShellState extends State<ReportsHeaderShell> {
     );
   }
 
-  static String _defaultWeekdayLabel(DateTime date) {
-    const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return labels[date.weekday - 1];
+  static String _weekdayLabel(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.E(locale).format(date);
   }
 
   static bool _defaultIsToday(DateTime date) {

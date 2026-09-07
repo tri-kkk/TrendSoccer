@@ -16,9 +16,11 @@ class SoccerAnalysisLeagueChip {
 
   bool get isAll => codes == null;
 
-  /// Chip label for the current locale.
-  String get displayLabel {
-    // TODO: Switch to labelEn when locale is 'en'
+  /// Chip label for [languageCode] — matches Matches league filter locale rule.
+  String displayLabel(String languageCode) {
+    if (languageCode == 'en') {
+      return labelEn;
+    }
     return label;
   }
 }
@@ -46,7 +48,7 @@ const soccerAnalysisLeagueChips = [
   SoccerAnalysisLeagueChip(
     id: 'premier_league',
     label: '프리미어리그',
-    labelEn: 'EPL',
+    labelEn: 'Premier League',
     codes: ['PL'],
     iconId: 'premier_league',
   ),
@@ -102,7 +104,7 @@ const soccerAnalysisLeagueChips = [
   SoccerAnalysisLeagueChip(
     id: 'j1_league',
     label: 'J리그',
-    labelEn: 'J League',
+    labelEn: 'J1 League',
     codes: ['J1'],
     iconId: 'j1_league',
   ),

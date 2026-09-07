@@ -23,7 +23,13 @@ class BaseballAnalysisLeagueChip {
 
   bool get isAll => code == null;
 
-  String get displayLabel => label;
+  /// Chip label for [languageCode] — matches Matches league filter locale rule.
+  String displayLabel(String languageCode) {
+    if (languageCode == 'en') {
+      return labelEn;
+    }
+    return label;
+  }
 }
 
 /// Analysis-report leagues only (MLB, NPB, KBO). CPBL excluded.

@@ -4,6 +4,7 @@ import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/widgets/ts_chip.dart';
 import 'package:trendsoccer/design_system/widgets/ts_league_filter_chip.dart';
 import 'package:trendsoccer/features_v2/reports/reports_route_map.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 
 /// Horizontal league filter for reports — "All" plus emblem chips per league.
 class ReportsLeagueFilterRow extends StatelessWidget {
@@ -11,17 +12,16 @@ class ReportsLeagueFilterRow extends StatelessWidget {
     required this.leagues,
     required this.selectedLeagueId,
     required this.onSelected,
-    this.allLabel = 'All',
     super.key,
   });
 
   final List<ReportsLeagueFilterOption> leagues;
   final String? selectedLeagueId;
   final ValueChanged<String?> onSelected;
-  final String allLabel;
 
   @override
   Widget build(BuildContext context) {
+    final allLabel = AppLocalizations.of(context)!.filterAll;
     return SizedBox(
       height: 32,
       child: ListView.separated(
