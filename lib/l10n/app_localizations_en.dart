@@ -155,6 +155,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get analysisToday => 'Today';
 
   @override
+  String get reportsAnalysisNoLeagueBody =>
+      'Try another league or view all analysis.';
+
+  @override
+  String get reportsAnalysisNoLeagueTitle => 'Analysis isn\'t ready yet';
+
+  @override
+  String get reportsAnalysisViewAll => 'View all analysis';
+
+  @override
   String get analyzeButton => 'Analyze';
 
   @override

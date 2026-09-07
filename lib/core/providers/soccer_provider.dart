@@ -37,7 +37,7 @@ final selectedLeagueProvider = StateProvider<String?>((ref) => null);
 List<DateTime> soccerAnalysisDateTimes() {
   final today = DateTime.now();
   final todayDay = DateTime(today.year, today.month, today.day);
-  return List.generate(3, (index) => todayDay.add(Duration(days: index)));
+  return List.generate(4, (index) => todayDay.add(Duration(days: index)));
 }
 
 final soccerAnalysisDateProvider = StateProvider<String>(
@@ -150,14 +150,9 @@ Future<List<SoccerAnalysisCard>> _fetchAnalysisSoccerMatches(
   SoccerService service,
 ) async {
   final merged = <int, SoccerAnalysisCard>{};
-  final today = DateTime.now().toUtc();
-  final futures = List.generate(7, (dayOffset) {
-    final date = today.add(Duration(days: dayOffset));
-    final month = date.month.toString().padLeft(2, '0');
-    final day = date.day.toString().padLeft(2, '0');
-    final dateStr = '${date.year}-$month-$day';
-    return service.getMatches(date: dateStr);
-  });
+  final dateStrings = soccerAnalysisDateTimes().map(fixtureDateString).toList();
+  final futures =
+      dateStrings.map((dateStr) => service.getMatches(date: dateStr));
   final results = await Future.wait(futures);
   for (final dayMatches in results) {
     for (final card in dayMatches) {
@@ -480,6 +475,9 @@ String? findTeamLogo(Map<String, String> logoMap, String teamName) {
           }
   return null;
 }
+
+bool soccerAnalysisMatchHasNotStarted(SoccerAnalysisCard card) =>
+    _isUpcomingMatch(card);
 
 bool _isUpcomingMatch(SoccerAnalysisCard card) {
   if (card.match.status == 'finished') return false;

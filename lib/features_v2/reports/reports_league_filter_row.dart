@@ -12,12 +12,14 @@ class ReportsLeagueFilterRow extends StatelessWidget {
     required this.leagues,
     required this.selectedLeagueId,
     required this.onSelected,
+    required this.scrollController,
     super.key,
   });
 
   final List<ReportsLeagueFilterOption> leagues;
   final String? selectedLeagueId;
   final ValueChanged<String?> onSelected;
+  final ScrollController scrollController;
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +27,7 @@ class ReportsLeagueFilterRow extends StatelessWidget {
     return SizedBox(
       height: 32,
       child: ListView.separated(
+        controller: scrollController,
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
         itemCount: leagues.length + 1,

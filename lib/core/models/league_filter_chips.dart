@@ -104,7 +104,7 @@ const soccerAnalysisLeagueChips = [
   SoccerAnalysisLeagueChip(
     id: 'j1_league',
     label: 'J리그',
-    labelEn: 'J1 League',
+    labelEn: 'J League',
     codes: ['J1'],
     iconId: 'j1_league',
   ),

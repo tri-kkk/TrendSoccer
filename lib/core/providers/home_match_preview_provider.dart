@@ -40,7 +40,7 @@ class HomeMatchPreview {
   final bool hasAnalysis;
 }
 
-/// Today's upcoming scheduled matches across soccer and baseball analysis feeds.
+/// Today's and tomorrow's upcoming scheduled matches across soccer and baseball.
 final homeTodayMatchesProvider =
     FutureProvider<List<HomeMatchPreview>>((ref) async {
   final soccer = await ref.watch(analysisSoccerMatchesProvider.future);
@@ -53,10 +53,10 @@ final homeTodayMatchesProvider =
     ...soccer
         .map(_homeMatchPreviewFromSoccer)
         .whereType<HomeMatchPreview>()
-        .where((match) => _isTodayUpcomingScheduled(match, todayStart, now)),
+        .where((match) => _isTodayOrTomorrowUpcomingScheduled(match, todayStart, now)),
     ...baseball
         .map(_homeMatchPreviewFromBaseball)
-        .where((match) => _isTodayUpcomingScheduled(match, todayStart, now)),
+        .where((match) => _isTodayOrTomorrowUpcomingScheduled(match, todayStart, now)),
   ];
 
   return _capSortedByKickoff(merged, homeTodayMatchesLimit);
@@ -91,7 +91,7 @@ List<HomeMatchPreview> _capSortedByKickoff(
   return sorted;
 }
 
-bool _isTodayUpcomingScheduled(
+bool _isTodayOrTomorrowUpcomingScheduled(
   HomeMatchPreview match,
   DateTime todayStart,
   DateTime now,
@@ -102,7 +102,8 @@ bool _isTodayUpcomingScheduled(
     localKickoff.month,
     localKickoff.day,
   );
-  if (kickoffDay != todayStart) return false;
+  final tomorrowStart = todayStart.add(const Duration(days: 1));
+  if (kickoffDay != todayStart && kickoffDay != tomorrowStart) return false;
   return localKickoff.isAfter(now);
 }
 

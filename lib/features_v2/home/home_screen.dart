@@ -8,6 +8,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:trendsoccer/core/assets/ts_assets.dart';
 import 'package:trendsoccer/core/models/auth_state.dart';
+import 'package:trendsoccer/core/models/baseball_models.dart';
+import 'package:trendsoccer/core/models/match_header_data.dart';
+import 'package:trendsoccer/core/models/soccer_models.dart';
 import 'package:trendsoccer/core/models/premium_pick_stats.dart';
 import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
@@ -174,7 +177,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const _AnalysisCarouselSection(
           sport: TsSport.soccer,
           title: 'Soccer Analysis',
-          seeAllPath: '/reports/soccer/premium',
+          seeAllPath: '/reports/soccer',
         ),
       if (showBaseballAnalysisBlock)
         const _AnalysisCarouselSection(
@@ -663,6 +666,69 @@ String _analysisKickoffSubLabel(DateTime kickoffUtc) {
   return '$month.$day';
 }
 
+SoccerAnalysisCard? _soccerCardForHomePreview(
+  List<SoccerAnalysisCard> cards,
+  HomeMatchPreview preview,
+) {
+  for (final card in cards) {
+    final timestamp = card.match.matchTimestamp;
+    if (timestamp == null) continue;
+    final kickoffUtc = timestamp.isUtc ? timestamp : timestamp.toUtc();
+    if (kickoffUtc != preview.kickoffUtc) continue;
+    if (card.match.homeTeam.name != preview.homeTeamEn) continue;
+    if (card.match.awayTeam.name != preview.awayTeamEn) continue;
+    final code = card.match.league.code?.toUpperCase();
+    if (code == null || code != preview.leagueCode.toUpperCase()) continue;
+    return card;
+  }
+  return null;
+}
+
+BaseballAnalysisCard? _baseballCardForHomePreview(
+  List<BaseballAnalysisCard> cards,
+  HomeMatchPreview preview,
+) {
+  for (final card in cards) {
+    final kickoffUtc = card.matchTimestamp.isUtc
+        ? card.matchTimestamp
+        : card.matchTimestamp.toUtc();
+    if (kickoffUtc != preview.kickoffUtc) continue;
+    if (card.homeTeam != preview.homeTeamEn) continue;
+    if (card.awayTeam != preview.awayTeamEn) continue;
+    if (card.league.toUpperCase() != preview.leagueCode.toUpperCase()) continue;
+    return card;
+  }
+  return null;
+}
+
+void _openHomeAnalysisReport(
+  BuildContext context,
+  WidgetRef ref,
+  TsSport sport,
+  HomeMatchPreview preview,
+) {
+  switch (sport) {
+    case TsSport.soccer:
+      final cards = ref.read(analysisSoccerMatchesProvider).asData?.value;
+      if (cards == null) return;
+      final card = _soccerCardForHomePreview(cards, preview);
+      if (card == null) return;
+      context.push(
+        '/matches/soccer/${card.match.matchId}',
+        extra: MatchHeaderData.fromSoccerCard(card),
+      );
+    case TsSport.baseball:
+      final cards = ref.read(baseballAnalysisMatchesProvider).asData?.value;
+      if (cards == null) return;
+      final card = _baseballCardForHomePreview(cards, preview);
+      if (card == null) return;
+      context.push(
+        '/matches/baseball/${card.matchId}',
+        extra: MatchHeaderData.fromBaseballCard(card),
+      );
+  }
+}
+
 class _AnalysisCarouselSection extends ConsumerWidget {
   const _AnalysisCarouselSection({
     required this.sport,
@@ -742,9 +808,7 @@ class _AnalysisCarouselSection extends ConsumerWidget {
               status: TsAnalysisStatus.scheduled,
               centerLabel: _analysisKickoffTimeLabel(item.kickoffUtc),
               subLabel: _analysisKickoffSubLabel(item.kickoffUtc),
-              onTap: () {
-                // TODO(data): open analysis report detail
-              },
+              onTap: () => _openHomeAnalysisReport(context, ref, sport, item),
             ),
           );
         },

@@ -9,6 +9,7 @@ import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
 import 'package:trendsoccer/features_v2/reports/reports_date_strip.dart';
 import 'package:trendsoccer/features_v2/reports/reports_league_chips.dart';
 import 'package:trendsoccer/features_v2/reports/reports_league_filter_row.dart';
+import 'package:trendsoccer/features_v2/reports/reports_header_scope.dart';
 import 'package:trendsoccer/features_v2/reports/reports_route_map.dart';
 
 /// Shared reports header: sport toggle, segment tabs, optional date strip and filter.
@@ -42,11 +43,18 @@ class ReportsHeaderShell extends StatefulWidget {
 class _ReportsHeaderShellState extends State<ReportsHeaderShell> {
   String? _selectedLeagueId;
   late int _selectedDateIndex;
+  final ScrollController _leagueFilterScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _selectedDateIndex = widget.selectedDateIndex;
+  }
+
+  @override
+  void dispose() {
+    _leagueFilterScrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -80,6 +88,27 @@ class _ReportsHeaderShellState extends State<ReportsHeaderShell> {
     final targetSegment = reportsSegmentAtIndex(widget.sport, index);
     if (targetSegment == widget.segment) return;
     _navigateTo(context, widget.sport, targetSegment);
+  }
+
+  void _scrollLeagueFilterToStart() {
+    if (!_leagueFilterScrollController.hasClients) return;
+    _leagueFilterScrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  }
+
+  void _onLeagueSelected(String? id) {
+    if (id == null) {
+      _scrollLeagueFilterToStart();
+    }
+    setState(() => _selectedLeagueId = id);
+  }
+
+  void _clearLeagueSelection() {
+    _scrollLeagueFilterToStart();
+    setState(() => _selectedLeagueId = null);
   }
 
   @override
@@ -117,10 +146,17 @@ class _ReportsHeaderShellState extends State<ReportsHeaderShell> {
           ReportsLeagueFilterRow(
             leagues: leagues,
             selectedLeagueId: _selectedLeagueId,
-            onSelected: (id) => setState(() => _selectedLeagueId = id),
+            scrollController: _leagueFilterScrollController,
+            onSelected: _onLeagueSelected,
           ),
           SizedBox(height: _showsDateStrip ? TsSpacing.xl : _ReportsHeaderControls.gapBelow),
-          Expanded(child: widget.child),
+          Expanded(
+            child: ReportsHeaderScope(
+              selectedLeagueId: _selectedLeagueId,
+              onClearLeagueSelection: _clearLeagueSelection,
+              child: widget.child,
+            ),
+          ),
         ],
       ),
     );

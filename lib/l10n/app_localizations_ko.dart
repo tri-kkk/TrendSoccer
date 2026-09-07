@@ -150,6 +150,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get analysisToday => '오늘';
 
   @override
+  String get reportsAnalysisNoLeagueBody => '다른 리그를 선택하거나 전체 분석을 확인해 보세요.';
+
+  @override
+  String get reportsAnalysisNoLeagueTitle => '아직 분석이 준비되지 않았습니다';
+
+  @override
+  String get reportsAnalysisViewAll => '전체 분석 보기';
+
+  @override
   String get analyzeButton => 'Analyze';
 
   @override

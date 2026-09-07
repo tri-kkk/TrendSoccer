@@ -356,6 +356,24 @@ abstract class AppLocalizations {
   /// **'오늘'**
   String get analysisToday;
 
+  /// No description provided for @reportsAnalysisNoLeagueBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'다른 리그를 선택하거나 전체 분석을 확인해 보세요.'**
+  String get reportsAnalysisNoLeagueBody;
+
+  /// No description provided for @reportsAnalysisNoLeagueTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'아직 분석이 준비되지 않았습니다'**
+  String get reportsAnalysisNoLeagueTitle;
+
+  /// No description provided for @reportsAnalysisViewAll.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 분석 보기'**
+  String get reportsAnalysisViewAll;
+
   /// No description provided for @analyzeButton.
   ///
   /// In ko, this message translates to:
