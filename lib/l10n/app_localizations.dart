@@ -446,6 +446,30 @@ abstract class AppLocalizations {
   /// **'전체 보기'**
   String get reportsComboViewAll;
 
+  /// No description provided for @reportsComboLockedTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 회원 전용입니다'**
+  String get reportsComboLockedTitle;
+
+  /// No description provided for @reportsComboLockedBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'구독하시면 조합 구성을 모두 확인할 수 있습니다.'**
+  String get reportsComboLockedBody;
+
+  /// No description provided for @reportsComboDetailTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'멀티 매치 분석'**
+  String get reportsComboDetailTitle;
+
+  /// No description provided for @comboNotFound.
+  ///
+  /// In ko, this message translates to:
+  /// **'준비된 조합 경기 정보가 없습니다'**
+  String get comboNotFound;
+
   /// No description provided for @analyzeButton.
   ///
   /// In ko, this message translates to:
@@ -1099,6 +1123,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'승'**
   String get comboWin;
+
+  /// No description provided for @comboLegPickWin.
+  ///
+  /// In ko, this message translates to:
+  /// **'{team} 승'**
+  String comboLegPickWin(String team);
 
   /// No description provided for @confidenceAccuracy.
   ///

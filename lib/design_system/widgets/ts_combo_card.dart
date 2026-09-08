@@ -21,6 +21,8 @@ class TsComboLeg {
     required this.probability,
     this.reasonLabel,
     this.baseline,
+    this.homeEmblemUrl,
+    this.awayEmblemUrl,
   });
 
   final TsComboPick pick;
@@ -34,6 +36,8 @@ class TsComboLeg {
   final String probabilityLabel;
   final double probability;
   final double? baseline;
+  final String? homeEmblemUrl;
+  final String? awayEmblemUrl;
 }
 
 class TsAiReportData {
@@ -108,6 +112,8 @@ class TsComboCard extends StatelessWidget {
                   timeLabel: legs[i].timeLabel,
                   scoreLabel: legs[i].scoreLabel,
                   reason: legs[i].reasonLabel,
+                  homeEmblemUrl: legs[i].homeEmblemUrl,
+                  awayEmblemUrl: legs[i].awayEmblemUrl,
                 ),
               ],
             ],

@@ -204,6 +204,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportsComboViewAll => 'View all picks';
 
   @override
+  String get reportsComboLockedTitle => 'Premium members only';
+
+  @override
+  String get reportsComboLockedBody => 'Subscribe to see the full combination.';
+
+  @override
+  String get reportsComboDetailTitle => 'Multi-Match Analysis';
+
+  @override
+  String get comboNotFound => 'No combination picks are available.';
+
+  @override
   String get analyzeButton => 'Analyze';
 
   @override
@@ -558,6 +570,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get comboWin => 'Win';
+
+  @override
+  String comboLegPickWin(String team) {
+    return '$team win';
+  }
 
   @override
   String get confidenceAccuracy => 'Match rate';

@@ -881,9 +881,7 @@ class _ComboTodaySection extends ConsumerWidget {
         stableFraction: summary.stableFraction,
         accuracyLabel: summary.accuracyLabel,
         ctaLabel: 'View combinations',
-        onCtaPressed: () {
-          // TODO(data): navigate to combo picks
-        },
+        onCtaPressed: () => context.push('/reports/combo'),
       ),
     );
 

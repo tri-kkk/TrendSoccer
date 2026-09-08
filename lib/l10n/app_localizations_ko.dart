@@ -197,6 +197,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get reportsComboViewAll => '전체 보기';
 
   @override
+  String get reportsComboLockedTitle => '프리미엄 회원 전용입니다';
+
+  @override
+  String get reportsComboLockedBody => '구독하시면 조합 구성을 모두 확인할 수 있습니다.';
+
+  @override
+  String get reportsComboDetailTitle => '멀티 매치 분석';
+
+  @override
+  String get comboNotFound => '준비된 조합 경기 정보가 없습니다';
+
+  @override
   String get analyzeButton => 'Analyze';
 
   @override
@@ -544,6 +556,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get comboWin => '승';
+
+  @override
+  String comboLegPickWin(String team) {
+    return '$team 승';
+  }
 
   @override
   String get confidenceAccuracy => '일치도';
