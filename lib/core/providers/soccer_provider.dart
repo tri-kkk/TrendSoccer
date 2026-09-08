@@ -37,7 +37,7 @@ final selectedLeagueProvider = StateProvider<String?>((ref) => null);
 List<DateTime> soccerAnalysisDateTimes() {
   final today = DateTime.now();
   final todayDay = DateTime(today.year, today.month, today.day);
-  return List.generate(4, (index) => todayDay.add(Duration(days: index)));
+  return List.generate(3, (index) => todayDay.add(Duration(days: index)));
 }
 
 final soccerAnalysisDateProvider = StateProvider<String>(

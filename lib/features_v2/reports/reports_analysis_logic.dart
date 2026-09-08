@@ -1,4 +1,5 @@
 import 'package:trendsoccer/core/models/baseball_models.dart';
+import 'package:trendsoccer/core/models/league_filter_chips.dart';
 import 'package:trendsoccer/core/models/soccer_models.dart';
 import 'package:trendsoccer/core/providers/baseball_provider.dart';
 import 'package:trendsoccer/core/providers/fixture_provider.dart';
@@ -53,23 +54,31 @@ DateTime? soccerAnalysisKickoffLocal(SoccerAnalysisCard card) {
   return DateTime.tryParse(card.match.matchDate.trim())?.toLocal();
 }
 
-/// Earliest unstarted local day + league chip filter for reports soccer analysis.
+/// Upcoming matches in the fetch window + league chip filter for reports soccer analysis.
 List<SoccerAnalysisCard> filterReportsSoccerAnalysisList(
   List<SoccerAnalysisCard> matches,
   String? selectedLeagueId,
 ) {
-  final earliestDate = reportsEarliestUnstartedLocalDate<SoccerAnalysisCard>(
-    items: matches,
-    kickoffLocal: soccerAnalysisKickoffLocal,
-    hasNotStarted: soccerAnalysisMatchHasNotStarted,
-  );
-  if (earliestDate == null) return [];
+  var filtered =
+      matches.where(soccerAnalysisMatchHasNotStarted).toList(growable: true);
 
-  final filtered = filterSoccerAnalysisMatches(
-    matches,
-    earliestDate,
-    selectedLeagueId,
-  );
+  if (selectedLeagueId != null && selectedLeagueId.isNotEmpty) {
+    final chip = soccerAnalysisLeagueChips.firstWhere(
+      (filter) => filter.id == selectedLeagueId,
+      orElse: () => soccerAnalysisLeagueChips.first,
+    );
+    final codes = chip.codes;
+    if (codes != null && codes.isNotEmpty) {
+      final codeSet = codes.map((code) => code.toUpperCase()).toSet();
+      filtered = filtered
+          .where((card) {
+            final leagueCode = card.match.league.code?.toUpperCase();
+            return leagueCode != null && codeSet.contains(leagueCode);
+          })
+          .toList(growable: false);
+    }
+  }
+
   filtered.sort((a, b) {
     final aTs = a.match.matchTimestamp;
     final bTs = b.match.matchTimestamp;
