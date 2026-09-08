@@ -32,59 +32,68 @@ class FeedPreviewBody extends ConsumerWidget {
     final languageCode = Localizations.localeOf(context).languageCode;
     final postsAsync = ref.watch(feedPreviewPostsProvider);
 
-    return postsAsync.when(
-      loading: () => _loadingList(),
-      error: (_, _) => _centeredEmptyList(
-        TsEmptyState(
-          type: TsEmptyType.failure,
-          title: l10n.reportListLoadError,
-          description: '',
-          actionLabel: l10n.retry,
-          onAction: () => ref.invalidate(feedPreviewPostsProvider),
-        ),
-      ),
-      data: (posts) {
-        if (posts.isEmpty) {
-          return _centeredEmptyList(
-            TsEmptyState(
-              title: l10n.feedPreviewEmptyTitle,
-              description: l10n.feedPreviewEmptyBody,
-            ),
-          );
-        }
+    Future<void> onRefresh() async {
+      ref.invalidate(feedPreviewPostsProvider);
+      await ref.read(feedPreviewPostsProvider.future);
+    }
 
-        final filtered = filterFeedPreviewPosts(posts, selectedLeagueId);
-        if (filtered.isEmpty) {
-          return _centeredEmptyList(
-            TsEmptyState(
-              type: TsEmptyType.withAction,
-              title: l10n.feedPreviewNoLeagueTitle,
-              description: l10n.feedPreviewNoLeagueBody,
-              actionLabel: l10n.feedPreviewViewAll,
-              onAction: onClearLeagueSelection,
-            ),
-          );
-        }
-
-        return ListView.separated(
-          padding: const EdgeInsets.fromLTRB(
-            TsSpacing.lg,
-            0,
-            TsSpacing.lg,
-            TsSpacing.xl,
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: postsAsync.when(
+        loading: () => _loadingList(),
+        error: (_, _) => _centeredEmptyList(
+          TsEmptyState(
+            type: TsEmptyType.failure,
+            title: l10n.reportListLoadError,
+            description: l10n.errorNetwork,
+            actionLabel: l10n.retry,
+            onAction: () => ref.invalidate(feedPreviewPostsProvider),
           ),
-          itemCount: filtered.length,
-          separatorBuilder: (_, _) => const SizedBox(height: TsSpacing.md),
-          itemBuilder: (context, index) {
-            final post = filtered[index];
-            return _PreviewListCard(
-              post: post,
-              languageCode: languageCode,
-              onTap: () => context.push('/feed/preview/${post.slug}'),
+        ),
+        data: (posts) {
+          if (posts.isEmpty) {
+            return _centeredEmptyList(
+              TsEmptyState(
+                title: l10n.feedPreviewEmptyTitle,
+                description: l10n.feedPreviewEmptyBody,
+              ),
             );
-          },
-        );
-      },
+          }
+
+          final filtered = filterFeedPreviewPosts(posts, selectedLeagueId);
+          if (filtered.isEmpty) {
+            return _centeredEmptyList(
+              TsEmptyState(
+                type: TsEmptyType.withAction,
+                title: l10n.feedPreviewNoLeagueTitle,
+                description: l10n.feedPreviewNoLeagueBody,
+                actionLabel: l10n.feedPreviewViewAll,
+                onAction: onClearLeagueSelection,
+              ),
+            );
+          }
+
+          return ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(
+              TsSpacing.lg,
+              0,
+              TsSpacing.lg,
+              TsSpacing.xl,
+            ),
+            itemCount: filtered.length,
+            separatorBuilder: (_, _) => const SizedBox(height: TsSpacing.md),
+            itemBuilder: (context, index) {
+              final post = filtered[index];
+              return _PreviewListCard(
+                post: post,
+                languageCode: languageCode,
+                onTap: () => context.push('/feed/preview/${post.slug}'),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
@@ -129,6 +138,7 @@ class _PreviewListCard extends StatelessWidget {
 
 Widget _loadingList() {
   return ListView.separated(
+    physics: const AlwaysScrollableScrollPhysics(),
     padding: const EdgeInsets.fromLTRB(
       TsSpacing.lg,
       0,
@@ -143,6 +153,7 @@ Widget _loadingList() {
 
 Widget _centeredEmptyList(Widget empty) {
   return CustomScrollView(
+    physics: const AlwaysScrollableScrollPhysics(),
     slivers: [
       SliverFillRemaining(
         hasScrollBody: false,

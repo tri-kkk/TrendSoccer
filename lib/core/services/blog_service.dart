@@ -28,55 +28,43 @@ class BlogService {
     int limit = 10,
     int offset = 0,
   }) async {
-    try {
-      final lang = _apiLanguage();
-      final response = await _dio.get<dynamic>(
-        '/api/blog/posts',
-        queryParameters: <String, dynamic>{
-          'published': true,
-          'lang': lang,
-          'category': 'preview',
-          'limit': limit,
-          'offset': offset,
-        },
-      );
-            final data = response.data;
-      if (data is Map<String, dynamic>) return data;
-      if (data is Map) return Map<String, dynamic>.from(data);
-      return {};
-    } catch (e) {
-            return {};
-    }
+    final lang = _apiLanguage();
+    final response = await _dio.get<dynamic>(
+      '/api/blog/posts',
+      queryParameters: <String, dynamic>{
+        'published': true,
+        'lang': lang,
+        'category': 'preview',
+        'limit': limit,
+        'offset': offset,
+      },
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    return {};
   }
 
   Future<Map<String, dynamic>> getBlogPost(String slug) async {
-    try {
-      final lang = _apiLanguage();
-      final response = await _dio.get<dynamic>(
-        '/api/blog/post/$slug',
-        queryParameters: <String, String>{'lang': lang},
-      );
-            final data = response.data;
-      if (data is Map<String, dynamic>) return data;
-      if (data is Map) return Map<String, dynamic>.from(data);
-      return {};
-    } catch (e) {
-            return {};
-    }
+    final lang = _apiLanguage();
+    final response = await _dio.get<dynamic>(
+      '/api/blog/post/$slug',
+      queryParameters: <String, String>{'lang': lang},
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    return {};
   }
 
   Future<String> fetchLegalContent(String type) async {
-    try {
-      final locale = _apiLanguage();
-      final response = await _dio.get<dynamic>(
-        '/$locale/$type',
-        options: Options(responseType: ResponseType.plain),
-      );
-      final html = response.data?.toString() ?? '';
-            return html;
-    } catch (e) {
-            return '';
-    }
+    final locale = _apiLanguage();
+    final response = await _dio.get<dynamic>(
+      '/$locale/$type',
+      options: Options(responseType: ResponseType.plain),
+    );
+    final html = response.data?.toString() ?? '';
+    return html;
   }
 
   Future<Map<String, dynamic>> sendContactForm({
