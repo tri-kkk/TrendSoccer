@@ -159,6 +159,21 @@ class AppLocalizationsKo extends AppLocalizations {
   String get reportsAnalysisViewAll => '전체 분석 보기';
 
   @override
+  String get feedPreviewNoLeagueTitle => '이 리그의 프리뷰가 없습니다';
+
+  @override
+  String get feedPreviewNoLeagueBody => '다른 리그를 선택하거나 전체를 확인해 보세요.';
+
+  @override
+  String get feedPreviewViewAll => '전체 프리뷰 보기';
+
+  @override
+  String get feedPreviewEmptyTitle => '아직 등록된 프리뷰가 없습니다';
+
+  @override
+  String get feedPreviewEmptyBody => '프리뷰는 경기 시작 전에 올라옵니다.';
+
+  @override
   String get reportsPremiumEmptyBody =>
       '엄선해서 제공하기 때문에 없는 날도 있습니다.\n전체 경기는 Analysis에서 확인하세요.';
 

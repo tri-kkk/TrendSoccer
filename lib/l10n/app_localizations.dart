@@ -374,6 +374,36 @@ abstract class AppLocalizations {
   /// **'전체 분석 보기'**
   String get reportsAnalysisViewAll;
 
+  /// No description provided for @feedPreviewNoLeagueTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 리그의 프리뷰가 없습니다'**
+  String get feedPreviewNoLeagueTitle;
+
+  /// No description provided for @feedPreviewNoLeagueBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'다른 리그를 선택하거나 전체를 확인해 보세요.'**
+  String get feedPreviewNoLeagueBody;
+
+  /// No description provided for @feedPreviewViewAll.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 프리뷰 보기'**
+  String get feedPreviewViewAll;
+
+  /// No description provided for @feedPreviewEmptyTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'아직 등록된 프리뷰가 없습니다'**
+  String get feedPreviewEmptyTitle;
+
+  /// No description provided for @feedPreviewEmptyBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리뷰는 경기 시작 전에 올라옵니다.'**
+  String get feedPreviewEmptyBody;
+
   /// No description provided for @reportsPremiumEmptyBody.
   ///
   /// In ko, this message translates to:

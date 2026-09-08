@@ -165,6 +165,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportsAnalysisViewAll => 'View all analysis';
 
   @override
+  String get feedPreviewNoLeagueTitle => 'No previews for this league';
+
+  @override
+  String get feedPreviewNoLeagueBody =>
+      'Try another league or view all previews.';
+
+  @override
+  String get feedPreviewViewAll => 'View all previews';
+
+  @override
+  String get feedPreviewEmptyTitle => 'No previews yet';
+
+  @override
+  String get feedPreviewEmptyBody =>
+      'Match previews are published before kickoff.';
+
+  @override
   String get reportsPremiumEmptyBody =>
       'Curation is strict — some days have none.\nCheck Analysis for all supported leagues.';
 

@@ -27,7 +27,7 @@ class TsNetworkImage extends StatelessWidget {
     final c = Theme.of(context).extension<TsThemeColors>()!;
     final hasUrl = imageUrl != null && imageUrl!.isNotEmpty;
 
-    Widget placeholderPanel() => Center(
+    Widget errorPanel() => Center(
           child: TsIcon(
             placeholderIcon,
             size: TsIconSize.lg,
@@ -37,15 +37,15 @@ class TsNetworkImage extends StatelessWidget {
 
     Widget slotContent;
     if (!hasUrl) {
-      slotContent = placeholderPanel();
+      slotContent = errorPanel();
     } else {
       slotContent = CachedNetworkImage(
         imageUrl: imageUrl!,
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
-        placeholder: (_, _) => placeholderPanel(),
-        errorWidget: (_, _, _) => placeholderPanel(),
+        placeholder: (_, _) => const SizedBox.expand(),
+        errorWidget: (_, _, _) => errorPanel(),
       );
     }
 
