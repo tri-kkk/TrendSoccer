@@ -42,8 +42,8 @@ GoRoute _r(String path, String name, Widget child) => GoRoute(
       builder: (_, _) => child,
     );
 
-/// Reports shell tab routes — no slide transition between sibling segments.
-GoRoute _reportsR(String path, String name, Widget child) => GoRoute(
+/// Shell branch segment routes — no slide transition between sibling tabs.
+GoRoute _shellSegmentR(String path, String name, Widget child) => GoRoute(
       path: path,
       name: name,
       pageBuilder: (context, state) => NoTransitionPage<void>(
@@ -110,19 +110,19 @@ final GoRouter appRouter = GoRouter(
           navigatorKey: _reportsKey,
           initialLocation: '/reports/soccer',
           routes: [
-            _reportsR('/reports/soccer', 'reportsSoccer', const ReportsSoccerScreen()),
-            _reportsR('/reports/soccer/premium', 'reportsSoccerPremium', const ReportsSoccerPremiumScreen()),
-            _reportsR('/reports/baseball', 'reportsBaseball', const ReportsBaseballScreen()),
-            _reportsR('/reports/combo', 'reportsCombo', const ReportsComboScreen()),
+            _shellSegmentR('/reports/soccer', 'reportsSoccer', const ReportsSoccerScreen()),
+            _shellSegmentR('/reports/soccer/premium', 'reportsSoccerPremium', const ReportsSoccerPremiumScreen()),
+            _shellSegmentR('/reports/baseball', 'reportsBaseball', const ReportsBaseballScreen()),
+            _shellSegmentR('/reports/combo', 'reportsCombo', const ReportsComboScreen()),
           ],
         ),
         StatefulShellBranch(
           navigatorKey: _feedKey,
           initialLocation: '/feed/preview',
           routes: [
-            _r('/feed/preview', 'feedPreview', const FeedPreviewScreen()),
-            _r('/feed/news', 'feedNews', const FeedNewsScreen()),
-            _r('/feed/highlights', 'feedHighlights', const FeedHighlightsScreen()),
+            _shellSegmentR('/feed/preview', 'feedPreview', const FeedPreviewScreen()),
+            _shellSegmentR('/feed/news', 'feedNews', const FeedNewsScreen()),
+            _shellSegmentR('/feed/highlights', 'feedHighlights', const FeedHighlightsScreen()),
           ],
         ),
         StatefulShellBranch(
