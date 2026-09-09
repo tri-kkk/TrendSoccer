@@ -410,6 +410,12 @@ abstract class AppLocalizations {
   /// **'하이라이트를 불러오지 못했습니다'**
   String get highlightsLoadError;
 
+  /// No description provided for @newsLoadError.
+  ///
+  /// In ko, this message translates to:
+  /// **'뉴스를 불러오지 못했습니다'**
+  String get newsLoadError;
+
   /// No description provided for @highlightPlaybackFailedTitle.
   ///
   /// In ko, this message translates to:

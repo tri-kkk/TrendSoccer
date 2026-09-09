@@ -185,6 +185,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get highlightsLoadError => 'Could not load highlights';
 
   @override
+  String get newsLoadError => 'Could not load news';
+
+  @override
   String get highlightPlaybackFailedTitle => 'Can\'t play this clip';
 
   @override

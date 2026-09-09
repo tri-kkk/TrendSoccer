@@ -25,21 +25,17 @@ class NewsService {
   }
 
   Future<Map<String, dynamic>> getNews() async {
-    try {
-      final lang = _apiLanguage();
-      final response = await _dio.get<dynamic>(
-        '/api/news',
-        queryParameters: <String, String>{
-          'lang': lang,
-          'ui': lang,
-        },
-      );
-      final data = response.data;
-      if (data is Map<String, dynamic>) return data;
-      if (data is Map) return Map<String, dynamic>.from(data);
-      return {};
-    } catch (e) {
-      return {};
-    }
+    final lang = _apiLanguage();
+    final response = await _dio.get<dynamic>(
+      '/api/news',
+      queryParameters: <String, String>{
+        'lang': lang,
+        'ui': lang,
+      },
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    return {};
   }
 }

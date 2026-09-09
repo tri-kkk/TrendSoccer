@@ -45,8 +45,8 @@ class TsNewsRow extends StatelessWidget {
               ClipRRect(
                 borderRadius: TsRadius.sm,
                 child: Container(
-                  width: 80,
-                  height: 45,
+                  width: 160,
+                  height: 90,
                   color: c.surfaceRaised,
                   alignment: Alignment.center,
                   child: thumbnail ??

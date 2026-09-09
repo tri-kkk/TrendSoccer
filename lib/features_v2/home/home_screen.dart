@@ -949,7 +949,7 @@ class _NewsSection extends ConsumerWidget {
                   : formatRelativeTime(articles[i].publishedAt!),
               thumbnail: TsNetworkImage(
                 imageUrl: articles[i].imageUrl,
-                aspectRatio: 80 / 45,
+                aspectRatio: 16 / 9,
                 placeholderIcon: TsIcons.imageNotSupported,
               ),
               onTap: () => unawaited(_openArticle(articles[i].url)),

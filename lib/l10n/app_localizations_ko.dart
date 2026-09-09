@@ -177,6 +177,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get highlightsLoadError => '하이라이트를 불러오지 못했습니다';
 
   @override
+  String get newsLoadError => '뉴스를 불러오지 못했습니다';
+
+  @override
   String get highlightPlaybackFailedTitle => '영상을 재생할 수 없습니다';
 
   @override
