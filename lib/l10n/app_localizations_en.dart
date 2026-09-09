@@ -188,6 +188,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newsLoadError => 'Could not load news';
 
   @override
+  String get feedNewsSportAll => 'All';
+
+  @override
+  String get feedNewsSportSoccer => 'Soccer';
+
+  @override
+  String get feedNewsSportBaseball => 'Baseball';
+
+  @override
   String get highlightPlaybackFailedTitle => 'Can\'t play this clip';
 
   @override

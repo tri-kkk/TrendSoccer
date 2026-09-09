@@ -11,11 +11,18 @@ import 'package:trendsoccer/design_system/widgets/ts_network_image.dart';
 import 'package:trendsoccer/design_system/widgets/ts_news_hero_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_news_row.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
+import 'package:trendsoccer/features_v2/feed/feed_news_logic.dart';
 import 'package:trendsoccer/features_v2/feed/feed_news_provider.dart';
+import 'package:trendsoccer/features_v2/feed/feed_route_map.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 
 class FeedNewsBody extends ConsumerWidget {
-  const FeedNewsBody({super.key});
+  const FeedNewsBody({
+    required this.selectedSport,
+    super.key,
+  });
+
+  final FeedNewsSportFilter? selectedSport;
 
   Future<void> _openArticle(String url) async {
     try {
@@ -58,6 +65,16 @@ class FeedNewsBody extends ConsumerWidget {
             );
           }
 
+          final filtered = filterFeedNewsArticles(articles, selectedSport);
+          if (filtered.isEmpty) {
+            return _centeredEmptyList(
+              TsEmptyState(
+                title: l10n.emptyDataTitle,
+                description: l10n.emptyDataSubtitle,
+              ),
+            );
+          }
+
           return ListView.separated(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(
@@ -66,10 +83,10 @@ class FeedNewsBody extends ConsumerWidget {
               TsSpacing.lg,
               TsSpacing.xl,
             ),
-            itemCount: articles.length,
+            itemCount: filtered.length,
             separatorBuilder: (_, _) => const SizedBox(height: TsSpacing.md),
             itemBuilder: (context, index) {
-              final article = articles[index];
+              final article = filtered[index];
               if (index == 0) {
                 return GestureDetector(
                   onTap: () => unawaited(_openArticle(article.url)),

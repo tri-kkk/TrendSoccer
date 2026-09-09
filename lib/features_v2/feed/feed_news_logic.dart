@@ -1,5 +1,18 @@
 import 'package:trendsoccer/core/utils/relative_time.dart';
 import 'package:trendsoccer/features_v2/feed/feed_news_article.dart';
+import 'package:trendsoccer/features_v2/feed/feed_route_map.dart';
+
+FeedNewsSportFilter? _readSport(Map<String, dynamic> json) {
+  final raw = json['sport']?.toString().trim().toLowerCase() ?? '';
+  switch (raw) {
+    case 'soccer':
+      return FeedNewsSportFilter.soccer;
+    case 'baseball':
+      return FeedNewsSportFilter.baseball;
+    default:
+      return null;
+  }
+}
 
 List<FeedNewsArticle> parseFeedNewsArticles(Map<String, dynamic> response) {
   final articlesRaw = response['articles'];
@@ -38,6 +51,7 @@ List<FeedNewsArticle> parseFeedNewsArticles(Map<String, dynamic> response) {
           timeLabel:
               publishedAt == null ? '—' : formatRelativeTime(publishedAt),
           url: url,
+          sport: _readSport(json),
           imageUrl: parsedImageUrl,
         ),
         publishedAt: publishedAt,
@@ -47,6 +61,19 @@ List<FeedNewsArticle> parseFeedNewsArticles(Map<String, dynamic> response) {
 
   parsed.sort((a, b) => _comparePublishedAt(a.publishedAt, b.publishedAt));
   return parsed.map((entry) => entry.article).toList(growable: false);
+}
+
+List<FeedNewsArticle> filterFeedNewsArticles(
+  List<FeedNewsArticle> articles,
+  FeedNewsSportFilter? selectedSport,
+) {
+  if (selectedSport == null) {
+    return articles;
+  }
+
+  return articles
+      .where((article) => article.sport == selectedSport)
+      .toList();
 }
 
 int _comparePublishedAt(DateTime? a, DateTime? b) {

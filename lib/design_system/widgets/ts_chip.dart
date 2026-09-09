@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/design_system/icons/ts_icon.dart';
+import 'package:trendsoccer/design_system/icons/ts_icon_spec.dart';
+import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
@@ -12,6 +15,7 @@ class TsChip extends StatelessWidget {
     required this.label,
     this.selected = false,
     this.tone = TsChipTone.defaultTone,
+    this.icon,
     this.onTap,
     super.key,
   });
@@ -19,6 +23,7 @@ class TsChip extends StatelessWidget {
   final String label;
   final bool selected;
   final TsChipTone tone;
+  final TsIconSpec? icon;
   final VoidCallback? onTap;
 
   @override
@@ -64,10 +69,26 @@ class TsChip extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: TsSpacing.md),
               child: Center(
-                child: Text(
-                  label,
-                  style: TsType.bodyMMedium.copyWith(color: labelColor),
-                ),
+                child: icon == null
+                    ? Text(
+                        label,
+                        style: TsType.bodyMMedium.copyWith(color: labelColor),
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TsIcon(
+                            icon!,
+                            size: TsIconSize.xs,
+                            color: labelColor,
+                          ),
+                          const SizedBox(width: TsSpacing.xs),
+                          Text(
+                            label,
+                            style: TsType.bodyMMedium.copyWith(color: labelColor),
+                          ),
+                        ],
+                      ),
               ),
             ),
           ),

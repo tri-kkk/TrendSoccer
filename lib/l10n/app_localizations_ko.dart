@@ -180,6 +180,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get newsLoadError => '뉴스를 불러오지 못했습니다';
 
   @override
+  String get feedNewsSportAll => '전체';
+
+  @override
+  String get feedNewsSportSoccer => '축구';
+
+  @override
+  String get feedNewsSportBaseball => '야구';
+
+  @override
   String get highlightPlaybackFailedTitle => '영상을 재생할 수 없습니다';
 
   @override

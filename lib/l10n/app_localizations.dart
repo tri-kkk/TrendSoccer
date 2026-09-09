@@ -416,6 +416,24 @@ abstract class AppLocalizations {
   /// **'뉴스를 불러오지 못했습니다'**
   String get newsLoadError;
 
+  /// No description provided for @feedNewsSportAll.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체'**
+  String get feedNewsSportAll;
+
+  /// No description provided for @feedNewsSportSoccer.
+  ///
+  /// In ko, this message translates to:
+  /// **'축구'**
+  String get feedNewsSportSoccer;
+
+  /// No description provided for @feedNewsSportBaseball.
+  ///
+  /// In ko, this message translates to:
+  /// **'야구'**
+  String get feedNewsSportBaseball;
+
   /// No description provided for @highlightPlaybackFailedTitle.
   ///
   /// In ko, this message translates to:
