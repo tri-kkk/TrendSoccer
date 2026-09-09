@@ -404,6 +404,12 @@ abstract class AppLocalizations {
   /// **'프리뷰는 경기 시작 전에 올라옵니다.'**
   String get feedPreviewEmptyBody;
 
+  /// No description provided for @highlightsLoadError.
+  ///
+  /// In ko, this message translates to:
+  /// **'하이라이트를 불러오지 못했습니다'**
+  String get highlightsLoadError;
+
   /// No description provided for @reportsPremiumEmptyBody.
   ///
   /// In ko, this message translates to:

@@ -174,6 +174,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get feedPreviewEmptyBody => '프리뷰는 경기 시작 전에 올라옵니다.';
 
   @override
+  String get highlightsLoadError => '하이라이트를 불러오지 못했습니다';
+
+  @override
   String get reportsPremiumEmptyBody =>
       '엄선해서 제공하기 때문에 없는 날도 있습니다.\n전체 경기는 Analysis에서 확인하세요.';
 

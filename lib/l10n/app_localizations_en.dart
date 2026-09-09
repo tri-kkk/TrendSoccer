@@ -182,6 +182,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Match previews are published before kickoff.';
 
   @override
+  String get highlightsLoadError => 'Could not load highlights';
+
+  @override
   String get reportsPremiumEmptyBody =>
       'Curation is strict — some days have none.\nCheck Analysis for all supported leagues.';
 
