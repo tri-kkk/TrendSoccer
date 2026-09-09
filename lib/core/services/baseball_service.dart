@@ -66,28 +66,24 @@ class BaseballService {
     required String date,
     String? league,
   }) async {
-    try {
-      final language = _apiLanguage();
-      final response = await _dio.get<dynamic>(
-        '/api/baseball/matches',
-        queryParameters: <String, String>{
-          'date': date,
-          'status': 'scheduled',
-          'limit': '50',
-          'language': language,
-        },
-      );
-      var matches = _parseAnalysisCards(response.data);
-      if (league != null && league.isNotEmpty) {
-        final normalizedLeague = league.trim().toUpperCase();
-        matches = matches
-            .where((match) => match.league.toUpperCase() == normalizedLeague)
-            .toList();
-      }
-            return matches;
-    } catch (e) {
-            return const [];
+    final language = _apiLanguage();
+    final response = await _dio.get<dynamic>(
+      '/api/baseball/matches',
+      queryParameters: <String, String>{
+        'date': date,
+        'status': 'scheduled',
+        'limit': '50',
+        'language': language,
+      },
+    );
+    var matches = _parseAnalysisCards(response.data);
+    if (league != null && league.isNotEmpty) {
+      final normalizedLeague = league.trim().toUpperCase();
+      matches = matches
+          .where((match) => match.league.toUpperCase() == normalizedLeague)
+          .toList();
     }
+    return matches;
   }
 
   Future<Map<String, dynamic>> getMatchDetail({required int matchId}) async {
@@ -276,48 +272,40 @@ class BaseballService {
     String? date,
     int days = 7,
   }) async {
-    try {
-      final language = _apiLanguage();
-      final params = <String, dynamic>{
-        'days': days,
-        'language': language,
-      };
-      if (date != null) params['date'] = date;
-      final response = await _dio.get<dynamic>(
-        '/api/baseball/combo-picks',
-        queryParameters: params,
-      );
-            final data = response.data;
-      if (data is Map<String, dynamic>) return data;
-      if (data is Map) return Map<String, dynamic>.from(data);
-      return {};
-    } catch (e) {
-            return {};
-    }
+    final language = _apiLanguage();
+    final params = <String, dynamic>{
+      'days': days,
+      'language': language,
+    };
+    if (date != null) params['date'] = date;
+    final response = await _dio.get<dynamic>(
+      '/api/baseball/combo-picks',
+      queryParameters: params,
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    return {};
   }
 
   Future<Map<String, dynamic>> getBaseballPickHistory() async {
-    try {
-      final language = _apiLanguage();
-      final response = await _dio.get<dynamic>(
-        '/api/baseball/picks/history',
-        queryParameters: <String, String>{
-          'league': 'ALL',
-          'days': '60',
-          'limit': '200',
-          'language': language,
-        },
-      );
-      final raw = response.data;
-      final history = raw is Map<String, dynamic>
-          ? raw
-          : raw is Map
-              ? Map<String, dynamic>.from(raw)
-              : <String, dynamic>{};
-      return history;
-    } catch (e) {
-      return {};
-    }
+    final language = _apiLanguage();
+    final response = await _dio.get<dynamic>(
+      '/api/baseball/picks/history',
+      queryParameters: <String, String>{
+        'league': 'ALL',
+        'days': '60',
+        'limit': '200',
+        'language': language,
+      },
+    );
+    final raw = response.data;
+    final history = raw is Map<String, dynamic>
+        ? raw
+        : raw is Map
+            ? Map<String, dynamic>.from(raw)
+            : <String, dynamic>{};
+    return history;
   }
 
   Future<List<BaseballAnalysisCard>> getUpcomingMatches() async {

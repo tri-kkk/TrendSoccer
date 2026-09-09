@@ -760,14 +760,18 @@ class _AnalysisCarouselSection extends ConsumerWidget {
     final matchesAsync = ref.watch(homeAnalysisMatchesProvider(sport));
 
     final rail = matchesAsync.when(
-      loading: () => ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-        itemCount: homeAnalysisMatchesLimit,
-        separatorBuilder: (context, index) => const SizedBox(width: TsSpacing.sm),
-        itemBuilder: (context, index) => const SizedBox(
-          width: 340,
-          child: TsSkeletonBlock(TsSkeletonType.block),
+      loading: () => SizedBox(
+        height: 120,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
+          itemCount: homeAnalysisMatchesLimit,
+          separatorBuilder: (context, index) =>
+              const SizedBox(width: TsSpacing.sm),
+          itemBuilder: (context, index) => const SizedBox(
+            width: 340,
+            child: TsSkeletonBlock(TsSkeletonType.block),
+          ),
         ),
       ),
       error: (error, stackTrace) => Align(
@@ -780,41 +784,45 @@ class _AnalysisCarouselSection extends ConsumerWidget {
           onAction: () => _retry(ref),
         ),
       ),
-      data: (matches) => ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-        itemCount: matches.length,
-        separatorBuilder: (context, index) => const SizedBox(width: TsSpacing.sm),
-        itemBuilder: (context, index) {
-          final item = matches[index];
-          final leagueCode = item.leagueCode;
-          final leagueId =
-              TsAssets.leagueIconIdFromApiCode(leagueCode) ??
-              leagueCode.toLowerCase();
-          return SizedBox(
-            width: 340,
-            child: TsAnalysisCard(
-              leagueId: leagueId,
-              leagueLabel: TsAssets.leagueDisplayName(leagueCode),
-              homeTeam: localizedTeamName(
-                context,
-                item.homeTeamEn,
-                item.homeTeamKo,
+      data: (matches) => SizedBox(
+        height: 120,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
+          itemCount: matches.length,
+          separatorBuilder: (context, index) =>
+              const SizedBox(width: TsSpacing.sm),
+          itemBuilder: (context, index) {
+            final item = matches[index];
+            final leagueCode = item.leagueCode;
+            final leagueId =
+                TsAssets.leagueIconIdFromApiCode(leagueCode) ??
+                leagueCode.toLowerCase();
+            return SizedBox(
+              width: 340,
+              child: TsAnalysisCard(
+                leagueId: leagueId,
+                leagueLabel: TsAssets.leagueDisplayName(leagueCode),
+                homeTeam: localizedTeamName(
+                  context,
+                  item.homeTeamEn,
+                  item.homeTeamKo,
+                ),
+                awayTeam: localizedTeamName(
+                  context,
+                  item.awayTeamEn,
+                  item.awayTeamKo,
+                ),
+                homeEmblemUrl: item.homeEmblemUrl,
+                awayEmblemUrl: item.awayEmblemUrl,
+                status: TsAnalysisStatus.scheduled,
+                centerLabel: _analysisKickoffTimeLabel(item.kickoffUtc),
+                subLabel: _analysisKickoffSubLabel(item.kickoffUtc),
+                onTap: () => _openHomeAnalysisReport(context, ref, sport, item),
               ),
-              awayTeam: localizedTeamName(
-                context,
-                item.awayTeamEn,
-                item.awayTeamKo,
-              ),
-              homeEmblemUrl: item.homeEmblemUrl,
-              awayEmblemUrl: item.awayEmblemUrl,
-              status: TsAnalysisStatus.scheduled,
-              centerLabel: _analysisKickoffTimeLabel(item.kickoffUtc),
-              subLabel: _analysisKickoffSubLabel(item.kickoffUtc),
-              onTap: () => _openHomeAnalysisReport(context, ref, sport, item),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
 
@@ -834,10 +842,7 @@ class _AnalysisCarouselSection extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: TsSpacing.sm),
-        SizedBox(
-          height: 120,
-          child: rail,
-        ),
+        rail,
       ],
     );
   }
@@ -995,14 +1000,18 @@ class _TodayMatchesSection extends ConsumerWidget {
     final matchesAsync = ref.watch(homeTodayMatchesProvider);
 
     final rail = matchesAsync.when(
-      loading: () => ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-        itemCount: homeTodayMatchesLimit,
-        separatorBuilder: (context, index) => const SizedBox(width: TsSpacing.sm),
-        itemBuilder: (context, index) => const SizedBox(
-          width: 300,
-          child: TsSkeletonBlock(TsSkeletonType.block),
+      loading: () => SizedBox(
+        height: 118,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
+          itemCount: homeTodayMatchesLimit,
+          separatorBuilder: (context, index) =>
+              const SizedBox(width: TsSpacing.sm),
+          itemBuilder: (context, index) => const SizedBox(
+            width: 300,
+            child: TsSkeletonBlock(TsSkeletonType.block),
+          ),
         ),
       ),
       error: (error, stackTrace) => Align(
@@ -1015,45 +1024,49 @@ class _TodayMatchesSection extends ConsumerWidget {
           onAction: () => _retry(ref),
         ),
       ),
-      data: (matches) => ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-        itemCount: matches.length,
-        separatorBuilder: (context, index) => const SizedBox(width: TsSpacing.sm),
-        itemBuilder: (context, index) {
-          final item = matches[index];
-          final leagueCode = item.leagueCode;
-          final leagueId =
-              TsAssets.leagueIconIdFromApiCode(leagueCode) ??
-              leagueCode.toLowerCase();
-          final kickoffLocal = item.kickoffUtc.toLocal();
-          final kickoffLabel =
-              '${kickoffLocal.hour.toString().padLeft(2, '0')}:'
-              '${kickoffLocal.minute.toString().padLeft(2, '0')}';
-          return SizedBox(
-            width: 300,
-            child: TsMatchCard(
-              leagueId: leagueId,
-              leagueLabel: TsAssets.leagueDisplayName(leagueCode),
-              kickoffLabel: kickoffLabel,
-              homeTeam: localizedTeamName(
-                context,
-                item.homeTeamEn,
-                item.homeTeamKo,
+      data: (matches) => SizedBox(
+        height: 118,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
+          itemCount: matches.length,
+          separatorBuilder: (context, index) =>
+              const SizedBox(width: TsSpacing.sm),
+          itemBuilder: (context, index) {
+            final item = matches[index];
+            final leagueCode = item.leagueCode;
+            final leagueId =
+                TsAssets.leagueIconIdFromApiCode(leagueCode) ??
+                leagueCode.toLowerCase();
+            final kickoffLocal = item.kickoffUtc.toLocal();
+            final kickoffLabel =
+                '${kickoffLocal.hour.toString().padLeft(2, '0')}:'
+                '${kickoffLocal.minute.toString().padLeft(2, '0')}';
+            return SizedBox(
+              width: 300,
+              child: TsMatchCard(
+                leagueId: leagueId,
+                leagueLabel: TsAssets.leagueDisplayName(leagueCode),
+                kickoffLabel: kickoffLabel,
+                homeTeam: localizedTeamName(
+                  context,
+                  item.homeTeamEn,
+                  item.homeTeamKo,
+                ),
+                awayTeam: localizedTeamName(
+                  context,
+                  item.awayTeamEn,
+                  item.awayTeamKo,
+                ),
+                homeEmblemUrl: item.homeEmblemUrl,
+                awayEmblemUrl: item.awayEmblemUrl,
+                density: TsMatchCardDensity.card,
+                hasAnalysis: item.hasAnalysis,
+                onTap: () => context.go('/matches'),
               ),
-              awayTeam: localizedTeamName(
-                context,
-                item.awayTeamEn,
-                item.awayTeamKo,
-              ),
-              homeEmblemUrl: item.homeEmblemUrl,
-              awayEmblemUrl: item.awayEmblemUrl,
-              density: TsMatchCardDensity.card,
-              hasAnalysis: item.hasAnalysis,
-              onTap: () => context.go('/matches'),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
 
@@ -1070,10 +1083,7 @@ class _TodayMatchesSection extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: TsSpacing.sm),
-        SizedBox(
-          height: 118,
-          child: rail,
-        ),
+        rail,
       ],
     );
   }

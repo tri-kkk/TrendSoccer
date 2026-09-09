@@ -30,26 +30,22 @@ class BaseballComboService {
   }
 
   Future<Map<String, dynamic>> getComboPicks({required String date}) async {
-    try {
-      final language = _apiLanguage();
-      final response = await _dio.get<dynamic>(
-        '/api/baseball/combo-picks',
-        queryParameters: <String, String>{
-          'date': date,
-          'language': language,
-        },
-      );
-      final data = _adaptToMap(response.data);
-      
-      final firstItem = _firstComboItem(data);
-      if (firstItem != null) {
-              } else {
-              }
+    final language = _apiLanguage();
+    final response = await _dio.get<dynamic>(
+      '/api/baseball/combo-picks',
+      queryParameters: <String, String>{
+        'date': date,
+        'language': language,
+      },
+    );
+    final data = _adaptToMap(response.data);
 
-      return data;
-    } catch (e) {
-            return const {};
+    final firstItem = _firstComboItem(data);
+    if (firstItem != null) {
+    } else {
     }
+
+    return data;
   }
 
   Map<String, dynamic>? _firstComboItem(Map<String, dynamic> data) {

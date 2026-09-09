@@ -113,29 +113,25 @@ class SoccerService {
     String? date,
     String? league,
   }) async {
-    try {
-      final queryParameters = <String, String>{};
-      if (date != null && date.isNotEmpty) {
-        queryParameters['date'] = date;
-      }
-      final raw = await _fetchOddsFromDb(queryParameters);
-      if (raw is Map) {
-      } else {}
-      if (raw is Map && raw.containsKey('data')) {
-        if (raw['data'] is List && (raw['data'] as List).isNotEmpty) {
-          final first = (raw['data'] as List).first;
-          if (first is Map) {}
-        }
-      }
-      if (raw is List) {
-        if (raw.isNotEmpty && raw.first is Map) {}
-      }
-      final cards = _filterAnalysisLeagueCards(_adaptToAnalysisCards(raw));
-      if (league == null || league.isEmpty) return cards;
-      return cards.where((card) => _matchesLeague(card, league)).toList();
-    } catch (e) {
-      return [];
+    final queryParameters = <String, String>{};
+    if (date != null && date.isNotEmpty) {
+      queryParameters['date'] = date;
     }
+    final raw = await _fetchOddsFromDb(queryParameters);
+    if (raw is Map) {
+    } else {}
+    if (raw is Map && raw.containsKey('data')) {
+      if (raw['data'] is List && (raw['data'] as List).isNotEmpty) {
+        final first = (raw['data'] as List).first;
+        if (first is Map) {}
+      }
+    }
+    if (raw is List) {
+      if (raw.isNotEmpty && raw.first is Map) {}
+    }
+    final cards = _filterAnalysisLeagueCards(_adaptToAnalysisCards(raw));
+    if (league == null || league.isEmpty) return cards;
+    return cards.where((card) => _matchesLeague(card, league)).toList();
   }
 
   Future<Map<String, dynamic>> getMatchPrediction({
@@ -298,48 +294,36 @@ class SoccerService {
   Future<List<SoccerAnalysisCard>> getPremiumPicks({
     required String date,
   }) async {
-    try {
-      final response = await _dio.get<dynamic>(
-        '/api/premium-picks',
-        queryParameters: <String, String>{'date': date},
-      );
-      return _adaptToAnalysisCards(response.data)
-          .map((card) => card.copyWith(grade: card.grade ?? 'PREMIUM_PICK'))
-          .toList();
-    } catch (e) {
-      return [];
-    }
+    final response = await _dio.get<dynamic>(
+      '/api/premium-picks',
+      queryParameters: <String, String>{'date': date},
+    );
+    return _adaptToAnalysisCards(response.data)
+        .map((card) => card.copyWith(grade: card.grade ?? 'PREMIUM_PICK'))
+        .toList();
   }
 
   // TODO: Replace with /api/v1/mobile/soccer/premium-picks/stats when available
   Future<Map<String, dynamic>> getPremiumPickStats({int days = 30}) async {
-    try {
-      final response = await _dio.get<dynamic>(
-        '/api/premium-picks/stats',
-        queryParameters: <String, int>{'days': days},
-      );
-      final raw = response.data;
-      if (raw is Map<String, dynamic>) return raw;
-      if (raw is Map) return Map<String, dynamic>.from(raw);
-      return <String, dynamic>{};
-    } catch (e) {
-      return {};
-    }
+    final response = await _dio.get<dynamic>(
+      '/api/premium-picks/stats',
+      queryParameters: <String, int>{'days': days},
+    );
+    final raw = response.data;
+    if (raw is Map<String, dynamic>) return raw;
+    if (raw is Map) return Map<String, dynamic>.from(raw);
+    return <String, dynamic>{};
   }
 
   Future<Map<String, dynamic>> getPremiumPickHistory() async {
-    try {
-      final response = await _dio.get<dynamic>('/api/premium-picks/history');
-      final raw = response.data;
-      final history = raw is Map<String, dynamic>
-          ? raw
-          : raw is Map
-          ? Map<String, dynamic>.from(raw)
-          : <String, dynamic>{};
-      return history;
-    } catch (e) {
-      return {};
-    }
+    final response = await _dio.get<dynamic>('/api/premium-picks/history');
+    final raw = response.data;
+    final history = raw is Map<String, dynamic>
+        ? raw
+        : raw is Map
+        ? Map<String, dynamic>.from(raw)
+        : <String, dynamic>{};
+    return history;
   }
 
   Map<String, dynamic> calculateRecentStats(
