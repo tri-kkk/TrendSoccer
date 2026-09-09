@@ -8,11 +8,11 @@ import 'package:trendsoccer/l10n/app_localizations.dart';
 
 /// Static placeholder content matching locked baseball block shapes.
 abstract final class BaseballReportBlockPlaceholders {
-  static Widget prediction() {
-    return const TsPredictionCard(
-      pickTeam: 'Home Team',
+  static Widget prediction(AppLocalizations l10n) {
+    return TsPredictionCard(
+      pickTeam: l10n.matchReportPlaceholderHomeTeam,
       probabilityLabel: '—%',
-      resultLabel: 'REPORT',
+      resultLabel: l10n.matchReportGradeReport,
       line: TsGaugeLine.twoWay,
       homeFraction: 0.5,
       awayFraction: 0.5,
@@ -29,13 +29,18 @@ abstract final class BaseballReportBlockPlaceholders {
     ]);
   }
 
-  static Widget seasonTeamStats() {
-    return statCompareRows(const ['AVG', 'OPS', 'ERA', 'WHIP']);
+  static Widget seasonTeamStats(AppLocalizations l10n) {
+    return statCompareRows([
+      l10n.baseballStatAvg,
+      l10n.baseballStatOps,
+      l10n.baseballStatEra,
+      l10n.baseballStatWhip,
+    ]);
   }
 
   static Widget recentForm(AppLocalizations l10n) {
     return statCompareRows([
-      'Win rate',
+      l10n.baseballRecentFormWinRate,
       l10n.baseballHomeAwayRecord,
     ]);
   }

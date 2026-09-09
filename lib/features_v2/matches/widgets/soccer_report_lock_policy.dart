@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import 'package:trendsoccer/l10n/app_localizations.dart';
+
 /// Grade-based lock rules for soccer match report blocks 02–09.
 class SoccerReportLockPolicy {
   const SoccerReportLockPolicy({
@@ -23,6 +25,7 @@ class SoccerReportLockPolicy {
   bool get shouldFetchH2h => !isLocked(8);
 
   static SoccerReportLockPolicy resolve({
+    required AppLocalizations l10n,
     required bool isGuest,
     required bool hasFullAccess,
     required bool guestFactBlocksUnlocked,
@@ -43,14 +46,14 @@ class SoccerReportLockPolicy {
       }
       return SoccerReportLockPolicy(
         lockedBlocks: locked,
-        lockLabel: 'Log in to view',
+        lockLabel: l10n.matchReportLockLoginToView,
         onTap: onGuestTap,
       );
     }
 
     return SoccerReportLockPolicy(
       lockedBlocks: const {2, 3, 4, 5, 6, 7},
-      lockLabel: 'Premium content',
+      lockLabel: l10n.matchReportLockPremiumContent,
       onTap: onSubscribeTap,
     );
   }

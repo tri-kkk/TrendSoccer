@@ -938,6 +938,66 @@ abstract class AppLocalizations {
   /// **'최근 10경기'**
   String get baseballRecent10;
 
+  /// No description provided for @baseballRecentFormWinRate.
+  ///
+  /// In ko, this message translates to:
+  /// **'승률'**
+  String get baseballRecentFormWinRate;
+
+  /// No description provided for @baseballStatAvg.
+  ///
+  /// In ko, this message translates to:
+  /// **'AVG'**
+  String get baseballStatAvg;
+
+  /// No description provided for @baseballStatEra.
+  ///
+  /// In ko, this message translates to:
+  /// **'ERA'**
+  String get baseballStatEra;
+
+  /// No description provided for @baseballStatIp.
+  ///
+  /// In ko, this message translates to:
+  /// **'IP'**
+  String get baseballStatIp;
+
+  /// No description provided for @baseballStatK9.
+  ///
+  /// In ko, this message translates to:
+  /// **'K/9'**
+  String get baseballStatK9;
+
+  /// No description provided for @baseballStatOps.
+  ///
+  /// In ko, this message translates to:
+  /// **'OPS'**
+  String get baseballStatOps;
+
+  /// No description provided for @baseballStatStrikeouts.
+  ///
+  /// In ko, this message translates to:
+  /// **'K'**
+  String get baseballStatStrikeouts;
+
+  /// No description provided for @baseballStatWhip.
+  ///
+  /// In ko, this message translates to:
+  /// **'WHIP'**
+  String get baseballStatWhip;
+
+  /// No description provided for @baseballStatWinLoss.
+  ///
+  /// In ko, this message translates to:
+  /// **'W-L'**
+  String get baseballStatWinLoss;
+
+  /// No description provided for @baseballStartingPitchersVersus.
+  ///
+  /// In ko, this message translates to:
+  /// **'VS'**
+  String get baseballStartingPitchersVersus;
+
   /// No description provided for @baseballRelatedMatches.
   ///
   /// In ko, this message translates to:
@@ -1763,7 +1823,7 @@ abstract class AppLocalizations {
   /// No description provided for @labelRecommend.
   ///
   /// In ko, this message translates to:
-  /// **'추천'**
+  /// **'분석'**
   String get labelRecommend;
 
   /// No description provided for @labelOver.
@@ -1958,11 +2018,53 @@ abstract class AppLocalizations {
   /// **'경기 알림 설정'**
   String get matchAlarmSettingsTitle;
 
+  /// No description provided for @matchReportGradeGood.
+  ///
+  /// In ko, this message translates to:
+  /// **'GOOD'**
+  String get matchReportGradeGood;
+
+  /// No description provided for @matchReportGradePass.
+  ///
+  /// In ko, this message translates to:
+  /// **'PASS'**
+  String get matchReportGradePass;
+
+  /// No description provided for @matchReportGradeReport.
+  ///
+  /// In ko, this message translates to:
+  /// **'REPORT'**
+  String get matchReportGradeReport;
+
+  /// No description provided for @matchReportLockLoginToView.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그인 후 보기'**
+  String get matchReportLockLoginToView;
+
+  /// No description provided for @matchReportLockPremiumContent.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 콘텐츠'**
+  String get matchReportLockPremiumContent;
+
+  /// No description provided for @matchReportPlaceholderHomeTeam.
+  ///
+  /// In ko, this message translates to:
+  /// **'Home Team'**
+  String get matchReportPlaceholderHomeTeam;
+
   /// No description provided for @matchReportTitle.
   ///
   /// In ko, this message translates to:
   /// **'매치 리포트'**
   String get matchReportTitle;
+
+  /// No description provided for @matchReportValueUnavailable.
+  ///
+  /// In ko, this message translates to:
+  /// **'-'**
+  String get matchReportValueUnavailable;
 
   /// No description provided for @menuAbout.
   ///
@@ -3097,6 +3199,48 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'분석 근거'**
   String get soccerAnalysisReasoning;
+
+  /// No description provided for @soccerExtendedNoDataTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'데이터 없음'**
+  String get soccerExtendedNoDataTitle;
+
+  /// No description provided for @soccerExtendedNoMarketIndicators.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 경기에서 양 팀 모두 마켓 지표가 제공되지 않았습니다.'**
+  String get soccerExtendedNoMarketIndicators;
+
+  /// No description provided for @soccerExtendedNoRecentForm.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 경기에서 양 팀 모두 최근 폼 데이터가 제공되지 않았습니다.'**
+  String get soccerExtendedNoRecentForm;
+
+  /// No description provided for @soccerExtendedNoTeamInsights.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 경기에서 양 팀 모두 강·약점이 제공되지 않았습니다.'**
+  String get soccerExtendedNoTeamInsights;
+
+  /// No description provided for @soccerExtendedNoTeamStatistics.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 경기에 대한 팀 통계가 제공되지 않았습니다.'**
+  String get soccerExtendedNoTeamStatistics;
+
+  /// No description provided for @soccerPredictBlockPrediction.
+  ///
+  /// In ko, this message translates to:
+  /// **'예측'**
+  String get soccerPredictBlockPrediction;
+
+  /// No description provided for @soccerPredictBlockThreeMethod.
+  ///
+  /// In ko, this message translates to:
+  /// **'3-Method'**
+  String get soccerPredictBlockThreeMethod;
 
   /// No description provided for @soccerAnalysisResult.
   ///

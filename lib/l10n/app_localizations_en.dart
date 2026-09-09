@@ -473,6 +473,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get baseballRecent10 => 'Last 10 games';
 
   @override
+  String get baseballRecentFormWinRate => 'Win rate';
+
+  @override
+  String get baseballStatAvg => 'AVG';
+
+  @override
+  String get baseballStatEra => 'ERA';
+
+  @override
+  String get baseballStatIp => 'IP';
+
+  @override
+  String get baseballStatK9 => 'K/9';
+
+  @override
+  String get baseballStatOps => 'OPS';
+
+  @override
+  String get baseballStatStrikeouts => 'K';
+
+  @override
+  String get baseballStatWhip => 'WHIP';
+
+  @override
+  String get baseballStatWinLoss => 'W-L';
+
+  @override
+  String get baseballStartingPitchersVersus => 'VS';
+
+  @override
   String get baseballRelatedMatches => 'Related matches';
 
   @override
@@ -1026,7 +1056,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchAlarmSettingsTitle => 'Match alert settings';
 
   @override
-  String get matchReportTitle => 'Match report';
+  String get matchReportGradeGood => 'GOOD';
+
+  @override
+  String get matchReportGradePass => 'PASS';
+
+  @override
+  String get matchReportGradeReport => 'REPORT';
+
+  @override
+  String get matchReportLockLoginToView => 'Log in to view';
+
+  @override
+  String get matchReportLockPremiumContent => 'Premium content';
+
+  @override
+  String get matchReportPlaceholderHomeTeam => 'Home Team';
+
+  @override
+  String get matchReportTitle => 'Match Report';
+
+  @override
+  String get matchReportValueUnavailable => '-';
 
   @override
   String get menuAbout => 'About';
@@ -1651,6 +1702,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get soccerAnalysisReasoning => 'Reasoning';
+
+  @override
+  String get soccerExtendedNoDataTitle => 'No data';
+
+  @override
+  String get soccerExtendedNoMarketIndicators =>
+      'No market indicators reported for either team in this match.';
+
+  @override
+  String get soccerExtendedNoRecentForm =>
+      'No recent form data reported for either team in this match.';
+
+  @override
+  String get soccerExtendedNoTeamInsights =>
+      'No strengths or weaknesses reported for either team in this match.';
+
+  @override
+  String get soccerExtendedNoTeamStatistics =>
+      'No team statistics reported for this match.';
+
+  @override
+  String get soccerPredictBlockPrediction => 'Prediction';
+
+  @override
+  String get soccerPredictBlockThreeMethod => '3-Method';
 
   @override
   String get soccerAnalysisResult => 'Analysis result';

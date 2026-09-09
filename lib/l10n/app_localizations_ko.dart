@@ -453,6 +453,36 @@ class AppLocalizationsKo extends AppLocalizations {
   String get baseballRecent10 => '최근 10경기';
 
   @override
+  String get baseballRecentFormWinRate => '승률';
+
+  @override
+  String get baseballStatAvg => 'AVG';
+
+  @override
+  String get baseballStatEra => 'ERA';
+
+  @override
+  String get baseballStatIp => 'IP';
+
+  @override
+  String get baseballStatK9 => 'K/9';
+
+  @override
+  String get baseballStatOps => 'OPS';
+
+  @override
+  String get baseballStatStrikeouts => 'K';
+
+  @override
+  String get baseballStatWhip => 'WHIP';
+
+  @override
+  String get baseballStatWinLoss => 'W-L';
+
+  @override
+  String get baseballStartingPitchersVersus => 'VS';
+
+  @override
   String get baseballRelatedMatches => '관련 경기';
 
   @override
@@ -889,7 +919,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get labelPrediction => '분석';
 
   @override
-  String get labelRecommend => '추천';
+  String get labelRecommend => '분석';
 
   @override
   String get labelOver => 'Over';
@@ -995,7 +1025,28 @@ class AppLocalizationsKo extends AppLocalizations {
   String get matchAlarmSettingsTitle => '경기 알림 설정';
 
   @override
+  String get matchReportGradeGood => 'GOOD';
+
+  @override
+  String get matchReportGradePass => 'PASS';
+
+  @override
+  String get matchReportGradeReport => 'REPORT';
+
+  @override
+  String get matchReportLockLoginToView => '로그인 후 보기';
+
+  @override
+  String get matchReportLockPremiumContent => '프리미엄 콘텐츠';
+
+  @override
+  String get matchReportPlaceholderHomeTeam => 'Home Team';
+
+  @override
   String get matchReportTitle => '매치 리포트';
+
+  @override
+  String get matchReportValueUnavailable => '-';
 
   @override
   String get menuAbout => '서비스 소개';
@@ -1596,6 +1647,29 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get soccerAnalysisReasoning => '분석 근거';
+
+  @override
+  String get soccerExtendedNoDataTitle => '데이터 없음';
+
+  @override
+  String get soccerExtendedNoMarketIndicators =>
+      '이 경기에서 양 팀 모두 마켓 지표가 제공되지 않았습니다.';
+
+  @override
+  String get soccerExtendedNoRecentForm =>
+      '이 경기에서 양 팀 모두 최근 폼 데이터가 제공되지 않았습니다.';
+
+  @override
+  String get soccerExtendedNoTeamInsights => '이 경기에서 양 팀 모두 강·약점이 제공되지 않았습니다.';
+
+  @override
+  String get soccerExtendedNoTeamStatistics => '이 경기에 대한 팀 통계가 제공되지 않았습니다.';
+
+  @override
+  String get soccerPredictBlockPrediction => '예측';
+
+  @override
+  String get soccerPredictBlockThreeMethod => '3-Method';
 
   @override
   String get soccerAnalysisResult => '분석 결과';

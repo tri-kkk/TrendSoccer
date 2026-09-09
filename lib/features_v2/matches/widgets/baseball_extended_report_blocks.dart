@@ -275,7 +275,7 @@ class _BaseballSeasonTeamStatsReportBlockState
         title: l10n.baseballSeasonStats,
         icon: TsIcons.leaderboard,
         lockPolicy: widget.lockPolicy,
-        placeholder: BaseballReportBlockPlaceholders.seasonTeamStats(),
+        placeholder: BaseballReportBlockPlaceholders.seasonTeamStats(l10n),
       );
     }
 
@@ -326,33 +326,34 @@ class _SeasonTeamStatsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final home = parsed.seasonTeamStats.home;
     final away = parsed.seasonTeamStats.away;
 
     final rows = <_BaseballCompareRowData>[
       _BaseballCompareRowData(
-        statLabel: 'AVG',
+        statLabel: l10n.baseballStatAvg,
         homeValue: home?.avg,
         awayValue: away?.avg,
         lowerIsBetter: false,
         format: (value) => formatBaseballSeasonDecimal(value, decimals: 3),
       ),
       _BaseballCompareRowData(
-        statLabel: 'OPS',
+        statLabel: l10n.baseballStatOps,
         homeValue: home?.ops,
         awayValue: away?.ops,
         lowerIsBetter: false,
         format: (value) => formatBaseballSeasonDecimal(value, decimals: 3),
       ),
       _BaseballCompareRowData(
-        statLabel: 'ERA',
+        statLabel: l10n.baseballStatEra,
         homeValue: home?.era,
         awayValue: away?.era,
         lowerIsBetter: true,
         format: (value) => formatBaseballSeasonDecimal(value, decimals: 2),
       ),
       _BaseballCompareRowData(
-        statLabel: 'WHIP',
+        statLabel: l10n.baseballStatWhip,
         homeValue: home?.whip,
         awayValue: away?.whip,
         lowerIsBetter: true,
@@ -423,7 +424,7 @@ class _BaseballRecentFormReportBlockState
 
     if (widget.lockPolicy.isLocked(7)) {
       return _LockedBaseballReportBlockCard(
-        title: 'Recent form',
+        title: l10n.soccerRecentForm,
         icon: TsIcons.trendingUp,
         subtitle: _recentFormSubtitle(l10n, null),
         lockPolicy: widget.lockPolicy,
@@ -437,13 +438,13 @@ class _BaseballRecentFormReportBlockState
 
     return predictAsync.when(
       loading: () => _BaseballReportBlockCard(
-        title: 'Recent form',
+        title: l10n.soccerRecentForm,
         icon: TsIcons.trendingUp,
         subtitle: _recentFormSubtitle(l10n, null),
         child: const _BaseballReportBlockSkeleton(),
       ),
       error: (error, _) => _BaseballReportBlockCard(
-        title: 'Recent form',
+        title: l10n.soccerRecentForm,
         icon: TsIcons.trendingUp,
         subtitle: _recentFormSubtitle(l10n, null),
         child: _BaseballReportBlockFailure(
@@ -457,14 +458,14 @@ class _BaseballRecentFormReportBlockState
 
         if (predict.isEmpty) {
           return _BaseballReportBlockCard(
-            title: 'Recent form',
+            title: l10n.soccerRecentForm,
             icon: TsIcons.trendingUp,
             subtitle: _recentFormSubtitle(l10n, null),
             child: _emptyHeldOrNoResult(
               l10n: l10n,
               league: league,
               detail: detail,
-              title: 'Recent form',
+              title: l10n.soccerRecentForm,
             ),
           );
         }
@@ -472,12 +473,12 @@ class _BaseballRecentFormReportBlockState
         final parsed = parseBaseballPredictV2(predict, matchDetail: detail);
 
         return _BaseballReportBlockCard(
-          title: 'Recent form',
+          title: l10n.soccerRecentForm,
           icon: TsIcons.trendingUp,
           subtitle: _recentFormSubtitle(l10n, parsed.confidence),
           child: !_hasRecentFormData(parsed)
               ? _BaseballReportBlockEmpty(
-                  title: 'Recent form',
+                  title: l10n.soccerRecentForm,
                   description: l10n.analysisNoResult,
                 )
               : _RecentFormContent(parsed: parsed, l10n: l10n),
@@ -507,7 +508,7 @@ class _RecentFormContent extends StatelessWidget {
 
     final rows = <_BaseballCompareRowData>[
       _BaseballCompareRowData(
-        statLabel: 'Win rate',
+        statLabel: l10n.baseballRecentFormWinRate,
         homeValue: homeWinRate,
         awayValue: awayWinRate,
         lowerIsBetter: false,

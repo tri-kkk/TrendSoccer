@@ -84,7 +84,7 @@ class _BaseballAiMatchAnalysisReportBlockState
         child: TsLockedBlock(
           label: widget.lockPolicy.lockLabel,
           onTap: widget.lockPolicy.onTap,
-          child: BaseballReportBlockPlaceholders.prediction(),
+          child: BaseballReportBlockPlaceholders.prediction(l10n),
         ),
       );
     }
@@ -180,10 +180,11 @@ class _AiMatchAnalysisPredictionContent extends StatelessWidget {
       BaseballPickDirection.away => awayFraction,
       BaseballPickDirection.unknown => null,
     };
-    final gradeLabel = _baseballGradeBadgeLabel(parsed.grade);
+    final l10n = AppLocalizations.of(context)!;
+    final gradeLabel = _baseballGradeBadgeLabel(parsed.grade, l10n);
 
     return TsPredictionCard(
-      pickTeam: _pickTeamLabel(context, header, pickDirection),
+      pickTeam: _pickTeamLabel(context, header, pickDirection, l10n),
       probabilityLabel: _formatPickProbability(pickProb),
       pickEmblemUrl: _pickEmblemUrl(header, pickDirection),
       resultLabel: gradeLabel,
@@ -201,6 +202,7 @@ String _pickTeamLabel(
   BuildContext context,
   MatchHeaderData header,
   BaseballPickDirection direction,
+  AppLocalizations l10n,
 ) {
   return switch (direction) {
     BaseballPickDirection.home => localizedTeamName(
@@ -213,7 +215,7 @@ String _pickTeamLabel(
         header.awayTeam,
         header.awayTeamKo,
       ),
-    BaseballPickDirection.unknown => '-',
+    BaseballPickDirection.unknown => l10n.matchReportValueUnavailable,
   };
 }
 
@@ -289,12 +291,12 @@ String _gaugePercentLabel(double? fraction) {
   return '${(fraction * 100).round()}%';
 }
 
-String? _baseballGradeBadgeLabel(String? grade) {
+String? _baseballGradeBadgeLabel(String? grade, AppLocalizations l10n) {
   if (grade == null || grade.trim().isEmpty) return null;
   final raw = grade.trim().toLowerCase();
-  if (raw.contains('pick') || raw == 'a') return 'REPORT';
-  if (raw.contains('good') || raw == 'b') return 'GOOD';
-  if (raw.contains('pass') || raw == 'c') return 'PASS';
+  if (raw.contains('pick') || raw == 'a') return l10n.matchReportGradeReport;
+  if (raw.contains('good') || raw == 'b') return l10n.matchReportGradeGood;
+  if (raw.contains('pass') || raw == 'c') return l10n.matchReportGradePass;
   return grade.trim().toUpperCase();
 }
 

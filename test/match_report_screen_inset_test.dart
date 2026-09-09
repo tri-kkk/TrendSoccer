@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/features_v2/matches/match_report_screen.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 
 void main() {
   Future<EdgeInsets> scrollPadding(
@@ -14,6 +15,8 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: ThemeData(extensions: const [TsThemeColors.dark]),
           home: MediaQuery(
             data: MediaQueryData(

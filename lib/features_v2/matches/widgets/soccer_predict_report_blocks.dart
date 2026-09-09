@@ -104,19 +104,19 @@ class _SoccerPredictBlocksBody extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _SoccerReportBlockCard(
-            title: 'Prediction',
+            title: l10n.soccerPredictBlockPrediction,
             icon: TsIcons.verified,
             child: _PredictionBlockContent(header: header, parsed: parsed),
           ),
           const SizedBox(height: TsSpacing.lg),
           _SoccerReportBlockCard(
-            title: 'Reasoning',
+            title: l10n.soccerAnalysisReasoning,
             icon: TsIcons.article,
             child: _ReasoningBlockContent(reasons: parsed.reasons),
           ),
           const SizedBox(height: TsSpacing.lg),
           _SoccerReportBlockCard(
-            title: 'Three-method',
+            title: l10n.soccerPredictBlockThreeMethod,
             icon: TsIcons.analysis,
             child: _ThreeMethodBlockContent(parsed: parsed),
           ),
@@ -152,21 +152,21 @@ class _SoccerPredictBlocksLocked extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _LockedPredictBlockCard(
-          title: 'Prediction',
+          title: l10n.soccerPredictBlockPrediction,
           icon: TsIcons.verified,
           lockPolicy: lockPolicy,
-          placeholder: SoccerReportBlockPlaceholders.prediction(),
+          placeholder: SoccerReportBlockPlaceholders.prediction(l10n),
         ),
         const SizedBox(height: TsSpacing.lg),
         _LockedPredictBlockCard(
-          title: 'Reasoning',
+          title: l10n.soccerAnalysisReasoning,
           icon: TsIcons.article,
           lockPolicy: lockPolicy,
           placeholder: SoccerReportBlockPlaceholders.reasoning(),
         ),
         const SizedBox(height: TsSpacing.lg),
         _LockedPredictBlockCard(
-          title: 'Three-method',
+          title: l10n.soccerPredictBlockThreeMethod,
           icon: TsIcons.analysis,
           lockPolicy: lockPolicy,
           placeholder: SoccerReportBlockPlaceholders.threeMethod(l10n),
@@ -268,7 +268,7 @@ class _PredictionBlockContent extends StatelessWidget {
       pickTeam: _pickTeamLabel(context, header, parsed.pickDirection, l10n),
       probabilityLabel: _formatPickProbability(pickProb),
       pickEmblemUrl: _pickEmblemUrl(header, parsed.pickDirection),
-      resultLabel: _gradeBadgeLabel(parsed.grade),
+      resultLabel: _gradeBadgeLabel(parsed.grade, l10n),
       resultTone: _gradeBadgeTone(parsed.grade),
       homeFraction: prob.home,
       drawFraction: prob.draw,
@@ -379,8 +379,12 @@ class _TeamStatCompareRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final homeDisplay = _formatTeamStatValue(row.homeValue, row.format);
-    final awayDisplay = _formatTeamStatValue(row.awayValue, row.format);
+    final l10n = AppLocalizations.of(context)!;
+    final unavailable = l10n.matchReportValueUnavailable;
+    final homeDisplay =
+        _formatTeamStatValue(row.homeValue, row.format, unavailable);
+    final awayDisplay =
+        _formatTeamStatValue(row.awayValue, row.format, unavailable);
     final homeFraction = _teamStatFraction(row.homeValue, row.awayValue, true);
     final awayFraction = _teamStatFraction(row.homeValue, row.awayValue, false);
 
@@ -388,8 +392,8 @@ class _TeamStatCompareRow extends StatelessWidget {
     var awayEmphasized = false;
     if (row.homeValue != null &&
         row.awayValue != null &&
-        homeDisplay != '-' &&
-        awayDisplay != '-') {
+        homeDisplay != unavailable &&
+        awayDisplay != unavailable) {
       if (row.homeValue! > row.awayValue!) {
         homeEmphasized = true;
       } else if (row.awayValue! > row.homeValue!) {
@@ -501,9 +505,9 @@ class _SoccerPredictBlocksError extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final titles = <String>[
-      'Prediction',
-      'Reasoning',
-      'Three-method',
+      l10n.soccerPredictBlockPrediction,
+      l10n.soccerAnalysisReasoning,
+      l10n.soccerPredictBlockThreeMethod,
       l10n.soccerStatTeamStats,
     ];
 
@@ -547,7 +551,7 @@ String _pickTeamLabel(
         header.awayTeamKo,
       ),
     SoccerPickDirection.draw => l10n.soccerDraw,
-    SoccerPickDirection.unknown => '-',
+    SoccerPickDirection.unknown => l10n.matchReportValueUnavailable,
   };
 }
 
@@ -569,11 +573,11 @@ String _gaugePercentLabel(double fraction) {
   return '${(fraction * 100).round()}%';
 }
 
-String _gradeBadgeLabel(SoccerPredictGrade grade) {
+String _gradeBadgeLabel(SoccerPredictGrade grade, AppLocalizations l10n) {
   return switch (grade) {
-    SoccerPredictGrade.pick => 'REPORT',
-    SoccerPredictGrade.good => 'GOOD',
-    SoccerPredictGrade.pass => 'PASS',
+    SoccerPredictGrade.pick => l10n.matchReportGradeReport,
+    SoccerPredictGrade.good => l10n.matchReportGradeGood,
+    SoccerPredictGrade.pass => l10n.matchReportGradePass,
   };
 }
 
@@ -585,8 +589,12 @@ TsBadgeTone _gradeBadgeTone(SoccerPredictGrade grade) {
   };
 }
 
-String _formatTeamStatValue(double? value, SoccerTeamStatFormat format) {
-  if (value == null) return '-';
+String _formatTeamStatValue(
+  double? value,
+  SoccerTeamStatFormat format,
+  String unavailable,
+) {
+  if (value == null) return unavailable;
   return switch (format) {
     SoccerTeamStatFormat.integerPercent => _formatIntegerPercent(value),
     SoccerTeamStatFormat.form => value.toStringAsFixed(1),

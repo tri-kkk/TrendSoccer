@@ -127,8 +127,7 @@ class _ScoringTrendsBlock extends StatelessWidget {
         hasData: (home, away) => home.hasMarketData || away.hasMarketData,
         emptyBuilder: () => TsEmptyState(
           title: l10n.soccerMarketIndicators,
-          description:
-              'No market indicators reported for either team in this match.',
+          description: l10n.soccerExtendedNoMarketIndicators,
         ),
         builder: (home, away) {
           final rows = [
@@ -222,8 +221,7 @@ class _StrengthsWeaknessesBlock extends StatelessWidget {
         hasData: (home, away) => home.hasInsightData || away.hasInsightData,
         emptyBuilder: () => TsEmptyState(
           title: l10n.soccerStatTeamInsights,
-          description:
-              'No strengths or weaknesses reported for either team in this match.',
+          description: l10n.soccerExtendedNoTeamInsights,
         ),
         builder: (home, away) {
           final entries = mergeTeamInsights(home: home, away: away);
@@ -376,8 +374,7 @@ class _RecentFormBlock extends StatelessWidget {
         hasData: (home, away) => home.hasFormData || away.hasFormData,
         emptyBuilder: () => TsEmptyState(
           title: l10n.soccerRecentForm,
-          description:
-              'No recent form data reported for either team in this match.',
+          description: l10n.soccerExtendedNoRecentForm,
         ),
         builder: (home, away) {
           return Column(
@@ -501,6 +498,7 @@ Widget _combineTeamStats({
   ) builder,
   Widget Function()? emptyBuilder,
 }) {
+  final l10n = AppLocalizations.of(context)!;
   if (homeAsync.isLoading || awayAsync.isLoading) {
     return const _ExtendedReportBlockSkeleton();
   }
@@ -527,8 +525,8 @@ Widget _combineTeamStats({
       return emptyBuilder();
     }
     return _ExtendedReportBlockEmpty(
-      title: 'No data',
-      description: 'No team statistics reported for this match.',
+      title: l10n.soccerExtendedNoDataTitle,
+      description: l10n.soccerExtendedNoTeamStatistics,
     );
   }
 

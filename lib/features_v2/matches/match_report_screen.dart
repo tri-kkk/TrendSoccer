@@ -12,6 +12,7 @@ import 'package:trendsoccer/core/providers/soccer_match_report_provider.dart';
 import 'package:trendsoccer/core/utils/baseball_status.dart';
 import 'package:trendsoccer/core/utils/error_resolver.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/core/utils/league_supports_analysis.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/core/utils/match_date_formatter.dart';
@@ -78,6 +79,7 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
     if (params != null) {
       final auth = ref.read(authProvider);
       final lockPolicy = SoccerReportLockPolicy.resolve(
+        l10n: context.l10n,
         isGuest: auth.isGuest,
         hasFullAccess: auth.hasFullAccess,
         guestFactBlocksUnlocked: _guestFactBlocksUnlocked,
@@ -404,6 +406,7 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final c = Theme.of(context).extension<TsThemeColors>()!;
     final numericMatchId = int.tryParse(widget.matchId);
     final params = _soccerParams;
@@ -419,6 +422,7 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
     final auth = ref.watch(authProvider);
     final lockPolicy = hasSoccerBlocks
         ? SoccerReportLockPolicy.resolve(
+            l10n: l10n,
             isGuest: auth.isGuest,
             hasFullAccess: auth.hasFullAccess,
             guestFactBlocksUnlocked: _guestFactBlocksUnlocked,
@@ -485,7 +489,7 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
       backgroundColor: c.canvas,
       appBar: TsAppBar(
         type: TsAppBarType.back,
-        title: 'Match Report',
+        title: l10n.matchReportTitle,
         onBack: () => context.pop(),
       ),
       body: params == null
@@ -527,6 +531,7 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
     required SupabaseAuthProvider auth,
   }) {
     final lockPolicy = BaseballReportLockPolicy.resolve(
+      l10n: context.l10n,
       isGuest: auth.isGuest,
       hasFullAccess: auth.hasFullAccess,
       onGuestTap: () => context.push('/login'),
@@ -675,8 +680,14 @@ class _MatchReportHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final locale = Localizations.localeOf(context).languageCode;
-    final labels = _heroCenterLabels(header, sport: sport, locale: locale);
+    final labels = _heroCenterLabels(
+      header,
+      l10n: l10n,
+      sport: sport,
+      locale: locale,
+    );
 
     return TsMatchHero(
       leagueId: header.resolvedLeagueIconId,
@@ -717,6 +728,7 @@ class _MatchHeroSkeleton extends StatelessWidget {
 
 (String? centerLabel, String? subLabel) _heroCenterLabels(
   MatchHeaderData header, {
+  required AppLocalizations l10n,
   required String sport,
   required String locale,
 }) {
@@ -726,13 +738,13 @@ class _MatchHeroSkeleton extends StatelessWidget {
     final away = header.awayScore;
     final center = home != null && away != null ? '$home - $away' : null;
     final sub = switch (status) {
-      'finished' => 'FT',
+      'finished' => l10n.fixtureStatusFinal,
       'live' =>
         sport == 'baseball'
-            ? _baseballLiveStatusLabel(header.rawStatus)
+            ? _baseballLiveStatusLabel(header.rawStatus, l10n: l10n)
             : (header.rawStatus?.trim().isNotEmpty == true
                   ? header.rawStatus!.trim().toUpperCase()
-                  : 'LIVE'),
+                  : l10n.fixtureLive),
       _ => null,
     };
     return (center, sub);
@@ -767,11 +779,14 @@ String _heroDateLabel(String locale, DateTime local) {
   return '$month ${local.day} ($weekday)';
 }
 
-String _baseballLiveStatusLabel(String? rawStatus) {
+String _baseballLiveStatusLabel(
+  String? rawStatus, {
+  required AppLocalizations l10n,
+}) {
   final code = rawStatus?.trim().toUpperCase() ?? '';
-  if (code.isEmpty) return 'LIVE';
+  if (code.isEmpty) return l10n.fixtureLive;
   if (BaseballStatus.isLive(code)) return code;
-  return 'LIVE';
+  return l10n.fixtureLive;
 }
 
 String _normalizeBaseballLeagueCode(String? league) {

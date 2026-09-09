@@ -14,11 +14,11 @@ abstract final class SoccerReportBlockPlaceholders {
   static const _placeholderLine =
       'Historical trends and matchup context for this fixture.';
 
-  static Widget prediction() {
-    return const TsPredictionCard(
-      pickTeam: 'Home Team',
+  static Widget prediction(AppLocalizations l10n) {
+    return TsPredictionCard(
+      pickTeam: l10n.matchReportPlaceholderHomeTeam,
       probabilityLabel: '—%',
-      resultLabel: 'REPORT',
+      resultLabel: l10n.matchReportGradeReport,
       homeFraction: 0.34,
       drawFraction: 0.32,
       awayFraction: 0.34,

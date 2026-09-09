@@ -209,7 +209,7 @@ class _StartingPitchersSectionContent extends StatelessWidget {
     return TsStartingPitchersSection(
       home: _mapProfile(context, home, isHome: true),
       away: _mapProfile(context, away, isHome: false),
-      versusLabel: 'VS',
+      versusLabel: l10n.baseballStartingPitchersVersus,
       stats: _buildPrimaryStats(home, away, showSecondaryStats),
       secondaryStats: showSecondaryStats
           ? _buildSecondaryStats(home, away)
@@ -269,17 +269,18 @@ class _StartingPitchersSectionContent extends StatelessWidget {
     BaseballPitcherSideParsed away,
     bool isMlb,
   ) {
-    final thirdLabel = isMlb ? 'K/9' : 'K';
+    final thirdLabel =
+        isMlb ? l10n.baseballStatK9 : l10n.baseballStatStrikeouts;
     return [
       _compareDecimalStat(
-        label: 'ERA',
+        label: l10n.baseballStatEra,
         homeValue: _effectiveValue(home.era, home.isNameTbd),
         awayValue: _effectiveValue(away.era, away.isNameTbd),
         lowerIsBetter: true,
         decimals: 2,
       ),
       _compareDecimalStat(
-        label: 'WHIP',
+        label: l10n.baseballStatWhip,
         homeValue: _effectiveValue(home.whip, home.isNameTbd),
         awayValue: _effectiveValue(away.whip, away.isNameTbd),
         lowerIsBetter: true,
@@ -308,21 +309,21 @@ class _StartingPitchersSectionContent extends StatelessWidget {
   ) {
     return [
       _compareRecordStat(
-        label: 'W-L',
+        label: l10n.baseballStatWinLoss,
         homeWins: _effectiveInt(home.wins, home.isNameTbd),
         homeLosses: _effectiveInt(home.losses, home.isNameTbd),
         awayWins: _effectiveInt(away.wins, away.isNameTbd),
         awayLosses: _effectiveInt(away.losses, away.isNameTbd),
       ),
       _compareDecimalStat(
-        label: 'IP',
+        label: l10n.baseballStatIp,
         homeValue: _effectiveInnings(home.inningsPitched, home.isNameTbd),
         awayValue: _effectiveInnings(away.inningsPitched, away.isNameTbd),
         lowerIsBetter: false,
         decimals: 1,
       ),
       _compareIntStat(
-        label: 'K',
+        label: l10n.baseballStatStrikeouts,
         homeValue: _effectiveInt(home.strikeouts, home.isNameTbd),
         awayValue: _effectiveInt(away.strikeouts, away.isNameTbd),
       ),
@@ -339,21 +340,21 @@ class _StartingPitchersSectionContent extends StatelessWidget {
 
     return [
       _compareDecimalStat(
-        label: 'ERA',
+        label: l10n.baseballStatEra,
         homeValue: _effectiveValue(home.prevEra, home.isNameTbd),
         awayValue: _effectiveValue(away.prevEra, away.isNameTbd),
         lowerIsBetter: true,
         decimals: 2,
       ),
       _compareDecimalStat(
-        label: 'WHIP',
+        label: l10n.baseballStatWhip,
         homeValue: _effectiveValue(home.prevWhip, home.isNameTbd),
         awayValue: _effectiveValue(away.prevWhip, away.isNameTbd),
         lowerIsBetter: true,
         decimals: 2,
       ),
       _compareIntStat(
-        label: 'K',
+        label: l10n.baseballStatStrikeouts,
         homeValue: _effectiveInt(home.prevStrikeouts, home.isNameTbd),
         awayValue: _effectiveInt(away.prevStrikeouts, away.isNameTbd),
       ),
