@@ -6,25 +6,6 @@ import 'package:trendsoccer/core/providers/fixture_provider.dart';
 import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/utils/league_supports_analysis.dart';
 
-/// Local YYYY-MM-DD of the earliest day that still has at least one unstarted
-/// match, or null when none remain in [items].
-String? reportsEarliestUnstartedLocalDate<T>({
-  required Iterable<T> items,
-  required DateTime? Function(T item) kickoffLocal,
-  required bool Function(T item) hasNotStarted,
-}) {
-  final days = <String>{};
-  for (final item in items) {
-    if (!hasNotStarted(item)) continue;
-    final local = kickoffLocal(item);
-    if (local == null) continue;
-    days.add(fixtureDateString(local));
-  }
-  if (days.isEmpty) return null;
-  final sorted = days.toList()..sort();
-  return sorted.first;
-}
-
 /// Per [leagueKey], the earliest local day that still has an unstarted match.
 Map<String, String> reportsEarliestUnstartedLocalDatesByLeague<T>({
   required Iterable<T> items,

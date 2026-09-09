@@ -94,9 +94,16 @@ class _BaseballTeamProductionReportBlockState
       inProgress: _retryInProgress,
       onPressed: () => unawaited(
         _guardedRetry(
-          () async => ref.invalidate(
-            baseballPredictProvider(widget.header.matchId),
-          ),
+          () async {
+            ref.invalidate(baseballPredictProvider(widget.header.matchId));
+            try {
+              await ref.read(
+                baseballPredictProvider(widget.header.matchId).future,
+              );
+            } on Object {
+              // Retry boundary must complete normally; failure UI comes from provider state.
+            }
+          },
         ),
       ),
     );
@@ -237,9 +244,16 @@ class _BaseballSeasonTeamStatsReportBlockState
       inProgress: _retryInProgress,
       onPressed: () => unawaited(
         _guardedRetry(
-          () async => ref.invalidate(
-            baseballPredictProvider(widget.header.matchId),
-          ),
+          () async {
+            ref.invalidate(baseballPredictProvider(widget.header.matchId));
+            try {
+              await ref.read(
+                baseballPredictProvider(widget.header.matchId).future,
+              );
+            } on Object {
+              // Retry boundary must complete normally; failure UI comes from provider state.
+            }
+          },
         ),
       ),
     );
@@ -384,9 +398,16 @@ class _BaseballRecentFormReportBlockState
       inProgress: _retryInProgress,
       onPressed: () => unawaited(
         _guardedRetry(
-          () async => ref.invalidate(
-            baseballPredictProvider(widget.header.matchId),
-          ),
+          () async {
+            ref.invalidate(baseballPredictProvider(widget.header.matchId));
+            try {
+              await ref.read(
+                baseballPredictProvider(widget.header.matchId).future,
+              );
+            } on Object {
+              // Retry boundary must complete normally; failure UI comes from provider state.
+            }
+          },
         ),
       ),
     );
@@ -541,9 +562,16 @@ class _BaseballScoringAnalysisReportBlockState
       inProgress: _retryInProgress,
       onPressed: () => unawaited(
         _guardedRetry(
-          () async => ref.invalidate(
-            baseballPredictProvider(widget.header.matchId),
-          ),
+          () async {
+            ref.invalidate(baseballPredictProvider(widget.header.matchId));
+            try {
+              await ref.read(
+                baseballPredictProvider(widget.header.matchId).future,
+              );
+            } on Object {
+              // Retry boundary must complete normally; failure UI comes from provider state.
+            }
+          },
         ),
       ),
     );

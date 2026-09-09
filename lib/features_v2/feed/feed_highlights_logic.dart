@@ -67,10 +67,6 @@ List<FeedHighlight> parseFeedHighlights(
   Map<String, dynamic> response, {
   required String locale,
 }) {
-  if (response.isEmpty) {
-    throw Exception('Failed to load feed highlights');
-  }
-
   final videosRaw = response['videos'];
   if (videosRaw is! List) {
     throw Exception('Failed to load feed highlights');

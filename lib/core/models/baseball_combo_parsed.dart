@@ -19,7 +19,6 @@ class BaseballComboLegParsed {
     this.odds,
     this.winProb,
     this.reason,
-    this.reasonEn,
   });
 
   final String? pickSide;
@@ -38,7 +37,6 @@ class BaseballComboLegParsed {
   final double? odds;
   final double? winProb;
   final String? reason;
-  final String? reasonEn;
 }
 
 class BaseballComboParsed {
@@ -51,9 +49,6 @@ class BaseballComboParsed {
     this.totalOdds,
     this.avgConfidence,
     this.aiAnalysis,
-    this.aiAnalysisEn,
-    this.aiComment,
-    this.aiCommentEn,
     required this.legs,
   });
 
@@ -65,9 +60,6 @@ class BaseballComboParsed {
   final double? totalOdds;
   final double? avgConfidence;
   final String? aiAnalysis;
-  final String? aiAnalysisEn;
-  final String? aiComment;
-  final String? aiCommentEn;
   final List<BaseballComboLegParsed> legs;
 }
 
@@ -103,15 +95,6 @@ BaseballComboParsed _parseCombo(Map<String, dynamic> pick) {
       pick['avg_confidence'] ?? pick['avgConfidence'],
     ),
     aiAnalysis: _readString(pick, const ['ai_analysis', 'aiAnalysis']),
-    aiAnalysisEn: _readString(pick, const [
-      'ai_analysis_en',
-      'aiAnalysisEn',
-    ]),
-    aiComment: _readString(pick, const ['ai_comment', 'aiComment']),
-    aiCommentEn: _readString(pick, const [
-      'ai_comment_en',
-      'aiCommentEn',
-    ]),
     legs: legs,
   );
 }
@@ -140,7 +123,6 @@ BaseballComboLegParsed _parseLeg(Map<String, dynamic> leg) {
     odds: _parseDouble(leg['odds']),
     winProb: _parseDouble(leg['winProb'] ?? leg['win_prob']),
     reason: _readString(leg, const ['reason', 'reason_ko']),
-    reasonEn: _readString(leg, const ['reason_en', 'reasonEn']),
   );
 }
 

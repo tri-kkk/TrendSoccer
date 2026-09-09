@@ -3,6 +3,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
+import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
@@ -94,10 +95,7 @@ class _HighlightPlayerSheetState extends State<_HighlightPlayerSheet> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: c.canvas,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
+        borderRadius: TsRadius.topXl,
       ),
       padding: const EdgeInsets.all(TsSpacing.lg),
       child: Column(

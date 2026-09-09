@@ -29,27 +29,10 @@ BaseballComboParsed? reportsComboDetailFindInCache(
   return null;
 }
 
-/// Locale-aware AI summary — mirrors v1 `_readLocalizedText` / `_readAiSummary`.
-String? reportsComboDetailAiSummary(
-  BuildContext context,
-  BaseballComboParsed combo,
-) {
-  if (isKoreanLocale(context)) {
-    for (final value in [combo.aiAnalysis, combo.aiComment]) {
-      if (value != null && value.trim().isNotEmpty) return value.trim();
-    }
-    for (final value in [combo.aiAnalysisEn, combo.aiCommentEn]) {
-      if (value != null && value.trim().isNotEmpty) return value.trim();
-    }
-    return null;
-  }
-
-  for (final value in [combo.aiAnalysisEn, combo.aiCommentEn]) {
-    if (value != null && value.trim().isNotEmpty) return value.trim();
-  }
-  for (final value in [combo.aiAnalysis, combo.aiComment]) {
-    if (value != null && value.trim().isNotEmpty) return value.trim();
-  }
+/// AI summary text from the combo pick payload.
+String? reportsComboDetailAiSummary(BaseballComboParsed combo) {
+  final analysis = combo.aiAnalysis;
+  if (analysis != null && analysis.trim().isNotEmpty) return analysis.trim();
   return null;
 }
 
@@ -159,7 +142,7 @@ TsAiReportData? reportsComboDetailAiReportData(
   AppLocalizations l10n,
   BaseballComboParsed combo,
 ) {
-  final raw = reportsComboDetailAiSummary(context, combo);
+  final raw = reportsComboDetailAiSummary(combo);
   if (raw == null) return null;
 
   final parsed = reportsComboDetailParseAiText(raw);
@@ -201,22 +184,9 @@ String reportsComboDetailLegProbabilityLabel(double? winProb) {
   return '$pct%';
 }
 
-String? reportsComboDetailLegReason(
-  BuildContext context,
-  BaseballComboLegParsed leg,
-) {
-  if (isKoreanLocale(context)) {
-    final ko = leg.reason;
-    if (ko != null && ko.trim().isNotEmpty) return ko.trim();
-    final en = leg.reasonEn;
-    if (en != null && en.trim().isNotEmpty) return en.trim();
-    return null;
-  }
-
-  final en = leg.reasonEn;
-  if (en != null && en.trim().isNotEmpty) return en.trim();
-  final ko = leg.reason;
-  if (ko != null && ko.trim().isNotEmpty) return ko.trim();
+String? reportsComboDetailLegReason(BaseballComboLegParsed leg) {
+  final reason = leg.reason;
+  if (reason != null && reason.trim().isNotEmpty) return reason.trim();
   return null;
 }
 
@@ -274,7 +244,7 @@ List<TsComboLeg> reportsComboDetailLegs(
             : leg.odds!.toStringAsFixed(2),
         probability: reportsComboDetailLegProbability(leg.winProb),
         baseline: 0.5,
-        reasonLabel: reportsComboDetailLegReason(context, leg),
+        reasonLabel: reportsComboDetailLegReason(leg),
         homeEmblemUrl: leg.homeLogo,
         awayEmblemUrl: leg.awayLogo,
       ),

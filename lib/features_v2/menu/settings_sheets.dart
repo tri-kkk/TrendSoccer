@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:trendsoccer/core/providers/language_provider.dart';
 import 'package:trendsoccer/core/providers/theme_provider.dart';
+import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
@@ -128,10 +129,7 @@ class _SettingsSheetShell extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         color: c.canvas,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
+        borderRadius: TsRadius.topXl,
       ),
       padding: const EdgeInsets.all(TsSpacing.lg),
       child: Column(
