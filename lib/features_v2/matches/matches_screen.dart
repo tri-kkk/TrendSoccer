@@ -912,11 +912,12 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
   }
 
   Widget _buildFixtureFailureEmptyState(String sport) {
+    final l10n = context.l10n;
     return TsEmptyState(
       type: TsEmptyType.failure,
-      title: 'Could not load matches',
-      description: 'Check your connection and try again.',
-      actionLabel: _fixtureRetryInProgress ? 'Retrying…' : 'Retry',
+      title: l10n.analysisLoadMatchesFailed,
+      description: l10n.errorNetwork,
+      actionLabel: _fixtureRetryInProgress ? l10n.retryInProgress : l10n.retry,
       onAction: _fixtureRetryInProgress
           ? null
           : () => unawaited(_onFixtureRetryPressed(sport)),

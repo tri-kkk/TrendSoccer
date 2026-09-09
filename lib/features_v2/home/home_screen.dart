@@ -45,6 +45,7 @@ import 'package:trendsoccer/design_system/widgets/ts_section_header.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
 import 'package:trendsoccer/design_system/widgets/ts_subscription_banner.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 
 Widget _homeSeeAllHeader(
   BuildContext context, {
@@ -359,6 +360,7 @@ class _AccuracyCardSectionState extends ConsumerState<_AccuracyCardSection> {
     required VoidCallback onRetry,
   }) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -367,7 +369,7 @@ class _AccuracyCardSectionState extends ConsumerState<_AccuracyCardSection> {
         TextButton(
           onPressed: onRetry,
           child: Text(
-            'Retry',
+            l10n.retry,
             style: TsType.labelSRegular.copyWith(color: c.textSecondary),
           ),
         ),
@@ -754,6 +756,7 @@ class _AnalysisCarouselSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final matchesAsync = ref.watch(homeAnalysisMatchesProvider(sport));
 
     final rail = matchesAsync.when(
@@ -771,9 +774,9 @@ class _AnalysisCarouselSection extends ConsumerWidget {
         alignment: Alignment.center,
         child: TsEmptyState(
           type: TsEmptyType.failure,
-          title: 'Could not load matches',
-          description: 'Check your connection and try again.',
-          actionLabel: 'Retry',
+          title: l10n.analysisLoadMatchesFailed,
+          description: l10n.errorNetwork,
+          actionLabel: l10n.retry,
           onAction: () => _retry(ref),
         ),
       ),
@@ -849,15 +852,16 @@ class _ComboTodaySection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final summaryAsync = ref.watch(homeComboSummaryProvider);
 
     final card = summaryAsync.when(
       loading: () => const TsSkeletonBlock(TsSkeletonType.block),
       error: (error, stackTrace) => TsEmptyState(
         type: TsEmptyType.failure,
-        title: 'Could not load combinations',
-        description: 'Check your connection and try again.',
-        actionLabel: 'Retry',
+        title: l10n.comboLoadError,
+        description: l10n.errorNetwork,
+        actionLabel: l10n.retry,
         onAction: () => _retry(ref),
       ),
       data: (summary) => TsComboTodayCard(
@@ -917,6 +921,7 @@ class _NewsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final newsAsync = ref.watch(homeNewsProvider);
 
     final body = newsAsync.when(
@@ -931,9 +936,9 @@ class _NewsSection extends ConsumerWidget {
       ),
       error: (error, stackTrace) => TsEmptyState(
         type: TsEmptyType.failure,
-        title: 'Could not load news',
-        description: 'Check your connection and try again.',
-        actionLabel: 'Retry',
+        title: l10n.newsLoadError,
+        description: l10n.errorNetwork,
+        actionLabel: l10n.retry,
         onAction: () => _retry(ref),
       ),
       data: (articles) => Column(
@@ -986,6 +991,7 @@ class _TodayMatchesSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final matchesAsync = ref.watch(homeTodayMatchesProvider);
 
     final rail = matchesAsync.when(
@@ -1003,9 +1009,9 @@ class _TodayMatchesSection extends ConsumerWidget {
         alignment: Alignment.center,
         child: TsEmptyState(
           type: TsEmptyType.failure,
-          title: 'Could not load matches',
-          description: 'Check your connection and try again.',
-          actionLabel: 'Retry',
+          title: l10n.analysisLoadMatchesFailed,
+          description: l10n.errorNetwork,
+          actionLabel: l10n.retry,
           onAction: () => _retry(ref),
         ),
       ),

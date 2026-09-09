@@ -10,6 +10,7 @@ import 'package:trendsoccer/design_system/tokens/ts_type.dart';
 import 'package:trendsoccer/design_system/widgets/ts_app_bar.dart';
 import 'package:trendsoccer/design_system/widgets/ts_empty_state.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 
 class LegalScreen extends ConsumerWidget {
   const LegalScreen({
@@ -24,6 +25,7 @@ class LegalScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
+    final l10n = AppLocalizations.of(context)!;
     final contentAsync = ref.watch(provider);
 
     return Scaffold(
@@ -66,9 +68,9 @@ class LegalScreen extends ConsumerWidget {
         error: (_, _) => Center(
           child: TsEmptyState(
             type: TsEmptyType.failure,
-            title: 'Unable to load',
-            description: 'Check your connection and try again.',
-            actionLabel: 'Retry',
+            title: l10n.legalLoadError,
+            description: l10n.errorNetwork,
+            actionLabel: l10n.retry,
             onAction: () => ref.invalidate(provider),
           ),
         ),

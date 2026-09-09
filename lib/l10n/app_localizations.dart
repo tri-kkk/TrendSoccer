@@ -1202,6 +1202,12 @@ abstract class AppLocalizations {
   /// **'{team} 승'**
   String comboLegPickWin(String team);
 
+  /// No description provided for @comboLoadError.
+  ///
+  /// In ko, this message translates to:
+  /// **'조합을 불러오지 못했습니다'**
+  String get comboLoadError;
+
   /// No description provided for @confidenceAccuracy.
   ///
   /// In ko, this message translates to:
@@ -1795,12 +1801,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'{minutes}분'**
   String liveMinutes(int minutes);
-
-  /// No description provided for @loadMatchesFailed.
-  ///
-  /// In ko, this message translates to:
-  /// **'경기 목록을 불러오지 못했습니다.'**
-  String get loadMatchesFailed;
 
   /// No description provided for @lockGuestAction.
   ///
@@ -2564,6 +2564,18 @@ abstract class AppLocalizations {
   /// **'축구 데이터 분석가'**
   String get reportAuthorRole;
 
+  /// No description provided for @reportBlockLoadError.
+  ///
+  /// In ko, this message translates to:
+  /// **'불러오지 못했습니다'**
+  String get reportBlockLoadError;
+
+  /// No description provided for @reportBlockUnavailable.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금은 이 섹션을 볼 수 없습니다'**
+  String get reportBlockUnavailable;
+
   /// No description provided for @reportDetailLoadError.
   ///
   /// In ko, this message translates to:
@@ -2635,6 +2647,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'다시 시도'**
   String get retry;
+
+  /// No description provided for @retryInProgress.
+  ///
+  /// In ko, this message translates to:
+  /// **'다시 시도 중…'**
+  String get retryInProgress;
 
   /// No description provided for @save.
   ///

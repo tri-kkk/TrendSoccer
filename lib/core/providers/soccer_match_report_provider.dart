@@ -319,7 +319,6 @@ class MatchReportRetryButton {
   final bool inProgress;
   final void Function() onPressed;
 
-  String get label => inProgress ? 'Retrying…' : 'Retry';
   void Function()? get action => inProgress ? null : onPressed;
 }
 

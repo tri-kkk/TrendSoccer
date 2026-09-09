@@ -615,6 +615,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get comboLoadError => 'Could not load combinations';
+
+  @override
   String get confidenceAccuracy => 'Match rate';
 
   @override
@@ -925,9 +928,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String liveMinutes(int minutes) {
     return '$minutes min';
   }
-
-  @override
-  String get loadMatchesFailed => 'Could not load matches.';
 
   @override
   String get lockGuestAction => 'Log in';
@@ -1344,6 +1344,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportAuthorRole => 'Football data analyst';
 
   @override
+  String get reportBlockLoadError => 'Could not load';
+
+  @override
+  String get reportBlockUnavailable => 'This section is unavailable right now';
+
+  @override
   String get reportDetailLoadError => 'Could not load match preview.';
 
   @override
@@ -1380,6 +1386,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Retry';
+
+  @override
+  String get retryInProgress => 'Retrying…';
 
   @override
   String get save => 'Save';

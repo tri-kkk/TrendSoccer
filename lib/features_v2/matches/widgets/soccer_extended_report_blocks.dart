@@ -586,19 +586,20 @@ class _ExtendedReportBlockSkeleton extends StatelessWidget {
 class _ExtendedReportBlockFailure extends StatelessWidget {
   const _ExtendedReportBlockFailure({
     required this.retry,
-    this.description = 'This section is unavailable right now.',
+    this.description,
   });
 
   final MatchReportRetryButton retry;
-  final String description;
+  final String? description;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return TsEmptyState(
       type: TsEmptyType.failure,
-      title: 'Could not load',
-      description: description,
-      actionLabel: retry.label,
+      title: l10n.reportBlockLoadError,
+      description: description ?? l10n.reportBlockUnavailable,
+      actionLabel: retry.inProgress ? l10n.retryInProgress : l10n.retry,
       onAction: retry.action,
     );
   }

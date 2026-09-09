@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:trendsoccer/core/services/app_config_service.dart';
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
@@ -103,6 +104,7 @@ class _ForceUpdateScreenState extends ConsumerState<ForceUpdateScreen> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
+    final l10n = context.l10n;
     final icon = _isMaintenance ? TsIcons.warning : TsIcons.rocketLaunch;
 
     return PopScope(
@@ -155,7 +157,7 @@ class _ForceUpdateScreenState extends ConsumerState<ForceUpdateScreen> {
                   children: [
                     if (_isMaintenance)
                       TsButton(
-                        label: 'Retry',
+                        label: l10n.retry,
                         style: TsButtonStyle.ghost,
                         size: TsButtonSize.large,
                         expand: true,

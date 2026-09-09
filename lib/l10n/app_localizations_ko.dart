@@ -599,6 +599,9 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get comboLoadError => '조합을 불러오지 못했습니다';
+
+  @override
   String get confidenceAccuracy => '일치도';
 
   @override
@@ -903,9 +906,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String liveMinutes(int minutes) {
     return '$minutes분';
   }
-
-  @override
-  String get loadMatchesFailed => '경기 목록을 불러오지 못했습니다.';
 
   @override
   String get lockGuestAction => '로그인';
@@ -1315,6 +1315,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get reportAuthorRole => '축구 데이터 분석가';
 
   @override
+  String get reportBlockLoadError => '불러오지 못했습니다';
+
+  @override
+  String get reportBlockUnavailable => '지금은 이 섹션을 볼 수 없습니다';
+
+  @override
   String get reportDetailLoadError => '매치 프리뷰를 불러오지 못했습니다.';
 
   @override
@@ -1349,6 +1355,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get retry => '다시 시도';
+
+  @override
+  String get retryInProgress => '다시 시도 중…';
 
   @override
   String get save => '저장';

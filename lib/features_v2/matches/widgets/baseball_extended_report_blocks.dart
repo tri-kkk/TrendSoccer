@@ -975,11 +975,12 @@ class _BaseballReportBlockFailure extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return TsEmptyState(
       type: TsEmptyType.failure,
-      title: 'Could not load',
+      title: l10n.reportBlockLoadError,
       description: description,
-      actionLabel: retry.label,
+      actionLabel: retry.inProgress ? l10n.retryInProgress : l10n.retry,
       onAction: retry.action,
     );
   }

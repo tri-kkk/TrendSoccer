@@ -527,11 +527,12 @@ class _SoccerReportTransportFailure extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return TsEmptyState(
       type: TsEmptyType.failure,
-      title: 'Could not load',
+      title: l10n.reportBlockLoadError,
       description: resolveApiError(context, error),
-      actionLabel: retry.label,
+      actionLabel: retry.inProgress ? l10n.retryInProgress : l10n.retry,
       onAction: retry.action,
     );
   }
