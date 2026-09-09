@@ -12,11 +12,11 @@ class HighlightsService {
 
   final Dio _dio;
 
-  Future<Map<String, dynamic>> getHighlights({required int limit}) async {
+  Future<Map<String, dynamic>> getHighlights() async {
     final response = await _dio.get<dynamic>(
-      '/api/highlights',
+      '/api/highlights/scorebat',
       queryParameters: <String, dynamic>{
-        'limit': limit,
+        'league': 'ALL',
       },
     );
     final data = response.data;

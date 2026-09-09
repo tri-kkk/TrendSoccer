@@ -7,14 +7,10 @@ import 'package:trendsoccer/core/utils/api_language_helper.dart';
 import 'package:trendsoccer/features_v2/feed/feed_highlights_logic.dart';
 import 'package:trendsoccer/features_v2/feed/feed_highlight.dart';
 
-const feedHighlightsLimit = 20;
-
 final feedHighlightsProvider =
     FutureProvider<List<FeedHighlight>>((ref) async {
   ref.watch(languageProvider);
   final locale = getApiLanguage(ref.read(sharedPreferencesProvider));
-  final raw = await ref
-      .read(highlightsServiceProvider)
-      .getHighlights(limit: feedHighlightsLimit);
+  final raw = await ref.read(highlightsServiceProvider).getHighlights();
   return parseFeedHighlights(raw, locale: locale);
 });

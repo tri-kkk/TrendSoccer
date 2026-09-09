@@ -1,19 +1,19 @@
 class FeedHighlight {
   const FeedHighlight({
     required this.id,
-    required this.youtubeId,
-    required this.youtubeUrl,
     required this.titleLabel,
     required this.metaLabel,
-    required this.league,
+    required this.embedUrl,
+    required this.leagueCode,
     this.imageUrl,
+    this.leagueLogoUrl,
   });
 
   final String id;
-  final String youtubeId;
-  final String youtubeUrl;
   final String titleLabel;
   final String metaLabel;
-  final String league;
+  final String embedUrl;
+  final String leagueCode;
   final String? imageUrl;
+  final String? leagueLogoUrl;
 }

@@ -1,10 +1,16 @@
 import 'package:intl/intl.dart';
 
-import 'package:trendsoccer/core/assets/ts_assets.dart';
 import 'package:trendsoccer/features_v2/feed/feed_highlight.dart';
 
-String? leagueEmblemIdFromLeague(String league) =>
-    TsAssets.leagueLogoIdFromBlogTags([league]);
+String? extractIframeSrcFromEmbed(String embedHtml) {
+  final match = RegExp(
+    r"""<iframe[^>]+src\s*=\s*['"]([^'"]+)['"]""",
+    caseSensitive: false,
+  ).firstMatch(embedHtml);
+  final src = match?.group(1)?.trim();
+  if (src == null || src.isEmpty) return null;
+  return src;
+}
 
 String formatHighlightMetaLabel({
   required String league,
@@ -28,8 +34,31 @@ String _formatHighlightMatchDate(String matchDate, {required String locale}) {
   return DateFormat('M월 d일', 'ko').format(local);
 }
 
+String _readLeagueName(Map<String, dynamic> item, {required String locale}) {
+  final leagueInfoRaw = item['leagueInfo'];
+  if (leagueInfoRaw is Map) {
+    final leagueInfo = Map<String, dynamic>.from(leagueInfoRaw);
+    if (locale == 'ko') {
+      final nameKr = leagueInfo['nameKR']?.toString().trim() ?? '';
+      if (nameKr.isNotEmpty) return nameKr;
+    }
+    final name = leagueInfo['name']?.toString().trim() ?? '';
+    if (name.isNotEmpty) return name;
+  }
+  return item['competition']?.toString().trim() ?? '';
+}
+
+String? _readLeagueLogoUrl(Map<String, dynamic> item) {
+  final leagueInfoRaw = item['leagueInfo'];
+  if (leagueInfoRaw is! Map) return null;
+  final logo = Map<String, dynamic>.from(leagueInfoRaw)['logo']?.toString().trim() ??
+      '';
+  if (logo.isEmpty) return null;
+  return logo;
+}
+
 String? _readThumbnail(Map<String, dynamic> item) {
-  final thumbnail = item['thumbnailUrl']?.toString() ?? '';
+  final thumbnail = item['thumbnail']?.toString() ?? '';
   if (thumbnail.trim().isEmpty) return null;
   return thumbnail.trim();
 }
@@ -42,40 +71,42 @@ List<FeedHighlight> parseFeedHighlights(
     throw Exception('Failed to load feed highlights');
   }
 
-  final highlightsRaw = response['highlights'];
-  if (highlightsRaw is! List) {
+  final videosRaw = response['videos'];
+  if (videosRaw is! List) {
     throw Exception('Failed to load feed highlights');
   }
 
   final highlights = <FeedHighlight>[];
-  for (final item in highlightsRaw) {
+  for (final item in videosRaw) {
     if (item is! Map) continue;
     final json = Map<String, dynamic>.from(item);
 
-    final youtubeId = json['youtubeId']?.toString().trim() ?? '';
-    final youtubeUrl = json['youtubeUrl']?.toString().trim() ?? '';
-    if (youtubeId.isEmpty || youtubeUrl.isEmpty) continue;
+    final embed = json['embed']?.toString() ?? '';
+    final embedUrl = extractIframeSrcFromEmbed(embed);
+    if (embedUrl == null) continue;
 
-    final title = json['videoTitle']?.toString().trim() ?? '';
+    final title = json['title']?.toString().trim() ?? '';
     if (title.isEmpty) continue;
 
-    final league = json['league']?.toString().trim() ?? '';
-    final matchDate = json['matchDate']?.toString().trim() ?? '';
-    final id = json['id']?.toString().trim() ?? youtubeId;
+    final id = json['id']?.toString().trim() ?? '';
+    if (id.isEmpty) continue;
+
+    final matchDate = json['date']?.toString().trim() ?? '';
+    final leagueCode = json['leagueCode']?.toString().trim() ?? '';
 
     highlights.add(
       FeedHighlight(
         id: id,
-        youtubeId: youtubeId,
-        youtubeUrl: youtubeUrl,
         titleLabel: title,
         metaLabel: formatHighlightMetaLabel(
-          league: league,
+          league: _readLeagueName(json, locale: locale),
           matchDate: matchDate,
           locale: locale,
         ),
-        league: league,
+        embedUrl: embedUrl,
+        leagueCode: leagueCode,
         imageUrl: _readThumbnail(json),
+        leagueLogoUrl: _readLeagueLogoUrl(json),
       ),
     );
   }

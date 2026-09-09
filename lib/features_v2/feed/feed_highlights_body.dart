@@ -11,7 +11,6 @@ import 'package:trendsoccer/design_system/widgets/ts_empty_state.dart';
 import 'package:trendsoccer/design_system/widgets/ts_highlight_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/features_v2/feed/feed_highlight.dart';
-import 'package:trendsoccer/features_v2/feed/feed_highlights_logic.dart';
 import 'package:trendsoccer/features_v2/feed/feed_highlights_provider.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 
@@ -79,16 +78,21 @@ class _HighlightListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
-    final emblemId = leagueEmblemIdFromLeague(highlight.league);
+    final leagueLogoUrl = highlight.leagueLogoUrl;
 
     return TsHighlightCard(
-      leagueIcon: emblemId == null
+      leagueIcon: leagueLogoUrl == null || leagueLogoUrl.isEmpty
           ? TsIcon(
               TsIcons.imageNotSupported,
               size: TsIconSize.xs,
               color: c.textTertiary,
             )
-          : TsLeagueIcon(emblemId, size: TsIconSize.xs),
+          : TsLeagueIcon(
+              highlight.leagueCode,
+              size: TsIconSize.xs,
+              logoUrl: leagueLogoUrl,
+              preferAsset: false,
+            ),
       metaLabel: highlight.metaLabel,
       titleLabel: highlight.titleLabel,
       imageUrl: highlight.imageUrl,
