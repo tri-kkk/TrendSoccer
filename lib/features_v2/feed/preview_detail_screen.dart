@@ -15,6 +15,7 @@ import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
 import 'package:trendsoccer/design_system/widgets/ts_app_bar.dart';
 import 'package:trendsoccer/design_system/widgets/ts_empty_state.dart';
+import 'package:trendsoccer/design_system/widgets/ts_lock_overlay.dart';
 import 'package:trendsoccer/design_system/widgets/ts_locked_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_post_header.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
@@ -89,7 +90,7 @@ class PreviewDetailScreen extends ConsumerWidget {
             final cleanContent = cleanFeedPreviewMarkdownContent(post.content);
             final (bodyContent, predictionHeading, predictionBody) =
                 splitFeedPreviewAnalysisSection(cleanContent);
-            final lockLabel = _previewLockLabel(l10n, auth.planType);
+            final lockCopy = _previewLockCopy(l10n, auth.planType);
             final lockOnTap = _previewLockOnTap(context, auth.planType);
 
             return SingleChildScrollView(
@@ -134,7 +135,10 @@ class PreviewDetailScreen extends ConsumerWidget {
                       if (predictionBody != null && predictionBody.isNotEmpty) ...[
                         const SizedBox(height: TsSpacing.lg),
                         TsLockedBlock(
-                          label: lockLabel,
+                          size: TsLockSize.normal,
+                          label: lockCopy.headline,
+                          subline: lockCopy.subline,
+                          actionLabel: lockCopy.actionLabel,
                           onTap: lockOnTap,
                           child: _previewMarkdownBody(predictionBody, c),
                         ),
@@ -151,11 +155,22 @@ class PreviewDetailScreen extends ConsumerWidget {
   }
 }
 
-String _previewLockLabel(AppLocalizations l10n, PlanType planType) {
+({String headline, String subline, String actionLabel}) _previewLockCopy(
+  AppLocalizations l10n,
+  PlanType planType,
+) {
   if (planType == PlanType.none) {
-    return l10n.loginAppBarTitle;
+    return (
+      headline: l10n.lockGuestTitle,
+      subline: l10n.lockGuestSubtitle,
+      actionLabel: l10n.lockGuestAction,
+    );
   }
-  return l10n.reportPremiumOnlyTitle;
+  return (
+    headline: l10n.premiumNonSubscriberTitle,
+    subline: l10n.subscribeToUnlock,
+    actionLabel: l10n.lockPremiumAction,
+  );
 }
 
 VoidCallback? _previewLockOnTap(BuildContext context, PlanType planType) {
@@ -178,26 +193,21 @@ Widget _previewMarkdownBody(String data, TsThemeColors c) {
 MarkdownStyleSheet _previewMarkdownStyle(TsThemeColors c) {
   return MarkdownStyleSheet(
     h2: TsType.h2.copyWith(color: c.textPrimary),
-    h2Padding: const EdgeInsets.only(
-      top: TsSpacing.xl,
-      bottom: TsSpacing.sm,
-    ),
+    h2Padding: EdgeInsets.zero,
     h3: TsType.h3.copyWith(color: c.textPrimary),
-    h3Padding: const EdgeInsets.only(
-      top: TsSpacing.lg,
-      bottom: TsSpacing.sm,
-    ),
-    p: TsType.bodyLRegular.copyWith(color: c.textSecondary),
-    pPadding: const EdgeInsets.only(bottom: TsSpacing.sm),
+    h3Padding: EdgeInsets.zero,
+    p: TsType.bodyLMedium.copyWith(color: c.textSecondary),
+    pPadding: EdgeInsets.zero,
+    blockSpacing: TsSpacing.lg,
     strong: TsType.bodyLBold.copyWith(color: c.textPrimary),
-    listBullet: TsType.bodyLRegular.copyWith(color: c.textSecondary),
+    listBullet: TsType.bodyLMedium.copyWith(color: c.textSecondary),
     a: TsType.bodyLRegular.copyWith(
       color: c.primary,
       decoration: TextDecoration.underline,
       decorationColor: c.primary,
     ),
     tableHead: TsType.bodyMBold.copyWith(color: c.textPrimary),
-    tableBody: TsType.bodyMRegular.copyWith(color: c.textSecondary),
+    tableBody: TsType.bodyMMedium.copyWith(color: c.textSecondary),
     tableBorder: TableBorder.all(color: c.borderSubtle, width: 1),
     tableCellsPadding: const EdgeInsets.symmetric(
       horizontal: TsSpacing.sm,

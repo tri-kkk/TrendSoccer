@@ -68,7 +68,8 @@ class TsLockOverlay extends StatelessWidget {
       },
       child: switch (size) {
         TsLockSize.normal => Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               TsIcon(TsIcons.lock, size: TsIconSize.md, color: c.onScrim),
@@ -94,7 +95,8 @@ class TsLockOverlay extends StatelessWidget {
             ],
           ),
         TsLockSize.compact => Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               TsIcon(TsIcons.lock, size: TsIconSize.md, color: c.onScrim),

@@ -909,6 +909,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loadMatchesFailed => 'Could not load matches.';
 
   @override
+  String get lockGuestAction => 'Log in';
+
+  @override
+  String get lockGuestSubtitle => 'Log in to continue';
+
+  @override
+  String get lockGuestTitle => 'Members only';
+
+  @override
+  String get lockPremiumAction => 'View plans';
+
+  @override
   String get loginAppBarTitle => 'Log In';
 
   @override

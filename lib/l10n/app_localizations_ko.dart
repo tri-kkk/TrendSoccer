@@ -887,6 +887,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get loadMatchesFailed => '경기 목록을 불러오지 못했습니다.';
 
   @override
+  String get lockGuestAction => '로그인';
+
+  @override
+  String get lockGuestSubtitle => '로그인 후 이용할 수 있습니다';
+
+  @override
+  String get lockGuestTitle => '회원 전용 콘텐츠';
+
+  @override
+  String get lockPremiumAction => '요금제 보기';
+
+  @override
   String get loginAppBarTitle => '로그인';
 
   @override

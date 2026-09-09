@@ -15,6 +15,9 @@ class TsLockedBlock extends StatelessWidget {
     required this.label,
     this.locked = true,
     this.onTap,
+    this.size = TsLockSize.inline,
+    this.subline,
+    this.actionLabel,
     super.key,
   });
 
@@ -22,6 +25,9 @@ class TsLockedBlock extends StatelessWidget {
   final String label;
   final bool locked;
   final VoidCallback? onTap;
+  final TsLockSize size;
+  final String? subline;
+  final String? actionLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -29,18 +35,43 @@ class TsLockedBlock extends StatelessWidget {
       return child;
     }
 
-    final pill = TsLockOverlay(
-      size: TsLockSize.inline,
-      headline: label,
-    );
+    final pill = switch ((subline, actionLabel)) {
+      (null, null) => TsLockOverlay(
+          size: size,
+          headline: label,
+        ),
+      (null, final String action) => TsLockOverlay(
+          size: size,
+          headline: label,
+          actionLabel: action,
+          onAction: onTap,
+        ),
+      (final String sub, null) => TsLockOverlay(
+          size: size,
+          headline: label,
+          subline: sub,
+        ),
+      (final String sub, final String action) => TsLockOverlay(
+          size: size,
+          headline: label,
+          subline: sub,
+          actionLabel: action,
+          onAction: onTap,
+        ),
+    };
 
-    final overlay = onTap != null
-        ? GestureDetector(
-            onTap: onTap,
-            behavior: HitTestBehavior.opaque,
-            child: pill,
-          )
-        : IgnorePointer(child: pill);
+    final Widget overlay;
+    if (actionLabel != null && onTap != null) {
+      overlay = pill;
+    } else if (onTap != null) {
+      overlay = GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: pill,
+      );
+    } else {
+      overlay = IgnorePointer(child: pill);
+    }
 
     return Stack(
       fit: StackFit.passthrough,
@@ -52,10 +83,12 @@ class TsLockedBlock extends StatelessWidget {
           ),
         ),
         Positioned.fill(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
-            child: Center(child: overlay),
-          ),
+          child: size == TsLockSize.inline
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
+                  child: Center(child: overlay),
+                )
+              : overlay,
         ),
       ],
     );

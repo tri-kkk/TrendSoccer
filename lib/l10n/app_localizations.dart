@@ -1760,6 +1760,30 @@ abstract class AppLocalizations {
   /// **'경기 목록을 불러오지 못했습니다.'**
   String get loadMatchesFailed;
 
+  /// No description provided for @lockGuestAction.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그인'**
+  String get lockGuestAction;
+
+  /// No description provided for @lockGuestSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그인 후 이용할 수 있습니다'**
+  String get lockGuestSubtitle;
+
+  /// No description provided for @lockGuestTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'회원 전용 콘텐츠'**
+  String get lockGuestTitle;
+
+  /// No description provided for @lockPremiumAction.
+  ///
+  /// In ko, this message translates to:
+  /// **'요금제 보기'**
+  String get lockPremiumAction;
+
   /// No description provided for @loginAppBarTitle.
   ///
   /// In ko, this message translates to:
