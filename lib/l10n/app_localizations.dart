@@ -410,6 +410,18 @@ abstract class AppLocalizations {
   /// **'하이라이트를 불러오지 못했습니다'**
   String get highlightsLoadError;
 
+  /// No description provided for @highlightPlaybackFailedTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'영상을 재생할 수 없습니다'**
+  String get highlightPlaybackFailedTitle;
+
+  /// No description provided for @highlightPlaybackFailedBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'잠시 후 다시 시도해 주세요'**
+  String get highlightPlaybackFailedBody;
+
   /// No description provided for @reportsPremiumEmptyBody.
   ///
   /// In ko, this message translates to:

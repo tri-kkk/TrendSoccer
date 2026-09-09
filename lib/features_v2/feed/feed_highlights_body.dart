@@ -12,6 +12,7 @@ import 'package:trendsoccer/design_system/widgets/ts_highlight_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/features_v2/feed/feed_highlight.dart';
 import 'package:trendsoccer/features_v2/feed/feed_highlights_provider.dart';
+import 'package:trendsoccer/features_v2/feed/highlight_player_sheet.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 
 class FeedHighlightsBody extends ConsumerWidget {
@@ -96,6 +97,7 @@ class _HighlightListCard extends StatelessWidget {
       metaLabel: highlight.metaLabel,
       titleLabel: highlight.titleLabel,
       imageUrl: highlight.imageUrl,
+      onTap: () => showHighlightPlayerSheet(context, highlight),
     );
   }
 }

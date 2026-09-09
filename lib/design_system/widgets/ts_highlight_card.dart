@@ -15,6 +15,7 @@ class TsHighlightCard extends StatelessWidget {
     required this.metaLabel,
     required this.titleLabel,
     this.imageUrl,
+    this.onTap,
     super.key,
   });
 
@@ -22,66 +23,71 @@ class TsHighlightCard extends StatelessWidget {
   final String metaLabel;
   final String titleLabel;
   final String? imageUrl;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
-    return ClipRRect(
-      borderRadius: TsRadius.md,
-      clipBehavior: Clip.antiAlias,
-      child: ColoredBox(
-        color: c.surface,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TsNetworkImage(
-              imageUrl: imageUrl,
-              aspectRatio: 16 / 9,
-              placeholderIcon: TsIcons.imageNotSupported,
-              overlay: Container(
-                width: TsIconSize.xl,
-                height: TsIconSize.xl,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: c.scrim,
-                ),
-                alignment: Alignment.center,
-                child: TsIcon(
-                  TsIcons.playCircle,
-                  size: TsIconSize.lg,
-                  color: c.onScrim,
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: ClipRRect(
+        borderRadius: TsRadius.md,
+        clipBehavior: Clip.antiAlias,
+        child: ColoredBox(
+          color: c.surface,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TsNetworkImage(
+                imageUrl: imageUrl,
+                aspectRatio: 16 / 9,
+                placeholderIcon: TsIcons.imageNotSupported,
+                overlay: Container(
+                  width: TsIconSize.xl,
+                  height: TsIconSize.xl,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: c.scrim,
+                  ),
+                  alignment: Alignment.center,
+                  child: TsIcon(
+                    TsIcons.playCircle,
+                    size: TsIconSize.lg,
+                    color: c.onScrim,
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(TsSpacing.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    children: [
-                      leagueIcon,
-                      const SizedBox(width: TsSpacing.xs),
-                      Expanded(
-                        child: Text(
-                          metaLabel,
-                          style: TsType.labelXsMedium.copyWith(
-                            color: c.textTertiary,
+              Padding(
+                padding: const EdgeInsets.all(TsSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        leagueIcon,
+                        const SizedBox(width: TsSpacing.xs),
+                        Expanded(
+                          child: Text(
+                            metaLabel,
+                            style: TsType.labelXsMedium.copyWith(
+                              color: c.textTertiary,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: TsSpacing.sm),
-                  Text(
-                    titleLabel,
-                    style: TsType.bodyLBold.copyWith(color: c.textPrimary),
-                  ),
-                ],
+                      ],
+                    ),
+                    const SizedBox(height: TsSpacing.sm),
+                    Text(
+                      titleLabel,
+                      style: TsType.bodyLBold.copyWith(color: c.textPrimary),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

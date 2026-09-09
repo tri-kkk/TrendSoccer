@@ -72,6 +72,8 @@
   "feedPreviewEmptyTitle": "No previews yet",
   "feedPreviewEmptyBody": "Match previews are published before kickoff.",
   "highlightsLoadError": "Could not load highlights",
+  "highlightPlaybackFailedTitle": "Can't play this clip",
+  "highlightPlaybackFailedBody": "Try again in a moment",
   "reportsPremiumEmptyBody": "Curation is strict — some days have none.\nCheck Analysis for all supported leagues.",
   "reportsPremiumEmptyTitle": "No premium picks today",
   "reportsPremiumNoLeagueBody": "Curation is strict.\nCheck other leagues or view all picks.",

@@ -72,6 +72,8 @@
   "feedPreviewEmptyTitle": "아직 등록된 프리뷰가 없습니다",
   "feedPreviewEmptyBody": "프리뷰는 경기 시작 전에 올라옵니다.",
   "highlightsLoadError": "하이라이트를 불러오지 못했습니다",
+  "highlightPlaybackFailedTitle": "영상을 재생할 수 없습니다",
+  "highlightPlaybackFailedBody": "잠시 후 다시 시도해 주세요",
   "reportsPremiumEmptyBody": "엄선해서 제공하기 때문에 없는 날도 있습니다.\n전체 경기는 Analysis에서 확인하세요.",
   "reportsPremiumEmptyTitle": "오늘은 프리미엄 픽이 없습니다",
   "reportsPremiumNoLeagueBody": "엄선해서 제공하기 때문에 없는 리그도 있습니다.\n다른 리그를 확인해 보세요.",
