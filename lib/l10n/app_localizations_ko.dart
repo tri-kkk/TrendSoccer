@@ -245,10 +245,35 @@ class AppLocalizationsKo extends AppLocalizations {
   String get appName => '트렌드사커';
 
   @override
+  String get appGateMaintenanceRetryToast => '아직 점검 중입니다. 잠시 후 다시 시도해주세요.';
+
+  @override
+  String get appGateMaintenanceSubtitle => '작업 중입니다. 잠시 후 다시 시도해주세요.';
+
+  @override
+  String get appGateMaintenanceTitle => '점검 중';
+
+  @override
+  String get appGateUpdateButton => '지금 업데이트';
+
+  @override
+  String get appGateUpdateSubtitle =>
+      '새 버전이 출시되었습니다.\n트렌드사커를 계속 이용하려면 업데이트해주세요.';
+
+  @override
+  String get appGateUpdateTitle => '업데이트 필요';
+
+  @override
   String get apply => '적용하기';
 
   @override
   String get back => '뒤로';
+
+  @override
+  String get billingLoadingSubtitle => '앱을 종료하지 마세요.\n잠시 시간이 걸릴 수 있습니다.';
+
+  @override
+  String get billingLoadingTitle => '결제 처리 중';
 
   @override
   String get baseballAiLoadFailed => '프리미엄 분석을 불러오지 못했습니다.';
@@ -717,12 +742,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fixtureViewAllMatches => '전체 경기 보기';
 
   @override
-  String get forceUpdateMessage => '새로운 기능과 안정성 개선이 포함된 업데이트가 있습니다.';
-
-  @override
-  String get forceUpdateTitle => '업데이트 필요';
-
-  @override
   String get formInvalidEmail => '올바른 이메일 형식이 아닙니다';
 
   @override
@@ -820,12 +839,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get languageEnglish => 'English';
-
-  @override
-  String get maintenanceTitle => '서비스 점검 중';
-
-  @override
-  String get maintenanceSubtitle => '잠시 후 다시 시도해주세요.';
 
   @override
   String get legalLoadError => '내용을 불러오지 못했습니다.';

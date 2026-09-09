@@ -254,10 +254,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appName => 'TrendSoccer';
 
   @override
+  String get appGateMaintenanceRetryToast =>
+      'Still under maintenance. Please try again shortly.';
+
+  @override
+  String get appGateMaintenanceSubtitle =>
+      'We are working on it. Please try again shortly.';
+
+  @override
+  String get appGateMaintenanceTitle => 'Under maintenance';
+
+  @override
+  String get appGateUpdateButton => 'Update now';
+
+  @override
+  String get appGateUpdateSubtitle =>
+      'A new version is available.\nUpdate to keep using TrendSoccer.';
+
+  @override
+  String get appGateUpdateTitle => 'Update required';
+
+  @override
   String get apply => 'Apply';
 
   @override
   String get back => 'Back';
+
+  @override
+  String get billingLoadingSubtitle =>
+      'Do not close the app.\nThis may take a moment.';
+
+  @override
+  String get billingLoadingTitle => 'Processing payment';
 
   @override
   String get baseballAiLoadFailed => 'Could not load premium analysis.';
@@ -737,13 +765,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fixtureViewAllMatches => 'View all matches';
 
   @override
-  String get forceUpdateMessage =>
-      'An update with new features and stability improvements is available.';
-
-  @override
-  String get forceUpdateTitle => 'Update Required';
-
-  @override
   String get formInvalidEmail => 'Please enter a valid email address';
 
   @override
@@ -842,12 +863,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageEnglish => 'English';
-
-  @override
-  String get maintenanceTitle => 'Under Maintenance';
-
-  @override
-  String get maintenanceSubtitle => 'Please try again later.';
 
   @override
   String get legalLoadError => 'Could not load content.';

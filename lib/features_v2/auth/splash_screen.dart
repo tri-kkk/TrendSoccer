@@ -11,7 +11,7 @@ import 'package:trendsoccer/core/utils/version_utils.dart';
 import 'package:trendsoccer/design_system/icons/ts_logo.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
-import 'package:trendsoccer/features_v2/system/force_update_screen.dart';
+import 'package:trendsoccer/features_v2/system/app_gate_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -48,17 +48,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     context.go('/home');
   }
 
-  Future<ForceUpdateArgs?> _initialize() async {
+  Future<AppGateArgs?> _initialize() async {
     // Debug-only gate override. Release builds cannot reach this —
     // kDebugMode is a const false there and the branch is tree-shaken.
     // Usage: flutter run --dart-define=FORCE_GATE=maintenance|update|billing
     if (kDebugMode) {
       const forced = String.fromEnvironment('FORCE_GATE');
       if (forced == 'maintenance') {
-        return const ForceUpdateArgs(reason: ForceUpdateReason.maintenance);
+        return const AppGateArgs(reason: AppGateReason.maintenance);
       }
       if (forced == 'update') {
-        return const ForceUpdateArgs(reason: ForceUpdateReason.update);
+        return const AppGateArgs(reason: AppGateReason.update);
       }
     }
 
@@ -70,8 +70,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     if (config != null) {
       if (config.maintenanceMode) {
-        return ForceUpdateArgs(
-          reason: ForceUpdateReason.maintenance,
+        return AppGateArgs(
+          reason: AppGateReason.maintenance,
           message: config.maintenanceMessage,
         );
       }
@@ -84,8 +84,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           packageInfo.version,
           config.minSupportedVersion,
         )) {
-          return ForceUpdateArgs(
-            reason: ForceUpdateReason.update,
+          return AppGateArgs(
+            reason: AppGateReason.update,
             message: config.updateMessage,
           );
         }

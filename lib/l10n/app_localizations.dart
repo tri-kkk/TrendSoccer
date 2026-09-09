@@ -542,6 +542,42 @@ abstract class AppLocalizations {
   /// **'트렌드사커'**
   String get appName;
 
+  /// No description provided for @appGateMaintenanceRetryToast.
+  ///
+  /// In ko, this message translates to:
+  /// **'아직 점검 중입니다. 잠시 후 다시 시도해주세요.'**
+  String get appGateMaintenanceRetryToast;
+
+  /// No description provided for @appGateMaintenanceSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'작업 중입니다. 잠시 후 다시 시도해주세요.'**
+  String get appGateMaintenanceSubtitle;
+
+  /// No description provided for @appGateMaintenanceTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'점검 중'**
+  String get appGateMaintenanceTitle;
+
+  /// No description provided for @appGateUpdateButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금 업데이트'**
+  String get appGateUpdateButton;
+
+  /// No description provided for @appGateUpdateSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'새 버전이 출시되었습니다.\n트렌드사커를 계속 이용하려면 업데이트해주세요.'**
+  String get appGateUpdateSubtitle;
+
+  /// No description provided for @appGateUpdateTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'업데이트 필요'**
+  String get appGateUpdateTitle;
+
   /// No description provided for @apply.
   ///
   /// In ko, this message translates to:
@@ -553,6 +589,18 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'뒤로'**
   String get back;
+
+  /// No description provided for @billingLoadingSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'앱을 종료하지 마세요.\n잠시 시간이 걸릴 수 있습니다.'**
+  String get billingLoadingSubtitle;
+
+  /// No description provided for @billingLoadingTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'결제 처리 중'**
+  String get billingLoadingTitle;
 
   /// No description provided for @baseballAiLoadFailed.
   ///
@@ -1424,18 +1472,6 @@ abstract class AppLocalizations {
   /// **'전체 경기 보기'**
   String get fixtureViewAllMatches;
 
-  /// No description provided for @forceUpdateMessage.
-  ///
-  /// In ko, this message translates to:
-  /// **'새로운 기능과 안정성 개선이 포함된 업데이트가 있습니다.'**
-  String get forceUpdateMessage;
-
-  /// No description provided for @forceUpdateTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'업데이트 필요'**
-  String get forceUpdateTitle;
-
   /// No description provided for @formInvalidEmail.
   ///
   /// In ko, this message translates to:
@@ -1633,18 +1669,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'English'**
   String get languageEnglish;
-
-  /// No description provided for @maintenanceTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'서비스 점검 중'**
-  String get maintenanceTitle;
-
-  /// No description provided for @maintenanceSubtitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'잠시 후 다시 시도해주세요.'**
-  String get maintenanceSubtitle;
 
   /// No description provided for @legalLoadError.
   ///

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/core/utils/l10n_helper.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
@@ -10,6 +11,7 @@ class BillingLoadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
+    final l10n = context.l10n;
 
     return PopScope(
       canPop: false,
@@ -26,13 +28,13 @@ class BillingLoadingScreen extends StatelessWidget {
                   _LoadingDots(color: c.primary),
                   const SizedBox(height: TsSpacing.lg),
                   Text(
-                    'Processing payment',
+                    l10n.billingLoadingTitle,
                     style: TsType.h3.copyWith(color: c.textPrimary),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: TsSpacing.lg),
                   Text(
-                    'Do not close the app.\nThis may take a moment.',
+                    l10n.billingLoadingSubtitle,
                     style: TsType.bodyLMedium.copyWith(
                       color: c.textSecondary,
                     ),

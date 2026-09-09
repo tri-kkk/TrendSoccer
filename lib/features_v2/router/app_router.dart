@@ -27,7 +27,7 @@ import 'package:trendsoccer/features_v2/reports/reports_soccer_premium_screen.da
 import 'package:trendsoccer/features_v2/reports/reports_soccer_screen.dart';
 import 'package:trendsoccer/features_v2/shell/main_shell.dart';
 import 'package:trendsoccer/features_v2/system/billing_loading_screen.dart';
-import 'package:trendsoccer/features_v2/system/force_update_screen.dart';
+import 'package:trendsoccer/features_v2/system/app_gate_screen.dart';
 
 final _rootKey = GlobalKey<NavigatorState>();
 final _homeKey = GlobalKey<NavigatorState>();
@@ -92,7 +92,7 @@ final GoRouter appRouter = GoRouter(
       path: '/force-update',
       name: 'forceUpdate',
       builder: (_, s) =>
-          ForceUpdateScreen(args: s.extra as ForceUpdateArgs?),
+          AppGateScreen(args: s.extra as AppGateArgs?),
     ),
     _r('/billing-loading', 'billingLoading', const BillingLoadingScreen()),
     StatefulShellRoute.indexedStack(

@@ -13,47 +13,50 @@ import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
 import 'package:trendsoccer/design_system/widgets/ts_button.dart';
 import 'package:trendsoccer/design_system/widgets/ts_toast.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 
-enum ForceUpdateReason { maintenance, update }
+enum AppGateReason { maintenance, update }
 
-class ForceUpdateArgs {
-  const ForceUpdateArgs({required this.reason, this.message});
+class AppGateArgs {
+  const AppGateArgs({required this.reason, this.message});
 
-  final ForceUpdateReason reason;
+  final AppGateReason reason;
   final String? message;
 }
 
-class ForceUpdateScreen extends ConsumerStatefulWidget {
-  const ForceUpdateScreen({this.args, super.key});
+class AppGateScreen extends ConsumerStatefulWidget {
+  const AppGateScreen({this.args, super.key});
 
-  final ForceUpdateArgs? args;
+  final AppGateArgs? args;
 
   @override
-  ConsumerState<ForceUpdateScreen> createState() => _ForceUpdateScreenState();
+  ConsumerState<AppGateScreen> createState() => _AppGateScreenState();
 }
 
-class _ForceUpdateScreenState extends ConsumerState<ForceUpdateScreen> {
+class _AppGateScreenState extends ConsumerState<AppGateScreen> {
   static const _applicationId = 'com.trendsoccer.app';
 
   bool _checking = false;
 
-  ForceUpdateReason get _reason =>
-      widget.args?.reason ?? ForceUpdateReason.update;
+  AppGateReason get _reason =>
+      widget.args?.reason ?? AppGateReason.update;
 
-  bool get _isMaintenance => _reason == ForceUpdateReason.maintenance;
+  bool get _isMaintenance => _reason == AppGateReason.maintenance;
 
-  String get _title => _isMaintenance ? 'Under maintenance' : 'Update required';
+  String _title(AppLocalizations l10n) => _isMaintenance
+      ? l10n.appGateMaintenanceTitle
+      : l10n.appGateUpdateTitle;
 
-  String get _defaultSubtitle => _isMaintenance
-      ? 'We are working on it. Please try again shortly.'
-      : 'A new version is available.\nUpdate to keep using TrendSoccer.';
+  String _defaultSubtitle(AppLocalizations l10n) => _isMaintenance
+      ? l10n.appGateMaintenanceSubtitle
+      : l10n.appGateUpdateSubtitle;
 
-  String get _subtitle {
+  String _subtitle(AppLocalizations l10n) {
     final serverMessage = widget.args?.message?.trim();
     if (serverMessage != null && serverMessage.isNotEmpty) {
       return serverMessage;
     }
-    return _defaultSubtitle;
+    return _defaultSubtitle(l10n);
   }
 
   Future<void> _openStore() async {
@@ -79,7 +82,7 @@ class _ForceUpdateScreenState extends ConsumerState<ForceUpdateScreen> {
           .timeout(const Duration(seconds: 5), onTimeout: () => null);
       if (!mounted) return;
       if (config == null || config.maintenanceMode) {
-        _showErrorToast('Still under maintenance. Please try again shortly.');
+        _showErrorToast(context.l10n.appGateMaintenanceRetryToast);
         return;
       }
       context.go('/splash');
@@ -133,13 +136,13 @@ class _ForceUpdateScreenState extends ConsumerState<ForceUpdateScreen> {
                         ),
                         const SizedBox(height: TsSpacing.lg),
                         Text(
-                          _title,
+                          _title(l10n),
                           style: TsType.h1.copyWith(color: c.textPrimary),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: TsSpacing.lg),
                         Text(
-                          _subtitle,
+                          _subtitle(l10n),
                           style: TsType.bodyLMedium.copyWith(
                             color: c.textSecondary,
                           ),
@@ -165,7 +168,7 @@ class _ForceUpdateScreenState extends ConsumerState<ForceUpdateScreen> {
                       )
                     else
                       TsButton(
-                        label: 'Update now',
+                        label: l10n.appGateUpdateButton,
                         style: TsButtonStyle.primary,
                         size: TsButtonSize.large,
                         expand: true,
