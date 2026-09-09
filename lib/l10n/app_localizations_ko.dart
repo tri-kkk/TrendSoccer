@@ -585,7 +585,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get confirm => '확인';
 
   @override
-  String get deleteAccountConfirm => '계정삭제';
+  String get deleteAccountConfirm => '삭제';
 
   @override
   String get deleteAccountHint => '\'DELETE\'를 입력하여 확인하세요.';
@@ -935,10 +935,35 @@ class AppLocalizationsKo extends AppLocalizations {
   String get menuDeleteAccount => '회원탈퇴';
 
   @override
+  String get menuDeleteAccountDialogMessage =>
+      '모든 데이터가 영구적으로 삭제됩니다. DELETE를 입력해 확인해주세요.';
+
+  @override
+  String get menuDeleteAccountDialogTitle => '회원탈퇴할까요?';
+
+  @override
+  String get menuDeleteAccountErrorToast => '계정을 삭제할 수 없습니다. 다시 시도해주세요.';
+
+  @override
+  String get menuDeleteAccountInputLabel => '확인';
+
+  @override
+  String get menuDeleteAccountSuccessToast => '계정이 삭제되었습니다.';
+
+  @override
   String get menuExplore => 'Explore';
 
   @override
   String get menuExploreSection => '추가 기능';
+
+  @override
+  String get menuGuestBannerSubtitle => '가입하고 분석 리포트를 모두 이용해 보세요.';
+
+  @override
+  String get menuGuestBannerTitle => '48시간 무료 체험을 시작하세요';
+
+  @override
+  String get menuHelp => '도움말';
 
   @override
   String get menuLanguage => '언어';
@@ -950,7 +975,34 @@ class AppLocalizationsKo extends AppLocalizations {
   String get menuNotification => '알림';
 
   @override
+  String get menuNotifications => '알림';
+
+  @override
   String get menuOthers => '기타';
+
+  @override
+  String get menuPlanFreeSubLabel => '기본 분석만 이용 가능';
+
+  @override
+  String get menuPlanPremiumActive => '프리미엄 이용 중';
+
+  @override
+  String menuPlanPremiumCancelAccessUntil(String date) {
+    return '해지 예정 · $date까지 이용 가능';
+  }
+
+  @override
+  String menuPlanPremiumRenewsOn(String date) {
+    return '$date 갱신';
+  }
+
+  @override
+  String menuPlanTrialSubLabel(int hours) {
+    return '체험 종료까지 $hours시간 · 체험 기간 중 결제 불가';
+  }
+
+  @override
+  String get menuPlaySubscriptionsErrorToast => 'Google Play 구독 페이지를 열 수 없습니다.';
 
   @override
   String menuPremiumExpiryDate(String date) {
@@ -985,6 +1037,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get menuSignOut => '로그아웃';
 
   @override
+  String get menuSignOutDialogMessage => '언제든지 다시 로그인할 수 있습니다.';
+
+  @override
+  String get menuSignOutDialogTitle => '로그아웃할까요?';
+
+  @override
+  String get menuSignOutErrorToast => '로그아웃할 수 없습니다. 다시 시도해주세요.';
+
+  @override
   String get menuSubscribe => '구독';
 
   @override
@@ -1007,6 +1068,15 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get menuTheme => '테마';
+
+  @override
+  String get menuThemeDark => '다크';
+
+  @override
+  String get menuThemeLight => '라이트';
+
+  @override
+  String get menuThemeSystem => '시스템';
 
   @override
   String get menuTrialExpired => '체험 기간 만료';

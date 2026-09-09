@@ -962,10 +962,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuDeleteAccount => 'Delete Account';
 
   @override
+  String get menuDeleteAccountDialogMessage =>
+      'All data is permanently removed. Type DELETE to confirm.';
+
+  @override
+  String get menuDeleteAccountDialogTitle => 'Delete account?';
+
+  @override
+  String get menuDeleteAccountErrorToast =>
+      'Unable to delete account. Please try again.';
+
+  @override
+  String get menuDeleteAccountInputLabel => 'Confirmation';
+
+  @override
+  String get menuDeleteAccountSuccessToast => 'Account deleted successfully.';
+
+  @override
   String get menuExplore => 'Explore';
 
   @override
   String get menuExploreSection => 'Explore';
+
+  @override
+  String get menuGuestBannerSubtitle =>
+      'Sign up to unlock full analysis reports.';
+
+  @override
+  String get menuGuestBannerTitle => 'Start your 48-hour free trial';
+
+  @override
+  String get menuHelp => 'Help';
 
   @override
   String get menuLanguage => 'Language';
@@ -977,7 +1004,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuNotification => 'Notification';
 
   @override
+  String get menuNotifications => 'Notifications';
+
+  @override
   String get menuOthers => 'Others';
+
+  @override
+  String get menuPlanFreeSubLabel => 'Basic analysis only';
+
+  @override
+  String get menuPlanPremiumActive => 'Premium active';
+
+  @override
+  String menuPlanPremiumCancelAccessUntil(String date) {
+    return 'Cancellation pending · access until $date';
+  }
+
+  @override
+  String menuPlanPremiumRenewsOn(String date) {
+    return 'Renews on $date';
+  }
+
+  @override
+  String menuPlanTrialSubLabel(int hours) {
+    return 'Trial ends in $hours hours · billing unavailable during trial';
+  }
+
+  @override
+  String get menuPlaySubscriptionsErrorToast =>
+      'Unable to open Google Play subscriptions.';
 
   @override
   String menuPremiumExpiryDate(String date) {
@@ -1012,6 +1067,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuSignOut => 'Sign Out';
 
   @override
+  String get menuSignOutDialogMessage => 'You can sign back in anytime.';
+
+  @override
+  String get menuSignOutDialogTitle => 'Sign out?';
+
+  @override
+  String get menuSignOutErrorToast => 'Unable to sign out. Please try again.';
+
+  @override
   String get menuSubscribe => 'Subscribe';
 
   @override
@@ -1034,6 +1098,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuTheme => 'Theme';
+
+  @override
+  String get menuThemeDark => 'Dark';
+
+  @override
+  String get menuThemeLight => 'Light';
+
+  @override
+  String get menuThemeSystem => 'System';
 
   @override
   String get menuTrialExpired => 'Trial expired';

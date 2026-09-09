@@ -318,12 +318,48 @@
   "menuAbout": "About",
   "menuAppVersion": "App Version",
   "menuDeleteAccount": "Delete Account",
+  "menuDeleteAccountDialogMessage": "All data is permanently removed. Type DELETE to confirm.",
+  "menuDeleteAccountDialogTitle": "Delete account?",
+  "menuDeleteAccountErrorToast": "Unable to delete account. Please try again.",
+  "menuDeleteAccountInputLabel": "Confirmation",
+  "menuDeleteAccountSuccessToast": "Account deleted successfully.",
   "menuExplore": "Explore",
   "menuExploreSection": "Explore",
+  "menuGuestBannerSubtitle": "Sign up to unlock full analysis reports.",
+  "menuGuestBannerTitle": "Start your 48-hour free trial",
+  "menuHelp": "Help",
   "menuLanguage": "Language",
   "menuMatchPreview": "Match Preview",
   "menuNotification": "Notification",
+  "menuNotifications": "Notifications",
   "menuOthers": "Others",
+  "menuPlanFreeSubLabel": "Basic analysis only",
+  "menuPlanPremiumActive": "Premium active",
+  "menuPlanPremiumCancelAccessUntil": "Cancellation pending · access until {date}",
+  "@menuPlanPremiumCancelAccessUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "menuPlanPremiumRenewsOn": "Renews on {date}",
+  "@menuPlanPremiumRenewsOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "menuPlanTrialSubLabel": "Trial ends in {hours} hours · billing unavailable during trial",
+  "@menuPlanTrialSubLabel": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "menuPlaySubscriptionsErrorToast": "Unable to open Google Play subscriptions.",
   "menuPremiumExpiryDate": "Expires {date}",
   "subscriptionCancelPending": "Cancellation pending",
   "subscriptionExpiryDate": "Expiry date",
@@ -334,6 +370,9 @@
   "menuSettings": "Settings",
   "menuSettingsSection": "Settings",
   "menuSignOut": "Sign Out",
+  "menuSignOutDialogMessage": "You can sign back in anytime.",
+  "menuSignOutDialogTitle": "Sign out?",
+  "menuSignOutErrorToast": "Unable to sign out. Please try again.",
   "menuSubscribe": "Subscribe",
   "menuSubscribeFree": "Start Subscription",
   "menuSubscribeInfoSection": "Subscription",
@@ -342,6 +381,9 @@
   "menuSubscribeTrial": "Trial Active",
   "menuTermsOfService": "Terms of Service",
   "menuTheme": "Theme",
+  "menuThemeDark": "Dark",
+  "menuThemeLight": "Light",
+  "menuThemeSystem": "System",
   "menuTrialExpired": "Trial expired",
   "menuTrialRemaining": "{hours}h {minutes}m remaining",
   "noMatchInfo": "Match information unavailable",

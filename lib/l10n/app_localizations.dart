@@ -1175,7 +1175,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteAccountConfirm.
   ///
   /// In ko, this message translates to:
-  /// **'계정삭제'**
+  /// **'삭제'**
   String get deleteAccountConfirm;
 
   /// No description provided for @deleteAccountHint.
@@ -1844,6 +1844,36 @@ abstract class AppLocalizations {
   /// **'회원탈퇴'**
   String get menuDeleteAccount;
 
+  /// No description provided for @menuDeleteAccountDialogMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'모든 데이터가 영구적으로 삭제됩니다. DELETE를 입력해 확인해주세요.'**
+  String get menuDeleteAccountDialogMessage;
+
+  /// No description provided for @menuDeleteAccountDialogTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'회원탈퇴할까요?'**
+  String get menuDeleteAccountDialogTitle;
+
+  /// No description provided for @menuDeleteAccountErrorToast.
+  ///
+  /// In ko, this message translates to:
+  /// **'계정을 삭제할 수 없습니다. 다시 시도해주세요.'**
+  String get menuDeleteAccountErrorToast;
+
+  /// No description provided for @menuDeleteAccountInputLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'확인'**
+  String get menuDeleteAccountInputLabel;
+
+  /// No description provided for @menuDeleteAccountSuccessToast.
+  ///
+  /// In ko, this message translates to:
+  /// **'계정이 삭제되었습니다.'**
+  String get menuDeleteAccountSuccessToast;
+
   /// No description provided for @menuExplore.
   ///
   /// In ko, this message translates to:
@@ -1855,6 +1885,24 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'추가 기능'**
   String get menuExploreSection;
+
+  /// No description provided for @menuGuestBannerSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'가입하고 분석 리포트를 모두 이용해 보세요.'**
+  String get menuGuestBannerSubtitle;
+
+  /// No description provided for @menuGuestBannerTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'48시간 무료 체험을 시작하세요'**
+  String get menuGuestBannerTitle;
+
+  /// No description provided for @menuHelp.
+  ///
+  /// In ko, this message translates to:
+  /// **'도움말'**
+  String get menuHelp;
 
   /// No description provided for @menuLanguage.
   ///
@@ -1874,11 +1922,53 @@ abstract class AppLocalizations {
   /// **'알림'**
   String get menuNotification;
 
+  /// No description provided for @menuNotifications.
+  ///
+  /// In ko, this message translates to:
+  /// **'알림'**
+  String get menuNotifications;
+
   /// No description provided for @menuOthers.
   ///
   /// In ko, this message translates to:
   /// **'기타'**
   String get menuOthers;
+
+  /// No description provided for @menuPlanFreeSubLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'기본 분석만 이용 가능'**
+  String get menuPlanFreeSubLabel;
+
+  /// No description provided for @menuPlanPremiumActive.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄 이용 중'**
+  String get menuPlanPremiumActive;
+
+  /// No description provided for @menuPlanPremiumCancelAccessUntil.
+  ///
+  /// In ko, this message translates to:
+  /// **'해지 예정 · {date}까지 이용 가능'**
+  String menuPlanPremiumCancelAccessUntil(String date);
+
+  /// No description provided for @menuPlanPremiumRenewsOn.
+  ///
+  /// In ko, this message translates to:
+  /// **'{date} 갱신'**
+  String menuPlanPremiumRenewsOn(String date);
+
+  /// No description provided for @menuPlanTrialSubLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'체험 종료까지 {hours}시간 · 체험 기간 중 결제 불가'**
+  String menuPlanTrialSubLabel(int hours);
+
+  /// No description provided for @menuPlaySubscriptionsErrorToast.
+  ///
+  /// In ko, this message translates to:
+  /// **'Google Play 구독 페이지를 열 수 없습니다.'**
+  String get menuPlaySubscriptionsErrorToast;
 
   /// No description provided for @menuPremiumExpiryDate.
   ///
@@ -1940,6 +2030,24 @@ abstract class AppLocalizations {
   /// **'로그아웃'**
   String get menuSignOut;
 
+  /// No description provided for @menuSignOutDialogMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'언제든지 다시 로그인할 수 있습니다.'**
+  String get menuSignOutDialogMessage;
+
+  /// No description provided for @menuSignOutDialogTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그아웃할까요?'**
+  String get menuSignOutDialogTitle;
+
+  /// No description provided for @menuSignOutErrorToast.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그아웃할 수 없습니다. 다시 시도해주세요.'**
+  String get menuSignOutErrorToast;
+
   /// No description provided for @menuSubscribe.
   ///
   /// In ko, this message translates to:
@@ -1987,6 +2095,24 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'테마'**
   String get menuTheme;
+
+  /// No description provided for @menuThemeDark.
+  ///
+  /// In ko, this message translates to:
+  /// **'다크'**
+  String get menuThemeDark;
+
+  /// No description provided for @menuThemeLight.
+  ///
+  /// In ko, this message translates to:
+  /// **'라이트'**
+  String get menuThemeLight;
+
+  /// No description provided for @menuThemeSystem.
+  ///
+  /// In ko, this message translates to:
+  /// **'시스템'**
+  String get menuThemeSystem;
 
   /// No description provided for @menuTrialExpired.
   ///
