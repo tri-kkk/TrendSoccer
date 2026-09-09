@@ -14,7 +14,10 @@ FeedNewsSportFilter? _readSport(Map<String, dynamic> json) {
   }
 }
 
-List<FeedNewsArticle> parseFeedNewsArticles(Map<String, dynamic> response) {
+List<FeedNewsArticle> parseFeedNewsArticles(
+  Map<String, dynamic> response, {
+  required String defaultSourceLabel,
+}) {
   final articlesRaw = response['articles'];
   if (articlesRaw is! List) {
     throw Exception('Failed to load feed news');
@@ -47,7 +50,7 @@ List<FeedNewsArticle> parseFeedNewsArticles(Map<String, dynamic> response) {
         article: FeedNewsArticle(
           id: id,
           titleLabel: title,
-          sourceLabel: source.isNotEmpty ? source : 'News',
+          sourceLabel: source.isNotEmpty ? source : defaultSourceLabel,
           timeLabel:
               publishedAt == null ? '—' : formatRelativeTime(publishedAt),
           url: url,

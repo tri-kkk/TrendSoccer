@@ -422,6 +422,120 @@ abstract class AppLocalizations {
   /// **'야구'**
   String get feedNewsSportBaseball;
 
+  /// No description provided for @feedNewsLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'뉴스'**
+  String get feedNewsLabel;
+
+  /// No description provided for @homeAccuracyBaselineThreeWay.
+  ///
+  /// In ko, this message translates to:
+  /// **'기준선 33% — 세 가지 결과 중 무작위 선택'**
+  String get homeAccuracyBaselineThreeWay;
+
+  /// No description provided for @homeAccuracyBaselineTwoWay.
+  ///
+  /// In ko, this message translates to:
+  /// **'기준선 50% — 두 팀 중 무작위 선택'**
+  String get homeAccuracyBaselineTwoWay;
+
+  /// No description provided for @homeAccuracyEmptyDescription.
+  ///
+  /// In ko, this message translates to:
+  /// **'기간을 더 길게 선택하거나, 시즌이 재개되면 다시 확인해 주세요.'**
+  String get homeAccuracyEmptyDescription;
+
+  /// No description provided for @homeAccuracyEmptyTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 기간에 확정된 리포트가 없습니다'**
+  String get homeAccuracyEmptyTitle;
+
+  /// No description provided for @homeAccuracyRecent.
+  ///
+  /// In ko, this message translates to:
+  /// **'최근'**
+  String get homeAccuracyRecent;
+
+  /// No description provided for @homeAccuracySampleCount.
+  ///
+  /// In ko, this message translates to:
+  /// **'분석 리포트 {total}건 기준'**
+  String homeAccuracySampleCount(int total);
+
+  /// No description provided for @homeAccuracyTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'분석 정확도'**
+  String get homeAccuracyTitle;
+
+  /// No description provided for @homeAccuracyViewReports.
+  ///
+  /// In ko, this message translates to:
+  /// **'리포트 보기'**
+  String get homeAccuracyViewReports;
+
+  /// No description provided for @homeBaseballLeagueCodes.
+  ///
+  /// In ko, this message translates to:
+  /// **'MLB · KBO · NPB'**
+  String get homeBaseballLeagueCodes;
+
+  /// No description provided for @homeComboTodayBaseballSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 야구 다경기 분석'**
+  String get homeComboTodayBaseballSubtitle;
+
+  /// No description provided for @homeComboTypeAggressive.
+  ///
+  /// In ko, this message translates to:
+  /// **'공격형'**
+  String get homeComboTypeAggressive;
+
+  /// No description provided for @homeComboViewAnalyses.
+  ///
+  /// In ko, this message translates to:
+  /// **'다경기 분석 보기'**
+  String get homeComboViewAnalyses;
+
+  /// No description provided for @homeSoccerAnalysisSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미어리그 · 라리가 · UCL 외'**
+  String get homeSoccerAnalysisSubtitle;
+
+  /// No description provided for @homeTodayMatchesSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘 열리는 경기'**
+  String get homeTodayMatchesSubtitle;
+
+  /// No description provided for @homeSeeAll.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 보기'**
+  String get homeSeeAll;
+
+  /// No description provided for @homeTodayMatchesTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 경기'**
+  String get homeTodayMatchesTitle;
+
+  /// No description provided for @homeUnlockHeadline.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 분석 잠금 해제'**
+  String get homeUnlockHeadline;
+
+  /// No description provided for @homeUnlockSubline.
+  ///
+  /// In ko, this message translates to:
+  /// **'리포트, 다경기 분석'**
+  String get homeUnlockSubline;
+
   /// No description provided for @highlightPlaybackFailedTitle.
   ///
   /// In ko, this message translates to:
@@ -437,14 +551,20 @@ abstract class AppLocalizations {
   /// No description provided for @reportsPremiumEmptyBody.
   ///
   /// In ko, this message translates to:
-  /// **'엄선해서 제공하기 때문에 없는 날도 있습니다.\n전체 경기는 Analysis에서 확인하세요.'**
+  /// **'프리미엄 리포트는 엄선해 제공됩니다. 전체 경기는 Analysis에서 볼 수 있습니다.'**
   String get reportsPremiumEmptyBody;
 
   /// No description provided for @reportsPremiumEmptyTitle.
   ///
   /// In ko, this message translates to:
-  /// **'오늘은 프리미엄 픽이 없습니다'**
+  /// **'현재 준비된 프리미엄 리포트가 없습니다'**
   String get reportsPremiumEmptyTitle;
+
+  /// No description provided for @reportsPremiumGoToAnalysis.
+  ///
+  /// In ko, this message translates to:
+  /// **'Analysis 보기'**
+  String get reportsPremiumGoToAnalysis;
 
   /// No description provided for @reportsPremiumNoLeagueBody.
   ///

@@ -191,6 +191,69 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedNewsSportBaseball => 'Baseball';
 
   @override
+  String get feedNewsLabel => 'News';
+
+  @override
+  String get homeAccuracyBaselineThreeWay =>
+      'Baseline 33% — random guess across three results';
+
+  @override
+  String get homeAccuracyBaselineTwoWay =>
+      'Baseline 50% — random guess between two teams';
+
+  @override
+  String get homeAccuracyEmptyDescription =>
+      'Try a longer window, or check back when the season resumes.';
+
+  @override
+  String get homeAccuracyEmptyTitle => 'No settled reports in this period';
+
+  @override
+  String get homeAccuracyRecent => 'Recent';
+
+  @override
+  String homeAccuracySampleCount(int total) {
+    return 'Based on $total reports';
+  }
+
+  @override
+  String get homeAccuracyTitle => 'Analysis accuracy';
+
+  @override
+  String get homeAccuracyViewReports => 'View reports';
+
+  @override
+  String get homeBaseballLeagueCodes => 'MLB · KBO · NPB';
+
+  @override
+  String get homeComboTodayBaseballSubtitle =>
+      'Today\'s baseball multi-match analyses';
+
+  @override
+  String get homeComboTypeAggressive => 'Aggressive';
+
+  @override
+  String get homeComboViewAnalyses => 'View multi-match analyses';
+
+  @override
+  String get homeSoccerAnalysisSubtitle => 'EPL · LaLiga · UCL and more';
+
+  @override
+  String get homeTodayMatchesSubtitle => 'Kicking off today';
+
+  @override
+  String get homeSeeAll => 'See all';
+
+  @override
+  String get homeTodayMatchesTitle => 'Today\'s Matches';
+
+  @override
+  String get homeUnlockHeadline => 'Unlock full analysis';
+
+  @override
+  String get homeUnlockSubline => 'Reports, multi-match analysis';
+
+  @override
   String get highlightPlaybackFailedTitle => 'Can\'t play this clip';
 
   @override
@@ -198,10 +261,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportsPremiumEmptyBody =>
-      'Curation is strict — some days have none.\nCheck Analysis for all supported leagues.';
+      'Premium reports are published selectively. Every match is available in Analysis.';
 
   @override
-  String get reportsPremiumEmptyTitle => 'No premium picks today';
+  String get reportsPremiumEmptyTitle => 'No premium reports right now';
+
+  @override
+  String get reportsPremiumGoToAnalysis => 'Go to Analysis';
 
   @override
   String get reportsPremiumNoLeagueBody =>

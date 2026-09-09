@@ -183,6 +183,66 @@ class AppLocalizationsKo extends AppLocalizations {
   String get feedNewsSportBaseball => '야구';
 
   @override
+  String get feedNewsLabel => '뉴스';
+
+  @override
+  String get homeAccuracyBaselineThreeWay => '기준선 33% — 세 가지 결과 중 무작위 선택';
+
+  @override
+  String get homeAccuracyBaselineTwoWay => '기준선 50% — 두 팀 중 무작위 선택';
+
+  @override
+  String get homeAccuracyEmptyDescription =>
+      '기간을 더 길게 선택하거나, 시즌이 재개되면 다시 확인해 주세요.';
+
+  @override
+  String get homeAccuracyEmptyTitle => '이 기간에 확정된 리포트가 없습니다';
+
+  @override
+  String get homeAccuracyRecent => '최근';
+
+  @override
+  String homeAccuracySampleCount(int total) {
+    return '분석 리포트 $total건 기준';
+  }
+
+  @override
+  String get homeAccuracyTitle => '분석 정확도';
+
+  @override
+  String get homeAccuracyViewReports => '리포트 보기';
+
+  @override
+  String get homeBaseballLeagueCodes => 'MLB · KBO · NPB';
+
+  @override
+  String get homeComboTodayBaseballSubtitle => '오늘의 야구 다경기 분석';
+
+  @override
+  String get homeComboTypeAggressive => '공격형';
+
+  @override
+  String get homeComboViewAnalyses => '다경기 분석 보기';
+
+  @override
+  String get homeSoccerAnalysisSubtitle => '프리미어리그 · 라리가 · UCL 외';
+
+  @override
+  String get homeTodayMatchesSubtitle => '오늘 열리는 경기';
+
+  @override
+  String get homeSeeAll => '전체 보기';
+
+  @override
+  String get homeTodayMatchesTitle => '오늘의 경기';
+
+  @override
+  String get homeUnlockHeadline => '전체 분석 잠금 해제';
+
+  @override
+  String get homeUnlockSubline => '리포트, 다경기 분석';
+
+  @override
   String get highlightPlaybackFailedTitle => '영상을 재생할 수 없습니다';
 
   @override
@@ -190,10 +250,13 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get reportsPremiumEmptyBody =>
-      '엄선해서 제공하기 때문에 없는 날도 있습니다.\n전체 경기는 Analysis에서 확인하세요.';
+      '프리미엄 리포트는 엄선해 제공됩니다. 전체 경기는 Analysis에서 볼 수 있습니다.';
 
   @override
-  String get reportsPremiumEmptyTitle => '오늘은 프리미엄 픽이 없습니다';
+  String get reportsPremiumEmptyTitle => '현재 준비된 프리미엄 리포트가 없습니다';
+
+  @override
+  String get reportsPremiumGoToAnalysis => 'Analysis 보기';
 
   @override
   String get reportsPremiumNoLeagueBody =>

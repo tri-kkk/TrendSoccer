@@ -10,12 +10,14 @@ import 'package:trendsoccer/core/providers/soccer_provider.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/widgets/ts_empty_state.dart';
+import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
 import 'package:trendsoccer/design_system/widgets/ts_match_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/features_v2/reports/reports_analysis_kickoff.dart';
 import 'package:trendsoccer/features_v2/reports/reports_analysis_logic.dart';
 import 'package:trendsoccer/features_v2/reports/reports_header_scope.dart';
 import 'package:trendsoccer/features_v2/reports/reports_premium_logic.dart';
+import 'package:trendsoccer/features_v2/reports/reports_route_map.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 
 class ReportsSoccerPremiumBody extends ConsumerWidget {
@@ -53,8 +55,13 @@ class ReportsSoccerPremiumBody extends ConsumerWidget {
           if (picks.isEmpty) {
             return _centeredEmptyList(
               TsEmptyState(
+                type: TsEmptyType.withAction,
                 title: l10n.reportsPremiumEmptyTitle,
                 description: l10n.reportsPremiumEmptyBody,
+                actionLabel: l10n.reportsPremiumGoToAnalysis,
+                onAction: () => context.go(
+                  reportsRouteFor(TsSport.soccer, ReportsSegment.analysis),
+                ),
               ),
             );
           }

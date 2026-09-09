@@ -45,6 +45,7 @@ import 'package:trendsoccer/design_system/widgets/ts_section_header.dart';
 import 'package:trendsoccer/design_system/widgets/ts_skeleton_block.dart';
 import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
 import 'package:trendsoccer/design_system/widgets/ts_subscription_banner.dart';
+import 'package:trendsoccer/features_v2/reports/reports_route_map.dart';
 import 'package:trendsoccer/l10n/app_localizations.dart';
 
 Widget _homeSeeAllHeader(
@@ -55,6 +56,7 @@ Widget _homeSeeAllHeader(
   required VoidCallback onSeeAll,
 }) {
   final c = Theme.of(context).extension<TsThemeColors>()!;
+  final l10n = AppLocalizations.of(context)!;
 
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,7 +77,7 @@ Widget _homeSeeAllHeader(
             onTap: onSeeAll,
             behavior: HitTestBehavior.opaque,
             child: Text(
-              'See all',
+              l10n.homeSeeAll,
               style: TsType.labelSMedium.copyWith(color: c.textTertiary),
             ),
           ),
@@ -106,6 +108,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
+    final l10n = AppLocalizations.of(context)!;
     final auth = ref.watch(authProvider);
     final isGuest = auth.planType == PlanType.none;
     // Trial users already have access: member app bar, no upsell, no ads.
@@ -169,22 +172,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (!hideMonetisation)
         _plainBlock(
           TsSubscriptionBanner(
-            headline: 'Unlock full analysis',
-            subline: 'Reports, multi-match analysis',
+            headline: l10n.homeUnlockHeadline,
+            subline: l10n.homeUnlockSubline,
             onAction: () => context.go('/menu/subscribe'),
           ),
         ),
       if (showSoccerAnalysisBlock)
-        const _AnalysisCarouselSection(
+        _AnalysisCarouselSection(
           sport: TsSport.soccer,
-          title: 'Soccer Analysis',
+          subtitle: l10n.homeSoccerAnalysisSubtitle,
           seeAllPath: '/reports/soccer',
         ),
       if (showBaseballAnalysisBlock)
-        const _AnalysisCarouselSection(
+        _AnalysisCarouselSection(
           sport: TsSport.baseball,
-          title: 'Baseball Analysis',
-          subtitle: 'MLB · KBO · NPB',
+          subtitle: l10n.homeBaseballLeagueCodes,
           seeAllPath: '/reports/baseball',
         ),
       if (showTodayMatchesBlock) const _TodayMatchesSection(),
@@ -381,6 +383,7 @@ class _AccuracyCardSectionState extends ConsumerState<_AccuracyCardSection> {
     BuildContext context,
     Map<String, dynamic> history,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     final service = ref.read(soccerServiceProvider);
     final windowDays =
         widget.period == TsAccuracyPeriod.d7 ? 7 : 30;
@@ -404,8 +407,8 @@ class _AccuracyCardSectionState extends ConsumerState<_AccuracyCardSection> {
     final isBaseball = widget.sport == TsSport.baseball;
     final baselineFraction = isBaseball ? 0.50 : 0.33;
     final baselineNoteLabel = isBaseball
-        ? 'Baseline 50% — random guess between two teams'
-        : 'Baseline 33% — random guess across three results';
+        ? l10n.homeAccuracyBaselineTwoWay
+        : l10n.homeAccuracyBaselineThreeWay;
 
     final windowPicks = stats['windowPicks'];
     final recentPicks = windowPicks is List
@@ -419,7 +422,7 @@ class _AccuracyCardSectionState extends ConsumerState<_AccuracyCardSection> {
         : const <TsRecentPick>[];
 
     return TsAccuracyCard(
-      titleLabel: 'Prediction accuracy',
+      titleLabel: l10n.homeAccuracyTitle,
       period7Label: '7D',
       period30Label: '30D',
       initialPeriod: widget.period,
@@ -430,16 +433,19 @@ class _AccuracyCardSectionState extends ConsumerState<_AccuracyCardSection> {
       winLossLabel: '${wins}W · ${losses}L',
       accuracyFraction: winRate / 100,
       baselineFraction: baselineFraction,
-      sampleLabel: 'Based on $total picks',
+      sampleLabel: l10n.homeAccuracySampleCount(total),
       baselineNoteLabel: baselineNoteLabel,
       streakLabel: '$streak$streakSuffix streak',
       nextUpdateLabel:
           isBaseball ? null : _soccerNextUpdateLabel,
       recentPicks: recentPicks,
-      recentLabel: 'Recent',
-      seeAllLabel: 'View picks',
+      recentLabel: l10n.homeAccuracyRecent,
+      seeAllLabel: l10n.homeAccuracyViewReports,
       onSeeAllPressed: () {
-        // TODO(data): navigate to full accuracy history
+        final segment = widget.sport == TsSport.soccer
+            ? ReportsSegment.premium
+            : ReportsSegment.analysis;
+        context.go(reportsRouteFor(widget.sport, segment));
       },
     );
   }
@@ -449,6 +455,7 @@ class _AccuracyCardSectionState extends ConsumerState<_AccuracyCardSection> {
     // component gains a Figma state=empty — passing zeroed stats would still
     // render the gauge and meta row, and there is no flag to suppress that body.
     final c = Theme.of(context).extension<TsThemeColors>()!;
+    final l10n = AppLocalizations.of(context)!;
     return ConstrainedBox(
       constraints: const BoxConstraints(minWidth: 280),
       child: DecoratedBox(
@@ -465,7 +472,7 @@ class _AccuracyCardSectionState extends ConsumerState<_AccuracyCardSection> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Prediction accuracy',
+                      l10n.homeAccuracyTitle,
                       style: TsType.h3.copyWith(color: c.textPrimary),
                     ),
                   ),
@@ -482,10 +489,9 @@ class _AccuracyCardSectionState extends ConsumerState<_AccuracyCardSection> {
                 ),
               ),
               const SizedBox(height: TsSpacing.lg),
-              const TsEmptyState(
-                title: 'No settled picks in this period',
-                description:
-                    'Try a longer window, or check back when the season resumes.',
+              TsEmptyState(
+                title: l10n.homeAccuracyEmptyTitle,
+                description: l10n.homeAccuracyEmptyDescription,
               ),
             ],
           ),
@@ -734,13 +740,11 @@ void _openHomeAnalysisReport(
 class _AnalysisCarouselSection extends ConsumerWidget {
   const _AnalysisCarouselSection({
     required this.sport,
-    required this.title,
     this.subtitle,
     required this.seeAllPath,
   });
 
   final TsSport sport;
-  final String title;
   final String? subtitle;
   final String seeAllPath;
 
@@ -826,6 +830,10 @@ class _AnalysisCarouselSection extends ConsumerWidget {
       ),
     );
 
+    final title = sport == TsSport.soccer
+        ? l10n.analysisTabSoccer
+        : l10n.analysisTabBaseball;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -883,13 +891,13 @@ class _ComboTodaySection extends ConsumerWidget {
               countLabel: league.count.toString(),
             ),
         ],
-        stableLabel: 'Stable',
-        aggressiveLabel: 'Aggressive',
+        stableLabel: l10n.reportsComboTypeStable,
+        aggressiveLabel: l10n.homeComboTypeAggressive,
         stableValueLabel: summary.stableCount.toString(),
         aggressiveValueLabel: summary.aggressiveCount.toString(),
         stableFraction: summary.stableFraction,
         accuracyLabel: summary.accuracyLabel,
-        ctaLabel: 'View combinations',
+        ctaLabel: l10n.homeComboViewAnalyses,
         onCtaPressed: () => context.push('/reports/combo'),
       ),
     );
@@ -897,9 +905,9 @@ class _ComboTodaySection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const TsSectionHeader(
-          title: 'Multi-Match Analysis',
-          subtitle: "Today's baseball combinations",
+        TsSectionHeader(
+          title: l10n.reportsComboDetailTitle,
+          subtitle: l10n.homeComboTodayBaseballSubtitle,
           icon: TsIcons.leaderboard,
         ),
         const SizedBox(height: TsSpacing.sm),
@@ -974,7 +982,7 @@ class _NewsSection extends ConsumerWidget {
       children: [
         _homeSeeAllHeader(
           context,
-          title: 'News',
+          title: l10n.feedNewsLabel,
           icon: TsIcons.newspaper,
           onSeeAll: () => context.go('/feed/news'),
         ),
@@ -1077,7 +1085,8 @@ class _TodayMatchesSection extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: TsSpacing.lg),
           child: _homeSeeAllHeader(
             context,
-            title: "Today's Matches",
+            title: l10n.homeTodayMatchesTitle,
+            subtitle: l10n.homeTodayMatchesSubtitle,
             icon: TsIcons.fixture,
             onSeeAll: () => context.go('/matches'),
           ),

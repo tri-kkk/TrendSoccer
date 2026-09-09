@@ -257,6 +257,7 @@ class _TsAccuracyCardState extends State<TsAccuracyCard> {
                     if (widget.seeAllLabel != null)
                       GestureDetector(
                         onTap: widget.onSeeAllPressed,
+                        behavior: HitTestBehavior.opaque,
                         child: Text(
                           widget.seeAllLabel!,
                           style: TsType.labelSBold.copyWith(color: c.primary),
