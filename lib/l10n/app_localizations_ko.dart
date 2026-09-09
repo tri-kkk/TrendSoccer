@@ -104,9 +104,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get analysisAiWaitHint => '잠시만 기다려주세요 (약 5–10초)';
 
   @override
-  String get analysisCardView => '분석보기';
-
-  @override
   String get analysisCardViewAnalysis => '분석하기';
 
   @override
@@ -145,9 +142,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get analysisTabSoccer => '축구 분석';
-
-  @override
-  String get analysisToday => '오늘';
 
   @override
   String get reportsAnalysisNoLeagueBody => '다른 리그를 선택하거나 전체 분석을 확인해 보세요.';
@@ -316,16 +310,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get baseballEventFirstPitch => '경기 시작';
 
   @override
-  String get baseballEventGameEnd => '경기 종료';
-
-  @override
-  String get baseballEventHomerun => '홈런';
-
-  @override
   String get baseballEventInningChange => '이닝 종료';
-
-  @override
-  String get baseballEventScore => '득점';
 
   @override
   String get baseballH2hLastFive => '최근 5경기';
@@ -404,9 +389,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get baseballSectionH2h => 'Head to Head';
 
   @override
-  String get baseballSectionOdds => '지수';
-
-  @override
   String get baseballSectionPitchers => 'Starting Pitchers';
 
   @override
@@ -435,9 +417,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get baseballWeakness => '약점';
-
-  @override
-  String get baseballWinProbability => '승리 가능성';
 
   @override
   String baseballWinsLosses(int wins, int losses) {
@@ -513,18 +492,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get comboAvgOdds => '평균 지수';
 
   @override
-  String get comboComboCount => '경기 수';
-
-  @override
-  String get comboDashboardToday => '오늘';
-
-  @override
   String comboFoldCount(int count) {
     return '$count경기';
   }
-
-  @override
-  String get comboHighOdds => '고지수';
 
   @override
   String get comboMatchFail => '실패';
@@ -539,9 +509,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String comboPicksCompleted(int count) {
     return '$count개 다경기 분석 완료';
   }
-
-  @override
-  String get comboReliability => '신뢰도';
 
   @override
   String comboResultHitCount(int count) {
@@ -564,13 +531,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get comboSafe => '안정형';
-
-  @override
   String get comboSafeHitRate => '안정형 정확도';
-
-  @override
-  String get comboStatusHit => '일치';
 
   @override
   String get comboStatusInProgress => '진행중';
@@ -583,15 +544,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get comboTotalOdds => '총 지수';
-
-  @override
-  String get comboTypeHigh => '고지수';
-
-  @override
-  String get comboTypeSafe => '안정형';
-
-  @override
-  String get comboWin => '승';
 
   @override
   String comboLegPickWin(String team) {
@@ -706,18 +658,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exitDialogTitle => '앱 종료';
 
   @override
-  String get exitMessage => 'TrendSoccer를 종료하시겠습니까?';
-
-  @override
-  String get exitTitle => '앱 종료';
-
-  @override
-  String get filterAll => '전체';
-
-  @override
-  String get fixtureCancelled => '취소';
-
-  @override
   String get fixtureEmpty => '경기 일정이 없습니다.';
 
   @override
@@ -755,9 +695,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fixtureLoadFailed => '경기 일정을 불러오지 못했습니다.';
 
   @override
-  String get fixtureNoMatches => '경기가 없습니다';
-
-  @override
   String get fixtureNoMatchesOnDate => '선택한 날짜에 예정된 경기가 없습니다.';
 
   @override
@@ -766,9 +703,6 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get fixtureMatchReportScheduledOnlyToast =>
       '매치 리포트는 예정된 경기에서만 확인할 수 있습니다.';
-
-  @override
-  String get fixturePostponed => '연기';
 
   @override
   String get matchCancelled => '취소';
@@ -783,13 +717,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fixtureViewAllMatches => '전체 경기 보기';
 
   @override
-  String get forceUpdateButton => '업데이트';
-
-  @override
   String get forceUpdateMessage => '새로운 기능과 안정성 개선이 포함된 업데이트가 있습니다.';
-
-  @override
-  String get forceUpdateSkip => '건너뛰기';
 
   @override
   String get forceUpdateTitle => '업데이트 필요';
@@ -952,9 +880,6 @@ class AppLocalizationsKo extends AppLocalizations {
       'Better Data,\nSmarter Analysis Reports,\nFor Your Choice.';
 
   @override
-  String get matchAlarmDisabledGoSettings => '설정으로 이동';
-
-  @override
   String get matchAlarmDisabledMessage =>
       '경기 알림이 꺼져 있습니다.\n메뉴 > 알림 설정에서 경기 알림을 켜주세요.';
 
@@ -981,9 +906,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get menuExploreSection => '추가 기능';
-
-  @override
-  String get menuHelpCenter => '문의하기';
 
   @override
   String get menuLanguage => '언어';
@@ -1042,13 +964,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get menuSubscribeManage => '구독 관리';
 
   @override
-  String get menuSubscribeManageTitle => '구독 관리';
-
-  @override
   String get menuSubscribePrompt => '지금 구독 시작하고 프리미엄 데이터를 확인하세요.';
-
-  @override
-  String get menuSubscribeTitle => '구독';
 
   @override
   String get menuSubscribeTrial => '체험 중';
@@ -1068,13 +984,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get networkErrorMessage => '네트워크 연결을 확인해주세요.';
-
-  @override
   String get noMatchInfo => '경기 정보가 없습니다';
-
-  @override
-  String get notificationAppGeneral => '앱 알림';
 
   @override
   String get notificationAppGeneralDesc => '업데이트, 공지, 서비스 안내';
@@ -1112,16 +1022,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get notificationPermissionTitle => '알림 권한 필요';
 
   @override
-  String get notificationSettings => '알림';
-
-  @override
   String get notificationGeneral => '일반';
-
-  @override
-  String get notificationSoccer => '축구';
-
-  @override
-  String get notificationBaseball => '야구';
 
   @override
   String get notificationAppAlerts => '앱 알림';
@@ -1169,15 +1070,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get notificationTitle => '알림 설정';
 
   @override
-  String get pickDirectionAway => '원정';
-
-  @override
-  String get pickDirectionDraw => '무';
-
-  @override
-  String get pickDirectionHome => '홈';
-
-  @override
   String get pitcherTbd => '미정';
 
   @override
@@ -1213,11 +1105,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get planTicketTrialEnded => '체험 종료';
-
-  @override
-  String planTicketTrialRemaining(int hours, int minutes) {
-    return '$hours시간 $minutes분 남음';
-  }
 
   @override
   String planTicketStartDate(String date) {
@@ -1315,12 +1202,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get reportAuthorRole => '축구 데이터 분석가';
 
   @override
-  String get reportBlockLoadError => '불러오지 못했습니다';
-
-  @override
-  String get reportBlockUnavailable => '지금은 이 섹션을 볼 수 없습니다';
-
-  @override
   String get reportDetailLoadError => '매치 프리뷰를 불러오지 못했습니다.';
 
   @override
@@ -1337,21 +1218,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get reportNotFoundTitle => '리포트를 찾을 수 없습니다.';
-
-  @override
-  String get reportPremiumOnlyMessage => 'AI 분석 결과를 확인하려면 구독이 필요합니다';
-
-  @override
-  String get reportPremiumOnlyTitle => '프리미엄 구독 회원 전용 콘텐츠입니다';
-
-  @override
-  String get reportTabAiAnalysis => 'AI Analysis';
-
-  @override
-  String get reportTabPremium => '프리미엄';
-
-  @override
-  String get reportTabStandard => '스탠다드';
 
   @override
   String get retry => '다시 시도';
@@ -1375,16 +1241,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get selectMatchFromAnalysis => '분석 페이지에서 경기를 선택해 주세요.';
 
   @override
-  String get signOutConfirm => '로그아웃';
-
-  @override
   String get signOutMessage => '정말 로그아웃 하시겠습니까?';
 
   @override
   String get signOutSuccess => '로그아웃 되었습니다.';
-
-  @override
-  String get signOutTitle => '로그아웃';
 
   @override
   String get signupAgreeAll => '전체 동의';
@@ -1437,22 +1297,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get signupCompleteFreeBenefit2 => '기본 분석 데이터 제공';
 
   @override
-  String get signupCompleteFreeBenefit3 => '실시간 스코어 및 경기 일정';
-
-  @override
   String get signupCompleteFreeBenefitsHeader => '무료 혜택';
-
-  @override
-  String get signupCompletePremiumBenefit1 => '24시간 우선 분석 접근';
-
-  @override
-  String get signupCompletePremiumBenefit2 => '프리미엄 리포트 무제한';
-
-  @override
-  String get signupCompletePremiumBenefit3 => '야구 AI Analysis';
-
-  @override
-  String get signupCompletePremiumBenefitsHeader => '프리미엄 혜택';
 
   @override
   String get signupCompletePremiumUpgrade => '프리미엄 업그레이드';
@@ -1485,9 +1330,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get signupPageTitle => '회원가입';
 
   @override
-  String get signupPrivacyRequired => '개인정보처리방침';
-
-  @override
   String get signupRequired => '[필수]';
 
   @override
@@ -1501,9 +1343,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get signupTermsHint => '필수 항목에 동의하시면 가입이 완료됩니다.';
-
-  @override
-  String get signupTermsRequired => '이용약관';
 
   @override
   String get signupTermsTitle => '약관 동의';
@@ -1540,12 +1379,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get soccerEventFulltime => '경기 종료';
-
-  @override
-  String get soccerEventGoal => '득점';
-
-  @override
-  String get soccerEventHalftime => '하프타임';
 
   @override
   String get soccerEventKickoff => '경기 시작';
@@ -1690,9 +1523,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get soccerStatPattern => '패턴 통계';
 
   @override
-  String get soccerStatPowerDiff => '파워차';
-
-  @override
   String get soccerStatTeamInsights => '팀 인사이트';
 
   @override
@@ -1706,12 +1536,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get soccerStatWins => '승';
-
-  @override
-  String get sportBaseball => '야구';
-
-  @override
-  String get sportSoccer => '축구';
 
   @override
   String get subscribeAlreadyOwned => '이미 구독 중입니다. 기존 구독을 확인합니다.';
@@ -1730,9 +1554,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get subscribeFailErrorCode => '오류 코드';
-
-  @override
-  String get subscribeFailMessage => '결제에 실패했습니다.';
 
   @override
   String get subscribeFailRetry => '다시 시도하기';
@@ -1796,9 +1617,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get subscribePlanMonthly => '1개월';
-
-  @override
-  String get subscribePlanPremium => '프리미엄';
 
   @override
   String get subscribePlanQuarterly => '3개월';
@@ -1880,9 +1698,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get subscribeUpdating => '구독 정보 업데이트 중...';
 
   @override
-  String get tabAnalysis => '분석';
-
-  @override
   String get tabFixture => '일정';
 
   @override
@@ -1910,15 +1725,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get today => '오늘';
 
   @override
-  String get todayCombination => '오늘의 다경기 분석';
-
-  @override
-  String get todayPremiumPick => '오늘의 추천 경기';
-
-  @override
-  String get trendBaseballAnalysis => '야구 분석';
-
-  @override
   String get trendEmptySubtitle1 => '현재 진행 중인 공식 리그 일정이 없습니다.';
 
   @override
@@ -1928,16 +1734,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get trendEmptyTitle => '다음 경기를 기다리고 있습니다.';
 
   @override
-  String get trendNoBaseballScheduled => '예정된 야구 경기가 없습니다.';
-
-  @override
   String get trendNoSoccerScheduled => '예정된 축구 경기가 없습니다.';
 
   @override
   String get trendPremiumAnalysis => '프리미엄 분석';
-
-  @override
-  String get trendSoccerAnalysis => '축구 분석';
 
   @override
   String get weekdayFri => '금';
@@ -1959,4 +1759,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get weekdayWed => '수';
+
+  @override
+  String get matchReportBlockLoadError => '불러오지 못했습니다';
+
+  @override
+  String get matchReportBlockUnavailable => '지금은 이 섹션을 볼 수 없습니다';
 }

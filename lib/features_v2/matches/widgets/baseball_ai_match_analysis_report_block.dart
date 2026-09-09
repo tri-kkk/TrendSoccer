@@ -364,7 +364,7 @@ class _AiMatchAnalysisReportBlockFailure extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return TsEmptyState(
       type: TsEmptyType.failure,
-      title: l10n.reportBlockLoadError,
+      title: l10n.matchReportBlockLoadError,
       description: description,
       actionLabel: retry.inProgress ? l10n.retryInProgress : l10n.retry,
       onAction: retry.action,

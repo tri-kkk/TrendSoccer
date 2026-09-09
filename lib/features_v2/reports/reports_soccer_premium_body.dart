@@ -129,9 +129,9 @@ String? _premiumPickLabel(BuildContext context, SoccerAnalysisCard card) {
   if (direction == null) return null;
   final l10n = AppLocalizations.of(context)!;
   return switch (direction) {
-    PickDirection.home => l10n.pickDirectionHome,
-    PickDirection.draw => l10n.pickDirectionDraw,
-    PickDirection.away => l10n.pickDirectionAway,
+    PickDirection.home => l10n.labelHome,
+    PickDirection.draw => l10n.labelDraw,
+    PickDirection.away => l10n.labelAway,
   };
 }
 

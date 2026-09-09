@@ -266,12 +266,6 @@ abstract class AppLocalizations {
   /// **'잠시만 기다려주세요 (약 5–10초)'**
   String get analysisAiWaitHint;
 
-  /// No description provided for @analysisCardView.
-  ///
-  /// In ko, this message translates to:
-  /// **'분석보기'**
-  String get analysisCardView;
-
   /// No description provided for @analysisCardViewAnalysis.
   ///
   /// In ko, this message translates to:
@@ -349,12 +343,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'축구 분석'**
   String get analysisTabSoccer;
-
-  /// No description provided for @analysisToday.
-  ///
-  /// In ko, this message translates to:
-  /// **'오늘'**
-  String get analysisToday;
 
   /// No description provided for @reportsAnalysisNoLeagueBody.
   ///
@@ -680,29 +668,11 @@ abstract class AppLocalizations {
   /// **'경기 시작'**
   String get baseballEventFirstPitch;
 
-  /// No description provided for @baseballEventGameEnd.
-  ///
-  /// In ko, this message translates to:
-  /// **'경기 종료'**
-  String get baseballEventGameEnd;
-
-  /// No description provided for @baseballEventHomerun.
-  ///
-  /// In ko, this message translates to:
-  /// **'홈런'**
-  String get baseballEventHomerun;
-
   /// No description provided for @baseballEventInningChange.
   ///
   /// In ko, this message translates to:
   /// **'이닝 종료'**
   String get baseballEventInningChange;
-
-  /// No description provided for @baseballEventScore.
-  ///
-  /// In ko, this message translates to:
-  /// **'득점'**
-  String get baseballEventScore;
 
   /// No description provided for @baseballH2hLastFive.
   ///
@@ -848,12 +818,6 @@ abstract class AppLocalizations {
   /// **'Head to Head'**
   String get baseballSectionH2h;
 
-  /// No description provided for @baseballSectionOdds.
-  ///
-  /// In ko, this message translates to:
-  /// **'지수'**
-  String get baseballSectionOdds;
-
   /// No description provided for @baseballSectionPitchers.
   ///
   /// In ko, this message translates to:
@@ -913,12 +877,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'약점'**
   String get baseballWeakness;
-
-  /// No description provided for @baseballWinProbability.
-  ///
-  /// In ko, this message translates to:
-  /// **'승리 가능성'**
-  String get baseballWinProbability;
 
   /// No description provided for @baseballWinsLosses.
   ///
@@ -1058,29 +1016,11 @@ abstract class AppLocalizations {
   /// **'평균 지수'**
   String get comboAvgOdds;
 
-  /// No description provided for @comboComboCount.
-  ///
-  /// In ko, this message translates to:
-  /// **'경기 수'**
-  String get comboComboCount;
-
-  /// No description provided for @comboDashboardToday.
-  ///
-  /// In ko, this message translates to:
-  /// **'오늘'**
-  String get comboDashboardToday;
-
   /// No description provided for @comboFoldCount.
   ///
   /// In ko, this message translates to:
   /// **'{count}경기'**
   String comboFoldCount(int count);
-
-  /// No description provided for @comboHighOdds.
-  ///
-  /// In ko, this message translates to:
-  /// **'고지수'**
-  String get comboHighOdds;
 
   /// No description provided for @comboMatchFail.
   ///
@@ -1106,12 +1046,6 @@ abstract class AppLocalizations {
   /// **'{count}개 다경기 분석 완료'**
   String comboPicksCompleted(int count);
 
-  /// No description provided for @comboReliability.
-  ///
-  /// In ko, this message translates to:
-  /// **'신뢰도'**
-  String get comboReliability;
-
   /// No description provided for @comboResultHitCount.
   ///
   /// In ko, this message translates to:
@@ -1136,23 +1070,11 @@ abstract class AppLocalizations {
   /// **'{count}개 부분 일치'**
   String comboResultPartialCount(int count);
 
-  /// No description provided for @comboSafe.
-  ///
-  /// In ko, this message translates to:
-  /// **'안정형'**
-  String get comboSafe;
-
   /// No description provided for @comboSafeHitRate.
   ///
   /// In ko, this message translates to:
   /// **'안정형 정확도'**
   String get comboSafeHitRate;
-
-  /// No description provided for @comboStatusHit.
-  ///
-  /// In ko, this message translates to:
-  /// **'일치'**
-  String get comboStatusHit;
 
   /// No description provided for @comboStatusInProgress.
   ///
@@ -1177,24 +1099,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'총 지수'**
   String get comboTotalOdds;
-
-  /// No description provided for @comboTypeHigh.
-  ///
-  /// In ko, this message translates to:
-  /// **'고지수'**
-  String get comboTypeHigh;
-
-  /// No description provided for @comboTypeSafe.
-  ///
-  /// In ko, this message translates to:
-  /// **'안정형'**
-  String get comboTypeSafe;
-
-  /// No description provided for @comboWin.
-  ///
-  /// In ko, this message translates to:
-  /// **'승'**
-  String get comboWin;
 
   /// No description provided for @comboLegPickWin.
   ///
@@ -1412,30 +1316,6 @@ abstract class AppLocalizations {
   /// **'앱 종료'**
   String get exitDialogTitle;
 
-  /// No description provided for @exitMessage.
-  ///
-  /// In ko, this message translates to:
-  /// **'TrendSoccer를 종료하시겠습니까?'**
-  String get exitMessage;
-
-  /// No description provided for @exitTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'앱 종료'**
-  String get exitTitle;
-
-  /// No description provided for @filterAll.
-  ///
-  /// In ko, this message translates to:
-  /// **'전체'**
-  String get filterAll;
-
-  /// No description provided for @fixtureCancelled.
-  ///
-  /// In ko, this message translates to:
-  /// **'취소'**
-  String get fixtureCancelled;
-
   /// No description provided for @fixtureEmpty.
   ///
   /// In ko, this message translates to:
@@ -1502,12 +1382,6 @@ abstract class AppLocalizations {
   /// **'경기 일정을 불러오지 못했습니다.'**
   String get fixtureLoadFailed;
 
-  /// No description provided for @fixtureNoMatches.
-  ///
-  /// In ko, this message translates to:
-  /// **'경기가 없습니다'**
-  String get fixtureNoMatches;
-
   /// No description provided for @fixtureNoMatchesOnDate.
   ///
   /// In ko, this message translates to:
@@ -1525,12 +1399,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'매치 리포트는 예정된 경기에서만 확인할 수 있습니다.'**
   String get fixtureMatchReportScheduledOnlyToast;
-
-  /// No description provided for @fixturePostponed.
-  ///
-  /// In ko, this message translates to:
-  /// **'연기'**
-  String get fixturePostponed;
 
   /// No description provided for @matchCancelled.
   ///
@@ -1556,23 +1424,11 @@ abstract class AppLocalizations {
   /// **'전체 경기 보기'**
   String get fixtureViewAllMatches;
 
-  /// No description provided for @forceUpdateButton.
-  ///
-  /// In ko, this message translates to:
-  /// **'업데이트'**
-  String get forceUpdateButton;
-
   /// No description provided for @forceUpdateMessage.
   ///
   /// In ko, this message translates to:
   /// **'새로운 기능과 안정성 개선이 포함된 업데이트가 있습니다.'**
   String get forceUpdateMessage;
-
-  /// No description provided for @forceUpdateSkip.
-  ///
-  /// In ko, this message translates to:
-  /// **'건너뛰기'**
-  String get forceUpdateSkip;
 
   /// No description provided for @forceUpdateTitle.
   ///
@@ -1886,12 +1742,6 @@ abstract class AppLocalizations {
   /// **'Better Data,\nSmarter Analysis Reports,\nFor Your Choice.'**
   String get loginTitle;
 
-  /// No description provided for @matchAlarmDisabledGoSettings.
-  ///
-  /// In ko, this message translates to:
-  /// **'설정으로 이동'**
-  String get matchAlarmDisabledGoSettings;
-
   /// No description provided for @matchAlarmDisabledMessage.
   ///
   /// In ko, this message translates to:
@@ -1945,12 +1795,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'추가 기능'**
   String get menuExploreSection;
-
-  /// No description provided for @menuHelpCenter.
-  ///
-  /// In ko, this message translates to:
-  /// **'문의하기'**
-  String get menuHelpCenter;
 
   /// No description provided for @menuLanguage.
   ///
@@ -2060,23 +1904,11 @@ abstract class AppLocalizations {
   /// **'구독 관리'**
   String get menuSubscribeManage;
 
-  /// No description provided for @menuSubscribeManageTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'구독 관리'**
-  String get menuSubscribeManageTitle;
-
   /// No description provided for @menuSubscribePrompt.
   ///
   /// In ko, this message translates to:
   /// **'지금 구독 시작하고 프리미엄 데이터를 확인하세요.'**
   String get menuSubscribePrompt;
-
-  /// No description provided for @menuSubscribeTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'구독'**
-  String get menuSubscribeTitle;
 
   /// No description provided for @menuSubscribeTrial.
   ///
@@ -2108,23 +1940,11 @@ abstract class AppLocalizations {
   /// **'{hours}시간 {minutes}분 남음'**
   String menuTrialRemaining(int hours, int minutes);
 
-  /// No description provided for @networkErrorMessage.
-  ///
-  /// In ko, this message translates to:
-  /// **'네트워크 연결을 확인해주세요.'**
-  String get networkErrorMessage;
-
   /// No description provided for @noMatchInfo.
   ///
   /// In ko, this message translates to:
   /// **'경기 정보가 없습니다'**
   String get noMatchInfo;
-
-  /// No description provided for @notificationAppGeneral.
-  ///
-  /// In ko, this message translates to:
-  /// **'앱 알림'**
-  String get notificationAppGeneral;
 
   /// No description provided for @notificationAppGeneralDesc.
   ///
@@ -2192,29 +2012,11 @@ abstract class AppLocalizations {
   /// **'알림 권한 필요'**
   String get notificationPermissionTitle;
 
-  /// No description provided for @notificationSettings.
-  ///
-  /// In ko, this message translates to:
-  /// **'알림'**
-  String get notificationSettings;
-
   /// No description provided for @notificationGeneral.
   ///
   /// In ko, this message translates to:
   /// **'일반'**
   String get notificationGeneral;
-
-  /// No description provided for @notificationSoccer.
-  ///
-  /// In ko, this message translates to:
-  /// **'축구'**
-  String get notificationSoccer;
-
-  /// No description provided for @notificationBaseball.
-  ///
-  /// In ko, this message translates to:
-  /// **'야구'**
-  String get notificationBaseball;
 
   /// No description provided for @notificationAppAlerts.
   ///
@@ -2306,24 +2108,6 @@ abstract class AppLocalizations {
   /// **'알림 설정'**
   String get notificationTitle;
 
-  /// No description provided for @pickDirectionAway.
-  ///
-  /// In ko, this message translates to:
-  /// **'원정'**
-  String get pickDirectionAway;
-
-  /// No description provided for @pickDirectionDraw.
-  ///
-  /// In ko, this message translates to:
-  /// **'무'**
-  String get pickDirectionDraw;
-
-  /// No description provided for @pickDirectionHome.
-  ///
-  /// In ko, this message translates to:
-  /// **'홈'**
-  String get pickDirectionHome;
-
   /// No description provided for @pitcherTbd.
   ///
   /// In ko, this message translates to:
@@ -2389,12 +2173,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'체험 종료'**
   String get planTicketTrialEnded;
-
-  /// No description provided for @planTicketTrialRemaining.
-  ///
-  /// In ko, this message translates to:
-  /// **'{hours}시간 {minutes}분 남음'**
-  String planTicketTrialRemaining(int hours, int minutes);
 
   /// No description provided for @planTicketStartDate.
   ///
@@ -2564,18 +2342,6 @@ abstract class AppLocalizations {
   /// **'축구 데이터 분석가'**
   String get reportAuthorRole;
 
-  /// No description provided for @reportBlockLoadError.
-  ///
-  /// In ko, this message translates to:
-  /// **'불러오지 못했습니다'**
-  String get reportBlockLoadError;
-
-  /// No description provided for @reportBlockUnavailable.
-  ///
-  /// In ko, this message translates to:
-  /// **'지금은 이 섹션을 볼 수 없습니다'**
-  String get reportBlockUnavailable;
-
   /// No description provided for @reportDetailLoadError.
   ///
   /// In ko, this message translates to:
@@ -2611,36 +2377,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'리포트를 찾을 수 없습니다.'**
   String get reportNotFoundTitle;
-
-  /// No description provided for @reportPremiumOnlyMessage.
-  ///
-  /// In ko, this message translates to:
-  /// **'AI 분석 결과를 확인하려면 구독이 필요합니다'**
-  String get reportPremiumOnlyMessage;
-
-  /// No description provided for @reportPremiumOnlyTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'프리미엄 구독 회원 전용 콘텐츠입니다'**
-  String get reportPremiumOnlyTitle;
-
-  /// No description provided for @reportTabAiAnalysis.
-  ///
-  /// In ko, this message translates to:
-  /// **'AI Analysis'**
-  String get reportTabAiAnalysis;
-
-  /// No description provided for @reportTabPremium.
-  ///
-  /// In ko, this message translates to:
-  /// **'프리미엄'**
-  String get reportTabPremium;
-
-  /// No description provided for @reportTabStandard.
-  ///
-  /// In ko, this message translates to:
-  /// **'스탠다드'**
-  String get reportTabStandard;
 
   /// No description provided for @retry.
   ///
@@ -2684,12 +2420,6 @@ abstract class AppLocalizations {
   /// **'분석 페이지에서 경기를 선택해 주세요.'**
   String get selectMatchFromAnalysis;
 
-  /// No description provided for @signOutConfirm.
-  ///
-  /// In ko, this message translates to:
-  /// **'로그아웃'**
-  String get signOutConfirm;
-
   /// No description provided for @signOutMessage.
   ///
   /// In ko, this message translates to:
@@ -2701,12 +2431,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'로그아웃 되었습니다.'**
   String get signOutSuccess;
-
-  /// No description provided for @signOutTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'로그아웃'**
-  String get signOutTitle;
 
   /// No description provided for @signupAgreeAll.
   ///
@@ -2804,41 +2528,11 @@ abstract class AppLocalizations {
   /// **'기본 분석 데이터 제공'**
   String get signupCompleteFreeBenefit2;
 
-  /// No description provided for @signupCompleteFreeBenefit3.
-  ///
-  /// In ko, this message translates to:
-  /// **'실시간 스코어 및 경기 일정'**
-  String get signupCompleteFreeBenefit3;
-
   /// No description provided for @signupCompleteFreeBenefitsHeader.
   ///
   /// In ko, this message translates to:
   /// **'무료 혜택'**
   String get signupCompleteFreeBenefitsHeader;
-
-  /// No description provided for @signupCompletePremiumBenefit1.
-  ///
-  /// In ko, this message translates to:
-  /// **'24시간 우선 분석 접근'**
-  String get signupCompletePremiumBenefit1;
-
-  /// No description provided for @signupCompletePremiumBenefit2.
-  ///
-  /// In ko, this message translates to:
-  /// **'프리미엄 리포트 무제한'**
-  String get signupCompletePremiumBenefit2;
-
-  /// No description provided for @signupCompletePremiumBenefit3.
-  ///
-  /// In ko, this message translates to:
-  /// **'야구 AI Analysis'**
-  String get signupCompletePremiumBenefit3;
-
-  /// No description provided for @signupCompletePremiumBenefitsHeader.
-  ///
-  /// In ko, this message translates to:
-  /// **'프리미엄 혜택'**
-  String get signupCompletePremiumBenefitsHeader;
 
   /// No description provided for @signupCompletePremiumUpgrade.
   ///
@@ -2900,12 +2594,6 @@ abstract class AppLocalizations {
   /// **'회원가입'**
   String get signupPageTitle;
 
-  /// No description provided for @signupPrivacyRequired.
-  ///
-  /// In ko, this message translates to:
-  /// **'개인정보처리방침'**
-  String get signupPrivacyRequired;
-
   /// No description provided for @signupRequired.
   ///
   /// In ko, this message translates to:
@@ -2935,12 +2623,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'필수 항목에 동의하시면 가입이 완료됩니다.'**
   String get signupTermsHint;
-
-  /// No description provided for @signupTermsRequired.
-  ///
-  /// In ko, this message translates to:
-  /// **'이용약관'**
-  String get signupTermsRequired;
 
   /// No description provided for @signupTermsTitle.
   ///
@@ -3007,18 +2689,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'경기 종료'**
   String get soccerEventFulltime;
-
-  /// No description provided for @soccerEventGoal.
-  ///
-  /// In ko, this message translates to:
-  /// **'득점'**
-  String get soccerEventGoal;
-
-  /// No description provided for @soccerEventHalftime.
-  ///
-  /// In ko, this message translates to:
-  /// **'하프타임'**
-  String get soccerEventHalftime;
 
   /// No description provided for @soccerEventKickoff.
   ///
@@ -3296,12 +2966,6 @@ abstract class AppLocalizations {
   /// **'패턴 통계'**
   String get soccerStatPattern;
 
-  /// No description provided for @soccerStatPowerDiff.
-  ///
-  /// In ko, this message translates to:
-  /// **'파워차'**
-  String get soccerStatPowerDiff;
-
   /// No description provided for @soccerStatTeamInsights.
   ///
   /// In ko, this message translates to:
@@ -3331,18 +2995,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'승'**
   String get soccerStatWins;
-
-  /// No description provided for @sportBaseball.
-  ///
-  /// In ko, this message translates to:
-  /// **'야구'**
-  String get sportBaseball;
-
-  /// No description provided for @sportSoccer.
-  ///
-  /// In ko, this message translates to:
-  /// **'축구'**
-  String get sportSoccer;
 
   /// No description provided for @subscribeAlreadyOwned.
   ///
@@ -3379,12 +3031,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'오류 코드'**
   String get subscribeFailErrorCode;
-
-  /// No description provided for @subscribeFailMessage.
-  ///
-  /// In ko, this message translates to:
-  /// **'결제에 실패했습니다.'**
-  String get subscribeFailMessage;
 
   /// No description provided for @subscribeFailRetry.
   ///
@@ -3505,12 +3151,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'1개월'**
   String get subscribePlanMonthly;
-
-  /// No description provided for @subscribePlanPremium.
-  ///
-  /// In ko, this message translates to:
-  /// **'프리미엄'**
-  String get subscribePlanPremium;
 
   /// No description provided for @subscribePlanQuarterly.
   ///
@@ -3662,12 +3302,6 @@ abstract class AppLocalizations {
   /// **'구독 정보 업데이트 중...'**
   String get subscribeUpdating;
 
-  /// No description provided for @tabAnalysis.
-  ///
-  /// In ko, this message translates to:
-  /// **'분석'**
-  String get tabAnalysis;
-
   /// No description provided for @tabFixture.
   ///
   /// In ko, this message translates to:
@@ -3722,24 +3356,6 @@ abstract class AppLocalizations {
   /// **'오늘'**
   String get today;
 
-  /// No description provided for @todayCombination.
-  ///
-  /// In ko, this message translates to:
-  /// **'오늘의 다경기 분석'**
-  String get todayCombination;
-
-  /// No description provided for @todayPremiumPick.
-  ///
-  /// In ko, this message translates to:
-  /// **'오늘의 추천 경기'**
-  String get todayPremiumPick;
-
-  /// No description provided for @trendBaseballAnalysis.
-  ///
-  /// In ko, this message translates to:
-  /// **'야구 분석'**
-  String get trendBaseballAnalysis;
-
   /// No description provided for @trendEmptySubtitle1.
   ///
   /// In ko, this message translates to:
@@ -3758,12 +3374,6 @@ abstract class AppLocalizations {
   /// **'다음 경기를 기다리고 있습니다.'**
   String get trendEmptyTitle;
 
-  /// No description provided for @trendNoBaseballScheduled.
-  ///
-  /// In ko, this message translates to:
-  /// **'예정된 야구 경기가 없습니다.'**
-  String get trendNoBaseballScheduled;
-
   /// No description provided for @trendNoSoccerScheduled.
   ///
   /// In ko, this message translates to:
@@ -3775,12 +3385,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'프리미엄 분석'**
   String get trendPremiumAnalysis;
-
-  /// No description provided for @trendSoccerAnalysis.
-  ///
-  /// In ko, this message translates to:
-  /// **'축구 분석'**
-  String get trendSoccerAnalysis;
 
   /// No description provided for @weekdayFri.
   ///
@@ -3823,6 +3427,18 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'수'**
   String get weekdayWed;
+
+  /// No description provided for @matchReportBlockLoadError.
+  ///
+  /// In ko, this message translates to:
+  /// **'불러오지 못했습니다'**
+  String get matchReportBlockLoadError;
+
+  /// No description provided for @matchReportBlockUnavailable.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금은 이 섹션을 볼 수 없습니다'**
+  String get matchReportBlockUnavailable;
 }
 
 class _AppLocalizationsDelegate

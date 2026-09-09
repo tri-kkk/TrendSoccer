@@ -659,7 +659,7 @@ class _SoccerReportTransportFailure extends StatelessWidget {
     final l10n = context.l10n;
     return TsEmptyState(
       type: TsEmptyType.failure,
-      title: l10n.reportBlockLoadError,
+      title: l10n.matchReportBlockLoadError,
       description: resolveApiError(context, error),
       actionLabel: retry.inProgress ? l10n.retryInProgress : l10n.retry,
       onAction: retry.action,

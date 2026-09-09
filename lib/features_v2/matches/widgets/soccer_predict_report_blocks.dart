@@ -517,8 +517,8 @@ class _SoccerPredictBlocksError extends StatelessWidget {
             icon: _icons[i],
             child: TsEmptyState(
               type: TsEmptyType.failure,
-              title: l10n.reportBlockLoadError,
-              description: l10n.reportBlockUnavailable,
+              title: l10n.matchReportBlockLoadError,
+              description: l10n.matchReportBlockUnavailable,
               actionLabel: retry.inProgress ? l10n.retryInProgress : l10n.retry,
               onAction: retry.action,
             ),

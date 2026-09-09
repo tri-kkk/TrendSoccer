@@ -23,7 +23,7 @@ class ReportsLeagueFilterRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final allLabel = AppLocalizations.of(context)!.filterAll;
+    final allLabel = AppLocalizations.of(context)!.feedNewsSportAll;
     return SizedBox(
       height: 32,
       child: ListView.separated(

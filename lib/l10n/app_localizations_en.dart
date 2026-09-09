@@ -109,9 +109,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get analysisAiWaitHint => 'Please wait (about 5–10 seconds)';
 
   @override
-  String get analysisCardView => 'View analysis';
-
-  @override
   String get analysisCardViewAnalysis => 'Analyze';
 
   @override
@@ -150,9 +147,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get analysisTabSoccer => 'Soccer Analysis';
-
-  @override
-  String get analysisToday => 'Today';
 
   @override
   String get reportsAnalysisNoLeagueBody =>
@@ -329,16 +323,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get baseballEventFirstPitch => 'First Pitch';
 
   @override
-  String get baseballEventGameEnd => 'Game End';
-
-  @override
-  String get baseballEventHomerun => 'Home Run';
-
-  @override
   String get baseballEventInningChange => 'Inning Change';
-
-  @override
-  String get baseballEventScore => 'Score';
 
   @override
   String get baseballH2hLastFive => 'Last 5 meetings';
@@ -418,9 +403,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get baseballSectionH2h => 'Head to Head';
 
   @override
-  String get baseballSectionOdds => 'Index';
-
-  @override
   String get baseballSectionPitchers => 'Starting Pitchers';
 
   @override
@@ -450,9 +432,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get baseballWeakness => 'Weaknesses';
-
-  @override
-  String get baseballWinProbability => 'Win likelihood';
 
   @override
   String baseballWinsLosses(int wins, int losses) {
@@ -529,18 +508,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get comboAvgOdds => 'Average index';
 
   @override
-  String get comboComboCount => 'Matches';
-
-  @override
-  String get comboDashboardToday => 'Today';
-
-  @override
   String comboFoldCount(int count) {
     return '$count matches';
   }
-
-  @override
-  String get comboHighOdds => 'High index';
 
   @override
   String get comboMatchFail => 'Mismatch';
@@ -555,9 +525,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String comboPicksCompleted(int count) {
     return '$count multi-match analyses done';
   }
-
-  @override
-  String get comboReliability => 'Reliability';
 
   @override
   String comboResultHitCount(int count) {
@@ -580,13 +547,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get comboSafe => 'Stable';
-
-  @override
   String get comboSafeHitRate => 'Stable accuracy';
-
-  @override
-  String get comboStatusHit => 'Match';
 
   @override
   String get comboStatusInProgress => 'In progress';
@@ -599,15 +560,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get comboTotalOdds => 'Total index';
-
-  @override
-  String get comboTypeHigh => 'High index';
-
-  @override
-  String get comboTypeSafe => 'Stable';
-
-  @override
-  String get comboWin => 'Win';
 
   @override
   String comboLegPickWin(String team) {
@@ -725,18 +677,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exitDialogTitle => 'Exit App';
 
   @override
-  String get exitMessage => 'Are you sure you want to exit TrendSoccer?';
-
-  @override
-  String get exitTitle => 'Exit App';
-
-  @override
-  String get filterAll => 'All';
-
-  @override
-  String get fixtureCancelled => 'Cancelled';
-
-  @override
   String get fixtureEmpty => 'No fixtures available.';
 
   @override
@@ -774,9 +714,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fixtureLoadFailed => 'Could not load fixtures.';
 
   @override
-  String get fixtureNoMatches => 'No matches';
-
-  @override
   String get fixtureNoMatchesOnDate => 'No matches scheduled on this date.';
 
   @override
@@ -786,9 +723,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get fixtureMatchReportScheduledOnlyToast =>
       'Match reports are only available for scheduled matches.';
-
-  @override
-  String get fixturePostponed => 'Postponed';
 
   @override
   String get matchCancelled => 'Cancelled';
@@ -803,14 +737,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fixtureViewAllMatches => 'View all matches';
 
   @override
-  String get forceUpdateButton => 'Update';
-
-  @override
   String get forceUpdateMessage =>
       'An update with new features and stability improvements is available.';
-
-  @override
-  String get forceUpdateSkip => 'Skip';
 
   @override
   String get forceUpdateTitle => 'Update Required';
@@ -975,9 +903,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Better Data,\nSmarter Analysis Reports,\nFor Your Choice.';
 
   @override
-  String get matchAlarmDisabledGoSettings => 'Go to Settings';
-
-  @override
   String get matchAlarmDisabledMessage =>
       'Match alerts are turned off.\nEnable them in Menu > Notification Settings.';
 
@@ -1004,9 +929,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuExploreSection => 'Explore';
-
-  @override
-  String get menuHelpCenter => 'Help Center';
 
   @override
   String get menuLanguage => 'Language';
@@ -1065,13 +987,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuSubscribeManage => 'Manage Subscription';
 
   @override
-  String get menuSubscribeManageTitle => 'Manage Subscription';
-
-  @override
   String get menuSubscribePrompt => 'Subscribe now to unlock premium data.';
-
-  @override
-  String get menuSubscribeTitle => 'Subscribe';
 
   @override
   String get menuSubscribeTrial => 'Trial Active';
@@ -1091,13 +1007,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get networkErrorMessage => 'Please check your network connection.';
-
-  @override
   String get noMatchInfo => 'Match information unavailable';
-
-  @override
-  String get notificationAppGeneral => 'App Notifications';
 
   @override
   String get notificationAppGeneralDesc =>
@@ -1138,16 +1048,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationPermissionTitle => 'Permission Required';
 
   @override
-  String get notificationSettings => 'Notification';
-
-  @override
   String get notificationGeneral => 'General';
-
-  @override
-  String get notificationSoccer => 'Soccer';
-
-  @override
-  String get notificationBaseball => 'Baseball';
 
   @override
   String get notificationAppAlerts => 'App Notifications';
@@ -1195,15 +1096,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationTitle => 'Notification Settings';
 
   @override
-  String get pickDirectionAway => 'Away';
-
-  @override
-  String get pickDirectionDraw => 'Draw';
-
-  @override
-  String get pickDirectionHome => 'Home';
-
-  @override
   String get pitcherTbd => 'TBD';
 
   @override
@@ -1239,11 +1131,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get planTicketTrialEnded => 'Trial ended';
-
-  @override
-  String planTicketTrialRemaining(int hours, int minutes) {
-    return '${hours}h ${minutes}m remaining';
-  }
 
   @override
   String planTicketStartDate(String date) {
@@ -1344,12 +1231,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportAuthorRole => 'Football data analyst';
 
   @override
-  String get reportBlockLoadError => 'Could not load';
-
-  @override
-  String get reportBlockUnavailable => 'This section is unavailable right now';
-
-  @override
   String get reportDetailLoadError => 'Could not load match preview.';
 
   @override
@@ -1367,22 +1248,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportNotFoundTitle => 'Report not found.';
-
-  @override
-  String get reportPremiumOnlyMessage =>
-      'Subscribe to view AI analysis results';
-
-  @override
-  String get reportPremiumOnlyTitle => 'Premium members only';
-
-  @override
-  String get reportTabAiAnalysis => 'AI Analysis';
-
-  @override
-  String get reportTabPremium => 'Premium';
-
-  @override
-  String get reportTabStandard => 'Standard';
 
   @override
   String get retry => 'Retry';
@@ -1406,16 +1271,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectMatchFromAnalysis => 'Select a match from the Analysis tab.';
 
   @override
-  String get signOutConfirm => 'Sign Out';
-
-  @override
   String get signOutMessage => 'Are you sure you want to sign out?';
 
   @override
   String get signOutSuccess => 'Signed out successfully.';
-
-  @override
-  String get signOutTitle => 'Sign Out';
 
   @override
   String get signupAgreeAll => 'Agree to All';
@@ -1471,23 +1330,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signupCompleteFreeBenefit2 => 'Basic analysis data';
 
   @override
-  String get signupCompleteFreeBenefit3 => 'Live scores and fixtures';
-
-  @override
   String get signupCompleteFreeBenefitsHeader => 'Free benefits';
-
-  @override
-  String get signupCompletePremiumBenefit1 =>
-      '24-hour priority analysis access';
-
-  @override
-  String get signupCompletePremiumBenefit2 => 'Unlimited Premium Reports';
-
-  @override
-  String get signupCompletePremiumBenefit3 => 'Baseball AI Analysis';
-
-  @override
-  String get signupCompletePremiumBenefitsHeader => 'Premium benefits';
 
   @override
   String get signupCompletePremiumUpgrade => 'Upgrade to Premium';
@@ -1524,9 +1367,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signupPageTitle => 'Sign up';
 
   @override
-  String get signupPrivacyRequired => 'Privacy Policy';
-
-  @override
   String get signupRequired => '[Required]';
 
   @override
@@ -1541,9 +1381,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get signupTermsHint =>
       'Sign-up completes when you agree to the required items.';
-
-  @override
-  String get signupTermsRequired => 'Terms of Service';
 
   @override
   String get signupTermsTitle => 'Terms & Conditions';
@@ -1580,12 +1417,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get soccerEventFulltime => 'Full-time';
-
-  @override
-  String get soccerEventGoal => 'Goal';
-
-  @override
-  String get soccerEventHalftime => 'Half-time';
 
   @override
   String get soccerEventKickoff => 'Kick-off';
@@ -1730,9 +1561,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get soccerStatPattern => 'Pattern stats';
 
   @override
-  String get soccerStatPowerDiff => 'Power diff.';
-
-  @override
   String get soccerStatTeamInsights => 'Team insights';
 
   @override
@@ -1746,12 +1574,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get soccerStatWins => 'W';
-
-  @override
-  String get sportBaseball => 'Baseball';
-
-  @override
-  String get sportSoccer => 'Soccer';
 
   @override
   String get subscribeAlreadyOwned =>
@@ -1772,9 +1594,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get subscribeFailErrorCode => 'Error code';
-
-  @override
-  String get subscribeFailMessage => 'Payment failed.';
 
   @override
   String get subscribeFailRetry => 'Try Again';
@@ -1839,9 +1658,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get subscribePlanMonthly => '1 Month';
-
-  @override
-  String get subscribePlanPremium => 'Premium';
 
   @override
   String get subscribePlanQuarterly => '3 Months';
@@ -1925,9 +1741,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subscribeUpdating => 'Updating subscription...';
 
   @override
-  String get tabAnalysis => 'Analysis';
-
-  @override
   String get tabFixture => 'Fixture';
 
   @override
@@ -1955,15 +1768,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get today => 'Today';
 
   @override
-  String get todayCombination => 'Multi-match analysis';
-
-  @override
-  String get todayPremiumPick => 'Today\'s featured match';
-
-  @override
-  String get trendBaseballAnalysis => 'Baseball Analysis';
-
-  @override
   String get trendEmptySubtitle1 =>
       'Official leagues are currently on a break.';
 
@@ -1975,16 +1779,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get trendEmptyTitle => 'Awaiting the Next Match';
 
   @override
-  String get trendNoBaseballScheduled => 'No baseball games scheduled.';
-
-  @override
   String get trendNoSoccerScheduled => 'No soccer matches scheduled.';
 
   @override
   String get trendPremiumAnalysis => 'Premium Analysis';
-
-  @override
-  String get trendSoccerAnalysis => 'Soccer Analysis';
 
   @override
   String get weekdayFri => 'Fri';
@@ -2006,4 +1804,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get weekdayWed => 'Wed';
+
+  @override
+  String get matchReportBlockLoadError => 'Could not load';
+
+  @override
+  String get matchReportBlockUnavailable =>
+      'This section is unavailable right now';
 }
