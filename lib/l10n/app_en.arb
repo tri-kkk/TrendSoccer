@@ -289,6 +289,19 @@
   "lockGuestTitle": "Members only",
   "lockPremiumAction": "View plans",
   "loginAppBarTitle": "Log In",
+  "loginErrorAccountDeleted": "This account was deleted. You can sign up again in {days} days.",
+  "@loginErrorAccountDeleted": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "loginErrorNetwork": "Network error. Check your connection and try again.",
+  "loginErrorProfileLoadFailed": "Signed in, but the profile could not load.",
+  "loginErrorTimeout": "Sign-in timed out. Please try again.",
+  "loginErrorTryAgain": "Sign-in failed. Please try again.",
+  "loginGuestButton": "Continue as guest",
   "loginGoogle": "Continue with Google",
   "loginNaver": "Continue with Naver",
   "loginNaverFailed": "Naver sign-in failed. Please try again.",
@@ -427,24 +440,49 @@
   "signupWhatsNextBenefit2": "Subscribe to premium for full access",
   "signupCompleteAppBarTitle": "Sign-up complete",
   "signupCompleteCountdown": "Redirecting to home in {seconds}s",
+  "signupCompleteBenefitAdFree": "Ad-free experience",
+  "signupCompleteBenefitComboReports": "Multi-match analysis reports",
+  "signupCompleteBenefitSoccerBaseball": "Soccer and baseball premium analysis",
   "signupCompleteFreeBenefit1": "Analysis opens 2 hours before kickoff",
   "signupCompleteFreeBenefit2": "Basic analysis data",
   "signupCompleteFreeBenefitsHeader": "Free benefits",
+  "signupCompleteHomeCountdown": "Moving to home in {seconds}s",
+  "@signupCompleteHomeCountdown": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
   "signupCompletePremiumUpgrade": "Upgrade to Premium",
+  "signupCompleteStartButton": "Start now",
   "signupCompleteStartPrompt": "Start exploring TrendSoccer now.",
   "signupCompleteSubtitle": "Your 48-hour premium trial has started.",
+  "signupCompleteTrialSubtitle": "Your 48-hour free trial has started",
   "signupCompleteSuccessToast": "Sign-up complete! Your premium trial has started.",
   "signupCompleteTitle": "Welcome!",
   "signupCompleteTrialBanner": "Your 48-hour free Premium trial has started!",
+  "signupCompleteWelcomeTitle": "Welcome to TrendSoccer",
   "signupErrorProcessing": "An error occurred while processing sign-up.",
   "signupMarketingOptional": "Marketing Emails",
   "signupOptional": "[Optional]",
   "signupPageTitle": "Sign up",
   "signupRequired": "[Required]",
   "signupSubmit": "Sign Up",
+  "signupTermsAppBarTitle": "Terms",
+  "signupTermsConsentMarketing": "[Optional] Marketing messages",
+  "signupTermsConsentPrivacy": "[Required] Privacy policy",
+  "signupTermsConsentTerms": "[Required] Terms of service",
+  "signupTermsContinueButton": "Continue",
+  "signupTermsExitDialogLeave": "Leave",
+  "signupTermsExitDialogMessage": "Your account will not be activated until you agree to the terms.",
+  "signupTermsExitDialogStay": "Stay",
+  "signupTermsExitDialogTitle": "Leave sign-up?",
   "signupTermsHeadingLine1": "To use the service,",
   "signupTermsHeadingLine2": "please agree to the terms.",
+  "signupTermsHeadline": "Agree to terms\nto get started",
   "signupTermsHint": "Sign-up completes when you agree to the required items.",
+  "signupTermsSubmitErrorToast": "Unable to complete sign-up. Please try again.",
   "signupTermsTitle": "Terms & Conditions",
   "signupView": "View",
   "skip": "Skip",

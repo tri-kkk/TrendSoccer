@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:trendsoccer/core/providers/auth_provider.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
@@ -33,17 +34,17 @@ class _SignupTermsScreenState extends ConsumerState<SignupTermsScreen> {
   bool get _canSubmit => _terms && _privacy;
 
   Future<void> _confirmExit() async {
+    final l10n = AppLocalizations.of(context)!;
     final shouldLeave = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => Dialog(
         backgroundColor: Colors.transparent,
         child: TsConfirmDialog(
           type: TsDialogType.destructive,
-          title: 'Leave sign-up?',
-          message:
-              'Your account will not be activated until you agree to the terms.',
-          confirmLabel: 'Leave',
-          cancelLabel: 'Stay',
+          title: l10n.signupTermsExitDialogTitle,
+          message: l10n.signupTermsExitDialogMessage,
+          confirmLabel: l10n.signupTermsExitDialogLeave,
+          cancelLabel: l10n.signupTermsExitDialogStay,
           onConfirm: () => Navigator.of(dialogContext).pop(true),
           onCancel: () => Navigator.of(dialogContext).pop(false),
         ),
@@ -68,7 +69,7 @@ class _SignupTermsScreenState extends ConsumerState<SignupTermsScreen> {
       if (ok) {
         context.go('/signup/complete');
       } else {
-        _showErrorToast('Unable to complete sign-up. Please try again.');
+        _showErrorToast(AppLocalizations.of(context)!.signupTermsSubmitErrorToast);
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -170,6 +171,7 @@ class _SignupTermsScreenState extends ConsumerState<SignupTermsScreen> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
+    final l10n = AppLocalizations.of(context)!;
 
     return PopScope(
       canPop: false,
@@ -181,7 +183,7 @@ class _SignupTermsScreenState extends ConsumerState<SignupTermsScreen> {
         backgroundColor: c.canvas,
         appBar: TsAppBar(
           type: TsAppBarType.back,
-          title: 'Terms',
+          title: l10n.signupTermsAppBarTitle,
           onBack: _confirmExit,
         ),
         body: SafeArea(
@@ -200,7 +202,7 @@ class _SignupTermsScreenState extends ConsumerState<SignupTermsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        'Agree to terms\nto get started',
+                        l10n.signupTermsHeadline,
                         style: TsType.h1.copyWith(color: c.textPrimary),
                       ),
                       const SizedBox(height: TsSpacing.lg),
@@ -209,7 +211,7 @@ class _SignupTermsScreenState extends ConsumerState<SignupTermsScreen> {
                         checked: _agreeAll,
                         onToggle: _toggleAgreeAll,
                         labelStyle: TsType.bodyLBold,
-                        label: 'Agree to all',
+                        label: l10n.signupAgreeAll,
                       ),
                       const SizedBox(height: TsSpacing.lg),
                       Container(height: 1, color: c.borderSubtle),
@@ -219,7 +221,7 @@ class _SignupTermsScreenState extends ConsumerState<SignupTermsScreen> {
                         checked: _terms,
                         onToggle: () => setState(() => _terms = !_terms),
                         labelStyle: TsType.bodyLMedium,
-                        label: '[Required] Terms of service',
+                        label: l10n.signupTermsConsentTerms,
                         onView: _openTerms,
                       ),
                       const SizedBox(height: TsSpacing.lg),
@@ -228,7 +230,7 @@ class _SignupTermsScreenState extends ConsumerState<SignupTermsScreen> {
                         checked: _privacy,
                         onToggle: () => setState(() => _privacy = !_privacy),
                         labelStyle: TsType.bodyLMedium,
-                        label: '[Required] Privacy policy',
+                        label: l10n.signupTermsConsentPrivacy,
                         onView: _openPrivacy,
                       ),
                       const SizedBox(height: TsSpacing.lg),
@@ -237,7 +239,7 @@ class _SignupTermsScreenState extends ConsumerState<SignupTermsScreen> {
                         checked: _marketing,
                         onToggle: () => setState(() => _marketing = !_marketing),
                         labelStyle: TsType.bodyLMedium,
-                        label: '[Optional] Marketing messages',
+                        label: l10n.signupTermsConsentMarketing,
                       ),
                     ],
                   ),
@@ -246,7 +248,7 @@ class _SignupTermsScreenState extends ConsumerState<SignupTermsScreen> {
               Container(
                 padding: const EdgeInsets.all(TsSpacing.lg),
                 child: TsButton(
-                  label: 'Continue',
+                  label: l10n.signupTermsContinueButton,
                   style: TsButtonStyle.primary,
                   size: TsButtonSize.large,
                   expand: true,

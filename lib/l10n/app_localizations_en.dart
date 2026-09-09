@@ -888,6 +888,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginAppBarTitle => 'Log In';
 
   @override
+  String loginErrorAccountDeleted(int days) {
+    return 'This account was deleted. You can sign up again in $days days.';
+  }
+
+  @override
+  String get loginErrorNetwork =>
+      'Network error. Check your connection and try again.';
+
+  @override
+  String get loginErrorProfileLoadFailed =>
+      'Signed in, but the profile could not load.';
+
+  @override
+  String get loginErrorTimeout => 'Sign-in timed out. Please try again.';
+
+  @override
+  String get loginErrorTryAgain => 'Sign-in failed. Please try again.';
+
+  @override
+  String get loginGuestButton => 'Continue as guest';
+
+  @override
   String get loginGoogle => 'Continue with Google';
 
   @override
@@ -1338,6 +1360,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get signupCompleteBenefitAdFree => 'Ad-free experience';
+
+  @override
+  String get signupCompleteBenefitComboReports =>
+      'Multi-match analysis reports';
+
+  @override
+  String get signupCompleteBenefitSoccerBaseball =>
+      'Soccer and baseball premium analysis';
+
+  @override
   String get signupCompleteFreeBenefit1 =>
       'Analysis opens 2 hours before kickoff';
 
@@ -1348,7 +1381,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signupCompleteFreeBenefitsHeader => 'Free benefits';
 
   @override
+  String signupCompleteHomeCountdown(int seconds) {
+    return 'Moving to home in ${seconds}s';
+  }
+
+  @override
   String get signupCompletePremiumUpgrade => 'Upgrade to Premium';
+
+  @override
+  String get signupCompleteStartButton => 'Start now';
 
   @override
   String get signupCompleteStartPrompt => 'Start exploring TrendSoccer now.';
@@ -1356,6 +1397,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get signupCompleteSubtitle =>
       'Your 48-hour premium trial has started.';
+
+  @override
+  String get signupCompleteTrialSubtitle =>
+      'Your 48-hour free trial has started';
 
   @override
   String get signupCompleteSuccessToast =>
@@ -1367,6 +1412,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get signupCompleteTrialBanner =>
       'Your 48-hour free Premium trial has started!';
+
+  @override
+  String get signupCompleteWelcomeTitle => 'Welcome to TrendSoccer';
 
   @override
   String get signupErrorProcessing =>
@@ -1388,14 +1436,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signupSubmit => 'Sign Up';
 
   @override
+  String get signupTermsAppBarTitle => 'Terms';
+
+  @override
+  String get signupTermsConsentMarketing => '[Optional] Marketing messages';
+
+  @override
+  String get signupTermsConsentPrivacy => '[Required] Privacy policy';
+
+  @override
+  String get signupTermsConsentTerms => '[Required] Terms of service';
+
+  @override
+  String get signupTermsContinueButton => 'Continue';
+
+  @override
+  String get signupTermsExitDialogLeave => 'Leave';
+
+  @override
+  String get signupTermsExitDialogMessage =>
+      'Your account will not be activated until you agree to the terms.';
+
+  @override
+  String get signupTermsExitDialogStay => 'Stay';
+
+  @override
+  String get signupTermsExitDialogTitle => 'Leave sign-up?';
+
+  @override
   String get signupTermsHeadingLine1 => 'To use the service,';
 
   @override
   String get signupTermsHeadingLine2 => 'please agree to the terms.';
 
   @override
+  String get signupTermsHeadline => 'Agree to terms\nto get started';
+
+  @override
   String get signupTermsHint =>
       'Sign-up completes when you agree to the required items.';
+
+  @override
+  String get signupTermsSubmitErrorToast =>
+      'Unable to complete sign-up. Please try again.';
 
   @override
   String get signupTermsTitle => 'Terms & Conditions';

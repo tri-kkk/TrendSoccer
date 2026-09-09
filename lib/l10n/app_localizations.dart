@@ -1712,6 +1712,42 @@ abstract class AppLocalizations {
   /// **'로그인'**
   String get loginAppBarTitle;
 
+  /// No description provided for @loginErrorAccountDeleted.
+  ///
+  /// In ko, this message translates to:
+  /// **'탈퇴한 계정입니다. {days}일 후에 다시 가입할 수 있습니다.'**
+  String loginErrorAccountDeleted(int days);
+
+  /// No description provided for @loginErrorNetwork.
+  ///
+  /// In ko, this message translates to:
+  /// **'네트워크 오류입니다. 연결을 확인한 후 다시 시도해주세요.'**
+  String get loginErrorNetwork;
+
+  /// No description provided for @loginErrorProfileLoadFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그인은 완료되었지만 프로필을 불러오지 못했습니다.'**
+  String get loginErrorProfileLoadFailed;
+
+  /// No description provided for @loginErrorTimeout.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그인 시간이 초과되었습니다. 다시 시도해주세요.'**
+  String get loginErrorTimeout;
+
+  /// No description provided for @loginErrorTryAgain.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그인에 실패했습니다. 다시 시도해주세요.'**
+  String get loginErrorTryAgain;
+
+  /// No description provided for @loginGuestButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'게스트로 시작하기'**
+  String get loginGuestButton;
+
   /// No description provided for @loginGoogle.
   ///
   /// In ko, this message translates to:
@@ -2540,6 +2576,24 @@ abstract class AppLocalizations {
   /// **'{seconds}초 후 자동으로 홈으로 이동합니다.'**
   String signupCompleteCountdown(int seconds);
 
+  /// No description provided for @signupCompleteBenefitAdFree.
+  ///
+  /// In ko, this message translates to:
+  /// **'광고 없는 이용'**
+  String get signupCompleteBenefitAdFree;
+
+  /// No description provided for @signupCompleteBenefitComboReports.
+  ///
+  /// In ko, this message translates to:
+  /// **'다경기 분석 리포트'**
+  String get signupCompleteBenefitComboReports;
+
+  /// No description provided for @signupCompleteBenefitSoccerBaseball.
+  ///
+  /// In ko, this message translates to:
+  /// **'축구·야구 프리미엄 분석'**
+  String get signupCompleteBenefitSoccerBaseball;
+
   /// No description provided for @signupCompleteFreeBenefit1.
   ///
   /// In ko, this message translates to:
@@ -2558,11 +2612,23 @@ abstract class AppLocalizations {
   /// **'무료 혜택'**
   String get signupCompleteFreeBenefitsHeader;
 
+  /// No description provided for @signupCompleteHomeCountdown.
+  ///
+  /// In ko, this message translates to:
+  /// **'{seconds}초 후 홈으로 이동합니다'**
+  String signupCompleteHomeCountdown(int seconds);
+
   /// No description provided for @signupCompletePremiumUpgrade.
   ///
   /// In ko, this message translates to:
   /// **'프리미엄 업그레이드'**
   String get signupCompletePremiumUpgrade;
+
+  /// No description provided for @signupCompleteStartButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금 시작하기'**
+  String get signupCompleteStartButton;
 
   /// No description provided for @signupCompleteStartPrompt.
   ///
@@ -2575,6 +2641,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'48시간 프리미엄 체험이 시작되었습니다.'**
   String get signupCompleteSubtitle;
+
+  /// No description provided for @signupCompleteTrialSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'48시간 무료 체험이 시작되었습니다'**
+  String get signupCompleteTrialSubtitle;
 
   /// No description provided for @signupCompleteSuccessToast.
   ///
@@ -2593,6 +2665,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'48시간 프리미엄 무료 체험이 시작되었습니다!'**
   String get signupCompleteTrialBanner;
+
+  /// No description provided for @signupCompleteWelcomeTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'트렌드사커에 오신 것을 환영합니다'**
+  String get signupCompleteWelcomeTitle;
 
   /// No description provided for @signupErrorProcessing.
   ///
@@ -2630,6 +2708,60 @@ abstract class AppLocalizations {
   /// **'가입하기'**
   String get signupSubmit;
 
+  /// No description provided for @signupTermsAppBarTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'약관'**
+  String get signupTermsAppBarTitle;
+
+  /// No description provided for @signupTermsConsentMarketing.
+  ///
+  /// In ko, this message translates to:
+  /// **'[선택] 마케팅 정보 수신'**
+  String get signupTermsConsentMarketing;
+
+  /// No description provided for @signupTermsConsentPrivacy.
+  ///
+  /// In ko, this message translates to:
+  /// **'[필수] 개인정보처리방침'**
+  String get signupTermsConsentPrivacy;
+
+  /// No description provided for @signupTermsConsentTerms.
+  ///
+  /// In ko, this message translates to:
+  /// **'[필수] 이용약관'**
+  String get signupTermsConsentTerms;
+
+  /// No description provided for @signupTermsContinueButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'계속하기'**
+  String get signupTermsContinueButton;
+
+  /// No description provided for @signupTermsExitDialogLeave.
+  ///
+  /// In ko, this message translates to:
+  /// **'나가기'**
+  String get signupTermsExitDialogLeave;
+
+  /// No description provided for @signupTermsExitDialogMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'약관에 동의하지 않으면 계정이 활성화되지 않습니다.'**
+  String get signupTermsExitDialogMessage;
+
+  /// No description provided for @signupTermsExitDialogStay.
+  ///
+  /// In ko, this message translates to:
+  /// **'돌아가기'**
+  String get signupTermsExitDialogStay;
+
+  /// No description provided for @signupTermsExitDialogTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'가입을 취소할까요?'**
+  String get signupTermsExitDialogTitle;
+
   /// No description provided for @signupTermsHeadingLine1.
   ///
   /// In ko, this message translates to:
@@ -2642,11 +2774,23 @@ abstract class AppLocalizations {
   /// **'약관에 동의해주세요.'**
   String get signupTermsHeadingLine2;
 
+  /// No description provided for @signupTermsHeadline.
+  ///
+  /// In ko, this message translates to:
+  /// **'가입을 시작하려면\n약관에 동의해주세요'**
+  String get signupTermsHeadline;
+
   /// No description provided for @signupTermsHint.
   ///
   /// In ko, this message translates to:
   /// **'필수 항목에 동의하시면 가입이 완료됩니다.'**
   String get signupTermsHint;
+
+  /// No description provided for @signupTermsSubmitErrorToast.
+  ///
+  /// In ko, this message translates to:
+  /// **'가입을 완료할 수 없습니다. 다시 시도해주세요.'**
+  String get signupTermsSubmitErrorToast;
 
   /// No description provided for @signupTermsTitle.
   ///

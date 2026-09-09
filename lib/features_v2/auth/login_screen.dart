@@ -42,6 +42,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _signIn(Future<void> Function() login) async {
     if (_busy) return;
     setState(() => _busy = true);
+    final l10n = AppLocalizations.of(context)!;
     try {
       await login();
       if (!mounted) return;
@@ -59,16 +60,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final causeText = e.cause?.toString() ?? '';
       if (causeText.contains('COOLDOWN_ACTIVE')) {
         final days = int.tryParse(causeText.split(':').last.trim()) ?? 7;
-        _showErrorToast(
-          'This account was deleted. You can sign up again in $days days.',
-        );
+        _showErrorToast(l10n.loginErrorAccountDeleted(days));
         return;
       }
-      _showErrorToast(_messageForAuthFailure(e.reason));
+      _showErrorToast(_messageForAuthFailure(l10n, e.reason));
     } on Object catch (e) {
       debugPrint('[login] unexpected: $e');
       if (!mounted) return;
-      _showErrorToast('Sign-in failed. Please try again.');
+      _showErrorToast(l10n.loginErrorTryAgain);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -87,24 +86,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  String _messageForAuthFailure(String reason) => switch (reason) {
-        'timeout' => 'Sign-in timed out. Please try again.',
-        'network_error' =>
-          'Network error. Check your connection and try again.',
-        'api_error' =>
-          // TODO(diagnostic): remove code from user-facing copy once the cause is found
-          'Sign-in was rejected by the server. (api_error)',
-        'sdk_error' =>
-          // TODO(diagnostic): remove code from user-facing copy once the cause is found
-          'The sign-in provider reported an error. (sdk_error)',
-        'token_null' =>
-          // TODO(diagnostic): remove code from user-facing copy once the cause is found
-          'No sign-in token was returned. (token_null)',
-        'profile_load_failed' =>
-          // TODO(diagnostic): remove code from user-facing copy once the cause is found
-          'Signed in, but the profile could not load. (profile_load_failed)',
-        _ => 'Sign-in failed. Please try again.',
-      };
+  String _messageForAuthFailure(AppLocalizations l10n, String reason) {
+    switch (reason) {
+      case 'timeout':
+        debugPrint('[login] auth failure: timeout');
+        return l10n.loginErrorTimeout;
+      case 'network_error':
+        debugPrint('[login] auth failure: network_error');
+        return l10n.loginErrorNetwork;
+      case 'api_error':
+        debugPrint('[login] auth failure: api_error');
+        return l10n.loginErrorTryAgain;
+      case 'sdk_error':
+        debugPrint('[login] auth failure: sdk_error');
+        return l10n.loginErrorTryAgain;
+      case 'token_null':
+        debugPrint('[login] auth failure: token_null');
+        return l10n.loginErrorTryAgain;
+      case 'profile_load_failed':
+        debugPrint('[login] auth failure: profile_load_failed');
+        return l10n.loginErrorProfileLoadFailed;
+      default:
+        debugPrint('[login] auth failure: $reason');
+        return l10n.loginErrorTryAgain;
+    }
+  }
 
   VoidCallback? get _googleHandler =>
       _busy ? null : () => _signIn(ref.read(authProvider).loginWithGoogle);
@@ -159,7 +165,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const TsLogo(TsLogoType.vertical, height: 134),
                   const SizedBox(height: TsSpacing.xxxl),
                   Text(
-                    'Better Data,\nSmarter Analysis Reports,\nFor Your Choice.',
+                    l10n.loginTitle,
                     style: TsType.displayLg.copyWith(color: c.textPrimary),
                     textAlign: TextAlign.center,
                   ),
@@ -174,7 +180,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TsButton(
-                    label: 'Continue with Google',
+                    label: l10n.loginGoogle,
                     style: TsButtonStyle.secondary,
                     size: TsButtonSize.large,
                     iconWidget: const TsSocialSymbol(
@@ -186,7 +192,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: TsSpacing.md),
                   TsButton(
-                    label: 'Continue with Naver',
+                    label: l10n.loginNaver,
                     style: TsButtonStyle.secondary,
                     size: TsButtonSize.large,
                     iconWidget: const TsSocialSymbol(
@@ -198,7 +204,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: TsSpacing.md),
                   TsButton(
-                    label: 'Continue as guest',
+                    label: l10n.loginGuestButton,
                     style: TsButtonStyle.ghost,
                     size: TsButtonSize.large,
                     onPressed: _guestHandler,

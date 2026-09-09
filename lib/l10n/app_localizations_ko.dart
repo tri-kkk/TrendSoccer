@@ -864,6 +864,26 @@ class AppLocalizationsKo extends AppLocalizations {
   String get loginAppBarTitle => '로그인';
 
   @override
+  String loginErrorAccountDeleted(int days) {
+    return '탈퇴한 계정입니다. $days일 후에 다시 가입할 수 있습니다.';
+  }
+
+  @override
+  String get loginErrorNetwork => '네트워크 오류입니다. 연결을 확인한 후 다시 시도해주세요.';
+
+  @override
+  String get loginErrorProfileLoadFailed => '로그인은 완료되었지만 프로필을 불러오지 못했습니다.';
+
+  @override
+  String get loginErrorTimeout => '로그인 시간이 초과되었습니다. 다시 시도해주세요.';
+
+  @override
+  String get loginErrorTryAgain => '로그인에 실패했습니다. 다시 시도해주세요.';
+
+  @override
+  String get loginGuestButton => '게스트로 시작하기';
+
+  @override
   String get loginGoogle => 'Google로 시작하기';
 
   @override
@@ -1304,6 +1324,15 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get signupCompleteBenefitAdFree => '광고 없는 이용';
+
+  @override
+  String get signupCompleteBenefitComboReports => '다경기 분석 리포트';
+
+  @override
+  String get signupCompleteBenefitSoccerBaseball => '축구·야구 프리미엄 분석';
+
+  @override
   String get signupCompleteFreeBenefit1 => '경기 시작 2시간 전 분석 오픈';
 
   @override
@@ -1313,13 +1342,24 @@ class AppLocalizationsKo extends AppLocalizations {
   String get signupCompleteFreeBenefitsHeader => '무료 혜택';
 
   @override
+  String signupCompleteHomeCountdown(int seconds) {
+    return '$seconds초 후 홈으로 이동합니다';
+  }
+
+  @override
   String get signupCompletePremiumUpgrade => '프리미엄 업그레이드';
+
+  @override
+  String get signupCompleteStartButton => '지금 시작하기';
 
   @override
   String get signupCompleteStartPrompt => '지금 트렌드사커를 시작해 보세요.';
 
   @override
   String get signupCompleteSubtitle => '48시간 프리미엄 체험이 시작되었습니다.';
+
+  @override
+  String get signupCompleteTrialSubtitle => '48시간 무료 체험이 시작되었습니다';
 
   @override
   String get signupCompleteSuccessToast => '회원가입 완료! 프리미엄 체험을 시작합니다.';
@@ -1329,6 +1369,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get signupCompleteTrialBanner => '48시간 프리미엄 무료 체험이 시작되었습니다!';
+
+  @override
+  String get signupCompleteWelcomeTitle => '트렌드사커에 오신 것을 환영합니다';
 
   @override
   String get signupErrorProcessing => '가입 처리 중 오류가 발생했습니다.';
@@ -1349,13 +1392,46 @@ class AppLocalizationsKo extends AppLocalizations {
   String get signupSubmit => '가입하기';
 
   @override
+  String get signupTermsAppBarTitle => '약관';
+
+  @override
+  String get signupTermsConsentMarketing => '[선택] 마케팅 정보 수신';
+
+  @override
+  String get signupTermsConsentPrivacy => '[필수] 개인정보처리방침';
+
+  @override
+  String get signupTermsConsentTerms => '[필수] 이용약관';
+
+  @override
+  String get signupTermsContinueButton => '계속하기';
+
+  @override
+  String get signupTermsExitDialogLeave => '나가기';
+
+  @override
+  String get signupTermsExitDialogMessage => '약관에 동의하지 않으면 계정이 활성화되지 않습니다.';
+
+  @override
+  String get signupTermsExitDialogStay => '돌아가기';
+
+  @override
+  String get signupTermsExitDialogTitle => '가입을 취소할까요?';
+
+  @override
   String get signupTermsHeadingLine1 => '서비스 이용을 위해';
 
   @override
   String get signupTermsHeadingLine2 => '약관에 동의해주세요.';
 
   @override
+  String get signupTermsHeadline => '가입을 시작하려면\n약관에 동의해주세요';
+
+  @override
   String get signupTermsHint => '필수 항목에 동의하시면 가입이 완료됩니다.';
+
+  @override
+  String get signupTermsSubmitErrorToast => '가입을 완료할 수 없습니다. 다시 시도해주세요.';
 
   @override
   String get signupTermsTitle => '약관 동의';

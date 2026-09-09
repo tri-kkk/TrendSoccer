@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
 import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
@@ -71,6 +72,7 @@ class _SignupCompleteScreenState extends State<SignupCompleteScreen> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
+    final l10n = AppLocalizations.of(context)!;
 
     return PopScope(
       canPop: false,
@@ -103,13 +105,13 @@ class _SignupCompleteScreenState extends State<SignupCompleteScreen> {
                         ),
                         const SizedBox(height: TsSpacing.lg),
                         Text(
-                          'Welcome to TrendSoccer',
+                          l10n.signupCompleteWelcomeTitle,
                           style: TsType.h1.copyWith(color: c.textPrimary),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: TsSpacing.lg),
                         Text(
-                          'Your 48-hour free trial has started',
+                          l10n.signupCompleteTrialSubtitle,
                           style: TsType.bodyLMedium.copyWith(
                             color: c.textSecondary,
                           ),
@@ -127,15 +129,18 @@ class _SignupCompleteScreenState extends State<SignupCompleteScreen> {
                             children: [
                               _benefitRow(
                                 c,
-                                'Soccer and baseball premium analysis',
+                                l10n.signupCompleteBenefitSoccerBaseball,
                               ),
                               const SizedBox(height: TsSpacing.md),
                               _benefitRow(
                                 c,
-                                'Multi-match combination reports',
+                                l10n.signupCompleteBenefitComboReports,
                               ),
                               const SizedBox(height: TsSpacing.md),
-                              _benefitRow(c, 'Ad-free experience'),
+                              _benefitRow(
+                                c,
+                                l10n.signupCompleteBenefitAdFree,
+                              ),
                             ],
                           ),
                         ),
@@ -153,7 +158,7 @@ class _SignupCompleteScreenState extends State<SignupCompleteScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     TsButton(
-                      label: 'Start now',
+                      label: l10n.signupCompleteStartButton,
                       style: TsButtonStyle.primary,
                       size: TsButtonSize.large,
                       expand: true,
@@ -161,7 +166,7 @@ class _SignupCompleteScreenState extends State<SignupCompleteScreen> {
                     ),
                     const SizedBox(height: TsSpacing.sm),
                     Text(
-                      'Moving to home in ${_seconds}s',
+                      l10n.signupCompleteHomeCountdown(_seconds),
                       style: TsType.labelSMedium.copyWith(
                         color: c.textTertiary,
                       ),
