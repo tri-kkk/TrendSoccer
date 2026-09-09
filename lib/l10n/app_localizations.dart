@@ -251,7 +251,7 @@ abstract class AppLocalizations {
   /// No description provided for @alarmSecondHalf.
   ///
   /// In ko, this message translates to:
-  /// **'후반전 시작'**
+  /// **'후반전'**
   String get alarmSecondHalf;
 
   /// No description provided for @analysisAiAnalyzing.
@@ -1523,7 +1523,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpCenterMessage.
   ///
   /// In ko, this message translates to:
-  /// **'메세지'**
+  /// **'메시지'**
   String get helpCenterMessage;
 
   /// No description provided for @helpCenterName.
@@ -1573,6 +1573,24 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'문의하기'**
   String get helpCenterTitle;
+
+  /// No description provided for @helpScreenIntro.
+  ///
+  /// In ko, this message translates to:
+  /// **'문의 내용을 알려주세요. 보통 영업일 기준 1일 이내에 답변드립니다.'**
+  String get helpScreenIntro;
+
+  /// No description provided for @helpInquirySentToast.
+  ///
+  /// In ko, this message translates to:
+  /// **'문의가 전송되었습니다.'**
+  String get helpInquirySentToast;
+
+  /// No description provided for @helpEmailInvalid.
+  ///
+  /// In ko, this message translates to:
+  /// **'올바른 이메일 주소를 입력해주세요'**
+  String get helpEmailInvalid;
 
   /// No description provided for @labelAway.
   ///
@@ -1916,12 +1934,6 @@ abstract class AppLocalizations {
   /// **'매치 프리뷰'**
   String get menuMatchPreview;
 
-  /// No description provided for @menuNotification.
-  ///
-  /// In ko, this message translates to:
-  /// **'알림'**
-  String get menuNotification;
-
   /// No description provided for @menuNotifications.
   ///
   /// In ko, this message translates to:
@@ -2204,6 +2216,24 @@ abstract class AppLocalizations {
   /// **'일반'**
   String get notificationGeneral;
 
+  /// No description provided for @notificationSettingsAnnouncements.
+  ///
+  /// In ko, this message translates to:
+  /// **'공지'**
+  String get notificationSettingsAnnouncements;
+
+  /// No description provided for @notificationSettingsAppAlerts.
+  ///
+  /// In ko, this message translates to:
+  /// **'앱 알림'**
+  String get notificationSettingsAppAlerts;
+
+  /// No description provided for @notificationSettingsSportSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금부터 알림을 켠 경기에 적용됩니다.'**
+  String get notificationSettingsSportSubtitle;
+
   /// No description provided for @notificationAppAlerts.
   ///
   /// In ko, this message translates to:
@@ -2227,12 +2257,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'하프타임'**
   String get alarmHalftime;
-
-  /// No description provided for @alarmSecondHalfStart.
-  ///
-  /// In ko, this message translates to:
-  /// **'후반시작'**
-  String get alarmSecondHalfStart;
 
   /// No description provided for @alarmFulltime.
   ///

@@ -12,6 +12,7 @@ import 'package:trendsoccer/design_system/widgets/ts_app_bar.dart';
 import 'package:trendsoccer/design_system/widgets/ts_button.dart';
 import 'package:trendsoccer/design_system/widgets/ts_text_field.dart';
 import 'package:trendsoccer/design_system/widgets/ts_toast.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 
 class HelpScreen extends ConsumerStatefulWidget {
   const HelpScreen({super.key});
@@ -70,7 +71,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
     );
   }
 
-  bool _validate() {
+  bool _validate(AppLocalizations l10n) {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final subject = _subjectController.text.trim();
@@ -82,18 +83,18 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
     String? messageError;
 
     if (name.isEmpty) {
-      nameError = 'This field is required';
+      nameError = l10n.formRequired;
     }
     if (email.isEmpty) {
-      emailError = 'This field is required';
+      emailError = l10n.formRequired;
     } else if (!_emailPattern.hasMatch(email)) {
-      emailError = 'Enter a valid email address';
+      emailError = l10n.helpEmailInvalid;
     }
     if (subject.isEmpty) {
-      subjectError = 'This field is required';
+      subjectError = l10n.formRequired;
     }
     if (message.isEmpty) {
-      messageError = 'This field is required';
+      messageError = l10n.formRequired;
     }
 
     setState(() {
@@ -111,7 +112,8 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
 
   Future<void> _submit() async {
     if (_isSending) return;
-    if (!_validate()) return;
+    final l10n = AppLocalizations.of(context)!;
+    if (!_validate(l10n)) return;
 
     setState(() => _isSending = true);
 
@@ -136,7 +138,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
           _subjectError = null;
           _messageError = null;
         });
-        _showToast('Your inquiry has been sent.', TsToastType.success);
+        _showToast(l10n.helpInquirySentToast, TsToastType.success);
         return;
       }
 
@@ -151,12 +153,13 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: c.canvas,
       appBar: TsAppBar(
         type: TsAppBarType.back,
-        title: 'Help',
+        title: l10n.menuHelp,
         onBack: () => context.go('/menu'),
       ),
       body: SafeArea(
@@ -179,14 +182,14 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
-                          'Tell us what you need help with. We usually reply within one business day.',
+                          l10n.helpScreenIntro,
                           style: TsType.bodyLMedium.copyWith(
                             color: c.textSecondary,
                           ),
                         ),
                         const SizedBox(height: TsSpacing.lg),
                         TsTextField(
-                          label: 'Name',
+                          label: l10n.helpCenterName,
                           controller: _nameController,
                           errorText: _nameError,
                           onChanged: (_) {
@@ -197,7 +200,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                         ),
                         const SizedBox(height: TsSpacing.lg),
                         TsTextField(
-                          label: 'Email',
+                          label: l10n.helpCenterEmail,
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           errorText: _emailError,
@@ -209,7 +212,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                         ),
                         const SizedBox(height: TsSpacing.lg),
                         TsTextField(
-                          label: 'Subject',
+                          label: l10n.helpCenterSubject,
                           controller: _subjectController,
                           errorText: _subjectError,
                           onChanged: (_) {
@@ -220,7 +223,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
                         ),
                         const SizedBox(height: TsSpacing.lg),
                         TsTextField(
-                          label: 'Message',
+                          label: l10n.helpCenterMessage,
                           controller: _messageController,
                           multiline: true,
                           errorText: _messageError,
@@ -239,7 +242,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
             Container(
               padding: const EdgeInsets.all(TsSpacing.lg),
               child: TsButton(
-                label: 'Send inquiry',
+                label: l10n.helpCenterSend,
                 style: TsButtonStyle.primary,
                 size: TsButtonSize.large,
                 expand: true,

@@ -100,7 +100,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get alarmSecondHalf => '2nd Half Start';
+  String get alarmSecondHalf => 'Second half';
 
   @override
   String get analysisAiAnalyzing => 'AI analysis in progress...';
@@ -817,6 +817,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get helpCenterTitle => 'Help Center';
 
   @override
+  String get helpScreenIntro =>
+      'Tell us what you need help with. We usually reply within one business day.';
+
+  @override
+  String get helpInquirySentToast => 'Your inquiry has been sent.';
+
+  @override
+  String get helpEmailInvalid => 'Enter a valid email address';
+
+  @override
   String get labelAway => 'Away';
 
   @override
@@ -1001,9 +1011,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuMatchPreview => 'Match Preview';
 
   @override
-  String get menuNotification => 'Notification';
-
-  @override
   String get menuNotifications => 'Notifications';
 
   @override
@@ -1161,6 +1168,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationGeneral => 'General';
 
   @override
+  String get notificationSettingsAnnouncements => 'Announcements';
+
+  @override
+  String get notificationSettingsAppAlerts => 'App alerts';
+
+  @override
+  String get notificationSettingsSportSubtitle =>
+      'Applies to matches you turn alerts on for from now.';
+
+  @override
   String get notificationAppAlerts => 'App Notifications';
 
   @override
@@ -1171,9 +1188,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get alarmHalftime => 'Half-time';
-
-  @override
-  String get alarmSecondHalfStart => '2nd Half Start';
 
   @override
   String get alarmFulltime => 'Full-time';

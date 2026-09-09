@@ -95,7 +95,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get alarmSecondHalf => '후반전 시작';
+  String get alarmSecondHalf => '후반전';
 
   @override
   String get analysisAiAnalyzing => 'AI 분석 중...';
@@ -766,7 +766,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get helpCenterIntro => '문의 사항을 남겨주시면 이메일로 답변드리겠습니다.';
 
   @override
-  String get helpCenterMessage => '메세지';
+  String get helpCenterMessage => '메시지';
 
   @override
   String get helpCenterName => '이름';
@@ -791,6 +791,15 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpCenterTitle => '문의하기';
+
+  @override
+  String get helpScreenIntro => '문의 내용을 알려주세요. 보통 영업일 기준 1일 이내에 답변드립니다.';
+
+  @override
+  String get helpInquirySentToast => '문의가 전송되었습니다.';
+
+  @override
+  String get helpEmailInvalid => '올바른 이메일 주소를 입력해주세요';
 
   @override
   String get labelAway => '원정';
@@ -972,9 +981,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get menuMatchPreview => '매치 프리뷰';
 
   @override
-  String get menuNotification => '알림';
-
-  @override
   String get menuNotifications => '알림';
 
   @override
@@ -1128,6 +1134,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get notificationGeneral => '일반';
 
   @override
+  String get notificationSettingsAnnouncements => '공지';
+
+  @override
+  String get notificationSettingsAppAlerts => '앱 알림';
+
+  @override
+  String get notificationSettingsSportSubtitle => '지금부터 알림을 켠 경기에 적용됩니다.';
+
+  @override
   String get notificationAppAlerts => '앱 알림';
 
   @override
@@ -1138,9 +1153,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get alarmHalftime => '하프타임';
-
-  @override
-  String get alarmSecondHalfStart => '후반시작';
 
   @override
   String get alarmFulltime => '풀 타임';

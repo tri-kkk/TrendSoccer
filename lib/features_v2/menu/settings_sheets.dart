@@ -10,6 +10,7 @@ import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
 import 'package:trendsoccer/design_system/widgets/ts_sheet_option_row.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 
 Future<void> showLanguageSheet(BuildContext context) {
   final c = Theme.of(context).extension<TsThemeColors>()!;
@@ -41,17 +42,18 @@ class _LanguageSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selected = ref.watch(languageProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return _SettingsSheetShell(
-      title: 'Language',
+      title: l10n.menuLanguage,
       children: [
         TsSheetOptionRow(
-          label: 'English',
+          label: l10n.languageEnglish,
           selected: selected == AppLanguage.en,
           onTap: () => _selectLanguage(context, ref, selected, AppLanguage.en),
         ),
         TsSheetOptionRow(
-          label: '한국어',
+          label: l10n.languageKorean,
           selected: selected == AppLanguage.ko,
           onTap: () => _selectLanguage(context, ref, selected, AppLanguage.ko),
         ),
@@ -77,22 +79,23 @@ class _ThemeSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selected = ref.watch(themeModeProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return _SettingsSheetShell(
-      title: 'Theme',
+      title: l10n.menuTheme,
       children: [
         TsSheetOptionRow(
-          label: 'System',
+          label: l10n.menuThemeSystem,
           selected: selected == ThemeMode.system,
           onTap: () => _selectTheme(context, ref, selected, ThemeMode.system),
         ),
         TsSheetOptionRow(
-          label: 'Light',
+          label: l10n.menuThemeLight,
           selected: selected == ThemeMode.light,
           onTap: () => _selectTheme(context, ref, selected, ThemeMode.light),
         ),
         TsSheetOptionRow(
-          label: 'Dark',
+          label: l10n.menuThemeDark,
           selected: selected == ThemeMode.dark,
           onTap: () => _selectTheme(context, ref, selected, ThemeMode.dark),
         ),

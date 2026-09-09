@@ -12,6 +12,7 @@ import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/widgets/ts_app_bar.dart';
 import 'package:trendsoccer/design_system/widgets/ts_section_header.dart';
 import 'package:trendsoccer/design_system/widgets/ts_settings_toggle_row.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 
 class NotificationSettingsScreen extends ConsumerStatefulWidget {
   const NotificationSettingsScreen({super.key});
@@ -23,9 +24,6 @@ class NotificationSettingsScreen extends ConsumerStatefulWidget {
 
 class _NotificationSettingsScreenState
     extends ConsumerState<NotificationSettingsScreen> {
-  static const _sportSubtitle =
-      'Applies to matches you turn alerts on for from now.';
-
   late final Map<String, bool> _values;
   final Set<String> _topicTogglesInFlight = {};
 
@@ -87,12 +85,13 @@ class _NotificationSettingsScreenState
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: c.canvas,
       appBar: TsAppBar(
         type: TsAppBarType.back,
-        title: 'Notifications',
+        title: l10n.menuNotifications,
         onBack: () => context.go('/menu'),
       ),
       body: SingleChildScrollView(
@@ -105,61 +104,76 @@ class _NotificationSettingsScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const TsSectionHeader(title: 'General'),
+            TsSectionHeader(title: l10n.notificationGeneral),
             const SizedBox(height: TsSpacing.lg),
             _settingsGroup(
               c,
               [
                 _topicRow(
-                  label: 'App alerts',
+                  label: l10n.notificationSettingsAppAlerts,
                   prefKey: FCMService.prefAppGeneral,
                   baseTopic: FCMService.topicAppGeneral,
                 ),
                 _topicRow(
-                  label: 'Announcements',
+                  label: l10n.notificationSettingsAnnouncements,
                   prefKey: FCMService.prefMatchEvents,
                   baseTopic: FCMService.topicMatchEvents,
                 ),
                 _topicRow(
-                  label: 'Marketing',
+                  label: l10n.notificationMarketing,
                   prefKey: FCMService.prefMarketing,
                   baseTopic: FCMService.topicMarketing,
                 ),
               ],
             ),
             const SizedBox(height: TsSpacing.lg),
-            const TsSectionHeader(
-              title: 'Soccer',
-              subtitle: _sportSubtitle,
+            TsSectionHeader(
+              title: l10n.feedNewsSportSoccer,
+              subtitle: l10n.notificationSettingsSportSubtitle,
             ),
             const SizedBox(height: TsSpacing.lg),
             _settingsGroup(
               c,
               [
-                _prefRow('Kickoff', AlarmPreferenceKeys.soccerKickoff),
-                _prefRow('Halftime', AlarmPreferenceKeys.soccerHalftime),
-                _prefRow('Second half', AlarmPreferenceKeys.soccerSecondHalf),
-                _prefRow('Full time', AlarmPreferenceKeys.soccerFulltime),
-                _prefRow('Goal', AlarmPreferenceKeys.soccerGoal),
-                _prefRow('Substitution', AlarmPreferenceKeys.soccerSubstitution),
-                _prefRow('Yellow card', AlarmPreferenceKeys.soccerYellowCard),
-                _prefRow('Red card', AlarmPreferenceKeys.soccerRedCard),
+                _prefRow(l10n.alarmKickoff, AlarmPreferenceKeys.soccerKickoff),
+                _prefRow(l10n.alarmHalftime, AlarmPreferenceKeys.soccerHalftime),
+                _prefRow(
+                  l10n.alarmSecondHalf,
+                  AlarmPreferenceKeys.soccerSecondHalf,
+                ),
+                _prefRow(l10n.alarmFulltime, AlarmPreferenceKeys.soccerFulltime),
+                _prefRow(l10n.alarmGoal, AlarmPreferenceKeys.soccerGoal),
+                _prefRow(
+                  l10n.alarmSubstitution,
+                  AlarmPreferenceKeys.soccerSubstitution,
+                ),
+                _prefRow(
+                  l10n.alarmYellowCard,
+                  AlarmPreferenceKeys.soccerYellowCard,
+                ),
+                _prefRow(l10n.alarmRedCard, AlarmPreferenceKeys.soccerRedCard),
               ],
             ),
             const SizedBox(height: TsSpacing.lg),
-            const TsSectionHeader(
-              title: 'Baseball',
-              subtitle: _sportSubtitle,
+            TsSectionHeader(
+              title: l10n.feedNewsSportBaseball,
+              subtitle: l10n.notificationSettingsSportSubtitle,
             ),
             const SizedBox(height: TsSpacing.lg),
             _settingsGroup(
               c,
               [
-                _prefRow('Game start', AlarmPreferenceKeys.baseballFirstPitch),
-                _prefRow('Score', AlarmPreferenceKeys.baseballScore),
-                _prefRow('Home run', AlarmPreferenceKeys.baseballHomerun),
-                _prefRow('Inning end', AlarmPreferenceKeys.baseballInningChange),
-                _prefRow('Game end', AlarmPreferenceKeys.baseballGameEnd),
+                _prefRow(
+                  l10n.alarmGameStart,
+                  AlarmPreferenceKeys.baseballFirstPitch,
+                ),
+                _prefRow(l10n.alarmScore, AlarmPreferenceKeys.baseballScore),
+                _prefRow(l10n.alarmHomerun, AlarmPreferenceKeys.baseballHomerun),
+                _prefRow(
+                  l10n.alarmInningEnd,
+                  AlarmPreferenceKeys.baseballInningChange,
+                ),
+                _prefRow(l10n.alarmGameEnd, AlarmPreferenceKeys.baseballGameEnd),
               ],
             ),
           ],
