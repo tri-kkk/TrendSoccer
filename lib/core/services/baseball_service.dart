@@ -36,34 +36,30 @@ class BaseballService {
     Map<String, dynamic>? awayStats,
     required String league,
   }) async {
-    try {
-      final language = _apiLanguage();
-            final body = <String, dynamic>{
-        'matchId': matchId,
-        'homeTeam': homeTeam,
-        'awayTeam': awayTeam,
-        'homePitcher': homePitcher,
-        'awayPitcher': awayPitcher,
-        'homeStats': homeStats ?? <String, dynamic>{},
-        'awayStats': awayStats ?? <String, dynamic>{},
-        'league': league,
-        'language': language,
-      };
-            final response = await _dio.post<dynamic>(
-        '/api/baseball/pitcher-analysis',
-        data: body,
-        options: Options(
-          sendTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
-        ),
-      );
-      final data = response.data;
-            if (data is Map<String, dynamic>) return data;
-      if (data is Map) return Map<String, dynamic>.from(data);
-      return {};
-    } catch (e) {
-            return {};
-    }
+    final language = _apiLanguage();
+    final body = <String, dynamic>{
+      'matchId': matchId,
+      'homeTeam': homeTeam,
+      'awayTeam': awayTeam,
+      'homePitcher': homePitcher,
+      'awayPitcher': awayPitcher,
+      'homeStats': homeStats ?? <String, dynamic>{},
+      'awayStats': awayStats ?? <String, dynamic>{},
+      'league': league,
+      'language': language,
+    };
+    final response = await _dio.post<dynamic>(
+      '/api/baseball/pitcher-analysis',
+      data: body,
+      options: Options(
+        sendTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+      ),
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    return {};
   }
 
   Future<List<BaseballAnalysisCard>> getMatches({
@@ -128,21 +124,17 @@ class BaseballService {
     required int homeTeamId,
     required int awayTeamId,
   }) async {
-    try {
-      final response = await _dio.get<dynamic>(
-        '/api/baseball/h2h',
-        queryParameters: <String, dynamic>{
-          'homeTeamId': homeTeamId,
-          'awayTeamId': awayTeamId,
-        },
-      );
-            final data = response.data;
-      if (data is Map<String, dynamic>) return data;
-      if (data is Map) return Map<String, dynamic>.from(data);
-      return {};
-    } catch (e) {
-            return {};
-    }
+    final response = await _dio.get<dynamic>(
+      '/api/baseball/h2h',
+      queryParameters: <String, dynamic>{
+        'homeTeamId': homeTeamId,
+        'awayTeamId': awayTeamId,
+      },
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    return {};
   }
 
   Future<Map<String, dynamic>> getBaseballPredict({
@@ -151,30 +143,26 @@ class BaseballService {
     required String awayTeam,
     bool quick = false,
   }) async {
-    try {
-      final language = _apiLanguage();
-      final body = <String, dynamic>{
-        'matchId': matchId,
-        'homeTeam': homeTeam,
-        'awayTeam': awayTeam,
-        'quick': quick,
-        'language': language,
-      };
-      final response = await _dio.post<dynamic>(
-        '/api/baseball/predict',
-        data: body,
-        options: Options(
-          sendTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
-        ),
-      );
-            final data = response.data;
-      if (data is Map<String, dynamic>) return data;
-      if (data is Map) return Map<String, dynamic>.from(data);
-      return {};
-    } catch (e) {
-            return {};
-    }
+    final language = _apiLanguage();
+    final body = <String, dynamic>{
+      'matchId': matchId,
+      'homeTeam': homeTeam,
+      'awayTeam': awayTeam,
+      'quick': quick,
+      'language': language,
+    };
+    final response = await _dio.post<dynamic>(
+      '/api/baseball/predict',
+      data: body,
+      options: Options(
+        sendTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+      ),
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    return {};
   }
 
   Future<Map<String, dynamic>> getBaseballTeamStats({
@@ -201,64 +189,56 @@ class BaseballService {
     int? homePitcherId,
     int? awayPitcherId,
   }) async {
-    try {
-      final language = _apiLanguage();
-      final queryParameters = <String, String>{
-        'language': language,
-        'matchId': matchId.toString(),
-      };
-      if (homePitcherId != null) {
-        queryParameters['homePitcherId'] = homePitcherId.toString();
-      }
-      if (awayPitcherId != null) {
-        queryParameters['awayPitcherId'] = awayPitcherId.toString();
-      }
-      const path = '/api/baseball/pitcher-stats';
-      final response = await _dio.get<dynamic>(
-        path,
-        queryParameters: queryParameters,
-      );
-      final data = response.data;
-      final map = data is Map<String, dynamic>
-          ? data
-          : data is Map
-              ? Map<String, dynamic>.from(data)
-              : <String, dynamic>{};
-      return map;
-    } catch (e) {
-            return {};
+    final language = _apiLanguage();
+    final queryParameters = <String, String>{
+      'language': language,
+      'matchId': matchId.toString(),
+    };
+    if (homePitcherId != null) {
+      queryParameters['homePitcherId'] = homePitcherId.toString();
     }
+    if (awayPitcherId != null) {
+      queryParameters['awayPitcherId'] = awayPitcherId.toString();
+    }
+    const path = '/api/baseball/pitcher-stats';
+    final response = await _dio.get<dynamic>(
+      path,
+      queryParameters: queryParameters,
+    );
+    final data = response.data;
+    final map = data is Map<String, dynamic>
+        ? data
+        : data is Map
+            ? Map<String, dynamic>.from(data)
+            : <String, dynamic>{};
+    return map;
   }
 
   Future<Map<String, dynamic>?> fetchMlbSeasonStats(
     int pitcherId,
     int season,
   ) async {
-    try {
-      final url =
-          'https://statsapi.mlb.com/api/v1/people/$pitcherId?hydrate=stats(group=[pitching],type=[season],season=$season)';
-            final response = await Dio().get<dynamic>(
-        url,
-        options: Options(
-          receiveTimeout: const Duration(seconds: 5),
-          sendTimeout: const Duration(seconds: 5),
-        ),
-      );
-      final data = response.data;
-      final people = data is Map ? data['people'] : null;
-      final firstPerson = people is List && people.isNotEmpty ? people[0] : null;
-      final stats = firstPerson is Map ? firstPerson['stats'] : null;
-      final firstStat = stats is List && stats.isNotEmpty ? stats[0] : null;
-      final splits = firstStat is Map ? firstStat['splits'] : null;
-      final firstSplit = splits is List && splits.isNotEmpty ? splits[0] : null;
-      final stat = firstSplit is Map ? firstSplit['stat'] : null;
-      if (stat is Map) {
-                return Map<String, dynamic>.from(stat);
-      }
-            return null;
-    } catch (e) {
-            return null;
+    final url =
+        'https://statsapi.mlb.com/api/v1/people/$pitcherId?hydrate=stats(group=[pitching],type=[season],season=$season)';
+    final response = await Dio().get<dynamic>(
+      url,
+      options: Options(
+        receiveTimeout: const Duration(seconds: 5),
+        sendTimeout: const Duration(seconds: 5),
+      ),
+    );
+    final data = response.data;
+    final people = data is Map ? data['people'] : null;
+    final firstPerson = people is List && people.isNotEmpty ? people[0] : null;
+    final stats = firstPerson is Map ? firstPerson['stats'] : null;
+    final firstStat = stats is List && stats.isNotEmpty ? stats[0] : null;
+    final splits = firstStat is Map ? firstStat['splits'] : null;
+    final firstSplit = splits is List && splits.isNotEmpty ? splits[0] : null;
+    final stat = firstSplit is Map ? firstSplit['stat'] : null;
+    if (stat is Map) {
+      return Map<String, dynamic>.from(stat);
     }
+    return null;
   }
 
   Future<Map<String, dynamic>> getKboPitcherStats({
@@ -268,32 +248,28 @@ class BaseballService {
     required String homeTeam,
     required String awayTeam,
   }) async {
-    try {
-      final language = _apiLanguage();
-      const path = '/api/baseball/kbo-pitcher-stats';
-      final queryParameters = <String, String>{
-        'league': league.toLowerCase(),
-        'season': '2026',
-        'homePitcher': homePitcher,
-        'awayPitcher': awayPitcher,
-        'homeTeam': homeTeam,
-        'awayTeam': awayTeam,
-        'language': language,
-      };
-      final response = await _dio.get<dynamic>(
-        path,
-        queryParameters: queryParameters,
-      );
-            final data = response.data;
-      final map = data is Map<String, dynamic>
-          ? data
-          : data is Map
-              ? Map<String, dynamic>.from(data)
-              : <String, dynamic>{};
-      return map;
-    } catch (e) {
-            return {};
-    }
+    final language = _apiLanguage();
+    const path = '/api/baseball/kbo-pitcher-stats';
+    final queryParameters = <String, String>{
+      'league': league.toLowerCase(),
+      'season': '2026',
+      'homePitcher': homePitcher,
+      'awayPitcher': awayPitcher,
+      'homeTeam': homeTeam,
+      'awayTeam': awayTeam,
+      'language': language,
+    };
+    final response = await _dio.get<dynamic>(
+      path,
+      queryParameters: queryParameters,
+    );
+    final data = response.data;
+    final map = data is Map<String, dynamic>
+        ? data
+        : data is Map
+            ? Map<String, dynamic>.from(data)
+            : <String, dynamic>{};
+    return map;
   }
 
   Future<Map<String, dynamic>> getBaseballComboPicks({
