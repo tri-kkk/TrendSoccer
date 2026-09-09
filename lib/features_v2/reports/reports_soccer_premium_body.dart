@@ -31,86 +31,95 @@ class ReportsSoccerPremiumBody extends ConsumerWidget {
     final date = ref.watch(todayDateProvider);
     final picksAsync = ref.watch(premiumPicksProvider(date));
 
-    return picksAsync.when(
-      loading: () => _loadingList(),
-      error: (_, _) => _centeredEmptyList(
-        TsEmptyState(
-          type: TsEmptyType.failure,
-          title: l10n.analysisLoadMatchesFailed,
-          description: l10n.analysisLoadFailed,
-          actionLabel: l10n.retry,
-          onAction: () => ref.invalidate(premiumPicksProvider(date)),
-        ),
-      ),
-      data: (picks) {
-        if (picks.isEmpty) {
-          return _centeredEmptyList(
-            TsEmptyState(
-              title: l10n.reportsPremiumEmptyTitle,
-              description: l10n.reportsPremiumEmptyBody,
-            ),
-          );
-        }
+    Future<void> onRefresh() async {
+      ref.invalidate(premiumPicksProvider(date));
+      await ref.read(premiumPicksProvider(date).future);
+    }
 
-        final filtered =
-            filterReportsPremiumPicksList(picks, selectedLeagueId);
-        if (filtered.isEmpty) {
-          return _centeredEmptyList(
-            TsEmptyState(
-              type: TsEmptyType.withAction,
-              title: l10n.reportsPremiumNoLeagueTitle,
-              description: l10n.reportsPremiumNoLeagueBody,
-              actionLabel: l10n.reportsPremiumViewAll,
-              onAction: headerScope.clearLeagueSelection,
-            ),
-          );
-        }
-
-        return ListView.separated(
-          padding: const EdgeInsets.fromLTRB(
-            TsSpacing.lg,
-            0,
-            TsSpacing.lg,
-            TsSpacing.xl,
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: picksAsync.when(
+        loading: () => _loadingList(),
+        error: (_, _) => _centeredEmptyList(
+          TsEmptyState(
+            type: TsEmptyType.failure,
+            title: l10n.analysisLoadMatchesFailed,
+            description: l10n.analysisLoadFailed,
+            actionLabel: l10n.retry,
+            onAction: () => ref.invalidate(premiumPicksProvider(date)),
           ),
-          itemCount: filtered.length,
-          separatorBuilder: (_, _) => const SizedBox(height: TsSpacing.sm),
-          itemBuilder: (context, index) {
-            final card = filtered[index];
-            final match = card.match;
-            final kickoffLocal =
-                soccerAnalysisKickoffLocal(card) ?? DateTime.now();
-            final leagueId = leagueIdForCard(match.league);
-            final pickLabel = _premiumPickLabel(context, card);
-            return TsMatchCard(
-              leagueId: leagueId,
-              leagueLabel: reportsPremiumLeagueLabel(context, match.league),
-              kickoffLabel: reportsAnalysisKickoffLabel(locale, kickoffLocal),
-              homeTeam: localizedTeamName(
-                context,
-                match.homeTeam.name,
-                match.homeTeam.nameKo,
-              ),
-              awayTeam: localizedTeamName(
-                context,
-                match.awayTeam.name,
-                match.awayTeam.nameKo,
-              ),
-              homeEmblemUrl: match.homeTeam.logo,
-              awayEmblemUrl: match.awayTeam.logo,
-              density: TsMatchCardDensity.list,
-              hasAnalysis: false,
-              pickLabel: pickLabel,
-              probabilityLabel: winRateLabelFromCard(card),
-              locked: !hasFullAccess,
-              onTap: () => context.push(
-                '/matches/soccer/${match.matchId}',
-                extra: MatchHeaderData.fromSoccerCard(card),
+        ),
+        data: (picks) {
+          if (picks.isEmpty) {
+            return _centeredEmptyList(
+              TsEmptyState(
+                title: l10n.reportsPremiumEmptyTitle,
+                description: l10n.reportsPremiumEmptyBody,
               ),
             );
-          },
-        );
-      },
+          }
+
+          final filtered =
+              filterReportsPremiumPicksList(picks, selectedLeagueId);
+          if (filtered.isEmpty) {
+            return _centeredEmptyList(
+              TsEmptyState(
+                type: TsEmptyType.withAction,
+                title: l10n.reportsPremiumNoLeagueTitle,
+                description: l10n.reportsPremiumNoLeagueBody,
+                actionLabel: l10n.reportsPremiumViewAll,
+                onAction: headerScope.clearLeagueSelection,
+              ),
+            );
+          }
+
+          return ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(
+              TsSpacing.lg,
+              0,
+              TsSpacing.lg,
+              TsSpacing.xl,
+            ),
+            itemCount: filtered.length,
+            separatorBuilder: (_, _) => const SizedBox(height: TsSpacing.sm),
+            itemBuilder: (context, index) {
+              final card = filtered[index];
+              final match = card.match;
+              final kickoffLocal =
+                  soccerAnalysisKickoffLocal(card) ?? DateTime.now();
+              final leagueId = leagueIdForCard(match.league);
+              final pickLabel = _premiumPickLabel(context, card);
+              return TsMatchCard(
+                leagueId: leagueId,
+                leagueLabel: reportsPremiumLeagueLabel(context, match.league),
+                kickoffLabel: reportsAnalysisKickoffLabel(locale, kickoffLocal),
+                homeTeam: localizedTeamName(
+                  context,
+                  match.homeTeam.name,
+                  match.homeTeam.nameKo,
+                ),
+                awayTeam: localizedTeamName(
+                  context,
+                  match.awayTeam.name,
+                  match.awayTeam.nameKo,
+                ),
+                homeEmblemUrl: match.homeTeam.logo,
+                awayEmblemUrl: match.awayTeam.logo,
+                density: TsMatchCardDensity.list,
+                hasAnalysis: false,
+                pickLabel: pickLabel,
+                probabilityLabel: winRateLabelFromCard(card),
+                locked: !hasFullAccess,
+                onTap: () => context.push(
+                  '/matches/soccer/${match.matchId}',
+                  extra: MatchHeaderData.fromSoccerCard(card),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
@@ -128,6 +137,7 @@ String? _premiumPickLabel(BuildContext context, SoccerAnalysisCard card) {
 
 Widget _loadingList() {
   return ListView.separated(
+    physics: const AlwaysScrollableScrollPhysics(),
     padding: const EdgeInsets.fromLTRB(
       TsSpacing.lg,
       0,
@@ -142,6 +152,7 @@ Widget _loadingList() {
 
 Widget _centeredEmptyList(Widget empty) {
   return CustomScrollView(
+    physics: const AlwaysScrollableScrollPhysics(),
     slivers: [
       SliverFillRemaining(
         hasScrollBody: false,

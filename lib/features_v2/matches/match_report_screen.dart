@@ -75,16 +75,46 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
 
   Future<void> _onPullToRefresh() async {
     final params = _soccerParams;
-    if (params == null) return;
+    if (params != null) {
+      final auth = ref.read(authProvider);
+      final lockPolicy = SoccerReportLockPolicy.resolve(
+        isGuest: auth.isGuest,
+        hasFullAccess: auth.hasFullAccess,
+        guestFactBlocksUnlocked: _guestFactBlocksUnlocked,
+        onGuestTap: () => context.push('/login'),
+        onSubscribeTap: () => context.go('/menu/subscribe'),
+      );
 
-    final auth = ref.read(authProvider);
-    final lockPolicy = SoccerReportLockPolicy.resolve(
-      isGuest: auth.isGuest,
-      hasFullAccess: auth.hasFullAccess,
-      guestFactBlocksUnlocked: _guestFactBlocksUnlocked,
-      onGuestTap: () => context.push('/login'),
-      onSubscribeTap: () => context.go('/menu/subscribe'),
-    );
+      final inFlight = _refreshInFlight;
+      if (inFlight != null) {
+        return inFlight;
+      }
+
+      final future = _guardedRetry(
+        () => refreshSoccerMatchReport(
+          ref,
+          params,
+          fetchPrediction: lockPolicy.shouldFetchPrediction,
+          fetchTeamStats: lockPolicy.shouldFetchTeamStats,
+          fetchH2h: lockPolicy.shouldFetchH2h,
+        ),
+      );
+      _refreshInFlight = future;
+      try {
+        await future;
+      } finally {
+        if (identical(_refreshInFlight, future)) {
+          _refreshInFlight = null;
+        }
+      }
+      return;
+    }
+
+    if (widget.sport != 'baseball') return;
+    final matchId = int.tryParse(widget.matchId);
+    final header = widget.initialHeader;
+    if (matchId == null || header == null) return;
+    if (!_baseballLeagueSupportsReport(header.leagueCode)) return;
 
     final inFlight = _refreshInFlight;
     if (inFlight != null) {
@@ -92,13 +122,7 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
     }
 
     final future = _guardedRetry(
-      () => refreshSoccerMatchReport(
-        ref,
-        params,
-        fetchPrediction: lockPolicy.shouldFetchPrediction,
-        fetchTeamStats: lockPolicy.shouldFetchTeamStats,
-        fetchH2h: lockPolicy.shouldFetchH2h,
-      ),
+      () => _refreshBaseballMatchReport(matchId, header),
     );
     _refreshInFlight = future;
     try {
@@ -107,6 +131,108 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
       if (identical(_refreshInFlight, future)) {
         _refreshInFlight = null;
       }
+    }
+  }
+
+  Future<void> _refreshBaseballMatchReport(
+    int matchId,
+    MatchHeaderData header,
+  ) async {
+    final league = _normalizeBaseballLeagueCode(header.leagueCode ?? '');
+    final cachedDetail = ref.read(baseballMatchDetailProvider(matchId)).value;
+
+    BaseballPitcherStatsParams? asianParams;
+    if (league == 'KBO' || league == 'NPB') {
+      if (cachedDetail != null && cachedDetail.isNotEmpty) {
+        asianParams = _baseballAsianPitcherStatsParams(cachedDetail, league);
+      }
+    }
+
+    final homeTeamId = header.homeTeamId ??
+        _baseballTeamIdFromDetail(cachedDetail, isHome: true);
+    final awayTeamId = header.awayTeamId ??
+        _baseballTeamIdFromDetail(cachedDetail, isHome: false);
+    BaseballH2HParams? h2hParams;
+    if (homeTeamId != null && awayTeamId != null) {
+      h2hParams = (homeTeamId: homeTeamId, awayTeamId: awayTeamId);
+    }
+
+    ref.invalidate(baseballMatchDetailProvider(matchId));
+    ref.invalidate(baseballPredictProvider(matchId));
+    ref.invalidate(baseballPitcherAnalysisProvider(matchId));
+    if (league == 'MLB') {
+      ref.invalidate(mlbPitcherStatsProvider(matchId));
+      ref.invalidate(mlbPitcherStatsPrevProvider(matchId));
+    }
+    if (asianParams != null &&
+        (asianParams.homePitcher.isNotEmpty ||
+            asianParams.awayPitcher.isNotEmpty)) {
+      ref.invalidate(baseballPitcherStatsProvider(asianParams));
+    }
+    if (h2hParams != null) {
+      ref.invalidate(baseballH2HProvider(h2hParams));
+    }
+
+    try {
+      final waits = <Future<void>>[
+        ref.read(baseballMatchDetailProvider(matchId).future),
+        ref.read(baseballPredictProvider(matchId).future),
+        ref.read(baseballPitcherAnalysisProvider(matchId).future),
+      ];
+      if (league == 'MLB') {
+        waits.add(ref.read(mlbPitcherStatsProvider(matchId).future));
+        waits.add(ref.read(mlbPitcherStatsPrevProvider(matchId).future));
+      }
+      if (asianParams != null &&
+          (asianParams.homePitcher.isNotEmpty ||
+              asianParams.awayPitcher.isNotEmpty)) {
+        waits.add(ref.read(baseballPitcherStatsProvider(asianParams).future));
+      }
+      if (h2hParams != null) {
+        waits.add(ref.read(baseballH2HProvider(h2hParams).future));
+      }
+      await Future.wait(waits);
+
+      final detail = ref.read(baseballMatchDetailProvider(matchId)).value;
+      if (detail == null || detail.isEmpty) return;
+
+      final secondaryWaits = <Future<void>>[];
+
+      if (h2hParams == null) {
+        final resolvedHomeTeamId = header.homeTeamId ??
+            _baseballTeamIdFromDetail(detail, isHome: true);
+        final resolvedAwayTeamId = header.awayTeamId ??
+            _baseballTeamIdFromDetail(detail, isHome: false);
+        if (resolvedHomeTeamId != null && resolvedAwayTeamId != null) {
+          final resolvedH2hParams = (
+            homeTeamId: resolvedHomeTeamId,
+            awayTeamId: resolvedAwayTeamId,
+          );
+          ref.invalidate(baseballH2HProvider(resolvedH2hParams));
+          secondaryWaits.add(
+            ref.read(baseballH2HProvider(resolvedH2hParams).future),
+          );
+        }
+      }
+
+      if ((league == 'KBO' || league == 'NPB') && asianParams == null) {
+        final resolvedAsianParams =
+            _baseballAsianPitcherStatsParams(detail, league);
+        if (resolvedAsianParams != null &&
+            (resolvedAsianParams.homePitcher.isNotEmpty ||
+                resolvedAsianParams.awayPitcher.isNotEmpty)) {
+          ref.invalidate(baseballPitcherStatsProvider(resolvedAsianParams));
+          secondaryWaits.add(
+            ref.read(baseballPitcherStatsProvider(resolvedAsianParams).future),
+          );
+        }
+      }
+
+      if (secondaryWaits.isNotEmpty) {
+        await Future.wait(secondaryWaits);
+      }
+    } on Object {
+      // RefreshIndicator must complete normally; failure UI comes from provider state.
     }
   }
 
@@ -363,15 +489,18 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
         onBack: () => context.pop(),
       ),
       body: params == null
-          ? SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(
-                TsSpacing.lg,
-                TsSpacing.lg,
-                TsSpacing.lg,
-                bottomPadding,
+          ? RefreshIndicator(
+              onRefresh: _onPullToRefresh,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.fromLTRB(
+                  TsSpacing.lg,
+                  TsSpacing.lg,
+                  TsSpacing.lg,
+                  bottomPadding,
+                ),
+                child: content,
               ),
-              child: content,
             )
           : RefreshIndicator(
               onRefresh: _onPullToRefresh,
@@ -643,4 +772,111 @@ String _baseballLiveStatusLabel(String? rawStatus) {
   if (code.isEmpty) return 'LIVE';
   if (BaseballStatus.isLive(code)) return code;
   return 'LIVE';
+}
+
+String _normalizeBaseballLeagueCode(String? league) {
+  final upper = (league ?? '').trim().toUpperCase();
+  if (upper.contains('MLB') || upper.contains('MAJOR')) return 'MLB';
+  if (upper.contains('NPB')) return 'NPB';
+  if (upper.contains('KBO') || upper.contains('KOREA')) return 'KBO';
+  return upper;
+}
+
+int? _baseballTeamIdFromDetail(
+  Map<String, dynamic>? detail, {
+  required bool isHome,
+}) {
+  if (detail == null || detail.isEmpty) return null;
+
+  final match = detail['match'];
+  final Map<String, dynamic> matchMap;
+  if (match is Map<String, dynamic>) {
+    matchMap = match;
+  } else if (match is Map) {
+    matchMap = Map<String, dynamic>.from(match);
+  } else {
+    matchMap = detail;
+  }
+
+  final prefix = isHome ? 'home' : 'away';
+  final flatKey = isHome ? 'homeTeamId' : 'awayTeamId';
+  final flatSnakeKey = isHome ? 'home_team_id' : 'away_team_id';
+  final flatId = (matchMap[flatKey] as num?)?.toInt() ??
+      (matchMap[flatSnakeKey] as num?)?.toInt();
+  if (flatId != null) return flatId;
+
+  final side = matchMap[prefix];
+  if (side is Map) {
+    return (side['id'] as num?)?.toInt();
+  }
+  return null;
+}
+
+Map<String, dynamic> _unwrapBaseballMatchDetail(Map<String, dynamic> detail) {
+  final match = detail['match'];
+  if (match is Map<String, dynamic>) return match;
+  if (match is Map) return Map<String, dynamic>.from(match);
+  return detail;
+}
+
+String? _readBaseballDetailString(
+  Map<String, dynamic> map,
+  List<String> keys,
+) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is String && value.trim().isNotEmpty) {
+      return value.trim();
+    }
+  }
+  return null;
+}
+
+BaseballPitcherStatsParams? _baseballAsianPitcherStatsParams(
+  Map<String, dynamic> detail,
+  String leagueCode,
+) {
+  final match = _unwrapBaseballMatchDetail(detail);
+  final league = _normalizeBaseballLeagueCode(leagueCode);
+  if (league != 'KBO' && league != 'NPB') return null;
+
+  final homeSide = match['home'];
+  final awaySide = match['away'];
+  final homeSideMap = homeSide is Map
+      ? Map<String, dynamic>.from(homeSide)
+      : <String, dynamic>{};
+  final awaySideMap = awaySide is Map
+      ? Map<String, dynamic>.from(awaySide)
+      : <String, dynamic>{};
+
+  final homePitcher = baseballAsianLeagueApiLookupName(
+    _readBaseballDetailString(match, const ['homePitcher', 'home_pitcher']) ??
+        _readBaseballDetailString(homeSideMap, const ['pitcher', 'name']),
+    _readBaseballDetailString(match, const ['homePitcherKo', 'home_pitcher_ko']),
+  );
+  final awayPitcher = baseballAsianLeagueApiLookupName(
+    _readBaseballDetailString(match, const ['awayPitcher', 'away_pitcher']) ??
+        _readBaseballDetailString(awaySideMap, const ['pitcher', 'name']),
+    _readBaseballDetailString(match, const ['awayPitcherKo', 'away_pitcher_ko']),
+  );
+  final homeTeam = baseballAsianLeagueApiLookupTeam(
+    _readBaseballDetailString(match, const ['homeTeam', 'home_team']) ??
+        _readBaseballDetailString(homeSideMap, const ['team', 'name']),
+    _readBaseballDetailString(match, const ['homeTeamKo', 'home_team_ko']) ??
+        _readBaseballDetailString(homeSideMap, const ['teamKo', 'team_ko']),
+  );
+  final awayTeam = baseballAsianLeagueApiLookupTeam(
+    _readBaseballDetailString(match, const ['awayTeam', 'away_team']) ??
+        _readBaseballDetailString(awaySideMap, const ['team', 'name']),
+    _readBaseballDetailString(match, const ['awayTeamKo', 'away_team_ko']) ??
+        _readBaseballDetailString(awaySideMap, const ['teamKo', 'team_ko']),
+  );
+
+  return (
+    league: league.toLowerCase(),
+    homePitcher: homePitcher,
+    awayPitcher: awayPitcher,
+    homeTeam: homeTeam,
+    awayTeam: awayTeam,
+  );
 }

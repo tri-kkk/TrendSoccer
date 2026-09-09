@@ -54,89 +54,99 @@ class _ReportsSoccerAnalysisBodyState extends ConsumerState<ReportsSoccerAnalysi
     final selectedLeagueId = headerScope.selectedLeagueId;
     final matchesAsync = ref.watch(analysisSoccerMatchesProvider);
 
-    return matchesAsync.when(
-      loading: () => _loadingList(),
-      error: (_, _) => _centeredEmptyList(
-        TsEmptyState(
-          type: TsEmptyType.failure,
-          title: l10n.analysisLoadMatchesFailed,
-          description: l10n.analysisLoadFailed,
-          actionLabel: l10n.retry,
-          onAction: () {
-            clearSoccerAnalysisEmptyCache();
-            ref.invalidate(analysisSoccerMatchesProvider);
-          },
-        ),
-      ),
-      data: (matches) {
-        final unfiltered = filterReportsSoccerAnalysisList(matches, null);
-        if (unfiltered.isEmpty) {
-          return _centeredEmptyList(
-            TsEmptyState(
-              title: l10n.analysisNoMatches,
-              description: '',
-            ),
-          );
-        }
+    Future<void> onRefresh() async {
+      clearSoccerAnalysisEmptyCache();
+      ref.invalidate(analysisSoccerMatchesProvider);
+      await ref.read(analysisSoccerMatchesProvider.future);
+    }
 
-        final filtered =
-            filterReportsSoccerAnalysisList(matches, selectedLeagueId);
-        if (filtered.isEmpty) {
-          return _centeredEmptyList(
-            TsEmptyState(
-              type: TsEmptyType.withAction,
-              title: l10n.reportsAnalysisNoLeagueTitle,
-              description: l10n.reportsAnalysisNoLeagueBody,
-              actionLabel: l10n.reportsAnalysisViewAll,
-              onAction: headerScope.clearLeagueSelection,
-            ),
-          );
-        }
-
-        return ListView.separated(
-          padding: const EdgeInsets.fromLTRB(
-            TsSpacing.lg,
-            0,
-            TsSpacing.lg,
-            TsSpacing.xl,
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: matchesAsync.when(
+        loading: () => _loadingList(),
+        error: (_, _) => _centeredEmptyList(
+          TsEmptyState(
+            type: TsEmptyType.failure,
+            title: l10n.analysisLoadMatchesFailed,
+            description: l10n.analysisLoadFailed,
+            actionLabel: l10n.retry,
+            onAction: () {
+              clearSoccerAnalysisEmptyCache();
+              ref.invalidate(analysisSoccerMatchesProvider);
+            },
           ),
-          itemCount: filtered.length,
-          separatorBuilder: (_, _) => const SizedBox(height: TsSpacing.sm),
-          itemBuilder: (context, index) {
-            final card = filtered[index];
-            final match = card.match;
-            final kickoffLocal =
-                soccerAnalysisKickoffLocal(card) ?? DateTime.now();
-            final leagueId = leagueIdForCard(match.league);
-            return TsMatchCard(
-              leagueId: leagueId,
-              leagueLabel: localizedLeagueName(
-                context,
-                match.league.nameEn,
-                match.league.name,
-              ),
-              kickoffLabel: reportsAnalysisKickoffLabel(locale, kickoffLocal),
-              homeTeam: localizedTeamName(
-                context,
-                match.homeTeam.name,
-                match.homeTeam.nameKo,
-              ),
-              awayTeam: localizedTeamName(
-                context,
-                match.awayTeam.name,
-                match.awayTeam.nameKo,
-              ),
-              homeEmblemUrl: match.homeTeam.logo,
-              awayEmblemUrl: match.awayTeam.logo,
-              hasAnalysis: false,
-              onTap: () => context.push(
-                '/matches/soccer/${match.matchId}',
-                extra: MatchHeaderData.fromSoccerCard(card),
+        ),
+        data: (matches) {
+          final unfiltered = filterReportsSoccerAnalysisList(matches, null);
+          if (unfiltered.isEmpty) {
+            return _centeredEmptyList(
+              TsEmptyState(
+                title: l10n.analysisNoMatches,
+                description: '',
               ),
             );
-          },
-        );
-      },
+          }
+
+          final filtered =
+              filterReportsSoccerAnalysisList(matches, selectedLeagueId);
+          if (filtered.isEmpty) {
+            return _centeredEmptyList(
+              TsEmptyState(
+                type: TsEmptyType.withAction,
+                title: l10n.reportsAnalysisNoLeagueTitle,
+                description: l10n.reportsAnalysisNoLeagueBody,
+                actionLabel: l10n.reportsAnalysisViewAll,
+                onAction: headerScope.clearLeagueSelection,
+              ),
+            );
+          }
+
+          return ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(
+              TsSpacing.lg,
+              0,
+              TsSpacing.lg,
+              TsSpacing.xl,
+            ),
+            itemCount: filtered.length,
+            separatorBuilder: (_, _) => const SizedBox(height: TsSpacing.sm),
+            itemBuilder: (context, index) {
+              final card = filtered[index];
+              final match = card.match;
+              final kickoffLocal =
+                  soccerAnalysisKickoffLocal(card) ?? DateTime.now();
+              final leagueId = leagueIdForCard(match.league);
+              return TsMatchCard(
+                leagueId: leagueId,
+                leagueLabel: localizedLeagueName(
+                  context,
+                  match.league.nameEn,
+                  match.league.name,
+                ),
+                kickoffLabel: reportsAnalysisKickoffLabel(locale, kickoffLocal),
+                homeTeam: localizedTeamName(
+                  context,
+                  match.homeTeam.name,
+                  match.homeTeam.nameKo,
+                ),
+                awayTeam: localizedTeamName(
+                  context,
+                  match.awayTeam.name,
+                  match.awayTeam.nameKo,
+                ),
+                homeEmblemUrl: match.homeTeam.logo,
+                awayEmblemUrl: match.awayTeam.logo,
+                hasAnalysis: false,
+                onTap: () => context.push(
+                  '/matches/soccer/${match.matchId}',
+                  extra: MatchHeaderData.fromSoccerCard(card),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
@@ -160,87 +170,97 @@ class _ReportsBaseballAnalysisBodyState
     final selectedLeagueId = headerScope.selectedLeagueId;
     final matchesAsync = ref.watch(baseballAnalysisMatchesProvider);
 
-    return matchesAsync.when(
-      loading: () => _loadingList(),
-      error: (_, _) => _centeredEmptyList(
-        TsEmptyState(
-          type: TsEmptyType.failure,
-          title: l10n.analysisLoadMatchesFailed,
-          description: l10n.analysisLoadFailed,
-          actionLabel: l10n.retry,
-          onAction: () => ref.invalidate(baseballAnalysisMatchesProvider),
-        ),
-      ),
-      data: (matches) {
-        final unfiltered = filterReportsBaseballAnalysisList(matches, null);
-        if (unfiltered.isEmpty) {
-          return _centeredEmptyList(
-            TsEmptyState(
-              title: l10n.analysisNoBaseballScheduled,
-              description: '',
-            ),
-          );
-        }
+    Future<void> onRefresh() async {
+      ref.invalidate(baseballAnalysisMatchesProvider);
+      await ref.read(baseballAnalysisMatchesProvider.future);
+    }
 
-        final filtered =
-            filterReportsBaseballAnalysisList(matches, selectedLeagueId);
-        if (filtered.isEmpty) {
-          return _centeredEmptyList(
-            TsEmptyState(
-              type: TsEmptyType.withAction,
-              title: l10n.reportsAnalysisNoLeagueTitle,
-              description: l10n.reportsAnalysisNoLeagueBody,
-              actionLabel: l10n.reportsAnalysisViewAll,
-              onAction: headerScope.clearLeagueSelection,
-            ),
-          );
-        }
-
-        return ListView.separated(
-          padding: const EdgeInsets.fromLTRB(
-            TsSpacing.lg,
-            0,
-            TsSpacing.lg,
-            TsSpacing.xl,
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: matchesAsync.when(
+        loading: () => _loadingList(),
+        error: (_, _) => _centeredEmptyList(
+          TsEmptyState(
+            type: TsEmptyType.failure,
+            title: l10n.analysisLoadMatchesFailed,
+            description: l10n.analysisLoadFailed,
+            actionLabel: l10n.retry,
+            onAction: () => ref.invalidate(baseballAnalysisMatchesProvider),
           ),
-          itemCount: filtered.length,
-          separatorBuilder: (_, _) => const SizedBox(height: TsSpacing.sm),
-          itemBuilder: (context, index) {
-            final card = filtered[index];
-            final kickoffLocal = card.matchTimestamp.toLocal();
-            final leagueCode = card.league;
-            final leagueId = baseballLeagueIconId(leagueCode);
-            return TsMatchCard(
-              leagueId: leagueId,
-              leagueLabel: TsAssets.leagueDisplayName(leagueCode),
-              kickoffLabel: reportsAnalysisKickoffLabel(locale, kickoffLocal),
-              homeTeam: localizedTeamName(
-                context,
-                card.homeTeam,
-                card.homeTeamKo,
-              ),
-              awayTeam: localizedTeamName(
-                context,
-                card.awayTeam,
-                card.awayTeamKo,
-              ),
-              homeEmblemUrl: card.homeTeamLogo,
-              awayEmblemUrl: card.awayTeamLogo,
-              hasAnalysis: false,
-              onTap: () => context.push(
-                '/matches/baseball/${card.matchId}',
-                extra: MatchHeaderData.fromBaseballCard(card),
+        ),
+        data: (matches) {
+          final unfiltered = filterReportsBaseballAnalysisList(matches, null);
+          if (unfiltered.isEmpty) {
+            return _centeredEmptyList(
+              TsEmptyState(
+                title: l10n.analysisNoBaseballScheduled,
+                description: '',
               ),
             );
-          },
-        );
-      },
+          }
+
+          final filtered =
+              filterReportsBaseballAnalysisList(matches, selectedLeagueId);
+          if (filtered.isEmpty) {
+            return _centeredEmptyList(
+              TsEmptyState(
+                type: TsEmptyType.withAction,
+                title: l10n.reportsAnalysisNoLeagueTitle,
+                description: l10n.reportsAnalysisNoLeagueBody,
+                actionLabel: l10n.reportsAnalysisViewAll,
+                onAction: headerScope.clearLeagueSelection,
+              ),
+            );
+          }
+
+          return ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(
+              TsSpacing.lg,
+              0,
+              TsSpacing.lg,
+              TsSpacing.xl,
+            ),
+            itemCount: filtered.length,
+            separatorBuilder: (_, _) => const SizedBox(height: TsSpacing.sm),
+            itemBuilder: (context, index) {
+              final card = filtered[index];
+              final kickoffLocal = card.matchTimestamp.toLocal();
+              final leagueCode = card.league;
+              final leagueId = baseballLeagueIconId(leagueCode);
+              return TsMatchCard(
+                leagueId: leagueId,
+                leagueLabel: TsAssets.leagueDisplayName(leagueCode),
+                kickoffLabel: reportsAnalysisKickoffLabel(locale, kickoffLocal),
+                homeTeam: localizedTeamName(
+                  context,
+                  card.homeTeam,
+                  card.homeTeamKo,
+                ),
+                awayTeam: localizedTeamName(
+                  context,
+                  card.awayTeam,
+                  card.awayTeamKo,
+                ),
+                homeEmblemUrl: card.homeTeamLogo,
+                awayEmblemUrl: card.awayTeamLogo,
+                hasAnalysis: false,
+                onTap: () => context.push(
+                  '/matches/baseball/${card.matchId}',
+                  extra: MatchHeaderData.fromBaseballCard(card),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
 
 Widget _loadingList() {
   return ListView.separated(
+    physics: const AlwaysScrollableScrollPhysics(),
     padding: const EdgeInsets.fromLTRB(
       TsSpacing.lg,
       0,
@@ -255,6 +275,7 @@ Widget _loadingList() {
 
 Widget _centeredEmptyList(Widget empty) {
   return CustomScrollView(
+    physics: const AlwaysScrollableScrollPhysics(),
     slivers: [
       SliverFillRemaining(
         hasScrollBody: false,

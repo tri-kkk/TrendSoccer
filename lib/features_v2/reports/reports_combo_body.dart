@@ -55,67 +55,76 @@ class _ReportsComboBodyState extends ConsumerState<ReportsComboBody> {
     final hasFullAccess = ref.watch(authProvider).hasFullAccess;
     final combosAsync = ref.watch(baseballComboPicksProvider);
 
-    return combosAsync.when(
-      loading: () => _loadingList(_scrollController),
-      error: (_, _) => _centeredEmptyList(
-        TsEmptyState(
-          type: TsEmptyType.failure,
-          title: l10n.premiumComboLoadFailed,
-          description: l10n.analysisLoadFailed,
-          actionLabel: l10n.retry,
-          onAction: () => ref.invalidate(baseballComboPicksProvider),
-        ),
-      ),
-      data: (raw) {
-        final combos = parseBaseballComboPicks(raw);
-        final byDate =
-            filterReportsComboList(combos, selectedDateKey, null);
-        if (byDate.isEmpty) {
-          return _centeredEmptyList(
-            TsEmptyState(
-              title: l10n.reportsComboEmptyTitle,
-              description: l10n.reportsComboEmptyBody,
-            ),
-          );
-        }
+    Future<void> onRefresh() async {
+      ref.invalidate(baseballComboPicksProvider);
+      await ref.read(baseballComboPicksProvider.future);
+    }
 
-        final filtered = filterReportsComboList(
-          combos,
-          selectedDateKey,
-          selectedLeagueId,
-        );
-        if (filtered.isEmpty) {
-          return _centeredEmptyList(
-            TsEmptyState(
-              type: TsEmptyType.withAction,
-              title: l10n.reportsComboNoLeagueTitle,
-              description: l10n.reportsComboNoLeagueBody,
-              actionLabel: l10n.reportsComboViewAll,
-              onAction: headerScope.clearLeagueSelection,
-            ),
-          );
-        }
-
-        return ListView.separated(
-          controller: _scrollController,
-          padding: const EdgeInsets.fromLTRB(
-            TsSpacing.lg,
-            0,
-            TsSpacing.lg,
-            TsSpacing.xl,
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: combosAsync.when(
+        loading: () => _loadingList(_scrollController),
+        error: (_, _) => _centeredEmptyList(
+          TsEmptyState(
+            type: TsEmptyType.failure,
+            title: l10n.premiumComboLoadFailed,
+            description: l10n.analysisLoadFailed,
+            actionLabel: l10n.retry,
+            onAction: () => ref.invalidate(baseballComboPicksProvider),
           ),
-          itemCount: filtered.length,
-          separatorBuilder: (_, _) => const SizedBox(height: TsSpacing.md),
-          itemBuilder: (context, index) {
-            final combo = filtered[index];
-            return _ReportsComboCard(
-              combo: combo,
-              locked: !hasFullAccess,
-              onTap: _reportsComboCardOnTap(context, ref, combo),
+        ),
+        data: (raw) {
+          final combos = parseBaseballComboPicks(raw);
+          final byDate =
+              filterReportsComboList(combos, selectedDateKey, null);
+          if (byDate.isEmpty) {
+            return _centeredEmptyList(
+              TsEmptyState(
+                title: l10n.reportsComboEmptyTitle,
+                description: l10n.reportsComboEmptyBody,
+              ),
             );
-          },
-        );
-      },
+          }
+
+          final filtered = filterReportsComboList(
+            combos,
+            selectedDateKey,
+            selectedLeagueId,
+          );
+          if (filtered.isEmpty) {
+            return _centeredEmptyList(
+              TsEmptyState(
+                type: TsEmptyType.withAction,
+                title: l10n.reportsComboNoLeagueTitle,
+                description: l10n.reportsComboNoLeagueBody,
+                actionLabel: l10n.reportsComboViewAll,
+                onAction: headerScope.clearLeagueSelection,
+              ),
+            );
+          }
+
+          return ListView.separated(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(
+              TsSpacing.lg,
+              0,
+              TsSpacing.lg,
+              TsSpacing.xl,
+            ),
+            itemCount: filtered.length,
+            separatorBuilder: (_, _) => const SizedBox(height: TsSpacing.md),
+            itemBuilder: (context, index) {
+              final combo = filtered[index];
+              return _ReportsComboCard(
+                combo: combo,
+                locked: !hasFullAccess,
+                onTap: _reportsComboCardOnTap(context, ref, combo),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
@@ -183,6 +192,7 @@ class _ReportsComboCard extends StatelessWidget {
 Widget _loadingList(ScrollController scrollController) {
   return ListView.separated(
     controller: scrollController,
+    physics: const AlwaysScrollableScrollPhysics(),
     padding: const EdgeInsets.fromLTRB(
       TsSpacing.lg,
       0,
@@ -197,6 +207,7 @@ Widget _loadingList(ScrollController scrollController) {
 
 Widget _centeredEmptyList(Widget empty) {
   return CustomScrollView(
+    physics: const AlwaysScrollableScrollPhysics(),
     slivers: [
       SliverFillRemaining(
         hasScrollBody: false,
