@@ -294,7 +294,9 @@
   "fixtureEmpty": "경기 일정이 없습니다.",
   "fixtureInterrupted": "중단",
   "statusPostponed": "PPD",
-  "statusInterrupted": "중단",
+  "statusInterrupted": "SUSP",
+  "statusHalfTime": "HT",
+  "statusCancelled": "CANC",
   "baseballInningTop": "{inning}회 초",
   "baseballInningBottom": "{inning}회 말",
   "fixtureLive": "LIVE",
@@ -309,6 +311,19 @@
   "matchPostponed": "연기",
   "fixtureStatusFinal": "FT",
   "fixtureViewAllMatches": "전체 경기 보기",
+  "matchesEmptyLiveTitle": "진행 중인 경기 없음",
+  "matchesEmptyLiveBody": "현재 진행 중인 경기가 없습니다.",
+  "matchesEmptyLiveAction": "전체 경기 보기",
+  "matchesEmptyDateTitle": "{date}에는 경기가 없습니다",
+  "@matchesEmptyDateTitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "matchesEmptyDateAction": "다른 날짜 보기",
+  "matchesLeagueAiBadge": "AI",
   "formInvalidEmail": "올바른 이메일 형식이 아닙니다",
   "formRequired": "필수 입력 항목입니다",
   "goBack": "뒤로가기",

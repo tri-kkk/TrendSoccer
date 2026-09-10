@@ -835,7 +835,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get statusPostponed => 'PPD';
 
   @override
-  String get statusInterrupted => '중단';
+  String get statusInterrupted => 'SUSP';
+
+  @override
+  String get statusHalfTime => 'HT';
+
+  @override
+  String get statusCancelled => 'CANC';
 
   @override
   String baseballInningTop(int inning) {
@@ -883,6 +889,26 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get fixtureViewAllMatches => '전체 경기 보기';
+
+  @override
+  String get matchesEmptyLiveTitle => '진행 중인 경기 없음';
+
+  @override
+  String get matchesEmptyLiveBody => '현재 진행 중인 경기가 없습니다.';
+
+  @override
+  String get matchesEmptyLiveAction => '전체 경기 보기';
+
+  @override
+  String matchesEmptyDateTitle(String date) {
+    return '$date에는 경기가 없습니다';
+  }
+
+  @override
+  String get matchesEmptyDateAction => '다른 날짜 보기';
+
+  @override
+  String get matchesLeagueAiBadge => 'AI';
 
   @override
   String get formInvalidEmail => '올바른 이메일 형식이 아닙니다';

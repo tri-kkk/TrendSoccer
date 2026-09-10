@@ -862,6 +862,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statusInterrupted => 'SUSP';
 
   @override
+  String get statusHalfTime => 'HT';
+
+  @override
+  String get statusCancelled => 'CANC';
+
+  @override
   String baseballInningTop(int inning) {
     return 'Top $inning';
   }
@@ -908,6 +914,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fixtureViewAllMatches => 'View all matches';
+
+  @override
+  String get matchesEmptyLiveTitle => 'No live matches';
+
+  @override
+  String get matchesEmptyLiveBody => 'No matches are in progress right now.';
+
+  @override
+  String get matchesEmptyLiveAction => 'Browse all matches';
+
+  @override
+  String matchesEmptyDateTitle(String date) {
+    return 'No matches on $date';
+  }
+
+  @override
+  String get matchesEmptyDateAction => 'View other dates';
+
+  @override
+  String get matchesLeagueAiBadge => 'AI';
 
   @override
   String get formInvalidEmail => 'Please enter a valid email address';

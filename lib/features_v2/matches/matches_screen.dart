@@ -19,6 +19,7 @@ import 'package:trendsoccer/core/services/notification_service.dart';
 import 'package:trendsoccer/core/utils/baseball_status.dart';
 import 'package:trendsoccer/core/utils/error_resolver.dart';
 import 'package:trendsoccer/core/utils/l10n_helper.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/core/utils/league_supports_analysis.dart';
 import 'package:trendsoccer/core/utils/locale_data_helper.dart';
 import 'package:trendsoccer/core/utils/plan_tier_label.dart';
@@ -97,9 +98,15 @@ String _soccerLiveElapsedText(
   return "${_formatSoccerElapsedTime(elapsed, status, elapsedExtra: elapsedExtra)}'";
 }
 
-String _soccerLiveStatusLabel(FixtureMatch match, LiveMatchData? live) {
-  if (live != null && _isSoccerHalftimeStatus(live.status)) return 'HT';
-  if (_isSoccerHalftimeStatus(match.rawStatus)) return 'HT';
+String _soccerLiveStatusLabel(
+  FixtureMatch match,
+  LiveMatchData? live,
+  AppLocalizations l10n,
+) {
+  if (live != null && _isSoccerHalftimeStatus(live.status)) {
+    return l10n.statusHalfTime;
+  }
+  if (_isSoccerHalftimeStatus(match.rawStatus)) return l10n.statusHalfTime;
 
   if (live != null && live.isLive && live.elapsed > 0) {
     return _soccerLiveElapsedText(
@@ -109,19 +116,19 @@ String _soccerLiveStatusLabel(FixtureMatch match, LiveMatchData? live) {
     );
   }
 
-  return 'LIVE';
+  return l10n.fixtureLive;
 }
 
 /// Uppercase inning label for the status column (`TOP 5` / `BOT 7`).
 /// ARB keys render `Top 3` / `Bot 3` (issue #78) — not used here.
-String _baseballLiveStatusLabel(String rawStatus) {
+String _baseballLiveStatusLabel(String rawStatus, AppLocalizations l10n) {
   final code = BaseballStatus.displayStatus(rawStatus);
   final topMatch = RegExp(r'^(\d+)T$').firstMatch(code);
   if (topMatch != null) return 'TOP ${topMatch.group(1)}';
   final bottomMatch = RegExp(r'^(\d+)B$').firstMatch(code);
   if (bottomMatch != null) return 'BOT ${bottomMatch.group(1)}';
   if (code.isNotEmpty && code != 'LIVE') return code;
-  return 'LIVE';
+  return l10n.fixtureLive;
 }
 
 class MatchesScreen extends ConsumerStatefulWidget {
@@ -733,7 +740,9 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
           (match) =>
               match.matchId != 0 &&
               match.sport == selectedSport &&
-              _rowShowsAlarmBell(_matchRowPresentation(match).status),
+              _rowShowsAlarmBell(
+                _matchRowPresentation(match, context.l10n).status,
+              ),
         )
         .toList();
 
@@ -817,7 +826,9 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
   }
 
   Future<void> _onAlarmTap(FixtureMatch match) async {
-    if (!_rowShowsAlarmBell(_matchRowPresentation(match).status)) return;
+    if (!_rowShowsAlarmBell(_matchRowPresentation(match, context.l10n).status)) {
+      return;
+    }
 
     final matchId = match.matchId;
     final id = matchId.toString();
@@ -1082,36 +1093,39 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
         '${local.minute.toString().padLeft(2, '0')}';
   }
 
-  _MatchRowPresentation _matchRowPresentation(FixtureMatch match) {
+  _MatchRowPresentation _matchRowPresentation(
+    FixtureMatch match,
+    AppLocalizations l10n,
+  ) {
     final live = _liveDataForFixtureMatch(match, ref.read(liveMatchesProvider));
 
     return switch (match.status) {
-      'postponed' => const _MatchRowPresentation(
+      'postponed' => _MatchRowPresentation(
           status: TsMatchRowStatus.disrupted,
-          timeLabel: 'PPD',
+          timeLabel: l10n.statusPostponed,
         ),
-      'cancelled' => const _MatchRowPresentation(
+      'cancelled' => _MatchRowPresentation(
           status: TsMatchRowStatus.disrupted,
-          timeLabel: 'CANC',
+          timeLabel: l10n.statusCancelled,
         ),
-      'interrupted' => const _MatchRowPresentation(
+      'interrupted' => _MatchRowPresentation(
           status: TsMatchRowStatus.disrupted,
-          timeLabel: 'SUSP',
+          timeLabel: l10n.statusInterrupted,
         ),
       'live' => _MatchRowPresentation(
           status: TsMatchRowStatus.live,
           timeLabel: match.sport == 'baseball'
-              ? _baseballLiveStatusLabel(match.rawStatus)
-              : _soccerLiveStatusLabel(match, live),
+              ? _baseballLiveStatusLabel(match.rawStatus, l10n)
+              : _soccerLiveStatusLabel(match, live, l10n),
         ),
       'finished' => match.homeScore == null && match.awayScore == null
           ? _MatchRowPresentation(
               status: TsMatchRowStatus.scheduled,
               timeLabel: _scheduledKickoffLabel(match),
             )
-          : const _MatchRowPresentation(
+          : _MatchRowPresentation(
               status: TsMatchRowStatus.finished,
-              timeLabel: 'FT',
+              timeLabel: l10n.fixtureStatusFinal,
             ),
       'scheduled' => _MatchRowPresentation(
           status: TsMatchRowStatus.scheduled,
@@ -1124,10 +1138,10 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
     };
   }
 
-  String _emptyDateTitle(DateTime date) {
+  String _emptyDateTitle(DateTime date, AppLocalizations l10n) {
     final locale = Localizations.localeOf(context).toString();
     final formatted = DateFormat('EEE d', locale).format(date);
-    return 'No matches on $formatted';
+    return l10n.matchesEmptyDateTitle(formatted);
   }
 
   void _scrollToDateStrip() {
@@ -1142,6 +1156,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
   String? _scoreText(int? score) => score?.toString();
 
   Widget _buildFilterRow({
+    required AppLocalizations l10n,
     required String sport,
     required List<FixtureLeagueOption> leagues,
     required String? selectedLeague,
@@ -1159,14 +1174,14 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
         itemBuilder: (context, index) {
           if (index == 0) {
             return TsChip(
-              label: 'All',
+              label: l10n.feedNewsSportAll,
               selected: selectedLeague == null && !liveFilter,
               onTap: _onSelectAll,
             );
           }
           if (index == 1) {
             return TsChip(
-              label: 'LIVE',
+              label: l10n.fixtureLive,
               selected: liveFilter,
               tone: TsChipTone.live,
               onTap: _onSelectLive,
@@ -1191,6 +1206,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
     FixtureLeagueGroup group,
     TsThemeColors c,
     String sport,
+    AppLocalizations l10n,
   ) {
     final leagueId = _leagueIconId(group.leagueCode);
     final collapsed = _collapsedLeagueCodes.contains(group.leagueCode);
@@ -1215,6 +1231,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
               preferAsset: preferBundledIcon,
               label: _groupLeagueLabel(group, sport),
               hasAnalysis: leagueSupportsAnalysis(sport, group.leagueCode),
+              aiBadgeLabel: l10n.matchesLeagueAiBadge,
               matchCount: group.matches.length.toString(),
               collapsed: collapsed,
               onToggleCollapse: () => _toggleCollapse(group.leagueCode),
@@ -1232,7 +1249,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         for (var i = 0; i < group.matches.length; i++) ...[
-                          _buildMatchRow(group.matches[i]),
+                          _buildMatchRow(group.matches[i], l10n),
                           if (i < group.matches.length - 1) ...[
                             const SizedBox(height: 6),
                             Divider(
@@ -1284,8 +1301,8 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
     );
   }
 
-  Widget _buildMatchRow(FixtureMatch match) {
-    final presentation = _matchRowPresentation(match);
+  Widget _buildMatchRow(FixtureMatch match, AppLocalizations l10n) {
+    final presentation = _matchRowPresentation(match, l10n);
     final showScores = presentation.status == TsMatchRowStatus.live ||
         presentation.status == TsMatchRowStatus.finished ||
         presentation.status == TsMatchRowStatus.disrupted;
@@ -1433,6 +1450,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
           if (!showingFixtureFailure) ...[
             SliverToBoxAdapter(
               child: _buildFilterRow(
+                l10n: l10n,
                 sport: sport,
                 leagues: leagues,
                 selectedLeague: selectedLeague,
@@ -1493,9 +1511,9 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
                         child: Center(
                           child: TsEmptyState(
                             type: TsEmptyType.withAction,
-                            title: 'No live matches',
-                            description: 'No matches are in progress right now.',
-                            actionLabel: 'Browse all matches',
+                            title: l10n.matchesEmptyLiveTitle,
+                            description: l10n.matchesEmptyLiveBody,
+                            actionLabel: l10n.matchesEmptyLiveAction,
                             onAction: _onSelectAll,
                           ),
                         ),
@@ -1514,10 +1532,9 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
                       child: Center(
                         child: TsEmptyState(
                           type: TsEmptyType.withAction,
-                          title: _emptyDateTitle(selectedDate),
-                          description:
-                              'Try another date from the strip above.',
-                          actionLabel: 'View other dates',
+                          title: _emptyDateTitle(selectedDate, l10n),
+                          description: l10n.reportsComboEmptyBody,
+                          actionLabel: l10n.matchesEmptyDateAction,
                           onAction: _scrollToDateStrip,
                         ),
                       ),
@@ -1536,7 +1553,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           for (var i = 0; i < groups.length; i++) ...[
-                            _buildLeagueGroup(groups[i], c, sport),
+                            _buildLeagueGroup(groups[i], c, sport, l10n),
                             if (i < groups.length - 1)
                               const SizedBox(height: TsSpacing.md),
                           ],
@@ -1653,6 +1670,7 @@ class _MatchesLeagueGroupHeader extends StatelessWidget {
     this.preferAsset = true,
     required this.label,
     required this.hasAnalysis,
+    required this.aiBadgeLabel,
     required this.matchCount,
     required this.collapsed,
     required this.onToggleCollapse,
@@ -1663,6 +1681,7 @@ class _MatchesLeagueGroupHeader extends StatelessWidget {
   final bool preferAsset;
   final String label;
   final bool hasAnalysis;
+  final String aiBadgeLabel;
   final String matchCount;
   final bool collapsed;
   final VoidCallback onToggleCollapse;
@@ -1691,7 +1710,7 @@ class _MatchesLeagueGroupHeader extends StatelessWidget {
             ),
           ),
           if (hasAnalysis) ...[
-            const TsBadge(label: 'AI', tone: TsBadgeTone.primary),
+            TsBadge(label: aiBadgeLabel, tone: TsBadgeTone.primary),
             const SizedBox(width: TsSpacing.sm),
           ],
           Container(

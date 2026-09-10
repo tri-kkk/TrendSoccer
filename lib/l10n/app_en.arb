@@ -295,6 +295,8 @@
   "fixtureInterrupted": "Interrupted",
   "statusPostponed": "PPD",
   "statusInterrupted": "SUSP",
+  "statusHalfTime": "HT",
+  "statusCancelled": "CANC",
   "baseballInningTop": "Top {inning}",
   "baseballInningBottom": "Bot {inning}",
   "fixtureLive": "LIVE",
@@ -309,6 +311,19 @@
   "matchPostponed": "Postponed",
   "fixtureStatusFinal": "FT",
   "fixtureViewAllMatches": "View all matches",
+  "matchesEmptyLiveTitle": "No live matches",
+  "matchesEmptyLiveBody": "No matches are in progress right now.",
+  "matchesEmptyLiveAction": "Browse all matches",
+  "matchesEmptyDateTitle": "No matches on {date}",
+  "@matchesEmptyDateTitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "matchesEmptyDateAction": "View other dates",
+  "matchesLeagueAiBadge": "AI",
   "formInvalidEmail": "Please enter a valid email address",
   "formRequired": "This field is required",
   "goBack": "Go back",

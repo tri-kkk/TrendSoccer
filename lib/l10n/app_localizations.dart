@@ -1661,8 +1661,20 @@ abstract class AppLocalizations {
   /// No description provided for @statusInterrupted.
   ///
   /// In ko, this message translates to:
-  /// **'중단'**
+  /// **'SUSP'**
   String get statusInterrupted;
+
+  /// No description provided for @statusHalfTime.
+  ///
+  /// In ko, this message translates to:
+  /// **'HT'**
+  String get statusHalfTime;
+
+  /// No description provided for @statusCancelled.
+  ///
+  /// In ko, this message translates to:
+  /// **'CANC'**
+  String get statusCancelled;
 
   /// No description provided for @baseballInningTop.
   ///
@@ -1747,6 +1759,42 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'전체 경기 보기'**
   String get fixtureViewAllMatches;
+
+  /// No description provided for @matchesEmptyLiveTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'진행 중인 경기 없음'**
+  String get matchesEmptyLiveTitle;
+
+  /// No description provided for @matchesEmptyLiveBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'현재 진행 중인 경기가 없습니다.'**
+  String get matchesEmptyLiveBody;
+
+  /// No description provided for @matchesEmptyLiveAction.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 경기 보기'**
+  String get matchesEmptyLiveAction;
+
+  /// No description provided for @matchesEmptyDateTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'{date}에는 경기가 없습니다'**
+  String matchesEmptyDateTitle(String date);
+
+  /// No description provided for @matchesEmptyDateAction.
+  ///
+  /// In ko, this message translates to:
+  /// **'다른 날짜 보기'**
+  String get matchesEmptyDateAction;
+
+  /// No description provided for @matchesLeagueAiBadge.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI'**
+  String get matchesLeagueAiBadge;
 
   /// No description provided for @formInvalidEmail.
   ///
