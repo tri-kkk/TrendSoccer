@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
@@ -39,6 +40,7 @@ class TsStackBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final c = Theme.of(context).extension<TsThemeColors>()!;
     final homeFlex = (home.clamp(0.0, 1.0) * 1000).round().clamp(1, 1000);
     final drawFlex = (draw.clamp(0.0, 1.0) * 1000).round().clamp(1, 1000);
@@ -95,7 +97,7 @@ class TsStackBar extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    homeLabel ?? 'Wins',
+                    homeLabel ?? l10n.stackBarWins,
                     style: TsType.labelXsMedium.copyWith(color: c.textTertiary),
                   ),
                 ),
@@ -105,7 +107,7 @@ class TsStackBar extends StatelessWidget {
                   child: Align(
                     alignment: Alignment.center,
                     child: Text(
-                      drawLabel ?? 'Draws',
+                      drawLabel ?? l10n.stackBarDraws,
                       style: TsType.labelXsMedium.copyWith(color: c.textTertiary),
                     ),
                   ),
@@ -114,7 +116,7 @@ class TsStackBar extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: Text(
-                    awayLabel ?? 'Wins',
+                    awayLabel ?? l10n.stackBarWins,
                     style: TsType.labelXsMedium.copyWith(color: c.textTertiary),
                   ),
                 ),

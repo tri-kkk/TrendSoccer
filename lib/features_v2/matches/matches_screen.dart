@@ -32,6 +32,7 @@ import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
 import 'package:trendsoccer/design_system/widgets/ts_app_bar.dart';
+import 'package:trendsoccer/design_system/widgets/ts_bottom_navigation.dart';
 import 'package:trendsoccer/design_system/widgets/ts_chip.dart';
 import 'package:trendsoccer/design_system/widgets/ts_date_chip.dart';
 import 'package:trendsoccer/design_system/widgets/ts_badge.dart';
@@ -1401,6 +1402,11 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
         onAuthTap: () => context.push('/login'),
         tierLabel: PlanTierLabel.forPlanType(auth.planType, l10n),
         tierTone: PlanTierTone.forPlanType(auth.planType),
+        onAvatarTap: () {
+          StatefulNavigationShell.of(context).goBranch(
+            TsNavTab.values.indexOf(TsNavTab.menu),
+          );
+        },
       ),
       body: RefreshIndicator(
         onRefresh: _onMatchesRefresh,

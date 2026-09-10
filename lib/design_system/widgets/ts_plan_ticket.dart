@@ -32,10 +32,10 @@ class TsPlanTicket extends StatelessWidget {
         TsPlan.premium => TsBadgeTone.primary,
       };
 
-  String? get _defaultActionLabel => switch (plan) {
-        TsPlan.free => 'Upgrade',
+  String? _defaultActionLabel(AppLocalizations l10n) => switch (plan) {
+        TsPlan.free => l10n.planTicketActionUpgrade,
         TsPlan.trial => null,
-        TsPlan.premium => 'Manage',
+        TsPlan.premium => l10n.planTicketActionManage,
       };
 
   TsButtonStyle? get _actionStyle => switch (plan) {
@@ -53,7 +53,7 @@ class TsPlanTicket extends StatelessWidget {
       TsPlan.trial => l10n.appBarTierTrial,
       TsPlan.premium => l10n.appBarTierPremium,
     };
-    final buttonLabel = actionLabel ?? _defaultActionLabel;
+    final buttonLabel = actionLabel ?? _defaultActionLabel(l10n);
     final buttonStyle = _actionStyle;
 
     return Container(

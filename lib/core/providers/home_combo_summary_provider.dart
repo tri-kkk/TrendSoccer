@@ -23,14 +23,17 @@ class HomeComboSummary {
     required this.leagueCounts,
     required this.stableCount,
     required this.aggressiveCount,
-    required this.accuracyLabel,
+    required this.displayAccuracy,
   });
 
   final int comboCount;
   final List<HomeComboLeagueCount> leagueCounts;
   final int stableCount;
   final int aggressiveCount;
-  final String accuracyLabel;
+
+  /// Pre-formatted accuracy from [BaseballComboStatsView.displayAccuracy]
+  /// (e.g. `28%`, or `-` when nothing has settled).
+  final String displayAccuracy;
 
   double get stableFraction {
     final total = stableCount + aggressiveCount;
@@ -86,14 +89,9 @@ final homeComboSummaryProvider = FutureProvider<HomeComboSummary>((ref) async {
     leagueCounts: leagueCounts,
     stableCount: stableCount,
     aggressiveCount: aggressiveCount,
-    accuracyLabel: _accuracyLabel(accuracy),
+    displayAccuracy: accuracy,
   );
 });
-
-String _accuracyLabel(String displayAccuracy) {
-  if (displayAccuracy == '-') return 'Accuracy not available yet';
-  return '$displayAccuracy accuracy · last 14 days';
-}
 
 int? _foldCount(Object? raw) {
   if (raw is int) return raw;

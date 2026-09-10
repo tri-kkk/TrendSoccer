@@ -235,6 +235,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeComboTypeAggressive => 'Aggressive';
 
   @override
+  String homeComboAccuracyLast14Days(String accuracy) {
+    return '$accuracy accuracy · last 14 days';
+  }
+
+  @override
+  String get homeComboAccuracyUnavailable => 'Accuracy not available yet';
+
+  @override
+  String get homeComboTodayCountCaption => 'multi-match today';
+
+  @override
   String get homeComboViewAnalyses => 'View multi-match analyses';
 
   @override
@@ -1426,6 +1437,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get planTicketUpgrade => 'Upgrade subscription';
+
+  @override
+  String get planTicketActionUpgrade => 'Upgrade';
+
+  @override
+  String get planTicketActionManage => 'Manage';
+
+  @override
+  String get stackBarWins => 'Wins';
+
+  @override
+  String get stackBarDraws => 'Draws';
 
   @override
   String get premiumBenefit24h => '24-hour priority analysis access';

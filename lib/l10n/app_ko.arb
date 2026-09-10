@@ -94,6 +94,16 @@
   "homeAccuracyTitle": "분석 정확도",
   "homeAccuracyViewReports": "리포트 보기",
   "homeComboTypeAggressive": "공격형",
+  "homeComboAccuracyLast14Days": "{accuracy} 정확도 · 최근 14일",
+  "@homeComboAccuracyLast14Days": {
+    "placeholders": {
+      "accuracy": {
+        "type": "String"
+      }
+    }
+  },
+  "homeComboAccuracyUnavailable": "아직 정확도를 확인할 수 없습니다",
+  "homeComboTodayCountCaption": "오늘 다경기 분석",
   "homeComboViewAnalyses": "다경기 분석 보기",
   "homeSeeAll": "전체 보기",
   "homeTodayMatchesTitle": "오늘의 경기",
@@ -490,6 +500,10 @@
   "planTicketTrialStartDate": "체험 시작일 : {date}",
   "planTicketTrialTitle": "체험 플랜",
   "planTicketUpgrade": "구독 업그레이드",
+  "planTicketActionUpgrade": "업그레이드",
+  "planTicketActionManage": "관리",
+  "stackBarWins": "승",
+  "stackBarDraws": "무",
   "premiumBenefit24h": "24시간 우선 분석 접근",
   "premiumBenefitBaseballAi": "야구 AI Analysis",
   "premiumBenefitPremiumPick": "프리미엄 리포트 무제한",

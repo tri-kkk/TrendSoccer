@@ -35,6 +35,7 @@ import 'package:trendsoccer/design_system/tokens/ts_type.dart';
 import 'package:trendsoccer/design_system/widgets/ts_accuracy_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_analysis_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_app_bar.dart';
+import 'package:trendsoccer/design_system/widgets/ts_bottom_navigation.dart';
 import 'package:trendsoccer/design_system/widgets/ts_banner_slot.dart';
 import 'package:trendsoccer/design_system/widgets/ts_combo_today_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_empty_state.dart';
@@ -206,6 +207,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onAuthTap: () => context.push('/login'),
         tierLabel: PlanTierLabel.forPlanType(auth.planType, l10n),
         tierTone: PlanTierTone.forPlanType(auth.planType),
+        onAvatarTap: () {
+          StatefulNavigationShell.of(context).goBranch(
+            TsNavTab.values.indexOf(TsNavTab.menu),
+          );
+        },
       ),
       body: RefreshIndicator(
         onRefresh: _onHomeRefresh,
@@ -872,9 +878,14 @@ class _ComboTodaySection extends ConsumerWidget {
         actionLabel: l10n.retry,
         onAction: () => _retry(ref),
       ),
-      data: (summary) => TsComboTodayCard(
+      data: (summary) {
+        final accuracyLabel = summary.displayAccuracy == '-'
+            ? l10n.homeComboAccuracyUnavailable
+            : l10n.homeComboAccuracyLast14Days(summary.displayAccuracy);
+
+        return TsComboTodayCard(
         countValue: summary.comboCount.toString(),
-        countLabel: 'combinations today',
+        countLabel: l10n.homeComboTodayCountCaption,
         leagues: [
           for (final league in summary.leagueCounts)
             TsComboLeagueCount(
@@ -891,10 +902,11 @@ class _ComboTodaySection extends ConsumerWidget {
         stableValueLabel: summary.stableCount.toString(),
         aggressiveValueLabel: summary.aggressiveCount.toString(),
         stableFraction: summary.stableFraction,
-        accuracyLabel: summary.accuracyLabel,
+        accuracyLabel: accuracyLabel,
         ctaLabel: l10n.homeComboViewAnalyses,
         onCtaPressed: () => context.go('/reports/combo'),
-      ),
+      );
+      },
     );
 
     return Column(

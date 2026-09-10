@@ -94,6 +94,16 @@
   "homeAccuracyTitle": "Analysis accuracy",
   "homeAccuracyViewReports": "View reports",
   "homeComboTypeAggressive": "Aggressive",
+  "homeComboAccuracyLast14Days": "{accuracy} accuracy · last 14 days",
+  "@homeComboAccuracyLast14Days": {
+    "placeholders": {
+      "accuracy": {
+        "type": "String"
+      }
+    }
+  },
+  "homeComboAccuracyUnavailable": "Accuracy not available yet",
+  "homeComboTodayCountCaption": "multi-match today",
   "homeComboViewAnalyses": "View multi-match analyses",
   "homeSeeAll": "See all",
   "homeTodayMatchesTitle": "Today's Matches",
@@ -490,6 +500,10 @@
   "planTicketTrialStartDate": "Trial start : {date}",
   "planTicketTrialTitle": "Trial Plan",
   "planTicketUpgrade": "Upgrade subscription",
+  "planTicketActionUpgrade": "Upgrade",
+  "planTicketActionManage": "Manage",
+  "stackBarWins": "Wins",
+  "stackBarDraws": "Draws",
   "premiumBenefit24h": "24-hour priority analysis access",
   "premiumBenefitBaseballAi": "Baseball AI Analysis",
   "premiumBenefitPremiumPick": "Unlimited Premium Reports",

@@ -500,6 +500,24 @@ abstract class AppLocalizations {
   /// **'공격형'**
   String get homeComboTypeAggressive;
 
+  /// No description provided for @homeComboAccuracyLast14Days.
+  ///
+  /// In ko, this message translates to:
+  /// **'{accuracy} 정확도 · 최근 14일'**
+  String homeComboAccuracyLast14Days(String accuracy);
+
+  /// No description provided for @homeComboAccuracyUnavailable.
+  ///
+  /// In ko, this message translates to:
+  /// **'아직 정확도를 확인할 수 없습니다'**
+  String get homeComboAccuracyUnavailable;
+
+  /// No description provided for @homeComboTodayCountCaption.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘 다경기 분석'**
+  String get homeComboTodayCountCaption;
+
   /// No description provided for @homeComboViewAnalyses.
   ///
   /// In ko, this message translates to:
@@ -2707,6 +2725,30 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'구독 업그레이드'**
   String get planTicketUpgrade;
+
+  /// No description provided for @planTicketActionUpgrade.
+  ///
+  /// In ko, this message translates to:
+  /// **'업그레이드'**
+  String get planTicketActionUpgrade;
+
+  /// No description provided for @planTicketActionManage.
+  ///
+  /// In ko, this message translates to:
+  /// **'관리'**
+  String get planTicketActionManage;
+
+  /// No description provided for @stackBarWins.
+  ///
+  /// In ko, this message translates to:
+  /// **'승'**
+  String get stackBarWins;
+
+  /// No description provided for @stackBarDraws.
+  ///
+  /// In ko, this message translates to:
+  /// **'무'**
+  String get stackBarDraws;
 
   /// No description provided for @premiumBenefit24h.
   ///

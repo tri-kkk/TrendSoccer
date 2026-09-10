@@ -225,6 +225,17 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeComboTypeAggressive => '공격형';
 
   @override
+  String homeComboAccuracyLast14Days(String accuracy) {
+    return '$accuracy 정확도 · 최근 14일';
+  }
+
+  @override
+  String get homeComboAccuracyUnavailable => '아직 정확도를 확인할 수 없습니다';
+
+  @override
+  String get homeComboTodayCountCaption => '오늘 다경기 분석';
+
+  @override
   String get homeComboViewAnalyses => '다경기 분석 보기';
 
   @override
@@ -1389,6 +1400,18 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get planTicketUpgrade => '구독 업그레이드';
+
+  @override
+  String get planTicketActionUpgrade => '업그레이드';
+
+  @override
+  String get planTicketActionManage => '관리';
+
+  @override
+  String get stackBarWins => '승';
+
+  @override
+  String get stackBarDraws => '무';
 
   @override
   String get premiumBenefit24h => '24시간 우선 분석 접근';
