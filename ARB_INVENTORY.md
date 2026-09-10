@@ -1,6 +1,10 @@
 # ARB Inventory (corrected)
 
-Investigation only.
+**Migration complete (reference only).** The app ARB migration finished in commits `ff5be04` through `9646c48` (nine steps). This file is kept as reference for the orphan cleanup that follows screen assembly — not a live work list. Orphan census (post-migration): 338 keys with no `lib/` call site; 318 of those belong to screens not built yet, so dead vs unwired cannot be distinguished until assembly finishes.
+
+**Do not act on these stale entries:** `lib/design_system/widgets/ts_status_badge.dart` (widget deleted, never rendered); `reportPremiumOnlyTitle` (removed from ARB during migration — use `reportsComboLockedTitle`).
+
+Investigation only (original snapshot below).
 
 ## Inclusion rule
 
@@ -89,8 +93,8 @@ A string is listed in Q1 only when it is **rendered to the user as UI copy** —
 | lib/design_system/widgets/ts_result_dot.dart | 16 | `W` | other | common | B | DECISION: labelWinShort, soccerStatWins |
 | lib/design_system/widgets/ts_stack_bar.dart | 108 | `Draws` | other | common | C | — |
 | lib/design_system/widgets/ts_stack_bar.dart:98; lib/design_system/widgets/ts_stack_bar.dart:117 | 2 | `Wins` | other | common | C | — |
-| lib/design_system/widgets/ts_status_badge.dart | 21 | `CAN` | other | common | C | — |
-| lib/design_system/widgets/ts_status_badge.dart | 18 | `HT` | other | common | C | — |
+| lib/design_system/widgets/ts_status_badge.dart **STALE — file deleted** | 21 | `CAN` | other | common | C | — |
+| lib/design_system/widgets/ts_status_badge.dart **STALE — file deleted** | 18 | `HT` | other | common | C | — |
 | lib/main.dart:106; lib/main.dart:186 | 2 | `TrendSoccer` | other | common | C | appName |
 | lib/core/models/match_header_data.dart | 168 | `NS` | other | home | C | — |
 | lib/features_v2/feed/feed_news_logic.dart:50; lib/features_v2/home/home_screen.dart:977 | 2 | `News` | label | home | C | — |
@@ -114,8 +118,8 @@ A string is listed in Q1 only when it is **rendered to the user as UI copy** —
 | lib/features_v2/home/home_screen.dart | 172 | `Unlock full analysis` | other | home | C | — |
 | lib/features_v2/home/home_screen.dart | 892 | `View combinations` | label | home | C | — |
 | lib/features_v2/home/home_screen.dart | 440 | `View picks` | label | home | C | — |
-| lib/design_system/widgets/ts_status_badge.dart:19; lib/features_v2/matches/matches_screen.dart:1113; lib/features_v2/matches/match_report_screen.dart:729 | 3 | `FT` | other | matchReport | B | fixtureStatusFinal |
-| lib/design_system/widgets/ts_status_badge.dart:17; lib/features_v2/matches/matches_screen.dart:1168; lib/features_v2/matches/match_report_screen.dart:735 | 3 | `LIVE` | other | matchReport | B | fixtureLive |
+| lib/design_system/widgets/ts_status_badge.dart:19 **STALE — file deleted**; lib/features_v2/matches/matches_screen.dart:1113; lib/features_v2/matches/match_report_screen.dart:729 | 3 | `FT` | other | matchReport | B | fixtureStatusFinal |
+| lib/design_system/widgets/ts_status_badge.dart:17 **STALE — file deleted**; lib/features_v2/matches/matches_screen.dart:1168; lib/features_v2/matches/match_report_screen.dart:735 | 3 | `LIVE` | other | matchReport | B | fixtureLive |
 | lib/features_v2/matches/match_report_screen.dart | 488 | `Match Report` | title | matchReport | C | matchReportTitle |
 | lib/features_v2/matches/widgets/baseball_ai_match_analysis_report_block.dart:216; lib/features_v2/matches/widgets/soccer_predict_report_blocks.dart:550 | 2 | `-` | other | matchReport | C | — |
 | lib/features_v2/matches/widgets/baseball_extended_report_blocks.dart | 334 | `AVG` | label | matchReport | B | — |
@@ -143,7 +147,7 @@ A string is listed in Q1 only when it is **rendered to the user as UI copy** —
 | lib/features_v2/matches/widgets/soccer_predict_report_blocks.dart:107; lib/features_v2/matches/widgets/soccer_predict_report_blocks.dart:155 | 2 | `Prediction` | title | matchReport | C | — |
 | lib/features_v2/matches/widgets/soccer_predict_report_blocks.dart:113; lib/features_v2/matches/widgets/soccer_predict_report_blocks.dart:162 | 2 | `Reasoning` | title | matchReport | C | soccerAnalysisReasoning |
 | lib/features_v2/matches/widgets/soccer_predict_report_blocks.dart:119; lib/features_v2/matches/widgets/soccer_predict_report_blocks.dart:169 | 2 | `Three-method` | title | matchReport | C | — |
-| lib/design_system/widgets/ts_status_badge.dart:20; lib/features_v2/matches/matches_screen.dart:1090 | 2 | `PPD` | other | matches | B | statusPostponed |
+| lib/design_system/widgets/ts_status_badge.dart:20 **STALE — file deleted**; lib/features_v2/matches/matches_screen.dart:1090 | 2 | `PPD` | other | matches | B | statusPostponed |
 | lib/features_v2/matches/matches_screen.dart | 1687 | `AI` | badge | matches | B | — |
 | lib/features_v2/matches/matches_screen.dart | 1161 | `All` | label | matches | C | DECISION: feedNewsSportAll, filterAll |
 | lib/features_v2/matches/matches_screen.dart | 1491 | `Browse all matches` | button | matches | C | — |
@@ -243,7 +247,7 @@ A string is listed in Q1 only when it is **rendered to the user as UI copy** —
 | `lib/design_system/widgets/ts_sport_toggle.dart` | 2 | 0 | 0 | 2 |
 | `lib/design_system/widgets/ts_stack_bar.dart` | 6 | 0 | 0 | 6 |
 | `lib/design_system/widgets/ts_starting_pitchers_section.dart` | 1 | 0 | 0 | 1 |
-| `lib/design_system/widgets/ts_status_badge.dart` | 2 | 3 | 0 | 5 |
+| `lib/design_system/widgets/ts_status_badge.dart` **STALE — file deleted** | 2 | 3 | 0 | 5 |
 | `lib/features_v2/auth/login_screen.dart` | 12 | 0 | 0 | 12 |
 | `lib/features_v2/auth/signup_complete_screen.dart` | 4 | 0 | 0 | 4 |
 | `lib/features_v2/auth/signup_terms_screen.dart` | 12 | 0 | 0 | 12 |
@@ -291,7 +295,7 @@ A string is listed in Q1 only when it is **rendered to the user as UI copy** —
 | `reportNotFoundSubtitle` | Please select again from the list. | feed/preview_detail_screen | feed | no (feed) |
 | `reportNotFoundTitle` | Report not found. | feed/preview_detail_screen | feed | no (feed) |
 | `reportPremiumOnlyMessage` | Subscribe to view AI analysis results | (unused) | matchReport | yes → `matchReportPremiumOnlyMessage` |
-| `reportPremiumOnlyTitle` | Premium members only | (unused) | matchReport | yes → `matchReportPremiumOnlyTitle` |
+| `reportPremiumOnlyTitle` **STALE — removed from ARB; use `reportsComboLockedTitle`** | Premium members only | (unused) | matchReport | was → `matchReportPremiumOnlyTitle` |
 | `reportTabAiAnalysis` | AI Analysis | (unused) | matchReport | yes → `matchReportTabAiAnalysis` |
 | `reportTabPremium` | Premium | (unused) | matchReport | yes → `matchReportTabPremium` |
 | `reportTabStandard` | Standard | (unused) | matchReport | yes → `matchReportTabStandard` |
@@ -326,7 +330,7 @@ Check other leagues or view all picks. | reports/reports_soccer_premium_body | r
 - `reportBlockLoadError`: lib/features_v2/matches/match_report_screen.dart:662, lib/features_v2/matches/widgets/baseball_ai_match_analysis_report_block.dart:367, lib/features_v2/matches/widgets/baseball_extended_report_blocks.dart:981, lib/features_v2/matches/widgets/baseball_h2h_report_block.dart:371, lib/features_v2/matches/widgets/baseball_pitcher_analysis_report_block.dart:249, lib/features_v2/matches/widgets/baseball_starting_pitchers_report_block.dart:667, lib/features_v2/matches/widgets/soccer_extended_report_blocks.dart:600, lib/features_v2/matches/widgets/soccer_predict_report_blocks.dart:520
 - `reportBlockUnavailable`: lib/features_v2/matches/widgets/soccer_extended_report_blocks.dart:601, lib/features_v2/matches/widgets/soccer_predict_report_blocks.dart:521
 - `reportPremiumOnlyMessage`: no call sites
-- `reportPremiumOnlyTitle`: no call sites
+- `reportPremiumOnlyTitle` **STALE — key removed from ARB**; wired replacement: `reportsComboLockedTitle`
 - `reportTabAiAnalysis`: no call sites
 - `reportTabPremium`: no call sites
 - `reportTabStandard`: no call sites
@@ -653,9 +657,9 @@ Check other leagues or view all picks. | reports/reports_soccer_premium_body | r
 - **identical**: `reportsComboDetailTitle` ↔ `todayCombination`
   - `reportsComboDetailTitle`: "Multi-Match Analysis"
   - `todayCombination`: "Multi-match analysis"
-- **identical**: `reportsComboLockedTitle` ↔ `reportPremiumOnlyTitle`
+- **identical**: `reportsComboLockedTitle` ↔ `reportPremiumOnlyTitle` **STALE — `reportPremiumOnlyTitle` removed from ARB**
   - `reportsComboLockedTitle`: "Premium members only"
-  - `reportPremiumOnlyTitle`: "Premium members only"
+  - `reportPremiumOnlyTitle`: "Premium members only" (historical; key deleted)
 - **identical**: `reportsComboTypeHighIndex` ↔ `comboHighOdds`
   - `reportsComboTypeHighIndex`: "High index"
   - `comboHighOdds`: "High index"
@@ -711,13 +715,13 @@ Check other leagues or view all picks. | reports/reports_soccer_premium_body | r
 - `D` → `labelDrawShort` (lib/design_system/widgets/ts_result_dot.dart:17)
 - `L` → `soccerStatLosses` (lib/design_system/widgets/ts_result_dot.dart:18)
 - `TrendSoccer` → `appName` (lib/main.dart:106; lib/main.dart:186)
-- `FT` → `fixtureStatusFinal` (lib/design_system/widgets/ts_status_badge.dart:19; lib/features_v2/matches/matches_screen.dart:1113; lib/features_v2/matches/match_report_screen.dart:729)
-- `LIVE` → `fixtureLive` (lib/design_system/widgets/ts_status_badge.dart:17; lib/features_v2/matches/matches_screen.dart:1168; lib/features_v2/matches/match_report_screen.dart:735)
+- `FT` → `fixtureStatusFinal` (lib/design_system/widgets/ts_status_badge.dart:19 **STALE — file deleted**; lib/features_v2/matches/matches_screen.dart:1113; lib/features_v2/matches/match_report_screen.dart:729)
+- `LIVE` → `fixtureLive` (lib/design_system/widgets/ts_status_badge.dart:17 **STALE — file deleted**; lib/features_v2/matches/matches_screen.dart:1168; lib/features_v2/matches/match_report_screen.dart:735)
 - `Match Report` → `matchReportTitle` (lib/features_v2/matches/match_report_screen.dart:488)
 - `Recent form` → `soccerRecentForm` (lib/features_v2/matches/widgets/baseball_extended_report_blocks.dart:426; lib/features_v2/matches/widgets/baseball_extended_report_blocks.dart:440; lib/features_v2/matches/widgets/baseball_extended_report_blocks.dart:446; lib/features_v2/matches/widgets/baseball_extended_report_blocks.dart:460; lib/features_v2/matches/widgets/baseball_extended_report_blocks.dart:467; lib/features_v2/matches/widgets/baseball_extended_report_blocks.dart:475; lib/features_v2/matches/widgets/baseball_extended_report_blocks.dart:480)
 - `Premium content` → `premiumNonSubscriberTitle` (lib/features_v2/matches/widgets/baseball_report_lock_policy.dart:40; lib/features_v2/matches/widgets/soccer_report_lock_policy.dart:53)
 - `Reasoning` → `soccerAnalysisReasoning` (lib/features_v2/matches/widgets/soccer_predict_report_blocks.dart:113; lib/features_v2/matches/widgets/soccer_predict_report_blocks.dart:162)
-- `PPD` → `statusPostponed` (lib/design_system/widgets/ts_status_badge.dart:20; lib/features_v2/matches/matches_screen.dart:1090)
+- `PPD` → `statusPostponed` (lib/design_system/widgets/ts_status_badge.dart:20 **STALE — file deleted**; lib/features_v2/matches/matches_screen.dart:1090)
 - `SUSP` → `statusInterrupted` (lib/features_v2/matches/matches_screen.dart:1098)
 - `Try another date from the strip above.` → `reportsComboEmptyBody` (lib/features_v2/matches/matches_screen.dart:1512)
 - `Email` → `helpCenterEmail` (lib/features_v2/menu/help_screen.dart:200)
