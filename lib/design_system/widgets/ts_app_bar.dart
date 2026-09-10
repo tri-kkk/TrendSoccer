@@ -10,6 +10,7 @@ import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
 import 'package:trendsoccer/design_system/widgets/ts_badge.dart';
 import 'package:trendsoccer/design_system/widgets/ts_button.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 
 enum TsAppBarType { title, back, homeGuest, homeMember }
 
@@ -20,9 +21,10 @@ class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.type = TsAppBarType.title,
     this.title,
     this.onBack,
-    this.authLabel = 'Log in',
+    this.authLabel,
     this.onAuthTap,
-    this.tierLabel = 'PREMIUM',
+    this.tierLabel,
+    this.tierTone = TsBadgeTone.primary,
     this.onAvatarTap,
     super.key,
   });
@@ -30,9 +32,10 @@ class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
   final TsAppBarType type;
   final String? title;
   final VoidCallback? onBack;
-  final String authLabel;
+  final String? authLabel;
   final VoidCallback? onAuthTap;
-  final String tierLabel;
+  final String? tierLabel;
+  final TsBadgeTone tierTone;
   final VoidCallback? onAvatarTap;
 
   @override
@@ -41,6 +44,9 @@ class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
+    final l10n = AppLocalizations.of(context)!;
+    final resolvedAuthLabel = authLabel ?? l10n.authLogIn;
+    final resolvedTierLabel = tierLabel ?? l10n.appBarTierPremium;
 
     return Material(
       color: c.canvas,
@@ -91,7 +97,7 @@ class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
                 children: [
                   const TsLogo(TsLogoType.horizon, height: TsSpacing.xxl),
                   TsButton(
-                    label: authLabel,
+                    label: resolvedAuthLabel,
                     style: TsButtonStyle.primary,
                     size: TsButtonSize.small,
                     onPressed: onAuthTap,
@@ -110,7 +116,7 @@ class TsAppBar extends StatelessWidget implements PreferredSizeWidget {
                   const TsLogo(TsLogoType.horizon, height: TsSpacing.xxl),
                   Row(
                     children: [
-                      TsBadge(label: tierLabel, tone: TsBadgeTone.primary),
+                      TsBadge(label: resolvedTierLabel, tone: tierTone),
                       const SizedBox(width: TsSpacing.sm),
                       GestureDetector(
                         onTap: onAvatarTap,

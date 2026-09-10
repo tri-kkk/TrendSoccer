@@ -1329,6 +1329,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
+    final l10n = context.l10n;
     final auth = ref.watch(authProvider);
     final isGuest = auth.planType == PlanType.none;
 
@@ -1397,9 +1398,9 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen>
       backgroundColor: c.canvas,
       appBar: TsAppBar(
         type: isGuest ? TsAppBarType.homeGuest : TsAppBarType.homeMember,
-        authLabel: 'Log in',
         onAuthTap: () => context.push('/login'),
-        tierLabel: PlanTierLabel.forPlanType(auth.planType),
+        tierLabel: PlanTierLabel.forPlanType(auth.planType, l10n),
+        tierTone: PlanTierTone.forPlanType(auth.planType),
       ),
       body: RefreshIndicator(
         onRefresh: _onMatchesRefresh,

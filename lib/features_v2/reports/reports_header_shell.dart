@@ -147,9 +147,9 @@ class _ReportsHeaderShellState extends ConsumerState<ReportsHeaderShell> {
       backgroundColor: c.canvas,
       appBar: TsAppBar(
         type: isGuest ? TsAppBarType.homeGuest : TsAppBarType.homeMember,
-        authLabel: 'Log in',
         onAuthTap: () => context.push('/login'),
-        tierLabel: PlanTierLabel.forPlanType(auth.planType),
+        tierLabel: PlanTierLabel.forPlanType(auth.planType, l10n),
+        tierTone: PlanTierTone.forPlanType(auth.planType),
         onAvatarTap: () {
           StatefulNavigationShell.of(context).goBranch(
             TsNavTab.values.indexOf(TsNavTab.menu),

@@ -163,7 +163,7 @@ class PreviewDetailScreen extends ConsumerWidget {
     return (
       headline: l10n.lockGuestTitle,
       subline: l10n.lockGuestSubtitle,
-      actionLabel: l10n.lockGuestAction,
+      actionLabel: l10n.authLogIn,
     );
   }
   return (

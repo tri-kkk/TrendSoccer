@@ -314,6 +314,33 @@ class AppLocalizationsKo extends AppLocalizations {
   String get appName => '트렌드사커';
 
   @override
+  String get appBarTierFree => '무료';
+
+  @override
+  String get appBarTierPremium => '프리미엄';
+
+  @override
+  String get appBarTierTrial => '체험';
+
+  @override
+  String get authLogIn => '로그인';
+
+  @override
+  String get bottomNavTabFeed => '피드';
+
+  @override
+  String get bottomNavTabHome => '홈';
+
+  @override
+  String get bottomNavTabMatches => '경기';
+
+  @override
+  String get bottomNavTabMenu => '메뉴';
+
+  @override
+  String get bottomNavTabReports => '리포트';
+
+  @override
   String get appGateMaintenanceRetryToast => '아직 점검 중입니다. 잠시 후 다시 시도해주세요.';
 
   @override
@@ -957,9 +984,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get lockGuestAction => '로그인';
-
-  @override
   String get lockGuestSubtitle => '로그인 후 이용할 수 있습니다';
 
   @override
@@ -967,9 +991,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get lockPremiumAction => '요금제 보기';
-
-  @override
-  String get loginAppBarTitle => '로그인';
 
   @override
   String loginErrorAccountDeleted(int days) {

@@ -183,7 +183,7 @@ class _TrendSoccerAppState extends ConsumerState<TrendSoccerApp>
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      title: 'TrendSoccer',
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appName,
       themeMode: themeMode,
       theme: buildTsTheme(Brightness.light),
       darkTheme: buildTsTheme(Brightness.dark),

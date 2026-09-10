@@ -190,9 +190,9 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
       backgroundColor: c.canvas,
       appBar: TsAppBar(
         type: isGuest ? TsAppBarType.homeGuest : TsAppBarType.homeMember,
-        authLabel: l10n.lockGuestAction,
         onAuthTap: isGuest ? () => context.push('/login') : null,
-        tierLabel: PlanTierLabel.forPlanType(auth.planType),
+        tierLabel: PlanTierLabel.forPlanType(auth.planType, l10n),
+        tierTone: PlanTierTone.forPlanType(auth.planType),
         onAvatarTap: null,
       ),
       body: SingleChildScrollView(

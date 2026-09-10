@@ -203,9 +203,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       backgroundColor: c.canvas,
       appBar: TsAppBar(
         type: isGuest ? TsAppBarType.homeGuest : TsAppBarType.homeMember,
-        authLabel: 'Log in',
         onAuthTap: () => context.push('/login'),
-        tierLabel: PlanTierLabel.forPlanType(auth.planType),
+        tierLabel: PlanTierLabel.forPlanType(auth.planType, l10n),
+        tierTone: PlanTierTone.forPlanType(auth.planType),
       ),
       body: RefreshIndicator(
         onRefresh: _onHomeRefresh,

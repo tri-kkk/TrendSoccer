@@ -141,7 +141,7 @@ class _ComboDetailScreenState extends ConsumerState<ComboDetailScreen> {
           title: l10n.reportsComboLockedTitle,
           description: l10n.reportsComboLockedBody,
           actionLabel:
-              auth.isGuest ? l10n.loginAppBarTitle : l10n.subscribeNow,
+              auth.isGuest ? l10n.authLogIn : l10n.subscribeNow,
           onAction: () {
             if (auth.isGuest) {
               context.push('/login');

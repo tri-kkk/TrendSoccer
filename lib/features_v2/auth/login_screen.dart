@@ -147,7 +147,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         backgroundColor: c.canvas,
         appBar: TsAppBar(
           type: TsAppBarType.back,
-          title: l10n.loginAppBarTitle,
+          title: l10n.authLogIn,
           onBack: _handleBack,
         ),
         body: SafeArea(

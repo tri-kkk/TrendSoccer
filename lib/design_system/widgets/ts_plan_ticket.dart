@@ -6,6 +6,7 @@ import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
 import 'package:trendsoccer/design_system/widgets/ts_badge.dart';
 import 'package:trendsoccer/design_system/widgets/ts_button.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 
 enum TsPlan { free, trial, premium }
 
@@ -25,16 +26,10 @@ class TsPlanTicket extends StatelessWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
 
-  String get _defaultPlanLabel => switch (plan) {
-        TsPlan.free => 'FREE',
-        TsPlan.trial => 'TRIAL',
-        TsPlan.premium => 'PREMIUM',
-      };
-
   TsBadgeTone get _planTone => switch (plan) {
         TsPlan.free => TsBadgeTone.neutral,
-        TsPlan.trial => TsBadgeTone.primary,
-        TsPlan.premium => TsBadgeTone.positive,
+        TsPlan.trial => TsBadgeTone.positive,
+        TsPlan.premium => TsBadgeTone.primary,
       };
 
   String? get _defaultActionLabel => switch (plan) {
@@ -52,6 +47,12 @@ class TsPlanTicket extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
+    final l10n = AppLocalizations.of(context)!;
+    final defaultPlanLabel = switch (plan) {
+      TsPlan.free => l10n.appBarTierFree,
+      TsPlan.trial => l10n.appBarTierTrial,
+      TsPlan.premium => l10n.appBarTierPremium,
+    };
     final buttonLabel = actionLabel ?? _defaultActionLabel;
     final buttonStyle = _actionStyle;
 
@@ -69,7 +70,7 @@ class TsPlanTicket extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TsBadge(
-                  label: planLabel ?? _defaultPlanLabel,
+                  label: planLabel ?? defaultPlanLabel,
                   tone: _planTone,
                 ),
                 const SizedBox(height: TsSpacing.xs),

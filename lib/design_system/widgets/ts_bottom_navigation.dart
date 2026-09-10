@@ -8,6 +8,7 @@ import 'package:trendsoccer/design_system/icons/ts_icons.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 
 enum TsNavTab { home, matches, reports, feed, menu }
 
@@ -24,6 +25,7 @@ class TsBottomNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).extension<TsThemeColors>()!;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       height: 64,
@@ -49,7 +51,7 @@ class TsBottomNavigation extends StatelessWidget {
                     ),
                     const SizedBox(height: TsSpacing.xxs),
                     Text(
-                      _label(tab),
+                      _label(tab, l10n),
                       style: (tab == active
                               ? TsType.labelSBold
                               : TsType.labelSMedium)
@@ -75,11 +77,11 @@ class TsBottomNavigation extends StatelessWidget {
         TsNavTab.menu => TsIcons.menu,
       };
 
-  static String _label(TsNavTab tab) => switch (tab) {
-        TsNavTab.home => 'Home',
-        TsNavTab.matches => 'Matches',
-        TsNavTab.reports => 'Reports',
-        TsNavTab.feed => 'Feed',
-        TsNavTab.menu => 'Menu',
+  static String _label(TsNavTab tab, AppLocalizations l10n) => switch (tab) {
+        TsNavTab.home => l10n.bottomNavTabHome,
+        TsNavTab.matches => l10n.bottomNavTabMatches,
+        TsNavTab.reports => l10n.bottomNavTabReports,
+        TsNavTab.feed => l10n.bottomNavTabFeed,
+        TsNavTab.menu => l10n.bottomNavTabMenu,
       };
 }

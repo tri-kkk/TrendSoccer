@@ -325,6 +325,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appName => 'TrendSoccer';
 
   @override
+  String get appBarTierFree => 'FREE';
+
+  @override
+  String get appBarTierPremium => 'PREMIUM';
+
+  @override
+  String get appBarTierTrial => 'TRIAL';
+
+  @override
+  String get authLogIn => 'Log in';
+
+  @override
+  String get bottomNavTabFeed => 'Feed';
+
+  @override
+  String get bottomNavTabHome => 'Home';
+
+  @override
+  String get bottomNavTabMatches => 'Matches';
+
+  @override
+  String get bottomNavTabMenu => 'Menu';
+
+  @override
+  String get bottomNavTabReports => 'Reports';
+
+  @override
   String get appGateMaintenanceRetryToast =>
       'Still under maintenance. Please try again shortly.';
 
@@ -984,9 +1011,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get lockGuestAction => 'Log in';
-
-  @override
   String get lockGuestSubtitle => 'Log in to continue';
 
   @override
@@ -994,9 +1018,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lockPremiumAction => 'View plans';
-
-  @override
-  String get loginAppBarTitle => 'Log In';
 
   @override
   String loginErrorAccountDeleted(int days) {

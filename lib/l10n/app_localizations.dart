@@ -674,6 +674,60 @@ abstract class AppLocalizations {
   /// **'트렌드사커'**
   String get appName;
 
+  /// No description provided for @appBarTierFree.
+  ///
+  /// In ko, this message translates to:
+  /// **'무료'**
+  String get appBarTierFree;
+
+  /// No description provided for @appBarTierPremium.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄'**
+  String get appBarTierPremium;
+
+  /// No description provided for @appBarTierTrial.
+  ///
+  /// In ko, this message translates to:
+  /// **'체험'**
+  String get appBarTierTrial;
+
+  /// No description provided for @authLogIn.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그인'**
+  String get authLogIn;
+
+  /// No description provided for @bottomNavTabFeed.
+  ///
+  /// In ko, this message translates to:
+  /// **'피드'**
+  String get bottomNavTabFeed;
+
+  /// No description provided for @bottomNavTabHome.
+  ///
+  /// In ko, this message translates to:
+  /// **'홈'**
+  String get bottomNavTabHome;
+
+  /// No description provided for @bottomNavTabMatches.
+  ///
+  /// In ko, this message translates to:
+  /// **'경기'**
+  String get bottomNavTabMatches;
+
+  /// No description provided for @bottomNavTabMenu.
+  ///
+  /// In ko, this message translates to:
+  /// **'메뉴'**
+  String get bottomNavTabMenu;
+
+  /// No description provided for @bottomNavTabReports.
+  ///
+  /// In ko, this message translates to:
+  /// **'리포트'**
+  String get bottomNavTabReports;
+
   /// No description provided for @appGateMaintenanceRetryToast.
   ///
   /// In ko, this message translates to:
@@ -1892,12 +1946,6 @@ abstract class AppLocalizations {
   /// **'{minutes}분'**
   String liveMinutes(int minutes);
 
-  /// No description provided for @lockGuestAction.
-  ///
-  /// In ko, this message translates to:
-  /// **'로그인'**
-  String get lockGuestAction;
-
   /// No description provided for @lockGuestSubtitle.
   ///
   /// In ko, this message translates to:
@@ -1915,12 +1963,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'요금제 보기'**
   String get lockPremiumAction;
-
-  /// No description provided for @loginAppBarTitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'로그인'**
-  String get loginAppBarTitle;
 
   /// No description provided for @loginErrorAccountDeleted.
   ///
