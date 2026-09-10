@@ -428,6 +428,24 @@ abstract class AppLocalizations {
   /// **'뉴스'**
   String get feedNewsLabel;
 
+  /// No description provided for @feedTabHighlights.
+  ///
+  /// In ko, this message translates to:
+  /// **'하이라이트'**
+  String get feedTabHighlights;
+
+  /// No description provided for @feedTabNews.
+  ///
+  /// In ko, this message translates to:
+  /// **'뉴스'**
+  String get feedTabNews;
+
+  /// No description provided for @feedTabPreview.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리뷰'**
+  String get feedTabPreview;
+
   /// No description provided for @homeAccuracyBaselineThreeWay.
   ///
   /// In ko, this message translates to:
@@ -476,18 +494,6 @@ abstract class AppLocalizations {
   /// **'리포트 보기'**
   String get homeAccuracyViewReports;
 
-  /// No description provided for @homeBaseballLeagueCodes.
-  ///
-  /// In ko, this message translates to:
-  /// **'MLB · KBO · NPB'**
-  String get homeBaseballLeagueCodes;
-
-  /// No description provided for @homeComboTodayBaseballSubtitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'오늘의 야구 다경기 분석'**
-  String get homeComboTodayBaseballSubtitle;
-
   /// No description provided for @homeComboTypeAggressive.
   ///
   /// In ko, this message translates to:
@@ -499,18 +505,6 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'다경기 분석 보기'**
   String get homeComboViewAnalyses;
-
-  /// No description provided for @homeSoccerAnalysisSubtitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'프리미어리그 · 라리가 · UCL 외'**
-  String get homeSoccerAnalysisSubtitle;
-
-  /// No description provided for @homeTodayMatchesSubtitle.
-  ///
-  /// In ko, this message translates to:
-  /// **'오늘 열리는 경기'**
-  String get homeTodayMatchesSubtitle;
 
   /// No description provided for @homeSeeAll.
   ///
@@ -641,8 +635,26 @@ abstract class AppLocalizations {
   /// No description provided for @reportsComboDetailTitle.
   ///
   /// In ko, this message translates to:
-  /// **'멀티 매치 분석'**
+  /// **'다경기 분석'**
   String get reportsComboDetailTitle;
+
+  /// No description provided for @reportsTabAnalysis.
+  ///
+  /// In ko, this message translates to:
+  /// **'분석'**
+  String get reportsTabAnalysis;
+
+  /// No description provided for @reportsTabMultiMatch.
+  ///
+  /// In ko, this message translates to:
+  /// **'다경기'**
+  String get reportsTabMultiMatch;
+
+  /// No description provided for @reportsTabPremium.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄'**
+  String get reportsTabPremium;
 
   /// No description provided for @comboNotFound.
   ///
@@ -1187,7 +1199,7 @@ abstract class AppLocalizations {
   /// No description provided for @cardTodayCombo.
   ///
   /// In ko, this message translates to:
-  /// **'오늘의 다경기 분석'**
+  /// **'다경기 분석'**
   String get cardTodayCombo;
 
   /// No description provided for @cardTodayPick.

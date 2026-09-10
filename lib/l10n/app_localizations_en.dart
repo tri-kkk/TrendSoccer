@@ -194,6 +194,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedNewsLabel => 'News';
 
   @override
+  String get feedTabHighlights => 'Highlights';
+
+  @override
+  String get feedTabNews => 'News';
+
+  @override
+  String get feedTabPreview => 'Preview';
+
+  @override
   String get homeAccuracyBaselineThreeWay =>
       'Baseline 33% — random guess across three results';
 
@@ -223,23 +232,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeAccuracyViewReports => 'View reports';
 
   @override
-  String get homeBaseballLeagueCodes => 'MLB · KBO · NPB';
-
-  @override
-  String get homeComboTodayBaseballSubtitle =>
-      'Today\'s baseball multi-match analyses';
-
-  @override
   String get homeComboTypeAggressive => 'Aggressive';
 
   @override
   String get homeComboViewAnalyses => 'View multi-match analyses';
-
-  @override
-  String get homeSoccerAnalysisSubtitle => 'EPL · LaLiga · UCL and more';
-
-  @override
-  String get homeTodayMatchesSubtitle => 'Kicking off today';
 
   @override
   String get homeSeeAll => 'See all';
@@ -308,7 +304,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportsComboLockedBody => 'Subscribe to see the full combination.';
 
   @override
-  String get reportsComboDetailTitle => 'Multi-Match Analysis';
+  String get reportsComboDetailTitle => 'Multi-match analysis';
+
+  @override
+  String get reportsTabAnalysis => 'Analysis';
+
+  @override
+  String get reportsTabMultiMatch => 'Multi-Match';
+
+  @override
+  String get reportsTabPremium => 'Premium';
 
   @override
   String get comboNotFound => 'No combination picks are available.';

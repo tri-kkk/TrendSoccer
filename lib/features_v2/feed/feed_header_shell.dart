@@ -10,6 +10,7 @@ import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/widgets/ts_app_bar.dart';
 import 'package:trendsoccer/design_system/widgets/ts_bottom_navigation.dart';
 import 'package:trendsoccer/design_system/widgets/ts_segment_tabs.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/features_v2/feed/feed_route_map.dart';
 
 /// Shared feed header: app bar, segment tabs, optional filter row.
@@ -39,7 +40,8 @@ class FeedHeaderShell extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     final isGuest = auth.planType == PlanType.none;
     final c = Theme.of(context).extension<TsThemeColors>()!;
-    final segmentLabels = feedSegmentLabels();
+    final l10n = AppLocalizations.of(context)!;
+    final segmentLabels = feedSegmentLabels(l10n);
     final activeSegmentIndex = feedSegmentIndex(segment);
 
     return Scaffold(

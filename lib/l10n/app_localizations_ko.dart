@@ -186,6 +186,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get feedNewsLabel => '뉴스';
 
   @override
+  String get feedTabHighlights => '하이라이트';
+
+  @override
+  String get feedTabNews => '뉴스';
+
+  @override
+  String get feedTabPreview => '프리뷰';
+
+  @override
   String get homeAccuracyBaselineThreeWay => '기준선 33% — 세 가지 결과 중 무작위 선택';
 
   @override
@@ -213,22 +222,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeAccuracyViewReports => '리포트 보기';
 
   @override
-  String get homeBaseballLeagueCodes => 'MLB · KBO · NPB';
-
-  @override
-  String get homeComboTodayBaseballSubtitle => '오늘의 야구 다경기 분석';
-
-  @override
   String get homeComboTypeAggressive => '공격형';
 
   @override
   String get homeComboViewAnalyses => '다경기 분석 보기';
-
-  @override
-  String get homeSoccerAnalysisSubtitle => '프리미어리그 · 라리가 · UCL 외';
-
-  @override
-  String get homeTodayMatchesSubtitle => '오늘 열리는 경기';
 
   @override
   String get homeSeeAll => '전체 보기';
@@ -296,7 +293,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get reportsComboLockedBody => '구독하시면 조합 구성을 모두 확인할 수 있습니다.';
 
   @override
-  String get reportsComboDetailTitle => '멀티 매치 분석';
+  String get reportsComboDetailTitle => '다경기 분석';
+
+  @override
+  String get reportsTabAnalysis => '분석';
+
+  @override
+  String get reportsTabMultiMatch => '다경기';
+
+  @override
+  String get reportsTabPremium => '프리미엄';
 
   @override
   String get comboNotFound => '준비된 조합 경기 정보가 없습니다';
@@ -580,7 +586,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get cardStreak => '연속 일치';
 
   @override
-  String get cardTodayCombo => '오늘의 다경기 분석';
+  String get cardTodayCombo => '다경기 분석';
 
   @override
   String get cardTodayPick => '오늘의 추천 경기';

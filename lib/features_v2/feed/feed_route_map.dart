@@ -1,3 +1,5 @@
+import 'package:trendsoccer/l10n/app_localizations.dart';
+
 /// Feed shell segment — distinct from bottom-nav tab.
 enum FeedSegment {
   preview,
@@ -6,8 +8,7 @@ enum FeedSegment {
 }
 
 /// One league chip option for [FeedLeagueFilterRow].
-typedef FeedLeagueFilterOption = ({
-  String id,
+typedef FeedLeagueFilterOption = ({  String id,
   String label,
   String emblemId,
 });
@@ -36,8 +37,12 @@ String _normalizeFeedPath(String path) {
   return path;
 }
 
-/// Segment tab labels (English, per Figma).
-List<String> feedSegmentLabels() => const ['Preview', 'News', 'Highlights'];
+/// Segment tab labels for the feed shell.
+List<String> feedSegmentLabels(AppLocalizations l10n) => [
+      l10n.feedTabPreview,
+      l10n.feedTabNews,
+      l10n.feedTabHighlights,
+    ];
 
 /// Route path for segment.
 String feedRouteFor(FeedSegment segment) {

@@ -1,4 +1,5 @@
 import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 
 /// Reports shell segment — distinct from bottom-nav tab.
 enum ReportsSegment {
@@ -44,13 +45,13 @@ String _normalizeReportsPath(String path) {
   return path;
 }
 
-/// Segment tab labels for the active sport (English, per Figma).
-List<String> reportsSegmentLabels(TsSport sport) {
+/// Segment tab labels for the active sport.
+List<String> reportsSegmentLabels(TsSport sport, AppLocalizations l10n) {
   switch (sport) {
     case TsSport.soccer:
-      return const ['Analysis', 'Premium'];
+      return [l10n.reportsTabAnalysis, l10n.reportsTabPremium];
     case TsSport.baseball:
-      return const ['Analysis', 'Multi-Match'];
+      return [l10n.reportsTabAnalysis, l10n.reportsTabMultiMatch];
   }
 }
 

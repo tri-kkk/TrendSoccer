@@ -178,15 +178,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       if (showSoccerAnalysisBlock)
-        _AnalysisCarouselSection(
+        const _AnalysisCarouselSection(
           sport: TsSport.soccer,
-          subtitle: l10n.homeSoccerAnalysisSubtitle,
           seeAllPath: '/reports/soccer',
         ),
       if (showBaseballAnalysisBlock)
-        _AnalysisCarouselSection(
+        const _AnalysisCarouselSection(
           sport: TsSport.baseball,
-          subtitle: l10n.homeBaseballLeagueCodes,
           seeAllPath: '/reports/baseball',
         ),
       if (showTodayMatchesBlock) const _TodayMatchesSection(),
@@ -740,12 +738,10 @@ void _openHomeAnalysisReport(
 class _AnalysisCarouselSection extends ConsumerWidget {
   const _AnalysisCarouselSection({
     required this.sport,
-    this.subtitle,
     required this.seeAllPath,
   });
 
   final TsSport sport;
-  final String? subtitle;
   final String seeAllPath;
 
   void _retry(WidgetRef ref) {
@@ -845,7 +841,6 @@ class _AnalysisCarouselSection extends ConsumerWidget {
             icon: sport == TsSport.soccer
                 ? TsIcons.analysis
                 : TsIcons.leaderboard,
-            subtitle: subtitle,
             onSeeAll: () => context.go(seeAllPath),
           ),
         ),
@@ -907,7 +902,6 @@ class _ComboTodaySection extends ConsumerWidget {
       children: [
         TsSectionHeader(
           title: l10n.reportsComboDetailTitle,
-          subtitle: l10n.homeComboTodayBaseballSubtitle,
           icon: TsIcons.leaderboard,
         ),
         const SizedBox(height: TsSpacing.sm),
@@ -1086,7 +1080,6 @@ class _TodayMatchesSection extends ConsumerWidget {
           child: _homeSeeAllHeader(
             context,
             title: l10n.homeTodayMatchesTitle,
-            subtitle: l10n.homeTodayMatchesSubtitle,
             icon: TsIcons.fixture,
             onSeeAll: () => context.go('/matches'),
           ),

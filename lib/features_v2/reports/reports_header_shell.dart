@@ -12,6 +12,7 @@ import 'package:trendsoccer/design_system/widgets/ts_app_bar.dart';
 import 'package:trendsoccer/design_system/widgets/ts_bottom_navigation.dart';
 import 'package:trendsoccer/design_system/widgets/ts_segment_tabs.dart';
 import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/features_v2/reports/reports_date_strip.dart';
 import 'package:trendsoccer/features_v2/reports/reports_league_chips.dart';
 import 'package:trendsoccer/features_v2/reports/reports_league_filter_row.dart';
@@ -136,7 +137,8 @@ class _ReportsHeaderShellState extends ConsumerState<ReportsHeaderShell> {
     final auth = ref.watch(authProvider);
     final isGuest = auth.planType == PlanType.none;
     final c = Theme.of(context).extension<TsThemeColors>()!;
-    final segmentLabels = reportsSegmentLabels(widget.sport);
+    final l10n = AppLocalizations.of(context)!;
+    final segmentLabels = reportsSegmentLabels(widget.sport, l10n);
     final activeSegmentIndex = reportsSegmentIndex(widget.sport, widget.segment);
     final languageCode = Localizations.localeOf(context).languageCode;
     final leagues = reportsLeagueFiltersForSport(widget.sport, languageCode);
