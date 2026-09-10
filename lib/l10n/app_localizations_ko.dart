@@ -973,6 +973,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get labelWinShort => 'W';
 
   @override
+  String get resultDotLoss => 'L';
+
+  @override
   String get languageSettingsTitle => '언어 설정';
 
   @override

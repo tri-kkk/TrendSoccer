@@ -1928,6 +1928,12 @@ abstract class AppLocalizations {
   /// **'W'**
   String get labelWinShort;
 
+  /// No description provided for @resultDotLoss.
+  ///
+  /// In ko, this message translates to:
+  /// **'L'**
+  String get resultDotLoss;
+
   /// No description provided for @languageSettingsTitle.
   ///
   /// In ko, this message translates to:

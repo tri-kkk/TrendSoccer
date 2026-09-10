@@ -1000,6 +1000,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelWinShort => 'W';
 
   @override
+  String get resultDotLoss => 'L';
+
+  @override
   String get languageSettingsTitle => 'Language';
 
   @override

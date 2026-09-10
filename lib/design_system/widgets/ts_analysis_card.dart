@@ -8,7 +8,6 @@ import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
-import 'package:trendsoccer/design_system/widgets/ts_status_badge.dart';
 
 enum TsAnalysisStatus { scheduled, live, finished }
 
@@ -93,10 +92,6 @@ class TsAnalysisCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (status == TsAnalysisStatus.live)
-                  const TsStatusBadge(TsMatchStatus.live)
-                else if (status == TsAnalysisStatus.finished)
-                  const TsStatusBadge(TsMatchStatus.finished),
               ],
             ),
             const SizedBox(height: TsSpacing.md),

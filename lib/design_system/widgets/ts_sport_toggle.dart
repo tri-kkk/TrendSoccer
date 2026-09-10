@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/design_system/tokens/ts_icon_size.dart';
 
 import 'package:trendsoccer/design_system/icons/ts_icon.dart';
@@ -68,10 +69,13 @@ class _Segment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final c = Theme.of(context).extension<TsThemeColors>()!;
     final selected = sport == active;
     final icon = sport == TsSport.soccer ? TsIcons.soccer : TsIcons.baseball;
-    final label = sport == TsSport.soccer ? 'Soccer' : 'Baseball';
+    final label = sport == TsSport.soccer
+        ? l10n.feedNewsSportSoccer
+        : l10n.feedNewsSportBaseball;
 
     return GestureDetector(
       onTap: () => onChanged(sport),

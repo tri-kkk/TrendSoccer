@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:trendsoccer/l10n/app_localizations.dart';
 import 'package:trendsoccer/design_system/tokens/ts_radius.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
@@ -12,14 +13,15 @@ class TsResultDot extends StatelessWidget {
   final TsResult result;
   final String? label;
 
-  String get _defaultLabel => switch (result) {
-        TsResult.win => 'W',
-        TsResult.draw => 'D',
-        TsResult.loss => 'L',
+  String _defaultLabel(AppLocalizations l10n) => switch (result) {
+        TsResult.win => l10n.labelWinShort,
+        TsResult.draw => l10n.labelDrawShort,
+        TsResult.loss => l10n.resultDotLoss,
       };
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final c = Theme.of(context).extension<TsThemeColors>()!;
 
     final Color background = switch (result) {
@@ -37,7 +39,7 @@ class TsResultDot extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: Text(
-        label ?? _defaultLabel,
+        label ?? _defaultLabel(l10n),
         style: TsType.labelXsBold.copyWith(color: c.canvas),
       ),
     );
