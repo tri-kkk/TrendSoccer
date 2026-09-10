@@ -230,6 +230,8 @@
   "comboAiWarning": "주의사항",
   "comboAvgOdds": "평균 지수",
   "comboFoldCount": "{count}경기",
+  "comboFooterEstAccuracyCaption": "예상 정확도",
+  "comboFooterResultCaption": "결과",
   "comboMatchFail": "실패",
   "comboMatchHit": "일치",
   "comboMatchPending": "대기",

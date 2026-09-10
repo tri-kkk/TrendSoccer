@@ -1316,6 +1316,18 @@ abstract class AppLocalizations {
   /// **'{count}경기'**
   String comboFoldCount(int count);
 
+  /// No description provided for @comboFooterEstAccuracyCaption.
+  ///
+  /// In ko, this message translates to:
+  /// **'예상 정확도'**
+  String get comboFooterEstAccuracyCaption;
+
+  /// No description provided for @comboFooterResultCaption.
+  ///
+  /// In ko, this message translates to:
+  /// **'결과'**
+  String get comboFooterResultCaption;
+
   /// No description provided for @comboMatchFail.
   ///
   /// In ko, this message translates to:

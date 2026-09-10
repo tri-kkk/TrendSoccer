@@ -669,6 +669,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get comboFooterEstAccuracyCaption => 'Est. accuracy';
+
+  @override
+  String get comboFooterResultCaption => 'Result';
+
+  @override
   String get comboMatchFail => 'Mismatch';
 
   @override

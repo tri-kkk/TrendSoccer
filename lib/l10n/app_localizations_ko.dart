@@ -648,6 +648,12 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get comboFooterEstAccuracyCaption => '예상 정확도';
+
+  @override
+  String get comboFooterResultCaption => '결과';
+
+  @override
   String get comboMatchFail => '실패';
 
   @override

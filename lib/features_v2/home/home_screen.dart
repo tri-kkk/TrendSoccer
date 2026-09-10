@@ -893,7 +893,7 @@ class _ComboTodaySection extends ConsumerWidget {
         stableFraction: summary.stableFraction,
         accuracyLabel: summary.accuracyLabel,
         ctaLabel: l10n.homeComboViewAnalyses,
-        onCtaPressed: () => context.push('/reports/combo'),
+        onCtaPressed: () => context.go('/reports/combo'),
       ),
     );
 

@@ -230,6 +230,8 @@
   "comboAiWarning": "Caution",
   "comboAvgOdds": "Average index",
   "comboFoldCount": "{count} matches",
+  "comboFooterEstAccuracyCaption": "Est. accuracy",
+  "comboFooterResultCaption": "Result",
   "comboMatchFail": "Mismatch",
   "comboMatchHit": "Match",
   "comboMatchPending": "Pending",

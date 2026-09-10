@@ -8,6 +8,7 @@ import 'package:trendsoccer/design_system/widgets/ts_badge.dart';
 import 'package:trendsoccer/design_system/widgets/ts_gauge_bar.dart';
 import 'package:trendsoccer/design_system/widgets/ts_recent_pick_card.dart';
 import 'package:trendsoccer/design_system/widgets/ts_sport_toggle.dart';
+import 'package:trendsoccer/l10n/app_localizations.dart';
 
 enum TsAccuracyPeriod { d7, d30 }
 
@@ -351,9 +352,10 @@ class _RecentPickCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final (resultLabel, resultTone) = switch (pick.result) {
-      TsRecentPickResult.match => ('Match', TsBadgeTone.positive),
-      TsRecentPickResult.mismatch => ('Mismatch', TsBadgeTone.negative),
+      TsRecentPickResult.match => (l10n.comboMatchHit, TsBadgeTone.positive),
+      TsRecentPickResult.mismatch => (l10n.comboStatusMiss, TsBadgeTone.negative),
     };
 
     return TsRecentPickCard(
