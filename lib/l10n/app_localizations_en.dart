@@ -2152,6 +2152,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get subscribeUpdating => 'Updating subscription...';
 
   @override
+  String get subscribeUnlockTitle => 'Unlock every analysis report';
+
+  @override
+  String get subscribeUnlockSubtitle =>
+      'Soccer and baseball premium reports, multi-match analysis, and no ads.';
+
+  @override
+  String get subscribeTermsAutoRenew =>
+      'Auto-renews until cancelled. Manage in Google Play.';
+
+  @override
+  String get subscribePlanPremium => 'Premium';
+
+  @override
+  String get subscribeQuarterlyPriceNote => '(1 month free)';
+
+  @override
   String get tabFixture => 'Fixture';
 
   @override

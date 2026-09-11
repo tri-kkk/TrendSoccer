@@ -11,6 +11,7 @@ class TsPlanOption extends StatelessWidget {
   const TsPlanOption({
     required this.period,
     required this.price,
+    this.priceNote,
     this.selected = false,
     this.discountLabel,
     this.onTap,
@@ -19,6 +20,7 @@ class TsPlanOption extends StatelessWidget {
 
   final String period;
   final String price;
+  final String? priceNote;
   final bool selected;
   final String? discountLabel;
   final VoidCallback? onTap;
@@ -34,7 +36,10 @@ class TsPlanOption extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? c.primaryMuted : c.surfaceRaised,
           borderRadius: TsRadius.md,
-          border: selected ? Border.all(color: c.primary, width: 1) : null,
+          border: Border.all(
+            color: selected ? c.primary : Colors.transparent,
+            width: 1,
+          ),
         ),
         child: Row(
           children: [
@@ -49,13 +54,31 @@ class TsPlanOption extends StatelessWidget {
                     style: TsType.bodyLBold.copyWith(color: c.textPrimary),
                   ),
                   const SizedBox(height: TsSpacing.xxs),
-                  Text(
-                    price,
-                    style: TsType.tabular(
-                      TsType.h3.copyWith(
-                        color: selected ? c.primary : c.textPrimary,
+                  Text.rich(
+                    TextSpan(
+                      style: TsType.tabular(
+                        TsType.h3.copyWith(
+                          color: selected ? c.primary : c.textPrimary,
+                        ),
                       ),
+                      children: [
+                        TextSpan(text: price),
+                        if (priceNote != null) ...[
+                          const TextSpan(text: ' '),
+                          TextSpan(
+                            text: priceNote,
+                            style: TsType.tabular(
+                              TsType.bodyLRegular.copyWith(
+                                color: selected ? c.primary : c.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.clip,
                   ),
                 ],
               ),

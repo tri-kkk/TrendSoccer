@@ -4046,6 +4046,36 @@ abstract class AppLocalizations {
   /// **'구독 정보 업데이트 중...'**
   String get subscribeUpdating;
 
+  /// No description provided for @subscribeUnlockTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'모든 분석 리포트 잠금 해제'**
+  String get subscribeUnlockTitle;
+
+  /// No description provided for @subscribeUnlockSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'축구·야구 프리미엄 리포트, 다경기 분석, 광고 없이 이용하세요.'**
+  String get subscribeUnlockSubtitle;
+
+  /// No description provided for @subscribeTermsAutoRenew.
+  ///
+  /// In ko, this message translates to:
+  /// **'취소 전까지 자동 갱신됩니다. Google Play에서 관리할 수 있습니다.'**
+  String get subscribeTermsAutoRenew;
+
+  /// No description provided for @subscribePlanPremium.
+  ///
+  /// In ko, this message translates to:
+  /// **'프리미엄'**
+  String get subscribePlanPremium;
+
+  /// No description provided for @subscribeQuarterlyPriceNote.
+  ///
+  /// In ko, this message translates to:
+  /// **'(1개월 무료)'**
+  String get subscribeQuarterlyPriceNote;
+
   /// No description provided for @tabFixture.
   ///
   /// In ko, this message translates to:

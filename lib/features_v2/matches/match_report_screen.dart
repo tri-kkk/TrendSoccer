@@ -84,7 +84,7 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
         hasFullAccess: auth.hasFullAccess,
         guestFactBlocksUnlocked: _guestFactBlocksUnlocked,
         onGuestTap: () => context.push('/login'),
-        onSubscribeTap: () => context.go('/menu/subscribe'),
+        onSubscribeTap: () => context.push('/menu/subscribe'),
       );
 
       final inFlight = _refreshInFlight;
@@ -427,7 +427,7 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
             hasFullAccess: auth.hasFullAccess,
             guestFactBlocksUnlocked: _guestFactBlocksUnlocked,
             onGuestTap: () => context.push('/login'),
-            onSubscribeTap: () => context.go('/menu/subscribe'),
+            onSubscribeTap: () => context.push('/menu/subscribe'),
           )
         : null;
     if (hasSoccerBlocks) {
@@ -535,7 +535,7 @@ class _MatchReportScreenState extends ConsumerState<MatchReportScreen> {
       isGuest: auth.isGuest,
       hasFullAccess: auth.hasFullAccess,
       onGuestTap: () => context.push('/login'),
-      onSubscribeTap: () => context.go('/menu/subscribe'),
+      onSubscribeTap: () => context.push('/menu/subscribe'),
     );
 
     return [

@@ -146,7 +146,7 @@ VoidCallback? _reportsComboCardOnTap(
   if (auth.isGuest) {
     return () => context.push('/login');
   }
-  return () => context.go('/menu/subscribe');
+  return () => context.push('/menu/subscribe');
 }
 
 class _ReportsComboCard extends StatelessWidget {

@@ -175,7 +175,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           TsSubscriptionBanner(
             headline: l10n.homeUnlockHeadline,
             subline: l10n.homeUnlockSubline,
-            onAction: () => context.go('/menu/subscribe'),
+            onAction: () => context.push('/menu/subscribe'),
           ),
         ),
       if (showSoccerAnalysisBlock)

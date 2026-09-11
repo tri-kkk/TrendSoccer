@@ -146,7 +146,7 @@ class _ComboDetailScreenState extends ConsumerState<ComboDetailScreen> {
             if (auth.isGuest) {
               context.push('/login');
             } else {
-              context.go('/menu/subscribe');
+              context.push('/menu/subscribe');
             }
           },
         ),

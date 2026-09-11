@@ -33,6 +33,7 @@ class TsPlanCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: isPremium ? c.primarySubtle : c.surface,
           borderRadius: TsRadius.md,
+          border: isPremium ? Border.all(color: c.primary, width: 1) : null,
         ),
         child: Padding(
           padding: const EdgeInsets.all(TsSpacing.lg),

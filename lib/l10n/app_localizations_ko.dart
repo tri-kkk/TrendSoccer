@@ -2091,6 +2091,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String get subscribeUpdating => '구독 정보 업데이트 중...';
 
   @override
+  String get subscribeUnlockTitle => '모든 분석 리포트 잠금 해제';
+
+  @override
+  String get subscribeUnlockSubtitle => '축구·야구 프리미엄 리포트, 다경기 분석, 광고 없이 이용하세요.';
+
+  @override
+  String get subscribeTermsAutoRenew =>
+      '취소 전까지 자동 갱신됩니다. Google Play에서 관리할 수 있습니다.';
+
+  @override
+  String get subscribePlanPremium => '프리미엄';
+
+  @override
+  String get subscribeQuarterlyPriceNote => '(1개월 무료)';
+
+  @override
   String get tabFixture => '일정';
 
   @override

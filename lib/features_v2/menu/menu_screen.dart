@@ -274,7 +274,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                     ? null
                     : auth.planType == PlanType.premium
                         ? _openPlaySubscriptions
-                        : () => context.go('/menu/subscribe'),
+                        : () => context.push('/menu/subscribe'),
               ),
               const SizedBox(height: TsSpacing.lg),
               _menuGroup(
@@ -285,7 +285,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                     icon: TsIcons.premium,
                     onTap: auth.planType == PlanType.premium
                         ? _openPlaySubscriptions
-                        : () => context.go('/menu/subscribe'),
+                        : () => context.push('/menu/subscribe'),
                   ),
                   TsMenuListItem(
                     label: l10n.menuNotifications,
