@@ -3740,6 +3740,54 @@ abstract class AppLocalizations {
   /// **'승'**
   String get soccerStatWins;
 
+  /// No description provided for @paymentContactSupport.
+  ///
+  /// In ko, this message translates to:
+  /// **'고객 지원'**
+  String get paymentContactSupport;
+
+  /// No description provided for @paymentFailedReasonGeneral.
+  ///
+  /// In ko, this message translates to:
+  /// **'결제를 완료할 수 없습니다'**
+  String get paymentFailedReasonGeneral;
+
+  /// No description provided for @paymentFailedSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'결제되지 않았습니다. 다시 시도할 수 있습니다.'**
+  String get paymentFailedSubtitle;
+
+  /// No description provided for @paymentReceiptOrder.
+  ///
+  /// In ko, this message translates to:
+  /// **'주문'**
+  String get paymentReceiptOrder;
+
+  /// No description provided for @paymentReceiptReason.
+  ///
+  /// In ko, this message translates to:
+  /// **'사유'**
+  String get paymentReceiptReason;
+
+  /// No description provided for @paymentSuccessGoHome.
+  ///
+  /// In ko, this message translates to:
+  /// **'홈으로'**
+  String get paymentSuccessGoHome;
+
+  /// No description provided for @paymentSuccessSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'계정에 프리미엄이 활성화되었습니다.'**
+  String get paymentSuccessSubtitle;
+
+  /// No description provided for @paymentSuccessTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'결제 완료'**
+  String get paymentSuccessTitle;
+
   /// No description provided for @subscribeAlreadyOwned.
   ///
   /// In ko, this message translates to:

@@ -16,6 +16,7 @@ import 'package:trendsoccer/features_v2/menu/help_screen.dart';
 import 'package:trendsoccer/features_v2/menu/menu_screen.dart';
 import 'package:trendsoccer/features_v2/menu/notification_settings_screen.dart';
 import 'package:trendsoccer/features_v2/menu/payment_failed_screen.dart';
+import 'package:trendsoccer/features_v2/menu/payment_route_args.dart';
 import 'package:trendsoccer/features_v2/menu/payment_success_screen.dart';
 import 'package:trendsoccer/features_v2/menu/privacy_screen.dart';
 import 'package:trendsoccer/features_v2/menu/subscribe_screen.dart';
@@ -86,8 +87,20 @@ final GoRouter appRouter = GoRouter(
       builder: (_, s) => PreviewDetailScreen(slug: s.pathParameters['slug']!),
     ),
     _r('/menu/subscribe', 'subscribe', const SubscribeScreen()),
-    _r('/menu/payment/success', 'paymentSuccess', const PaymentSuccessScreen()),
-    _r('/menu/payment/failed', 'paymentFailed', const PaymentFailedScreen()),
+    GoRoute(
+      path: '/menu/payment/success',
+      name: 'paymentSuccess',
+      builder: (_, state) => PaymentSuccessScreen(
+        args: state.extra as PaymentSuccessArgs?,
+      ),
+    ),
+    GoRoute(
+      path: '/menu/payment/failed',
+      name: 'paymentFailed',
+      builder: (_, state) => PaymentFailedScreen(
+        args: state.extra as PaymentFailedArgs?,
+      ),
+    ),
     GoRoute(
       path: '/force-update',
       name: 'forceUpdate',

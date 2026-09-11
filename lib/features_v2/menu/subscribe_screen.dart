@@ -24,6 +24,7 @@ import 'package:trendsoccer/design_system/tokens/ts_theme_colors.dart';
 
 import 'package:trendsoccer/design_system/tokens/ts_type.dart';
 
+import 'package:trendsoccer/features_v2/menu/payment_route_args.dart';
 import 'package:trendsoccer/design_system/widgets/ts_app_bar.dart';
 
 import 'package:trendsoccer/design_system/widgets/ts_button.dart';
@@ -122,6 +123,12 @@ class _SubscribeScreenState extends ConsumerState<SubscribeScreen> {
 
 
 
+  static bool _isVerificationFailure(IapPurchaseEvent event) {
+    final message = event.message;
+    return message == 'Purchase verification failed' ||
+        message == 'Purchase restore verification failed';
+  }
+
   void _onPurchaseEvent(IapPurchaseEvent event) {
 
     if (!mounted) return;
@@ -142,7 +149,13 @@ class _SubscribeScreenState extends ConsumerState<SubscribeScreen> {
 
         setState(() => _purchasing = false);
 
-        showTsToast(context, l10n.subscribeSuccessComplete, TsToastType.success);
+        context.pushReplacement(
+          '/menu/payment/success',
+          extra: PaymentSuccessArgs(
+            basePlanId: event.basePlanId,
+            storePrice: event.storePrice,
+          ),
+        );
 
       case IapPurchaseEventType.itemAlreadyOwned:
 
@@ -158,25 +171,18 @@ class _SubscribeScreenState extends ConsumerState<SubscribeScreen> {
 
         setState(() => _purchasing = false);
 
-        final message = event.message ?? '';
-
-        final verificationFailed = message.contains('verification') &&
-
-            message.toLowerCase().contains('fail');
-
-        showTsToast(
-
-          context,
-
-          verificationFailed
-
-              ? l10n.subscribeIapVerifyPending
-
-              : l10n.subscribeFailDescription,
-
-          verificationFailed ? TsToastType.info : TsToastType.error,
-
-        );
+        if (_isVerificationFailure(event)) {
+          showTsToast(
+            context,
+            l10n.subscribeIapVerifyPending,
+            TsToastType.info,
+          );
+        } else {
+          context.pushReplacement(
+            '/menu/payment/failed',
+            extra: PaymentFailedArgs(purchaseId: event.purchaseId),
+          );
+        }
 
     }
 

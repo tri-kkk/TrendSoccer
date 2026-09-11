@@ -1987,6 +1987,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get soccerStatWins => 'W';
 
   @override
+  String get paymentContactSupport => 'Contact support';
+
+  @override
+  String get paymentFailedReasonGeneral => 'Could not complete the payment';
+
+  @override
+  String get paymentFailedSubtitle => 'No charge was made. You can try again.';
+
+  @override
+  String get paymentReceiptOrder => 'Order';
+
+  @override
+  String get paymentReceiptReason => 'Reason';
+
+  @override
+  String get paymentSuccessGoHome => 'Go to home';
+
+  @override
+  String get paymentSuccessSubtitle => 'Premium is now active on your account.';
+
+  @override
+  String get paymentSuccessTitle => 'Payment complete';
+
+  @override
   String get subscribeAlreadyOwned =>
       'You are already subscribed. Checking your subscription.';
 

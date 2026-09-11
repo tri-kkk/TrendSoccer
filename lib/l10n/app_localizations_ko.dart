@@ -1931,6 +1931,30 @@ class AppLocalizationsKo extends AppLocalizations {
   String get soccerStatWins => '승';
 
   @override
+  String get paymentContactSupport => '고객 지원';
+
+  @override
+  String get paymentFailedReasonGeneral => '결제를 완료할 수 없습니다';
+
+  @override
+  String get paymentFailedSubtitle => '결제되지 않았습니다. 다시 시도할 수 있습니다.';
+
+  @override
+  String get paymentReceiptOrder => '주문';
+
+  @override
+  String get paymentReceiptReason => '사유';
+
+  @override
+  String get paymentSuccessGoHome => '홈으로';
+
+  @override
+  String get paymentSuccessSubtitle => '계정에 프리미엄이 활성화되었습니다.';
+
+  @override
+  String get paymentSuccessTitle => '결제 완료';
+
+  @override
   String get subscribeAlreadyOwned => '이미 구독 중입니다. 기존 구독을 확인합니다.';
 
   @override
