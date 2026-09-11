@@ -7,6 +7,7 @@ import 'package:trendsoccer/core/providers/auth_provider.dart';
 import 'package:trendsoccer/core/services/iap_service.dart';
 import 'package:trendsoccer/design_system/tokens/ts_spacing.dart';
 import 'package:trendsoccer/design_system/tokens/ts_theme.dart';
+import 'package:trendsoccer/design_system/widgets/ts_app_bar.dart';
 import 'package:trendsoccer/design_system/widgets/ts_button.dart';
 import 'package:trendsoccer/design_system/widgets/ts_plan_option.dart';
 import 'package:trendsoccer/features_v2/menu/subscribe_screen.dart';
@@ -94,20 +95,32 @@ double _gapMonthlyToCta(WidgetTester tester) {
   return ctaTop - monthlyBottom;
 }
 
-/// Centring slack inside the min-height column (above headline vs below terms).
-({double aboveHeadline, double belowTerms}) _verticalBalance(
+RenderBox _bodyScrollRenderObject(WidgetTester tester) {
+  return tester.renderObject<RenderBox>(
+    find.descendant(
+      of: find.byType(SubscribeScreen),
+      matching: find.byType(SingleChildScrollView),
+    ),
+  );
+}
+
+/// Top alignment: headline offset inside scroll padding; slack below terms in viewport.
+({double appBarToHeadline, double belowTermsInViewport}) _topAlignedLayout(
   WidgetTester tester,
 ) {
-  final constrained = tester.renderObject<RenderBox>(
-    find.byKey(const Key('subscribe_body_min_height')),
-  );
-  final columnTop = constrained.localToGlobal(Offset.zero).dy;
-  final columnBottom = columnTop + constrained.size.height;
+  final scroll = _bodyScrollRenderObject(tester);
+  final scrollTop = scroll.localToGlobal(Offset.zero).dy;
+  final scrollBottom = scrollTop + scroll.size.height;
+
+  final appBar = tester.renderObject<RenderBox>(find.byType(TsAppBar));
+  final appBarBottom = appBar.localToGlobal(Offset.zero).dy + appBar.size.height;
+
   final headlineTop = tester.getTopLeft(_headlineTitle).dy;
   final termsBottom = tester.getBottomLeft(_terms).dy;
+
   return (
-    aboveHeadline: headlineTop - columnTop,
-    belowTerms: columnBottom - termsBottom,
+    appBarToHeadline: headlineTop - appBarBottom,
+    belowTermsInViewport: scrollBottom - termsBottom,
   );
 }
 
@@ -179,54 +192,81 @@ void main() {
     expect(quarterly, closeTo(monthly, 1));
   });
 
-  testWidgets('412x917 device-like inset: CTA spacing and vertical balance', (
+  testWidgets('412x917 device-like inset: CTA spacing and top alignment', (
     tester,
   ) async {
     const size = Size(412, 917);
     await pumpSubscribe(tester, size, padding: _deviceLikePadding);
 
     final gap = _gapMonthlyToCta(tester);
-    final balance = _verticalBalance(tester);
+    final layout = _topAlignedLayout(tester);
+    final scroll = _bodyScrollRenderObject(tester);
+    final headlineInsetInScroll =
+        tester.getTopLeft(_headlineTitle).dy -
+        scroll.localToGlobal(Offset.zero).dy;
 
     debugPrint(
       'subscribe_412x917_inset gap=$gap '
-      'aboveHeadline=${balance.aboveHeadline} belowTerms=${balance.belowTerms}',
+      'appBarToHeadline=${layout.appBarToHeadline} '
+      'belowTerms=${layout.belowTermsInViewport}',
     );
 
     expect(gap, closeTo(TsSpacing.lg, 2));
-    expect(balance.aboveHeadline, closeTo(balance.belowTerms, 2));
+    expect(headlineInsetInScroll, closeTo(TsSpacing.lg, 2));
+    expect(layout.appBarToHeadline, closeTo(TsSpacing.lg, 2));
   });
 
-  testWidgets('412x917 zero inset: CTA spacing and vertical balance', (
+  testWidgets('412x917 zero inset: CTA spacing and top alignment', (
     tester,
   ) async {
     const size = Size(412, 917);
     await pumpSubscribe(tester, size);
 
     final gap = _gapMonthlyToCta(tester);
-    final balance = _verticalBalance(tester);
+    final layout = _topAlignedLayout(tester);
+    final scroll = _bodyScrollRenderObject(tester);
+    final headlineInsetInScroll =
+        tester.getTopLeft(_headlineTitle).dy -
+        scroll.localToGlobal(Offset.zero).dy;
 
     debugPrint(
       'subscribe_412x917_zero gap=$gap '
-      'aboveHeadline=${balance.aboveHeadline} belowTerms=${balance.belowTerms}',
+      'appBarToHeadline=${layout.appBarToHeadline} '
+      'belowTerms=${layout.belowTermsInViewport}',
     );
 
     expect(gap, closeTo(TsSpacing.lg, 2));
-    expect(balance.aboveHeadline, closeTo(balance.belowTerms, 2));
+    expect(headlineInsetInScroll, closeTo(TsSpacing.lg, 2));
+    expect(layout.appBarToHeadline, closeTo(TsSpacing.lg, 2));
   });
 
-  testWidgets('tall viewport centres when content is shorter', (tester) async {
-    const size = Size(412, 1100);
-    await pumpSubscribe(tester, size, padding: _deviceLikePadding);
+  testWidgets('412x1100 top aligned with slack below terms', (tester) async {
+    await pumpSubscribe(
+      tester,
+      const Size(412, 917),
+      padding: _deviceLikePadding,
+    );
+    final below917 = _topAlignedLayout(tester).belowTermsInViewport;
 
-    final balance = _verticalBalance(tester);
+    await pumpSubscribe(
+      tester,
+      const Size(412, 1100),
+      padding: _deviceLikePadding,
+    );
+    final layout = _topAlignedLayout(tester);
+    final scroll = _bodyScrollRenderObject(tester);
+    final headlineInsetInScroll =
+        tester.getTopLeft(_headlineTitle).dy -
+        scroll.localToGlobal(Offset.zero).dy;
+
     debugPrint(
-      'subscribe_412x1100_inset aboveHeadline=${balance.aboveHeadline} '
-      'belowTerms=${balance.belowTerms}',
+      'subscribe_412x1100_inset appBarToHeadline=${layout.appBarToHeadline} '
+      'belowTerms=${layout.belowTermsInViewport}',
     );
 
-    expect(balance.aboveHeadline, greaterThan(8));
-    expect(balance.aboveHeadline, closeTo(balance.belowTerms, 2));
+    expect(headlineInsetInScroll, closeTo(TsSpacing.lg, 2));
+    expect(layout.appBarToHeadline, closeTo(TsSpacing.lg, 2));
+    expect(layout.belowTermsInViewport, greaterThan(below917 + 8));
   });
 
   testWidgets('412x640 scrolls and terms reachable', (tester) async {

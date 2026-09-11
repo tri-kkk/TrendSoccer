@@ -340,41 +340,25 @@ class _SubscribeScreenState extends ConsumerState<SubscribeScreen> {
 
       ),
 
-      body: LayoutBuilder(
+      body: SingleChildScrollView(
 
-        builder: (context, constraints) {
+        padding: EdgeInsets.fromLTRB(
 
-          return SingleChildScrollView(
+          topPad,
 
-            padding: EdgeInsets.fromLTRB(
+          topPad,
 
-              topPad,
+          topPad,
 
-              topPad,
+          bottomPad,
 
-              topPad,
+        ),
 
-              bottomPad,
+        child: Column(
 
-            ),
+          crossAxisAlignment: CrossAxisAlignment.stretch,
 
-            child: ConstrainedBox(
-
-              key: const Key('subscribe_body_min_height'),
-
-              constraints: BoxConstraints(
-
-                minHeight: constraints.maxHeight - topPad - bottomPad,
-
-              ),
-
-              child: Column(
-
-                mainAxisAlignment: MainAxisAlignment.center,
-
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-
-                children: [
+          children: [
 
                   Column(
 
@@ -522,15 +506,9 @@ class _SubscribeScreenState extends ConsumerState<SubscribeScreen> {
 
                   ),
 
-                ],
+          ],
 
-              ),
-
-            ),
-
-          );
-
-        },
+        ),
 
       ),
 
