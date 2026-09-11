@@ -26,11 +26,27 @@ class IapPurchaseEvent {
     required this.type,
     this.productId,
     this.message,
+    this.purchaseId,
+    this.basePlanId,
+    this.storePrice,
+    this.iapErrorCode,
   });
 
   final IapPurchaseEventType type;
   final String? productId;
   final String? message;
+
+  /// Play order id (`PurchaseDetails.purchaseID`, e.g. GPA-…).
+  final String? purchaseId;
+
+  /// Normalized base plan id (`monthly-plan`, `quarterly-plan`, …).
+  final String? basePlanId;
+
+  /// Store-formatted price from cached [ProductDetails.price] (not app copy).
+  final String? storePrice;
+
+  /// [IAPError.code] when the store reports [PurchaseStatus.error].
+  final String? iapErrorCode;
 }
 
 final iapServiceProvider = Provider<IAPService>((ref) {
@@ -337,15 +353,27 @@ class IAPService {
     }
   }
 
+  String? _storePriceForBasePlan(String basePlanId) {
+    return findProductForBasePlan(basePlanId)?.price;
+  }
+
   Future<void> _emitVerifiedPurchase({
     required PurchaseDetails purchase,
     required IapPurchaseEventType eventType,
+    Map<String, dynamic>? verifyData,
   }) async {
     await _loadProfileAfterVerify();
+    final basePlanId = _basePlanIdForPurchase(
+      purchase,
+      verifyData: verifyData,
+    );
     _purchaseEventsController.add(
       IapPurchaseEvent(
         type: eventType,
         productId: purchase.productID,
+        purchaseId: purchase.purchaseID,
+        basePlanId: basePlanId,
+        storePrice: _storePriceForBasePlan(basePlanId),
       ),
     );
   }
@@ -359,35 +387,42 @@ class IAPService {
             IapPurchaseEvent(
               type: IapPurchaseEventType.pending,
               productId: purchase.productID,
+              purchaseId: purchase.purchaseID,
             ),
           );
         case PurchaseStatus.purchased:
-                    final verified = await _verifyPurchase(purchase);
-          if (verified) {
+                    final verifyData = await _verifyPurchase(purchase);
+          if (verifyData != null) {
             await _emitVerifiedPurchase(
               purchase: purchase,
               eventType: IapPurchaseEventType.purchased,
+              verifyData: verifyData,
             );
           } else {
             _purchaseEventsController.add(
-              const IapPurchaseEvent(
+              IapPurchaseEvent(
                 type: IapPurchaseEventType.error,
+                productId: purchase.productID,
+                purchaseId: purchase.purchaseID,
                 message: 'Purchase verification failed',
               ),
             );
           }
           await _completePurchaseIfNeeded(purchase);
         case PurchaseStatus.restored:
-                    final verified = await _verifyPurchase(purchase);
-          if (verified) {
+                    final verifyData = await _verifyPurchase(purchase);
+          if (verifyData != null) {
                         await _emitVerifiedPurchase(
               purchase: purchase,
               eventType: IapPurchaseEventType.restored,
+              verifyData: verifyData,
             );
           } else {
             _purchaseEventsController.add(
-              const IapPurchaseEvent(
+              IapPurchaseEvent(
                 type: IapPurchaseEventType.error,
+                productId: purchase.productID,
+                purchaseId: purchase.purchaseID,
                 message: 'Purchase restore verification failed',
               ),
             );
@@ -395,13 +430,16 @@ class IAPService {
           await _completePurchaseIfNeeded(purchase);
         case PurchaseStatus.error:
           final errorMsg = purchase.error?.message ?? 'Unknown purchase error';
+          final errorCode = purchase.error?.code;
           
           if (_isItemAlreadyOwnedError(errorMsg)) {
                         _purchaseEventsController.add(
               IapPurchaseEvent(
                 type: IapPurchaseEventType.itemAlreadyOwned,
                 productId: purchase.productID,
+                purchaseId: purchase.purchaseID,
                 message: errorMsg,
+                iapErrorCode: errorCode,
               ),
             );
             await restorePurchases();
@@ -413,7 +451,9 @@ class IAPService {
             IapPurchaseEvent(
               type: IapPurchaseEventType.error,
               productId: purchase.productID,
+              purchaseId: purchase.purchaseID,
               message: errorMsg,
+              iapErrorCode: errorCode,
             ),
           );
           await _completePurchaseIfNeeded(purchase);
@@ -422,6 +462,7 @@ class IAPService {
             IapPurchaseEvent(
               type: IapPurchaseEventType.canceled,
               productId: purchase.productID,
+              purchaseId: purchase.purchaseID,
             ),
           );
           await _completePurchaseIfNeeded(purchase);
@@ -429,13 +470,14 @@ class IAPService {
     }
   }
 
-  Future<bool> _verifyPurchase(PurchaseDetails purchase) async {
+  /// Unwrapped verify `data` on success; `null` when verification did not succeed.
+  Future<Map<String, dynamic>?> _verifyPurchase(PurchaseDetails purchase) async {
     final purchaseToken = purchase.verificationData.serverVerificationData;
     
     try {
       final jwt = await _getAuthJwt();
       if (jwt == null) {
-                return false;
+                return null;
       }
 
       final headers = <String, String>{
@@ -456,29 +498,29 @@ class IAPService {
 
       final data = _unwrapResponseData(response.data);
                   await _logPurchaseAnalytics(purchase, verifyData: data);
-      return true;
+      return data;
     } on DioException catch (e) {
       final statusCode = e.response?.statusCode;
       final body = e.response?.data;
       final errorCode = _readErrorCode(body);
 
       if (statusCode == 402 || errorCode == 'PAYMENT_PENDING') {
-                return false;
+                return null;
       }
 
       if (statusCode == 409 || errorCode == 'TOKEN_ALREADY_USED') {
                 final data = _unwrapResponseData(body);
                         await _logPurchaseAnalytics(purchase, verifyData: data);
-        return true;
+        return data;
       }
 
       if (statusCode == 400 || statusCode == 401) {
-                return false;
+                return null;
       }
 
-            return false;
+            return null;
     } catch (e) {
-            return false;
+            return null;
     }
   }
 
